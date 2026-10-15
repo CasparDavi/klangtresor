@@ -160,19 +160,58 @@ function breitesteMitteFrei(poly, yy, sonst, sperren) {
 }
 /* EIN RECHTECK SO TIEF WIE MOEGLICH (fuer das Nummernschild des Plakats): bw breit, bh hoch, in poly (Mathematik, y nach oben),
    mittig auf der breitesten (freien) Strecke seiner Hoehe; keine Kante beruehrt es, kein Sperrstreifen. null, wenn es nirgends
-   passt. */
-export function rechteckUnten(poly, bw, bh, sperren = null) {
+   passt. gleiten: auf jeder Hoehe auch abseits der Mitte - dorthin, wo das Rechteck ganz hineinpasst (mittenFrei), so nah an der Mitte
+   der breitesten Strecke wie moeglich; die Hoehen viermal so dicht. Die Mitte allein fand in schiefen oder schmalen Zellen keinen Platz,
+   obwohl das Rechteck daneben ganz hineinpasste (Gegenpruefung 15.10.2026: Klangschaum, Bleiglas, 3 × 50 × 70 hoch, eine Zelle von
+   4,47 × 8,26 mm, sie traegt jetzt ihre Nummer; 70 × 100 hoch: statt 38 Zellen ohne Nummer 26). */
+export function rechteckUnten(poly, bw, bh, sperren = null, gleiten = false) {
   let y0 = Infinity, y1 = -Infinity;
   for (const p of poly) { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
-  const schritt = Math.max((y1 - y0) / 120, bh / 10);
+  const schritt = gleiten ? Math.max((y1 - y0) / 480, bh / 40) : Math.max((y1 - y0) / 120, bh / 10);
+  const passt = (x, y) => { const r = [x - bw / 2, y - bh / 2, x + bw / 2, y + bh / 2];
+    return !(sperren && sperren.some(([s0, s1]) => r[2] > s0 && r[0] < s1)) && rechteckFrei(naheKanten(poly, r), ...r) && inside(poly, [x, y]); };
   for (let y = y0 + bh / 2; y <= y1 - bh / 2; y += schritt) {
+    if (gleiten) {
+      const m = breitesteMitteFrei(poly, y, NaN, sperren || []), xs = [];
+      if (!(m === m)) continue;
+      for (const [a, b] of mittenFrei(poly, y, bw, bh, sperren)) { const e = Math.min(bw / 64, (b - a) / 2); xs.push(Math.min(b - e, Math.max(a + e, m))); }
+      for (const x of xs.sort((p, q) => Math.abs(p - m) - Math.abs(q - m))) if (passt(x, y)) return [x, y];
+      continue;
+    }
     const x = sperren && sperren.length ? breitesteMitteFrei(poly, y, NaN, sperren) : breitesteMitte(poly, y, NaN);
     if (!(x === x)) continue;
-    const r = [x - bw / 2, y - bh / 2, x + bw / 2, y + bh / 2];
-    if (sperren && sperren.some(([s0, s1]) => r[2] > s0 && r[0] < s1)) continue;
-    if (rechteckFrei(naheKanten(poly, r), ...r) && inside(poly, [x, y])) return [x, y];
+    if (passt(x, y)) return [x, y];
   }
   return null;
+}
+// die Strecken des Vielecks auf der Hoehe yy, von den Sperrstreifen zerschnitten
+function streckenAuf(poly, yy, sperren) {
+  const xs = [], aus = [];
+  for (let k = 0, j = poly.length - 1; k < poly.length; j = k++) {
+    const a = poly[k], b = poly[j];
+    if ((a[1] > yy) !== (b[1] > yy)) xs.push(a[0] + (yy - a[1]) * (b[0] - a[0]) / (b[1] - a[1]));
+  }
+  xs.sort((u, v) => u - v);
+  for (let i = 0; i + 1 < xs.length; i += 2) {
+    let teile = [[xs[i], xs[i + 1]]];
+    for (const [s0, s1] of sperren || []) teile = teile.flatMap(([u, v]) => s1 <= u || s0 >= v ? [[u, v]] : [[u, Math.min(v, s0)], [Math.max(u, s1), v]].filter(([p, q]) => q > p));
+    aus.push(...teile);
+  }
+  return aus;
+}
+/* wo die Mitte eines Rechtecks bw × bh auf der Hoehe y stehen kann, damit es ganz im Vieleck liegt: die Strecken auf allen Hoehen des
+   Bands, an denen sich etwas aendert (seine Raender und jede Ecke darin), geschnitten - dazwischen laufen die Kanten gerade, die Enden
+   der Strecken also auch -, um eine halbe Breite eingerueckt */
+function mittenFrei(poly, y, bw, bh, sperren) {
+  const ya = y - bh / 2, yb = y + bh / 2, hoehen = [ya, yb];
+  for (const p of poly) if (p[1] > ya && p[1] < yb) hoehen.push(p[1]);
+  let frei = null;
+  for (const h of hoehen) {
+    const s = streckenAuf(poly, h, sperren);
+    frei = frei === null ? s : frei.flatMap(([a0, a1]) => s.map(([b0, b1]) => [Math.max(a0, b0), Math.min(a1, b1)]).filter(([u, v]) => v > u));
+    if (!frei.length) return [];
+  }
+  return frei.map(([u, v]) => [u + bw / 2, v - bw / 2]).filter(([u, v]) => v > u);
 }
 // die Tintenkaesten eines Namensblocks je Zeile, relativ zu (Zeilenmitte x, Blockmitte y), Mathematik (y nach oben)
 function tintenBlock(lines, size, ink, leading, m, kursiv = false) {

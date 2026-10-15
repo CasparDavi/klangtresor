@@ -9678,13 +9678,26 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     for (let q = 0; q < pk.length; q++){ const p1 = pk[q], p2 = pk[(q + 1) % pk.length];
       if ((p1[1] - yy) * (p2[1] - yy) < 0) sx.push(p1[0] + (yy - p1[1]) * (p2[0] - p1[0]) / (p2[1] - p1[1])); }
     sx.sort((u, v) => u - v); return sx.length >= 2 ? [sx[0], sx[sx.length - 1]] : null; };
+  /* liegt q mindestens rand weit im Umriss pk? (Strahltest, dann der kleinste Abstand zu einer Kante) - fuer die Ziffern einer Nummer im Titel */
+  const imUmriss = (pk, q, rand) => { let c = false, d = Infinity;
+    for (let k = 0, j = pk.length - 1; k < pk.length; j = k++){ const [xi, yi] = pk[k], [xj, yj] = pk[j];
+      if ((yi > q[1]) !== (yj > q[1]) && q[0] < (xj - xi) * (q[1] - yi) / (yj - yi) + xi) c = !c;
+      const dx = xi - xj, dy = yi - yj, u = Math.max(0, Math.min(1, ((q[0] - xj) * dx + (q[1] - yj) * dy) / (dx * dx + dy * dy || 1)));
+      d = Math.min(d, Math.hypot(q[0] - xj - u * dx, q[1] - yj - u * dy)); }
+    return c && d >= rand; };
+  /* der Teil des Umrisses oberhalb der Hoehe bis (SVG, y nach unten; Sutherland-Hodgman an einer Waagerechten) */
+  const ueberHoehe = (pk, bis) => { const aus = [];
+    for (let k = 0; k < pk.length; k++){ const a = pk[k], b = pk[(k + 1) % pk.length], ai = a[1] <= bis, bi = b[1] <= bis;
+      if (ai) aus.push(a);
+      if (ai !== bi) aus.push([a[0] + (bis - a[1]) * (b[0] - a[0]) / (b[1] - a[1]), bis]); }
+    return aus; };
   /* die senkrechten Masse der Schrift (Oberkante des Em-Kastens fasc, Unterkante fdesc, Versalhoehe, Unterlaenge) aus der Schrift
      selbst - vorher feste Zahlen der Mac-Systemschrift (0,94 / 0,23 / 1,15 em), unter Windows (Segoe UI) falsch */
   const km = (() => { leinwand.font = '400 100px ' + SCHAUM_NAMEN_FAMILIE; const H = leinwand.measureText('H'), g = leinwand.measureText('gpqy');
     const fasc = H.fontBoundingBoxAscent / 100, fdesc = H.fontBoundingBoxDescent / 100, cap = H.actualBoundingBoxAscent / 100, desc = g.actualBoundingBoxDescent / 100;
     const xh = leinwand.measureText('x').actualBoundingBoxAscent / 100;          /* m-Hoehe (Oberkante der Kleinbuchstaben ohne Oberlaenge) */
     return fasc > 0.5 && fdesc > 0.05 && cap > 0.4 && xh > 0.3 ? { fasc, fdesc, cap, desc, xh } : { fasc: 0.97, fdesc: 0.21, cap: 0.73, desc: 0.18, xh: 0.52 }; })();
-  const kopfPlan = (pk, x, y, w, h, name, i, nurUnten) => {
+  const kopfPlan = (pk, x, y, w, h, name, i, nurUnten, nr = '') => {
     const bh = Math.min(26, Math.max(11, h * 0.2)), fsMax = (bh - 3) / (km.fasc + km.desc + 0.02);
     /* Wo die Buchstaben bei Schriftgroesse fs liegen: oben haengt die Schrift mit der Unterkante
        (text-after-edge) 2 Punkte ueber der Grenze, Grossbuchstaben reichen 0,94 em hoch; unten
@@ -9713,7 +9726,16 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     if (fs < 7){ fs = 7; const breit = 0.9 * (v.s[1] - v.s[0]); let n = name.length;
       while (n > 2 && textBreite(name.slice(0, n) + '…', 7) * 7 > breit) n--; txt = n > 2 ? name.slice(0, n) + '…' : ''; }
     if (!txt) return null;
-    return { bandY: v.oben ? y : v.yd, bh, fs,
+    /* NUR WAS PASST (Caspar_D, 15.10.2026: „Zeige nur die Nummer, wenn sie [hinein]passt"): hier steht die Schrift fest bei 7, auch
+       wo das Band dafuer zu klein ist, und die Zelle schneidet sie zu (Gegenpruefung: Groupieschaum A3, Mosaik mit Verzeichnis, die
+       Ziffern von 4 Nummern zum Teil ausserhalb - 22, 141, 142, 162; 70 × 100: eine). Ihre Ziffern stehen vorn in der Zeile, von der
+       Grundlinie bis zur Versalhoehe; liegt eine Ecke nicht mindestens 0,1 Geviert im Umriss (wie die Tintenkaesten in placeLabel,
+       TINTE_RAND), passt die Nummer hier nicht (nrPasst). fsSatz: die Groesse, wie sie im SVG steht. */
+    const xm = (v.s[0] + v.s[1]) / 2, grund = v.oben ? v.yd - 2 - km.fdesc * fs : v.yd + 2 + km.fasc * fs;
+    let nrPasst = true;
+    if (nr){ const x0 = xm - textBreite(txt, fs) * fs / 2, x1 = x0 + textBreite(nr, fs) * fs, y0 = grund - km.cap * fs;
+      nrPasst = txt.startsWith(nr) && [[x0, y0], [x1, y0], [x1, grund], [x0, grund]].every(q => imUmriss(pk, q, 0.1 * fs)); }
+    return { bandY: v.oben ? y : v.yd, bh, fs, fsSatz: +fs.toFixed(1), nrPasst,
       text: `<text class="kopf" x="${((v.s[0] + v.s[1]) / 2).toFixed(1)}" y="${(v.oben ? v.yd - 2 : v.yd + 2).toFixed(1)}" font-size="${fs.toFixed(1)}"`
         + ` fill="${milch ? '#141414' : '#f4f4f2'}" text-anchor="middle" dominant-baseline="${v.oben ? 'text-after-edge' : 'text-before-edge'}" clip-path="url(#skz${i})" pointer-events="none">${esc(txt)}</text>` };
   };
@@ -9726,8 +9748,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
   /* Seit 1.0.54 auch der Namenskopf im Groupieschaum am Schirm (Caspar_D: „G a" - Probe: von 96 Koepfen 49 gekuerzt, jetzt
      112 Koepfe, 1 gekuerzt, die Gesichter frei); das Band oben ist nur noch Rueckfall. */
   const kopfTinte = schaumNamenTinte(pxJeE);
-  const kopfUnten = (pk, x, y, w, h, name, i) => {
-    const alt = kopfPlan(pk, x, y, w, h, name, i, true), ziel = Math.max(7, alt ? alt.fs : 7);
+  const kopfUnten = (pk, x, y, w, h, name, i, nr = '') => {
+    const alt = kopfPlan(pk, x, y, w, h, name, i, true, nr), ziel = Math.max(7, alt ? alt.fs : 7);
     const poly = pk.map(p => [p[0], -p[1]]);                       /* render.js rechnet mit y nach oben */
     const lab = R.placeLabel(poly, name, { maxSize: ziel, minSize: 7, maxLines: 3, fit: true, leading: schaumZeilenabstand(), drop: 0,
       huelle: poly, ink: kopfTinte, unten: true, startSize: ziel, sperren: waende });
@@ -9736,31 +9758,37 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     const ober = Math.max(0, ...kopfTinte.runs(lab.lines[0], lab.size).runs.map(q => q[2]));
     const bandY = Math.max(y, -(grund(0) + ober * lab.size) - 2);
     const zeilen = lab.lines.map((t, j) => `<tspan x="${lab.xs[j].toFixed(1)}" y="${(-grund(j)).toFixed(1)}">${esc(t)}</tspan>`).join('');
-    return { bandY, bh: y + h - bandY, fs: lab.size,
+    /* die Nummer vorn in der ersten Zeile: placeLabel legt jeden Tintenkasten 0,1 Geviert im Umriss (TINTE_RAND) - sie passt */
+    return { bandY, bh: y + h - bandY, fs: lab.size, fsSatz: +lab.size.toFixed(2), nrPasst: true,
       text: `<text class="kopf" font-size="${lab.size.toFixed(2)}" fill="${milch ? '#141414' : '#f4f4f2'}" text-anchor="middle" clip-path="url(#skz${i})" pointer-events="none">${zeilen}</text>` };
   };
-  /* Die Nummer des Werkverzeichnisses in einer Zelle ohne Glasband: ein kleines Schild unten in der Zelle, Schrift 2,2 bis 5 mm je nach
-     Zellgroesse - lesbar aus der Naehe. Rauch- oder Milchglas wie die Titel. */
-  const nummerSchild = (pk, x, y, w, h, nr, tf, i) => {
+  /* Die Nummer des Werkverzeichnisses als kleines Schild unten in der Zelle - oder, wo ein Titel unten steht, der die Nummer nicht
+     tragen kann, ueber ihm (bis: dessen Oberkante). Schrift bis 5 mm je nach Zellgroesse, notfalls bis zur Schwelle - lesbar aus der
+     Naehe. Rauch- oder Milchglas wie die Titel. */
+  const nummerSchild = (pk, w, h, nr, tf, i, bis = Infinity) => {
     /* (Wiedervorlage §77) das Schild so tief wie moeglich, mittig auf der breitesten freien Strecke, ganz in der Zelle und nicht
        auf einer Wandfuge (render.js rechteckUnten); passt es nicht, kleiner bis 2,2 mm. Die Ziffern halbfett in der Druckgroesse
        gemessen (vorher 0,62 em je Ziffer geschaetzt). NUR WAS PASST (Caspar_D, 15.10.2026: „Zeige nur die Nummer, wenn sie
-       [hinein]passt oder lasse sie ganz weg"): unter 2,2 mm weiter kleiner (je 10 %) bis zur Schwelle (druck.nrSchwelle); passt es
-       auch dort nicht, null - die Zelle traegt keine Nummer, ihr Titel steht im Verzeichnis unter „Zu klein für eine Nummer". Bis
-       dahin stand das Schild dann bei 2,2 mm in der Mitte der Zelle oder auf einer Sehne unten, auch ueber ihrem Rand (Klangschaum
-       70 × 100 hoch, Bleiglas: 50 von 330 Schildern, die Ziffern bei 47; Groupieschaum A3: 20 von 220, die Ziffern bei 7). Und bis
-       dahin standen die Ziffern 10 % kleiner als bemessen (die Schleife verkleinerte fs nach dem Treffer noch einmal, das Schild
-       blieb): jetzt in der Groesse, nach der das Schild bemessen ist (Klangschaum A3, Bleiglas: groesste Ziffern 5,0 statt 4,5 mm). */
-    const mm = (druck && druck.mmJeEinheit) || 1, poly = pk.map(p => [p[0], -p[1]]), unten = ((druck && druck.nrSchwelle) || 1) / mm, boden = Math.max(2.2 / mm, unten);
+       [hinein]passt oder lasse sie ganz weg"): unter 2,2 mm weiter kleiner (je 10 %) bis zur Schwelle (druck.nrSchwelle). Passt es
+       auf der Mitte der Strecken bei keiner Groesse, gleitet es auf jeder Hoehe die Strecken entlang (rechteckUnten, gleiten) - wieder
+       von gross nach klein; was vorher einen Platz fand, steht wie vorher. Passt es auch so nicht, null - die Zelle traegt keine Nummer,
+       ihr Titel steht im Verzeichnis unter „Zu klein für eine Nummer". Bis dahin stand das Schild dann bei 2,2 mm in der Mitte der Zelle
+       oder auf einer Sehne unten, auch ueber ihrem Rand (Klangschaum 70 × 100 hoch, Bleiglas: 50 von 330 Schildern, die Ziffern bei 47;
+       Groupieschaum A3: 20 von 220, die Ziffern bei 7). Und bis dahin standen die Ziffern 10 % kleiner als bemessen (die Schleife
+       verkleinerte fs nach dem Treffer noch einmal, das Schild blieb): jetzt in der Groesse, nach der das Schild bemessen ist (Klangschaum
+       A3, Bleiglas: groesste Ziffern 5,0 statt 4,5 mm). Gesetzt wird sie auf zwei Stellen AUFgerundet - abgerundet stand die kleinste
+       unter der Schwelle (3 × 50 × 70: 0,662 Einheiten zu „0.66", 0,9966 statt 1 mm). */
+    const teil = bis < Infinity ? ueberHoehe(pk, bis) : pk; if (teil.length < 3) return null;
+    const mm = (druck && druck.mmJeEinheit) || 1, poly = teil.map(p => [p[0], -p[1]]), unten = ((druck && druck.nrSchwelle) || 1) / mm, boden = Math.max(2.2 / mm, unten);
     const groessen = []; for (let f = Math.min(5 / mm, Math.max(boden, 0.2 * Math.min(w, h))); f > boden + 1e-9; f *= 0.9) groessen.push(f);
     groessen.push(boden); for (let f = boden * 0.9; f > unten + 1e-9; f *= 0.9) groessen.push(f); if (unten < boden) groessen.push(unten);
-    for (const fs of groessen){
+    for (const gleiten of [false, true]) for (const fs of groessen){
       const sw = textBreite('0'.repeat(String(nr).length), fs, 600) * fs + 0.7 * fs, sh = 1.3 * fs;
-      const platz = R.rechteckUnten(poly, sw + 0.4 * fs, sh + 0.4 * fs, waende); if (!platz) continue;
+      const platz = R.rechteckUnten(poly, sw + 0.4 * fs, sh + 0.4 * fs, waende, gleiten); if (!platz) continue;
       const cx = platz[0], cy = -platz[1];
       return `<g pointer-events="none" data-zelle="${i}"${tf ? ` transform="${tf}"` : ''}><rect x="${(cx - sw / 2).toFixed(1)}" y="${(cy - sh / 2).toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" rx="${(sh * 0.3).toFixed(1)}"`
         + ` fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? 0.72 : 0.58}"/>`
-        + `<text x="${cx.toFixed(1)}" y="${(cy + fs * 0.36).toFixed(1)}" font-size="${fs.toFixed(2)}" font-weight="600" text-anchor="middle"`
+        + `<text x="${cx.toFixed(1)}" y="${(cy + fs * 0.36).toFixed(1)}" font-size="${(Math.ceil(fs * 100 - 1e-6) / 100).toFixed(2)}" font-weight="600" text-anchor="middle"`
         + ` fill="${milch ? '#141414' : '#f4f4f2'}" style="font-variant-numeric:tabular-nums">${nr}</text></g>`;
     }
     return null;
@@ -9816,21 +9844,23 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
        Titel mittig (startOffset 50 %), jede Ziffer gerade auf der Tangente ihrer Mitte, die Grundlinie um dy nach aussen, darueber die
        Ziffernhoehe. Liegt eine Ecke nicht mindestens 0,15 Geviert im Umriss, passt die Nummer hier nicht (nrPasst) - dort dann 163
        Nummern, 36 Titel stehen ohne Nummer im Abschnitt „Zu klein für eine Nummer". */
+    const lauf = [0]; for (let k = 1; k < bahn.length; k++) lauf.push(lauf[k - 1] + Math.hypot(bahn[k][0] - bahn[k - 1][0], bahn[k][1] - bahn[k - 1][1]));
+    const an = (s) => { let k = 1; while (k < bahn.length - 1 && lauf[k] < s) k++; const a = bahn[k - 1], b = bahn[k], l = (lauf[k] - lauf[k - 1]) || 1, u = (s - lauf[k - 1]) / l;
+      const tx = (b[0] - a[0]) / l, ty = (b[1] - a[1]) / l; return { p: [a[0] + u * (b[0] - a[0]), a[1] + u * (b[1] - a[1])], t: [tx, ty], n: [ty, -tx] }; };
+    const s0 = lang / 2 - breit(txt) / 2, tief = schale ? km.xh * fs : 0, hoch = 0.72 * fs;
     let nrPasst = true;
     if (nr){
-      const lauf = [0]; for (let k = 1; k < bahn.length; k++) lauf.push(lauf[k - 1] + Math.hypot(bahn[k][0] - bahn[k - 1][0], bahn[k][1] - bahn[k - 1][1]));
-      const an = (s) => { let k = 1; while (k < bahn.length - 1 && lauf[k] < s) k++; const a = bahn[k - 1], b = bahn[k], l = (lauf[k] - lauf[k - 1]) || 1, u = (s - lauf[k - 1]) / l;
-        const tx = (b[0] - a[0]) / l, ty = (b[1] - a[1]) / l; return { p: [a[0] + u * (b[0] - a[0]), a[1] + u * (b[1] - a[1])], t: [tx, ty], n: [ty, -tx] }; };
-      const innen = (q) => { let c = false; for (let k = 0, j = pk.length - 1; k < pk.length; j = k++){ const [xi, yi] = pk[k], [xj, yj] = pk[j]; if ((yi > q[1]) !== (yj > q[1]) && q[0] < (xj - xi) * (q[1] - yi) / (yj - yi) + xi) c = !c; } return c; };
-      const abstand = (q) => { let d = Infinity; for (let k = 0, j = pk.length - 1; k < pk.length; j = k++){ const [ax, ay] = pk[j], dx = pk[k][0] - ax, dy = pk[k][1] - ay, u = Math.max(0, Math.min(1, ((q[0] - ax) * dx + (q[1] - ay) * dy) / (dx * dx + dy * dy || 1))); d = Math.min(d, Math.hypot(q[0] - ax - u * dx, q[1] - ay - u * dy)); } return d; };
-      const s0 = lang / 2 - breit(txt) / 2, tief = schale ? km.xh * fs : 0, hoch = 0.72 * fs;
       nrPasst = txt.startsWith(nr) && [...nr].every((_, j) => { const a0 = s0 + (j ? breit(nr.slice(0, j)) : 0), a1 = s0 + breit(nr.slice(0, j + 1)), m = an((a0 + a1) / 2), hb = (a1 - a0) / 2;
         const g = (u, v) => [m.p[0] + m.t[0] * u + m.n[0] * v, m.p[1] + m.t[1] * u + m.n[1] * v];
-        return [g(-hb, -tief), g(hb, -tief), g(hb, hoch - tief), g(-hb, hoch - tief)].every(q => innen(q) && abstand(q) >= 0.15 * fs); });
+        return [g(-hb, -tief), g(hb, -tief), g(hb, hoch - tief), g(-hb, hoch - tief)].every(q => imUmriss(pk, q, 0.15 * fs)); });
     }
-    return { fs, nrPasst, svg: `<path id="skp${i}" d="M${bahn.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
+    /* oben: die hoechste Stelle, die der Titel erreicht (die Oberkante des Em-Kastens, km.fasc, ueber der Grundlinie, je halbe Schrift
+       entlang des gesetzten Stuecks) - darueber darf das Schild stehen, wenn die Nummer nicht im Titel steht (beschriften) */
+    let oben = Infinity;
+    for (let sl = s0; sl <= s0 + breit(txt) + 1e-9; sl += fs / 2){ const m = an(Math.min(sl, s0 + breit(txt))); oben = Math.min(oben, m.p[1] + m.n[1] * (km.fasc * fs - tief)); }
+    return { fs, fsSatz: +fs.toFixed(1), nrPasst, oben, svg: `<path id="skp${i}" d="M${bahn.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
       + `<text class="kante" font-size="${fs.toFixed(1)}" font-weight="600" fill="#ffffff" fill-opacity="0.7"`
-      + ` clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>` };   /* fs: die Nummer davor zählt nur ab der Schwelle */
+      + ` clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>` };   /* fsSatz: die Nummer davor zählt nur ab der Schwelle */
   };
   /* DIE ECKE (Plakat „Randlos"): bis 1.0.57 eine eigene Zelle mit dem Avatar als Bild und einem Glasfeld darin. Seit 1.0.58
      (Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der Avatar in rundem
@@ -9976,22 +10006,30 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      (beschriften; ein Titel mit Nummer ist laenger): die Nummern laufen lueckenlos 1 … N, die uebrigen Titel stehen ohne Nummer im
      Abschnitt „Zu klein für eine Nummer" (zuKlein, plakat.js verzeichnisSetzen). Steht die Nummer im Titel unter der Schwelle (die
      Titel sind mindestens 7 Schaum-Einheiten gross, auf A3 1,8 mm - darunter liegen sie auf kleinen Formaten und bei den
-     Bildformaten), steht der Titel ohne sie, ein Schild darunter gibt es dort nicht. */
+     Bildformaten) oder nicht ganz in der Zelle, steht der Titel ohne sie und die Nummer auf dem Schild darueber, sofern es dort Platz
+     hat. Im ersten Bau dieser Regel wurde das Schild dort gar nicht erst versucht: in der Gegenpruefung kamen so Zellen in „Zu klein", in die
+     es passte (Klangschaum Bild 1:1, Galerie mit Verzeichnis: 64 von 70, die groesste 232 × 227 Bildpunkte). „Zu klein" heisst
+     jetzt: die Nummer passt weder in den Titel noch als Schild in die Zelle. */
   /* Lage einer Zelle aus ihrem gezeichneten Umriss (d), und was in ihr steht: Titel im Glasfeld (kopfUnten) oder an der Kante
-     (kantenTitel), sonst mit Nummer das Schild. nr: die Nummer, die sie bekaeme (0: keine). */
+     (kantenTitel), mit Nummer davor, wenn sie dort ab der Schwelle ganz in der Zelle steht (fsSatz: wie im SVG gesetzt), sonst die
+     Nummer auf dem Schild - unter einem Titel nur oberhalb von ihm (Glasband bzw. Oberkante der Schrift). nr: die Nummer, die sie
+     bekaeme (0: keine). */
   const zellLage = (dd) => { const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number)), xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
     const x = Math.min(...xs), y = Math.min(...ys); return { pk, x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y }; };
   const beschriften = (i, dd, nr) => {
     const { pk, x, y, w, h } = zellLage(dd), leaf = res.leaves[i], roh = (zeilen[leaf.row] || {}).titel || '', mm = (druck && druck.mmJeEinheit) || 1;
     /* Zierzeichen faellt nur bei Personen weg - bei Songtiteln gehoert die Klammer am Ende dazu */
     const name0 = (druck ? druck.titel !== 'ohne' : personen) ? (personen ? zierfrei(roh) : (druck ? zellName(leaf) : String(roh).trim())) : '';
-    const name = name0 && nr ? nr + '\u2002' + name0 : name0;
     const anKante = druck && druck.titel === 'kante';
-    const plan = !anKante && name && h >= 34 && w >= 34 ? kopfUnten(pk, x, y, w, h, name, i) : null;
-    const kante = anKante && name ? kantenTitel(pk, x, y, w, h, name, i, nr ? String(nr) : '') : null;
-    const tf = druck && druck.wackeln > 0 ? schaumWackeln(ids[i], x, y, w, h, druck.wackeln) : '';
-    const schild = nr && !plan && !kante ? nummerSchild(pk, x, y, w, h, nr, tf, i) : null, ab = ((druck && druck.nrSchwelle) || 1) / mm - 1e-9;
-    return { plan, kante, tf, schild, mitNr: !!nr && (plan ? plan.fs >= ab : kante ? kante.fs >= ab && kante.nrPasst : !!schild) };
+    const titel = (n) => { const name = name0 && n ? n + '\u2002' + name0 : name0, t = n ? String(n) : '';
+      return { plan: !anKante && name && h >= 34 && w >= 34 ? kopfUnten(pk, x, y, w, h, name, i, t) : null, kante: anKante && name ? kantenTitel(pk, x, y, w, h, name, i, t) : null }; };
+    const tf = druck && druck.wackeln > 0 ? schaumWackeln(ids[i], x, y, w, h, druck.wackeln) : '', ab = ((druck && druck.nrSchwelle) || 1) / mm - 1e-9;
+    let { plan, kante } = titel(nr); const t = plan || kante;
+    if (!nr) return { plan, kante, tf, schild: null, mitNr: false };
+    if (t && t.fsSatz >= ab && t.nrPasst) return { plan, kante, tf, schild: null, mitNr: true };
+    if (t) ({ plan, kante } = titel(0));                                  /* der Titel ohne die Nummer, sie kommt aufs Schild */
+    const schild = nummerSchild(pk, w, h, nr, tf, i, plan ? plan.bandY : kante ? kante.oben : Infinity);
+    return { plan, kante, tf, schild, mitNr: !!schild };
   };
   let nummern = null, verzeichnis = null; const beschriftet = new Map();
   if (druck && druck.verzeichnis){

@@ -847,7 +847,11 @@ async function bilderEbene(g, kv, lauf){
   const misch = (f) => '#' + (farbWert(f) || [138, 141, 148]).map((v, i) => Math.round(v * 0.38 + gr[i] * 0.62).toString(16).padStart(2, '0')).join('');
   const pxJeMm = ((el('ps-blatt') || {}).clientWidth || 800) / g.PW * (window.devicePixelRatio || 1), hoch = ziffernHoehe(), f2 = (v) => v.toFixed(2);
   let out = '';
-  const nrStand = mitNummern ? { kante: 0, min: 0, ohneBuch: 0 } : null;
+  /* klein heißt unter 1,5 mm (die kleinste Schrift des Verzeichnisses ab 333 mm kurzer Seite), gezählt unter den Nummern, die stehen.
+     Nur im Druck: bei den Bildformaten zählte die Zeile bis 15.10.2026 ab 7,5 Punkten des PNG, die Schwelle (12 Bildpunkte) liegt
+     darüber - dort ist keine Nummer mehr klein. */
+  const kleinAb = (FORMATE.find(x => x.id === E.format) || {}).bild ? 0 : 1.5;
+  const nrStand = mitNummern ? { klein: 0, kleinAb, von: ids.length, kleinste: Infinity, kante: 0, min: 0, ohneBuch: 0 } : null;
   for (const [i, b] of res.bilder.entries()){
     const r = b.rahmen || 0, u = artworkBild(b.id), href = esc2(schaumBildHref(u, schaumStufe(Math.max(b.w, b.h) * k * pxJeMm)));
     if (r > 0) out += `<rect x="${f2(b.x - r)}" y="${f2(b.y - r)}" width="${f2(b.w + 2 * r)}" height="${f2(b.h + 2 * r)}" fill="${misch(farbe(b.gruppe))}"/>`;
@@ -855,6 +859,7 @@ async function bilderEbene(g, kv, lauf){
     if (!nummer.has(b.id)) continue;
     const fo = typeof schaumFokus === 'function' ? schaumFokus(b.id) : null; if (!fo) nrStand.ohneBuch++;
     const t = String(nummer.get(b.id)), p = nummerPlatz(t, b.w * k, b.h * k, k, mess.get(b.id), fo ? (fo.schrift || []).concat(fo.gesichter || []) : [], schwelle);
+    if (p.f < kleinAb){ nrStand.klein++; nrStand.kleinste = Math.min(nrStand.kleinste, p.f); }
     if (p.ecke === 'kante') nrStand.kante++; if (p.ecke === 'min') nrStand.min++;
     /* das Schild in Wandpunkten; darunter das Cover weichgezeichnet (Filter nur über dem Schild), darauf Schwarz in der Deckkraft a */
     const sx = b.x + p.R[0] * b.w, sy = b.y + p.R[1] * b.h, sw = (p.R[2] - p.R[0]) * b.w, sh = (p.R[3] - p.R[1]) * b.h, form = `x="${f2(sx)}" y="${f2(sy)}" width="${f2(sw)}" height="${f2(sh)}"`;
@@ -862,7 +867,7 @@ async function bilderEbene(g, kv, lauf){
       + `<filter id="ps-nrg${i}" filterUnits="userSpaceOnUse" ${form} color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${(0.25 * p.f / k).toFixed(3)}" edgeMode="duplicate"/></filter>`
       + `<image href="${href}" data-voll="${esc2(u)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none" filter="url(#ps-nrg${i})" clip-path="url(#ps-nrs${i})"/>`
       + `<rect class="ps-rauch" ${form} rx="${f2(0.3 * sh)}" fill="#000" opacity="${p.a.toFixed(3)}"/>`
-      + `<text class="ps-nr" x="${f2(sx + sw / 2)}" y="${f2(sy + sh / 2 + hoch * p.f / 2 / k)}" font-size="${(p.f / k).toFixed(3)}" font-weight="600" fill="${NR_ZIFFER}" text-anchor="middle"`
+      + `<text class="ps-nr" x="${f2(sx + sw / 2)}" y="${f2(sy + sh / 2 + hoch * p.f / 2 / k)}" font-size="${(Math.ceil(p.f / k * 1000 - 1e-6) / 1000).toFixed(3)}" font-weight="600" fill="${NR_ZIFFER}" text-anchor="middle"`
       + ` data-id="${esc2(b.id)}" data-ecke="${p.ecke}" data-stufe="${p.stufe}" data-feld="${p.R.map(v => v.toFixed(4)).join(',')}" data-k="${p.k.toFixed(1)}" data-a="${p.a.toFixed(3)}"`
       + ` style="font-variant-numeric:tabular-nums">${t}</text>`;
   }
@@ -989,19 +994,24 @@ async function bauen(g){
     : g.randKante && g.randKante.umschlag ? `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm + ${(g.randKante.umschlag / 10).toLocaleString('de-DE')} cm Umschlag = ${((g.w + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} × ${((g.h + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`
     : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
   /* WAS BEI DIESER EINSTELLUNG NICHT GEHT (Caspar_D, 15.10.2026: „warum zeigen wir was, was eigentlich nicht geht, wenigstens eine
-     Warnung vor Dingen die sinnfrei sind, wäre schön"): eine Zeile unter dem Format, gesperrt wird nichts. Sie nennt, wie viele Cover bzw.
-     Zellen zu klein für ihre Nummer sind (sie stehen am Ende des Verzeichnisses), und ob das Verzeichnis selbst unter der Schwelle steht
-     (nrSchwelle: 1,0 mm, Bildformate 12 Bildpunkte; verzL ist seine Schrift, abgerundet - gerundet stünde bei 0,996 mm „nicht lesbar
-     (Schrift 1 mm)"). Danach, nur in der Bilderschau, wie die Nummern stehen: an der Kante, ohne freie Stelle, und wie viele Cover das
-     Gesichterbuch noch nicht kennt (bilderEbene, nummerPlatz). Bleibt stehen wie das Maß, standSetzen leert es nicht; bei Bildformaten in
-     Punkten des PNG (1080 breit, wie in der Zeile darüber). Einen Lauf des Buchs stößt das Studio nicht an. Bis 15.10.2026 zählte die
-     Zeile auch Nummern unter 1,5 mm und Schilder, die über ihr Cover ragten - die Schwelle ist jetzt die Grenze, und keines ragt mehr
-     hinaus. */
+     Warnung vor Dingen die sinnfrei sind, wäre schön"): eine Zeile unter dem Format, gesperrt wird nichts. Sie nennt, wie viele Cover
+     bzw. Zellen zu klein für ihre Nummer sind (sie stehen am Ende des Verzeichnisses), und ob das Verzeichnis selbst unter der Schwelle
+     steht (nrSchwelle: 1,0 mm, Bildformate 12 Bildpunkte; verzL ist seine Schrift, abgerundet - gerundet stünde bei 0,996 mm „nicht
+     lesbar (Schrift 1 mm)"). Danach, nur in der Bilderschau, wie die Nummern stehen: unter 1,5 mm, an der Kante, ohne freie Stelle, und
+     wie viele Cover das Gesichterbuch noch nicht kennt (bilderEbene, nummerPlatz). Bleibt stehen wie das Maß, standSetzen leert es nicht;
+     bei Bildformaten in Punkten des PNG (1080 breit, wie in der Zeile darüber). Einen Lauf des Buchs stößt das Studio nicht an. Bis
+     15.10.2026 zählte die Zeile auch Schilder, die über ihr Cover ragten - entschieden am 15.10.2026: der Satz entfällt, keines ragt mehr
+     hinaus. Wie viele Nummern kleiner als 1,5 mm sind, steht weiter da: der erste Bau dieser Regel hatte es mit dem Überstand gestrichen,
+     entschieden war nur der Überstand (Gegenprüfung). Gezählt unter den Nummern, die stehen; die kleinste abgerundet auf eine Stelle wie
+     vorher. Bei K = 1 in der Einzahl (stand: „1 Zellen … sie stehen", Gegenprüfung). */
   { const h = el('ps-nrklein'), st = nrStand, pt = fm.bild ? 1080 / g.w : 0, sinnfrei = [], teile = [];
     const zahl = (v) => { const x = pt ? v * pt : v; return (Math.floor(x * 100 + 1e-6) / 100).toLocaleString('de-DE', { maximumFractionDigits: 2 }) + (pt ? ' Bildpunkte' : ' mm'); };
     const K = (verzeichnis || []).reduce((n, q) => n + (q.zuKlein || []).length, 0), personen = aktuell.art === 'person';
-    if (g.verz && K) sinnfrei.push(`${K} ${aktuell.art === 'bild' ? 'Cover' : 'Zellen'} zu klein für ihre Nummer – sie stehen am Ende des Verzeichnisses`);
+    if (g.verz && K) sinnfrei.push(aktuell.art === 'bild' ? (K === 1 ? '1 Cover zu klein für seine Nummer – es steht am Ende des Verzeichnisses' : `${K} Cover zu klein für ihre Nummer – sie stehen am Ende des Verzeichnisses`)
+      : K === 1 ? '1 Zelle zu klein für ihre Nummer – sie steht am Ende des Verzeichnisses' : `${K} Zellen zu klein für ihre Nummer – sie stehen am Ende des Verzeichnisses`);
     if (verzL != null && verzL < nrSchwelle(g) - 1e-9) sinnfrei.push(`${personen ? 'Verzeichnis der Personen' : 'Werkverzeichnis'} nicht lesbar (Schrift ${zahl(verzL)})`);
+    const mm1 = (v) => (Math.floor(v * 10 + 1e-6) / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' mm';
+    if (st && st.klein) teile.push(`${st.klein} von ${st.von} kleiner als ${mm1(st.kleinAb)}, die kleinste ${mm1(st.kleinste)}`);
     if (st && st.kante) teile.push(`${st.kante} an der Kante, weil keine Ecke frei war`);
     if (st && st.min) teile.push(`${st.min} ohne freie Stelle – sie decken Schrift oder Gesicht so wenig wie möglich`);
     const text = [sinnfrei.length ? sinnfrei.join('; ') + '.' : '', teile.length ? `Nummern auf den Covern: ${teile.join('; ')}.` : '',
