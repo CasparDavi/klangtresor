@@ -38,9 +38,12 @@
      node bin/aktualisieren.js --ohne-docker  Docker nicht fragen (KlangTresor laeuft ohne Container)
    --trotzdem gilt auch, wenn neben dem Programm kein library/ liegt (frischer Klon).
 
-   Stand fuer die Oberflaeche: standHolen() (GET /api/fassung). Die
-   Nachfrage an GitHub geht erst, wenn jemand den Knopf drueckt — nicht
-   beim Seitenaufbau.
+   Stand fuer die Oberflaeche: standHolen() (GET /api/fassung). Die Seite
+   fragt von selbst beim Oeffnen und danach alle 12 h (nach einem
+   Fehlschlag nach 2 h), dazu auf den Knopf im Fenster „KlangTresor“; die
+   Glocke oben zeigt eine neue Fassung an. Eine Antwort von GitHub haelt
+   standHolen() 30 min vor. Der eingefrorene Stick fragt nie (server.js
+   sperrt /api/fassung dort).
    ============================================================= */
 'use strict';
 const fs = require('node:fs');
@@ -216,8 +219,11 @@ async function githubRelease() {
 }
 
 /* Die GitHub-API erlaubt ungefragt 60 Anfragen je Stunde und IP.
-   Dreissig Minuten merken reicht: wer den Knopf zweimal drueckt, soll
-   dieselbe Auskunft sehen, nicht das Kontingent verbrauchen. */
+   Dreissig Minuten merken reicht: jede offene Seite fragt beim Oeffnen
+   und danach alle 12 h von selbst, dazu kommt der Knopf - Neuladen,
+   mehrere Tabs und ein zweiter Knopfdruck sollen dieselbe Auskunft
+   sehen, nicht das Kontingent verbrauchen. Gemerkt wird nur eine
+   Antwort; nach einem Fehlschlag fragt die Seite in 2 h wieder. */
 let standVorrat = null, standVorratBis = 0;
 
 /** Stand fuer CLI und GET /api/fassung. Fragt GitHub, schreibt nichts.

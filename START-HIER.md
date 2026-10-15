@@ -62,8 +62,13 @@ nichts mehr ein, sie starten nur.
 ### Neue Fassung einspielen
 
 Der rote Knopf holt neue *Titel* bei Suno. Eine neue *Programm*-Fassung
-kommt von GitHub. Im Fenster „KlangTresor“ (Wer das gebaut hat) gibt es
-**Nach neuer Fassung sehen** — das fragt GitHub einmal, nur auf den Knopf.
+kommt von GitHub. KlangTresor sieht selbst nach — beim Öffnen der Seite
+und, solange sie offen ist, alle 12 Stunden (nach einem Fehlschlag nach 2
+Stunden). GitHub selbst fragt der Server, und eine Antwort merkt er sich
+eine halbe Stunde; die eingefrorene Kopie auf dem Stick fragt nie. Gibt
+es eine neue, steht links neben dem roten Knopf eine Glocke; ein Klick
+öffnet das Fenster „KlangTresor“ (Wer das gebaut hat) mit dem Hinweis.
+Dort fragt **Nach neuer Fassung sehen** auch von Hand.
 
 Zum Einspielen, im selben Ordner wie die Einrichtung (dort liegen `bin/`
 und `library/`, nicht der Unterordner `docker/`):

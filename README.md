@@ -198,9 +198,15 @@ Dienstes sofort Schluß.
 ## Neue Fassung einspielen
 
 Der rote Knopf holt Songdaten, nicht den Code. Die Programm-Fassung liegt
-auf [GitHub](https://github.com/CasparDavi/klangtresor). Im Fenster
-„KlangTresor“ (Wer das gebaut hat) fragt **Nach neuer Fassung sehen**
-einmal bei GitHub nach — erst auf den Knopf, nicht beim Seitenaufbau.
+auf [GitHub](https://github.com/CasparDavi/klangtresor). Ob dort eine
+neue liegt, sieht KlangTresor von selbst nach: beim Öffnen der Seite und,
+solange sie offen ist, alle 12 Stunden (nach einem Fehlschlag nach 2
+Stunden) fragt die Seite den eigenen Server. Der fragt GitHub und hält
+die Antwort eine halbe Stunde vor. Liegt dort eine höhere Nummer, steht
+links neben dem roten Knopf eine Glocke; ein Klick öffnet das Fenster
+„KlangTresor“ (Wer das gebaut hat) mit dem Hinweis. Dort fragt **Nach
+neuer Fassung sehen** auch von Hand. Die eingefrorene Kopie auf dem
+Stick fragt nie.
 
 Zum Einspielen im **Projektordner** (dort liegen `bin/` und `library/`,
 eine Ebene über `docker/`):

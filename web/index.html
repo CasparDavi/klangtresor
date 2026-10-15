@@ -2329,19 +2329,26 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #morgenknopf:hover{background:#e31c7930;border-color:#e31c79}
 #morgenknopf .ico{width:17px;height:17px;fill:currentColor}
 #morgenknopf.laeuft .ico{animation:morgendreh 1.4s linear infinite}
+/* display:grid ueberstimmt das hidden-Attribut (Hausregel 21) - ohne diese Zeile stand der
+   rote Knopf auf dem Stick, obwohl eingefrorenAnwenden() ihn versteckt, und ein Klick tat nichts. */
+#morgenknopf[hidden]{display:none}
+/* gegen den Uhrzeigersinn: der Pfeilkopf des Symbols zeigt nach links (Caspar_D, 08.09.2026: dreht sich entgegen der Pfeilrichtung) */
+@keyframes morgendreh{to{transform:rotate(-360deg)}}
 /* Die Glocke links daneben: nur sichtbar, wenn GitHub eine neuere Programm-Fassung hat.
-   Farbe aus der Coverpalette (--akzent), nicht das feste Rosa des Morgenknopfs. */
+   Rand und Fuellung aus der Coverpalette (--akzent), nicht das feste Rosa des Morgenknopfs.
+   Das Symbol in --text, nicht in --akzent: Akzent auf Akzent ist unsichtbar (Hausregel 13).
+   Nachgerechnet am 15.10.2026 ueber alle 330 Paletten des Katalogs, den Raben und die
+   Grundfarben: in --akzent lagen 17 (Ruhe) und 39 (Hover) unter 3:1, die schlechteste bei 2,47;
+   in --text keine, die schlechteste bei 7,2 (Hover), mit weissem Cover unter der Kopfzeile 5,0. */
 #fassungglocke{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;
   border:1px solid color-mix(in srgb, var(--akzent) 55%, transparent);
   background:color-mix(in srgb, var(--akzent) 16%, transparent);
-  color:var(--akzent);border-radius:50%;cursor:pointer;
+  color:var(--text);border-radius:50%;cursor:pointer;
   transition:background .15s,border-color .15s}
 #fassungglocke:hover{background:color-mix(in srgb, var(--akzent) 30%, transparent);
   border-color:var(--akzent)}
 #fassungglocke .ico{width:16px;height:16px;fill:currentColor}
 #fassungglocke[hidden]{display:none}
-/* gegen den Uhrzeigersinn: der Pfeilkopf des Symbols zeigt nach links (Caspar_D, 08.09.2026: dreht sich entgegen der Pfeilrichtung) */
-@keyframes morgendreh{to{transform:rotate(-360deg)}}
 
 /* Das Fenster mit dem Vergleich. Dieselbe Bauart wie die Bühne:
    dunkler Grund, damit es über dem Raster steht statt darin. */
@@ -4065,15 +4072,17 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div id="filterkategorien" style="display:none"></div>
       <div id="filterwerte" style="display:none"></div>
     </div>
-    <!-- Der Morgenknopf. Rot und immer da: Er ist das eine, was man
-         täglich drückt, und soll nicht gesucht werden müssen. -->
     <!-- Neue Programm-Fassung (GitHub), nicht der Bestand. Bleibt versteckt, bis
-         fassungErinnern() eine neuere Nummer sieht. Klick oeffnet das Ueber-Fenster. -->
-    <button id="fassungglocke" type="button" hidden onclick="fassungGlockeAuf()" title="Neue Fassung">
+         fassungErinnern() eine neuere Nummer sieht. Klick oeffnet das Ueber-Fenster.
+         Der Tooltip sagt, was der Klick tut: er zeigt, wie man einspielt - einspielen
+         tut nur das Skript im Ordner (Hausregel 22: Prinzip, nicht nur der Name). -->
+    <button id="fassungglocke" type="button" hidden onclick="fassungGlockeAuf()" title="Neue Programmfassung auf GitHub — Klick zeigt, wie man sie einspielt">
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 22a2.2 2.2 0 0 0 2.2-2.2h-4.4A2.2 2.2 0 0 0 12 22zm7-6.2V11a7 7 0 1 0-14 0v4.8L3 18.2V20h18v-1.8l-2-2.4z"/>
       </svg>
     </button>
+    <!-- Der Morgenknopf. Rot und immer da: Er ist das eine, was man
+         täglich drückt, und soll nicht gesucht werden müssen. -->
     <button id="morgenknopf" onclick="morgenAuf()" title="Bestand aktualisieren">
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/>
@@ -4298,8 +4307,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
         </div>
       <div class="werfuss">
         <div><span id="werversion">—</span></div>
-        <!-- Neue PROGRAMM-Fassung: GitHub erst auf diesen Knopf, nicht
-             beim Oeffnen. Der rote Knopf oben holt Songdaten, nicht Code. -->
+        <!-- Neue PROGRAMM-Fassung. Von selbst sieht die Seite beim Oeffnen und
+             danach alle 12 h nach (fassungErinnern, nach einem Fehlschlag nach 2 h)
+             und zeigt dann oben die Glocke; dieser Knopf fragt sofort. Beide gehen
+             an den eigenen Server, der haelt eine Antwort von GitHub 30 min vor.
+             Der rote Knopf oben holt Songdaten, nicht Code. -->
         <div>
           <button type="button" id="werfassungknopf" onclick="fassungPruefen()">Nach neuer Fassung sehen</button>
           <div id="werfassungstand" hidden></div>
@@ -29042,10 +29054,11 @@ function werAuf(){
   document.getElementById('wer').classList.add('auf');
 }
 function werZu(){ document.getElementById('wer').classList.remove('auf'); }
-/* GitHub-Release, einmal, nur auf den Knopf. Der Server fragt
-   api.github.com (User-Agent mit Projektadresse), die Seite selbst nicht.
-   Einspielen tut das Skript auf dem Rechner — im Container waere ein
-   Overlay beim naechsten Restart weg. */
+/* GitHub-Release nachsehen: auf den Knopf im Fenster und von selbst
+   ueber fassungErinnern() (beim Oeffnen, dann alle 12 h). Der Server fragt
+   api.github.com (User-Agent mit Projektadresse) und haelt eine Antwort
+   30 min vor, die Seite selbst fragt GitHub nie. Einspielen tut das Skript
+   auf dem Rechner — im Container waere ein Overlay beim naechsten Restart weg. */
 function fassungStandZeigen(d){
   const s = document.getElementById('werfassungstand');
   if (!s) return;
@@ -29099,28 +29112,43 @@ async function fassungPruefen(){
    Zwoelf Stunden galten zuerst auch fuer den naechsten Blick — eine
    Fassung, die am selben Morgen kam, blieb dann bis zum naechsten Tag
    unsichtbar, auch nach hartem Neuladen. Offen bleibende Seiten fragen
-   danach hoechstens zweimal am Tag nach. Der letzte Stand liegt im
-   Browser, damit die Glocke sofort wieder da ist. Der Stick
-   (eingefroren) fragt nicht. */
+   danach hoechstens zweimal am Tag nach, nach einem Fehlschlag schon
+   nach zwei Stunden. Der letzte Stand liegt im Browser, damit die
+   Glocke sofort wieder da ist. Der Stick (eingefroren) fragt nicht.
+
+   EIN FEHLSCHLAG IST KEIN STAND. Antwortet GitHub nicht (offline,
+   Ratenlimit), meldet der Server das mit 200 und github:null
+   (standHolen faengt den Fehler selbst) - am Status ist es nicht zu
+   erkennen, nur am Inhalt. Bis zur Uebernahme (15.10.2026) zaehlte so
+   eine Antwort als „nicht neuer": die gemerkte Glocke blitzte beim
+   Oeffnen auf und verschwand, der gemerkte Stand war ueberschrieben,
+   und die naechste Frage kam erst nach zwoelf Stunden. Jetzt wird nur
+   gemerkt und geschaltet, wo GitHub eine Nummer genannt hat. */
 const FASSUNG_PAUSE = 12 * 60 * 60 * 1000;
+const FASSUNG_PAUSE_FEHLER = 2 * 60 * 60 * 1000;
 const FASSUNG_MERK = 'klangtresor-fassung';
 function fassungLesen(){
   try { return JSON.parse(localStorage.getItem(FASSUNG_MERK) || 'null'); } catch (e) { return null; }
 }
+/* Gemerkt wird, was fassungStandZeigen() fuer den Hinweis braucht. Ohne github kommt
+   hier nichts an, ein grund (nur bei Fehlschlag gesetzt) waere also immer leer. */
 function fassungMerken(d){
-  if (!d || d.eingefroren) return;
+  if (!d || d.eingefroren || !d.github) return;
   try { localStorage.setItem(FASSUNG_MERK, JSON.stringify({
-    wann: Date.now(), hier: d.hier || null, github: d.github || null,
+    hier: d.hier || null, github: d.github,
     neuer: !!d.neuer, am: d.am || null, seite: d.seite || null,
-    container: !!d.container, lage: d.lage == null ? null : d.lage, grund: d.grund || null,
+    container: !!d.container, lage: d.lage == null ? null : d.lage,
   })); } catch (e) {}
 }
 function fassungGlockeSetzen(d){
   const g = document.getElementById('fassungglocke');
   if (!g) return;
-  if (archivEingefroren() || !d || !d.neuer){ g.hidden = true; return; }
+  if (archivEingefroren() || (d && d.eingefroren)){ g.hidden = true; return; }
+  /* Keine Nummer von GitHub: Die Glocke bleibt, wie sie ist - ein Ausfall sagt nichts ueber die Fassung. */
+  if (!d || !d.github) return;
+  if (!d.neuer){ g.hidden = true; return; }
   g.hidden = false;
-  g.title = 'Neue Fassung ' + (d.github || '') + ' — zum Einspielen';
+  g.title = 'Neue Programmfassung ' + d.github + ' auf GitHub — Klick zeigt, wie man sie einspielt';
 }
 function fassungGlockeAuf(){
   werAuf();
@@ -29132,23 +29160,21 @@ let fassungWecker = 0;
 async function fassungErinnern(){
   if (archivEingefroren()) return;
   const gemerkt = fassungLesen();
-  /* Nach einem Einspielen stimmt die gemerkte Nummer nicht mehr — dann
-     sofort nachsehen, nicht zwoelf Stunden die alte Glocke stehen lassen. */
+  /* Nach einem Einspielen ist die gemerkte Nummer nicht mehr die eigene — dann
+     die alte Glocke nicht vorab zeigen, sondern die Antwort abwarten. */
   const veraltet = gemerkt && paketVersion && gemerkt.hier && gemerkt.hier !== paketVersion;
   if (gemerkt && gemerkt.neuer && !veraltet) fassungGlockeSetzen(gemerkt);
+  /* Ein Weg fuer alle Fehlschlaege: Server antwortet nicht mit 200, das Netz
+     zum Server reisst (catch), GitHub nennt keine Nummer. Dann nichts merken,
+     die Glocke nicht anfassen und in zwei Stunden noch einmal fragen. */
+  let pause = FASSUNG_PAUSE_FEHLER;
   try {
     const r = await fetch('/api/fassung');
-    if (!r.ok){
-      clearTimeout(fassungWecker);
-      fassungWecker = setTimeout(fassungErinnern, 2 * 60 * 60 * 1000);
-      return;
-    }
-    const d = await r.json();
-    fassungMerken(d);
-    fassungGlockeSetzen(d);
+    const d = r.ok ? await r.json() : null;
+    if (d && d.github){ fassungMerken(d); fassungGlockeSetzen(d); pause = FASSUNG_PAUSE; }
   } catch (e) {}
   clearTimeout(fassungWecker);
-  fassungWecker = setTimeout(fassungErinnern, FASSUNG_PAUSE);
+  fassungWecker = setTimeout(fassungErinnern, pause);
 }
 
 /* ---- Der Erklaerkasten zum Hirschfaktor ---------------------------
