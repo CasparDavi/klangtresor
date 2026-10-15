@@ -198,6 +198,7 @@ h1{
 #schaumrechts input[type=range]{width:100%;accent-color:var(--akzent)}
 #schaumstand{position:absolute;left:0;right:0;top:45%;text-align:center;color:#9aa0a8;font-size:13px;pointer-events:none}
 #schaumrechts{display:flex;flex-direction:column;gap:0;min-height:0;height:100%;overflow:auto}
+#schaumrechts > *{flex-shrink:0}   /* die Laden schrumpfen nicht, das Panel rollt (wie #karterechts) - mit der Werk-Lade reichte die Höhe nicht mehr */
 /* Die Regler im Schaum-Panel (Farbe über den Bildern, „zeigt N von M") stehen in ihrer Zeile ueber die volle Breite */
 #schaumrechts .pzeile.pregler{flex-direction:column;align-items:stretch;gap:4px}
 #schaumrechts .pzeile.pregler .ptitel{flex:0 0 auto}
@@ -255,7 +256,7 @@ h1{
 :is(#kartelegende,#schaumrechts) .dinnen{min-height:0}
 :is(#kartelegende,#schaumrechts) .drawer[data-lade="legende"] .dinnen{padding:8px 4px 4px}
 :is(#kartelegende,#schaumrechts) .drawer[data-lade="werk"] .dinnen{padding:8px 12px 12px}
-#kartelegende .drawer[data-lade="werk"] #kartesteckbrief{border-top:none;padding-top:0;margin-top:0}
+#kartelegende .drawer[data-lade="werk"] #kartesteckbrief,#schaumrechts #kartesteckbrief{border-top:none;padding-top:0;margin-top:0}
 #karterechts > #kartesteckbrief{display:none}   /* geparkt (ausserhalb der Lade): unsichtbar */
 /* Alle Laden zu: schmale Leiste rechts, nur die drei Symbole */
 #karte.leiste{grid-template-columns:minmax(0,1fr) 48px}
@@ -4242,6 +4243,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <div id="schaumlegende"></div>
         <div id="schaumwerk"></div>
       </div></div></div>
+    <!-- Werk wie im Klangraum (Caspar_D, 15.10.2026): derselbe Steckbrief des laufenden Titels (#kartesteckbrief, wandert hierher) -->
+    <div class="drawer" data-lade="werk" id="schaumwerklade"><button class="drawerkopf" title="Werk auf- und zuklappen"><span class="dicon" data-icon="werk"></span><span class="dtitel">Werk</span><span class="dkurz"></span><span class="pfeil">›</span></button>
+      <div class="drawerinhalt"><div class="dinnen"><div id="schaumsteckbriefhalter"></div></div></div></div>
     <button class="pille" id="plakatknopf" type="button" onclick="plakatOeffnen()" title="Den Schaum oder die Bilderschau als Plakat gestalten und als PDF sichern">Als Plakat (PDF)…</button>
   </div>
   <div id="kartefuss" class="fussnote"></div>
@@ -8788,7 +8792,21 @@ function schaumFarbeSetzen(v){
    Einstellungen und Legende klappen auf und zu, im Kopf die Zusammenfassung wie „3D · NMDS · Orbiter · Flugbahn". Eigener
    Merker (mysuno-schaum-laden), nicht der des Klangraums: dessen schmale Leiste (alle zu) gibt es im Schaum nicht, und
    wer dort die Laden schliesst, soll im Schaum nicht vor zugeklappten stehen. Vorgabe offen - bis 1.0.78 stand alles da. */
-let schaumLaden = (() => { try { return { einstellungen: true, legende: true, ...JSON.parse(localStorage.getItem('mysuno-schaum-laden') || '{}') }; } catch (e) { return { einstellungen: true, legende: true }; } })();
+let schaumLaden = (() => { try { return { einstellungen: true, legende: true, werk: true, ...JSON.parse(localStorage.getItem('mysuno-schaum-laden') || '{}') }; } catch (e) { return { einstellungen: true, legende: true, werk: true }; } })();
+/* DER STECKBRIEF IM SCHAUM (Caspar_D, 15.10.2026: „Im Klangraum sind viel mehr Daten zum gerade spielenden Titel zu sehen, das könnte bei
+   den Schäumen auch genauso gezeigt werden"): die Lade „Werk" wie im Klangraum, unter der Legende, darin dasselbe Element
+   (#kartesteckbrief, karteSteckbrief) mit den Daten des Klang-Raums zum laufenden Titel - Stil, Genre, Stimmung, Instrumente, Messwerte,
+   Klangnachbarn. Es gibt nur ein Element; es wandert in die Lade der gezeigten Ansicht (zurueck: karteZeichnen). Wie im Klangraum
+   bleibt es stehen, bis ein anderer Titel kommt; Titel ohne Stern im Klang-Raum haben keinen Steckbrief. Nicht im Groupieschaum: dort
+   geht es um Personen, der Steckbrief beschreibt einen Titel. */
+function schaumSteckbriefSetzen(){
+  const lade = $('schaumwerklade'); if (!lade) return;
+  lade.hidden = raumJetzt === 'groupies'; if (lade.hidden) return;
+  const sb = $('kartesteckbrief'), halter = $('schaumsteckbriefhalter');
+  if (sb && halter && sb.parentElement !== halter){ halter.appendChild(sb); sb.hidden = false; }
+  const s = aktuellId && song(aktuellId), p = s && karteDaten && (karteDaten.songs || []).find(x => x.id === aktuellId);
+  if (s && p) karteSteckbrief(s, p);
+}
 function schaumLadenEinrichten(){
   const r = $('schaumrechts'); if (!r || r.dataset.laden) return;
   r.dataset.laden = '1';
@@ -9253,8 +9271,9 @@ async function schaumZeichnen(){
   $('klangschaumfarbenzeile').hidden = groupies;
   if (!groupies) $('groupiezeigtzeile').hidden = true;      /* der Regler „zeigt N von M" gehört dem Groupieschaum (groupieZeigtSetzen) */
   if (!groupies) $('klangschaumfarben').innerHTML = klangraumFarbwahlHtml();
-  if (groupies) return groupieZeichnen();
+  if (groupies){ schaumSteckbriefSetzen(); return groupieZeichnen(); }
   if (!karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
+  schaumSteckbriefSetzen();
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   const masse = schaumMasse(), m = masse.find(x => x.id === schaumMass) || masse[0];
   const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0];
@@ -11079,9 +11098,10 @@ async function karteZeichnen(){
     { const a = ansichtHtml(); leg.innerHTML = (a ? `<div class="ansichtwahl">${a}</div>` : '') + kartePanelHtml() + ladeHtml('legende', 'Legende', `${d.anzahl} Titel · ${n} ${gruppenWort}`, gruppenHtml) +
       ladeHtml('werk', 'Werk', aktuellId && song(aktuellId) ? song(aktuellId).titel : '', '<div id="kartesteckbriefhalter"></div>'); }
     /* der Steckbrief (eigenes Element, wird vom Hover befuellt) wandert in die Werk-Lade */
-    const sb = $('kartesteckbrief'), halter = leg.querySelector('#kartesteckbriefhalter'); if (sb && halter){ halter.appendChild(sb); sb.hidden = false; }
     kartePanelDran(leg);
   }
+  /* der Steckbrief zurueck in die Werk-Lade - auch ohne Neubau, er kann im Schaum gewesen sein (schaumSteckbriefSetzen) */
+  { const sb = $('kartesteckbrief'), halter = leg.querySelector('#kartesteckbriefhalter'); if (sb && halter && sb.parentElement !== halter){ halter.appendChild(sb); sb.hidden = false; } }
   /* Caspar_Ds Formulierung (21.08.2026). Das Verfahren ist eingesetzt,
      weil NMDS und UMAP umschaltbar sind. */
   const verfahren = (karteVerf === 'umap' ? 'UMAP' : 'nicht-metrischer multidimensionaler Skalierung (NMDS, Kruskal-Stress ' + String((karteDim === '3d' ? d.stress3d : d.stress) ?? '?').replace('.', ',') + ')') + (karteDim === '3d' ? ' in drei Dimensionen, auf Hauptachsen gedreht' : '');
@@ -11135,7 +11155,7 @@ async function karteZeichnen(){
    naechste Stern kommt - so kann man nachlesen. */
 function karteSteckbrief(s, p){
   const el = $('kartesteckbrief'); if (!el) return;
-  const kw = document.querySelector('.drawer[data-lade="werk"] .dkurz'); if (kw) kw.textContent = s.titel;
+  document.querySelectorAll('.drawer[data-lade="werk"] .dkurz').forEach(kw => { kw.textContent = s.titel; });   /* Klangraum und Schaum */
   const pz = (l) => (l || []).map(([n, w]) => `${n} <i>${Math.round(w * 100)} %</i>`).join(' · ');
   const a = s.analyse || {};
   /* a.tonart ist ein OBJEKT {grund, art, sicher} und kein Text - direkt
