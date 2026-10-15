@@ -8798,14 +8798,23 @@ let schaumLaden = (() => { try { return { einstellungen: true, legende: true, we
    (#kartesteckbrief, karteSteckbrief) mit den Daten des Klang-Raums zum laufenden Titel - Stil, Genre, Stimmung, Instrumente, Messwerte,
    Klangnachbarn. Es gibt nur ein Element; es wandert in die Lade der gezeigten Ansicht (zurueck: karteZeichnen). Wie im Klangraum
    bleibt es stehen, bis ein anderer Titel kommt; Titel ohne Stern im Klang-Raum haben keinen Steckbrief. Nicht im Groupieschaum: dort
-   geht es um Personen, der Steckbrief beschreibt einen Titel. */
+   geht es um Personen, der Steckbrief beschreibt einen Titel.
+   BEIM UEBERFAHREN (Caspar_D, 15.10.2026: „ja, mach es konsistent"): wie der Stern im Klangraum zeigt eine Zelle des Klangschaums oder
+   ein Cover der Bilderschau unter der Maus sofort (ohne Verzoegerung) ihren Steckbrief in der Lade „Werk"; er bleibt stehen, wenn die
+   Maus die Zelle verlaesst, bis die naechste kommt - so kann man nachlesen. Verlaesst die Maus den Schaum, gehoert er wieder dem
+   laufenden Titel (im Klangraum: svg.onmouseleave). Ohne Stern im Klang-Raum bleibt stehen, was da steht. */
+function schaumSteckbriefVon(id, immer){
+  const el = $('kartesteckbrief');
+  if (raumJetzt === 'groupies' || !id || !el || (el.dataset.id === id && !immer)) return;   /* steht schon da (karteSteckbrief merkt sich, wen er zeigt) */
+  const s = song(id), p = s && karteDaten && (karteDaten.songs || []).find(x => x.id === id);
+  if (s && p) karteSteckbrief(s, p);
+}
 function schaumSteckbriefSetzen(){
   const lade = $('schaumwerklade'); if (!lade) return;
   lade.hidden = raumJetzt === 'groupies'; if (lade.hidden) return;
   const sb = $('kartesteckbrief'), halter = $('schaumsteckbriefhalter');
   if (sb && halter && sb.parentElement !== halter){ halter.appendChild(sb); sb.hidden = false; }
-  const s = aktuellId && song(aktuellId), p = s && karteDaten && (karteDaten.songs || []).find(x => x.id === aktuellId);
-  if (s && p) karteSteckbrief(s, p);
+  schaumSteckbriefVon(aktuellId, true);
 }
 function schaumLadenEinrichten(){
   const r = $('schaumrechts'); if (!r || r.dataset.laden) return;
@@ -9029,7 +9038,9 @@ function bilderEinsetzen(r, farbe, m, zeilen){
       + (b.schild ? `<div class="bwschild" style="top:${(b.h + (b.rahmen || 0) + 2).toFixed(1)}px;width:${b.w.toFixed(1)}px">${esc((z && z.titel) || '')}</div>` : '') + '</div>';
   }
   bild.innerHTML = html + '</div>';
-  bild.onmouseover = null; bild.onmouseleave = null;
+  /* Steckbrief beim Ueberfahren eines Covers wie beim Stern im Klangraum (schaumSteckbriefVon); raus aus der Wand: der laufende Titel */
+  bild.onmouseover = (e) => { const d = e.target.closest && e.target.closest('.bw[data-id]'); if (d) schaumSteckbriefVon(d.dataset.id); };
+  bild.onmouseleave = () => schaumSteckbriefVon(aktuellId);
   /* Das Plakat-Studio stellt dieselben Einstellungen (E1(a), 15.10.2026) und wartet nach einer Wahl, bis die Wand hier neu hängt */
   document.dispatchEvent(new CustomEvent('bilderschau-gehaengt'));
   bild.onclick = (e) => { const d = e.target.closest && e.target.closest('.bw[data-id]'); if (d) spielenNachId(d.dataset.id); };
@@ -10728,9 +10739,12 @@ function schaumEinsetzenJetzt(f, einblenden){
     const rp = document.createElementNS(NS, 'path');
     rp.setAttribute('fill', 'none'); rp.setAttribute('stroke', '#ffffff'); rp.setAttribute('stroke-width', '2.6'); rp.setAttribute('stroke-linejoin', 'round');
     rp.setAttribute('visibility', 'hidden'); r.appendChild(rp); bild.appendChild(r);
+    /* im Klangschaum dazu der Steckbrief der Zelle wie beim Stern im Klangraum (schaumSteckbriefVon), nicht im Groupieschaum (Personen) */
+    const titel = f.art === 'titel';
     bild.onmouseover = (e) => { const p = e.target.closest && e.target.closest('path[data-id]');
-      if (p){ rp.setAttribute('d', p.getAttribute('d')); rp.setAttribute('stroke', rahmenFarbe(p)); rp.setAttribute('visibility', 'visible'); } else rp.setAttribute('visibility', 'hidden'); };
-    bild.onmouseleave = () => rp.setAttribute('visibility', 'hidden');
+      if (p){ rp.setAttribute('d', p.getAttribute('d')); rp.setAttribute('stroke', rahmenFarbe(p)); rp.setAttribute('visibility', 'visible'); if (titel) schaumSteckbriefVon(p.dataset.id); }
+      else rp.setAttribute('visibility', 'hidden'); };
+    bild.onmouseleave = () => { rp.setAttribute('visibility', 'hidden'); if (titel) schaumSteckbriefVon(aktuellId); };
   }
   bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (!p) return;
     if (f.art === 'person') reaktPersonAlleine(p.dataset.id); else spielenNachId(p.dataset.id); };
@@ -11155,6 +11169,7 @@ async function karteZeichnen(){
    naechste Stern kommt - so kann man nachlesen. */
 function karteSteckbrief(s, p){
   const el = $('kartesteckbrief'); if (!el) return;
+  el.dataset.id = s.id;
   document.querySelectorAll('.drawer[data-lade="werk"] .dkurz').forEach(kw => { kw.textContent = s.titel; });   /* Klangraum und Schaum */
   const pz = (l) => (l || []).map(([n, w]) => `${n} <i>${Math.round(w * 100)} %</i>`).join(' · ');
   const a = s.analyse || {};
