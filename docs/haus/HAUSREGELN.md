@@ -109,6 +109,16 @@ Auszeichnungssprache des Boten.
     geben Rückmeldung als ZUSTAND (Flag), nie über zerbrechliche
     Wertvergleiche (MEGA BASS scheiterte am Deckel-Vergleich).
     Drück-Feedback: :active scale 0.95.
+    **Pille oder Dropdown wird gemessen** (Caspar_D, 15.10.2026: „wenn
+    die Pillen mehr als eine Zeile beanspruchen, mach ein Dropdown
+    draus"): Eine Wahl (eins aus mehreren) steht als Pillenreihe da,
+    solange sie in EINE Zeile passt, sonst als echtes Dropdown mit
+    denselben Einträgen — gemessen, nicht gezählt. Bei jeder
+    Breitenänderung (Fenster, Vollbild, Laden) neu entscheiden;
+    zurück zu Pillen erst mit ≥ 8 px Luft (Hysterese). Eine Wahl je
+    Zeile, sonst gibt es keine eigene Breite. Gebaut wird mit der
+    einen Komponente wahlHtml/wahlSetzen in web/index.html, nicht je
+    Ansicht kopiert.
 20. **Zustände sind keine Mengen**: Slider für Zustände (Tempo,
     Stereo-Breite) ohne Füllbalken — die Mitte ist die Heimat.
     Mengen-Slider dürfen sich füllen.

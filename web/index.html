@@ -161,12 +161,7 @@ h1{
 .bilderwand .bwschild{position:absolute;left:0;font-size:10.5px;line-height:13px;color:#a9acb3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .bilderwand .bwkopf{position:absolute;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .bilderwand .bwkopf small{color:#8a8d94;font-size:11px}
-#schaumrechts h3 select.schaumart{font:inherit;font-size:inherit;font-weight:inherit;background:transparent;border:1px solid transparent;padding:0 4px;margin-left:-5px;color:var(--text);cursor:pointer}
-#schaumrechts h3 select.schaumart:hover{border-color:var(--rand)}
-#bilderschauzeile{display:flex;flex-direction:column;gap:12px}
-#bilderschauzeile[hidden]{display:none}
-#schaumrechts label.schalter{flex-direction:row;align-items:center;gap:7px}
-#schaumrechts label[hidden],#schaumrechts button[hidden]{display:none}
+#schaumrechts button[hidden]{display:none}
 #schaumbild{transition:opacity .25s}
 #schaumbild svg{transition:opacity .3s}
 /* Morph: nur die Bilder blenden aus und wieder ein, die Zellen behalten ihre Farbe; langsam (Caspar_D,
@@ -189,7 +184,7 @@ h1{
    ihren Rand ragt (overflow hidden) - nach oben geoeffnet fehlte genau der oberste Eintrag, der Standard
    (Caspar_D, 06.10.2026: „der Standard muß auch wieder rein"). */
 .pinhalt .farbwahl .fw-liste{position:static;margin-top:4px;box-shadow:none}
-.pinhalt .farbwahl{display:inline-block;min-width:240px;margin-top:0}
+.pinhalt .farbwahl{display:inline-block;min-width:min(240px,100%);max-width:100%;margin-top:0}
 .farbwahl small{color:var(--schwach);font-size:11px}
 .farbwahl .fw-knopf:disabled{filter:grayscale(1);opacity:.55;cursor:default}   /* Kubus oder Rabe fliegt */
 #schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
@@ -199,10 +194,17 @@ h1{
 #schaumbild text{fill-opacity:.8}
 #schaumrechts input[type=range]{width:100%;accent-color:var(--akzent)}
 #schaumstand{position:absolute;left:0;right:0;top:45%;text-align:center;color:#9aa0a8;font-size:13px;pointer-events:none}
-#schaumrechts{display:flex;flex-direction:column;gap:12px;min-height:0;height:100%;overflow:auto}
-#schaumrechts h3{margin:0}
-#schaumrechts label{display:flex;flex-direction:column;gap:4px;margin:0}
-#schaumrechts select{font:inherit;font-size:13px;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:8px;padding:5px 8px}
+#schaumrechts{display:flex;flex-direction:column;gap:0;min-height:0;height:100%;overflow:auto}
+/* Die Regler im Schaum-Panel (Farbe über den Bildern, „zeigt N von M") stehen in ihrer Zeile ueber die volle Breite */
+#schaumrechts .pzeile.pregler{flex-direction:column;align-items:stretch;gap:4px}
+#schaumrechts .pzeile.pregler .ptitel{flex:0 0 auto}
+#schaumrechts .pzeile.pregler .ptitel span{text-transform:none;letter-spacing:0;font-size:12px;color:var(--text)}
+#schaumrechts .pzeile .farbwahl{flex:1 1 auto;min-width:0;margin-top:0}
+/* Schmales Panel: der Palettenname kuerzt sich, statt umzubrechen oder ueber den Rand zu ragen */
+.farbwahl .fw-knopf span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#schaumrechts #schaumwas{margin:2px 0 0;line-height:1.45}
+#schaumrechts .drawer[data-lade="legende"] > .drawerinhalt > .dinnen{padding:8px 12px 12px}   /* staerker als die Klangraum-Regel darunter */
+#schaumrechts #plakatknopf{align-self:flex-start}
 #schaumlegende{display:flex;flex-direction:column;gap:5px;font-size:12.5px}
 /* Die Legendenzeilen gegen die Liedtextzeile der Karaoke-Buehne (.zeile, bis 27 px, fett) absetzen - im Groupieschaum
    sind es span-Elemente und erbten sie (Caspar_D, 06.10.2026: „die Legendenschrift ist im Groupieschaum viel zu groß"). */
@@ -243,13 +245,13 @@ h1{
 #kartesteckbrief h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:12px 0 4px}
 #kartesteckbrief ol{list-style:none;font-size:12px;line-height:1.6}
 #kartesteckbrief ol li i{font-style:normal;color:var(--schwach);font-size:10.5px;margin-left:6px}
-#kartelegende .drawer{margin:0 0 10px;border:1px solid var(--rand);border-radius:10px;overflow:hidden}
-#kartelegende .drawerkopf{width:100%;display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--flaeche);border:none;color:var(--text);cursor:pointer;text-align:left;font:inherit}
-#kartelegende .dicon{display:inline-flex;color:var(--schwach);flex:0 0 auto}
-#kartelegende .drawer.offen .dicon{color:var(--text)}
-#kartelegende .dinnen{min-height:0}
-#kartelegende .drawer[data-lade="legende"] .dinnen{padding:8px 4px 4px}
-#kartelegende .drawer[data-lade="werk"] .dinnen{padding:8px 12px 12px}
+:is(#kartelegende,#schaumrechts) .drawer{margin:0 0 10px;border:1px solid var(--rand);border-radius:10px;overflow:hidden}
+:is(#kartelegende,#schaumrechts) .drawerkopf{width:100%;display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--flaeche);border:none;color:var(--text);cursor:pointer;text-align:left;font:inherit}
+:is(#kartelegende,#schaumrechts) .dicon{display:inline-flex;color:var(--schwach);flex:0 0 auto}
+:is(#kartelegende,#schaumrechts) .drawer.offen .dicon{color:var(--text)}
+:is(#kartelegende,#schaumrechts) .dinnen{min-height:0}
+:is(#kartelegende,#schaumrechts) .drawer[data-lade="legende"] .dinnen{padding:8px 4px 4px}
+:is(#kartelegende,#schaumrechts) .drawer[data-lade="werk"] .dinnen{padding:8px 12px 12px}
 #kartelegende .drawer[data-lade="werk"] #kartesteckbrief{border-top:none;padding-top:0;margin-top:0}
 #karterechts > #kartesteckbrief{display:none}   /* geparkt (ausserhalb der Lade): unsichtbar */
 /* Alle Laden zu: schmale Leiste rechts, nur die drei Symbole */
@@ -264,22 +266,42 @@ h1{
 #karte.leiste .drawerkopf .dtitel,#karte.leiste .drawerkopf .dkurz,#karte.leiste .drawerkopf .pfeil{display:none}
 #karte.leiste .dicon{color:var(--text)}
 #karte.leiste #karterechts{overflow:visible}
-#kartelegende .drawerkopf .pfeil{display:inline-block;transition:transform .2s;color:var(--schwach);font-size:14px}
-#kartelegende .drawer.offen .drawerkopf .pfeil{transform:rotate(90deg)}
-#kartelegende .drawerkopf .dtitel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600}
-#kartelegende .drawerkopf .dkurz{font-size:11px;color:var(--schwach);margin-left:auto;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
-#kartelegende .drawerinhalt{max-height:0;overflow:hidden;transition:max-height .28s ease}   /* zu: nichts lugt hervor */
-#kartelegende .drawer.offen .drawerinhalt{max-height:3000px}
-#kartelegende .drawerinhalt > .dinnen{min-height:0}
-#kartelegende .panel{display:flex;flex-direction:column;gap:7px;padding:10px 12px 12px}
-#kartelegende .pzeile{display:flex;gap:10px;align-items:center}
-#kartelegende .ptitel{flex:0 0 118px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach)}
-#kartelegende .ptitel b{color:var(--text);text-transform:none;letter-spacing:0;font-size:12px}
-#kartelegende .pinhalt{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-#kartelegende .phinweis{font-size:11px;color:var(--schwach)}
-/* Die Unterregister sitzen in derselben Zeile wie Werke/Alben/Räume,
-   durch einen Trennstrich abgesetzt - sie gehoeren zum Register
-   darueber, sind aber eine Ebene darunter. */
+:is(#kartelegende,#schaumrechts) .drawerkopf .pfeil{display:inline-block;transition:transform .2s;color:var(--schwach);font-size:14px}
+:is(#kartelegende,#schaumrechts) .drawer.offen .drawerkopf .pfeil{transform:rotate(90deg)}
+:is(#kartelegende,#schaumrechts) .drawerkopf .dtitel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600}
+:is(#kartelegende,#schaumrechts) .drawerkopf .dkurz{font-size:11px;color:var(--schwach);margin-left:auto;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+:is(#kartelegende,#schaumrechts) .drawerinhalt{max-height:0;overflow:hidden;transition:max-height .28s ease}   /* zu: nichts lugt hervor */
+:is(#kartelegende,#schaumrechts) .drawer.offen .drawerinhalt{max-height:3000px}
+:is(#kartelegende,#schaumrechts) .drawerinhalt > .dinnen{min-height:0}
+:is(#kartelegende,#schaumrechts) .panel{display:flex;flex-direction:column;gap:7px;padding:10px 12px 12px}
+:is(#kartelegende,#schaumrechts) .pzeile{display:flex;gap:10px;align-items:center}
+:is(#kartelegende,#schaumrechts) .ptitel{flex:0 0 118px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach)}
+:is(#kartelegende,#schaumrechts) .ptitel b{color:var(--text);text-transform:none;letter-spacing:0;font-size:12px}
+:is(#kartelegende,#schaumrechts) .pinhalt{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+:is(#kartelegende,#schaumrechts) .phinweis{font-size:11px;color:var(--schwach)}
+/* DIE ANSICHTSWAHL OBEN IM PANEL (Caspar_D, 15.10.2026): die Unterleiste in der Registerleiste ist weg; ganz oben in
+   jedem Panel zwei beschriftete Pillenreihen „Räume" und „Schäume". Sie steht über den Laden, nicht in einer - sie
+   entscheidet, WAS man sieht. In der schmalen Leiste (alle Laden zu) hat sie keinen Platz: dort erst eine Lade öffnen. */
+:is(#kartelegende,#schaumrechts) .ansichtwahl{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;padding:0 2px}
+:is(#kartelegende,#schaumrechts) .ansichtwahl .pille{font-weight:600}
+/* Die Beschriftung steht UEBER der Reihe, nicht davor: so bleibt den Pillen die ganze Breite des Panels und sie passen
+   noch bei 1100 px Fensterbreite in eine Zeile (davor: 209 statt 337 px frei, beide Reihen wurden Dropdowns). */
+:is(#kartelegende,#schaumrechts) .ansichtwahl .pzeile{flex-direction:column;align-items:stretch;gap:3px}
+:is(#kartelegende,#schaumrechts) .ansichtwahl .ptitel{flex:0 0 auto}
+:is(#kartelegende,#schaumrechts) .ansichtwahl .pzeile.pwahl .pinhalt{flex:0 0 auto}
+#karte.leiste #kartelegende .ansichtwahl{display:none}
+:is(#kartelegende,#schaumrechts) .pzeile[hidden],:is(#kartelegende,#schaumrechts) .ansichtwahl[hidden]{display:none}
+/* PILLE ODER DROPDOWN, GEMESSEN (Hausregel 19, wahlHtml): dieselbe Wahl als Pillenreihe, solange sie in eine Zeile passt,
+   sonst als Dropdown. Die Pillenreihe bleibt im Liste-Modus unsichtbar liegen, damit sie sich weiter messen laesst. Feste
+   Hoehe, damit der Wechsel die beobachtete Groesse nicht aendert (sonst meldet der ResizeObserver eine Schleife). */
+:is(#kartelegende,#schaumrechts) .pzeile.pwahl .pinhalt{flex:1 1 0;min-width:0;flex-wrap:nowrap}
+.wahl{position:relative;display:flex;align-items:center;flex:1 1 auto;min-width:0;height:28px;overflow:clip;overflow-clip-margin:4px}
+.wahl-p{display:flex;gap:6px;flex-wrap:nowrap;white-space:nowrap;width:max-content;flex:0 0 auto}
+.wahl.liste .wahl-p{position:absolute;left:0;top:0;visibility:hidden;pointer-events:none}
+.wahl:not(.liste) select{display:none}
+:is(#kartelegende,#schaumrechts) .wahl select{font:inherit;font-size:12px;max-width:100%;min-width:0;padding:3px 8px;border-radius:999px;
+  border:1px solid var(--rand);background:var(--flaeche);color:var(--text);cursor:pointer}
+:is(#kartelegende,#schaumrechts) .pille:active{transform:scale(.95)}
 /* Vollbildknopf: unaufdringlich in der Ecke, wird erst beim Ueberfahren
    der Karte deutlich - er soll den Sternenhimmel nicht stoeren. */
 #kartevoll,#schaumvoll{position:absolute;top:10px;right:10px;z-index:6;width:30px;height:30px;
@@ -336,12 +358,6 @@ h1{
 #karteläuft .d,#schaumläuft .d{font-size:11.5px;color:var(--schwach);margin-top:2px;font-variant-numeric:tabular-nums}
 #schaumläuft[hidden]{display:none}
 
-.unterreg{display:inline-flex;gap:4px;align-items:center;margin-left:10px;padding-left:12px;
-  border-left:1px solid var(--rand)}
-/* display:inline-flex schluege sonst das hidden-Attribut - die Leiste
-   stand in jedem Register, sobald sie Inhalt hatte (aufgefallen am
-   29.08.2026, als der zweite Raum kam und sie erstmals gefuellt war). */
-.unterreg[hidden]{display:none}
 /* Song-Klang-Pille im Player (Caspar_D, 29.08.2026: "knallhart sichtbar
    sein, das ein Song mit eigenem EQ läuft und es muß abschaltbar sein").
    Voll = songeigener EQ/Kerbe wirkt; gestrichelt-durchgestrichen =
@@ -358,14 +374,6 @@ h1{
 .messproto .pblock h6{margin:0 0 6px;font-size:12.5px;letter-spacing:.02em}
 .messproto .pbew{color:var(--text)}
 .messproto .pknoepfe{margin:6px 0 2px}
-.unterreg-b{font:inherit;font-size:13px;color:var(--schwach);background:none;border:1px solid transparent;
-  border-radius:999px;padding:4px 11px;cursor:pointer;transition:color .12s,border-color .12s,background .12s}
-.unterreg-b:hover{color:var(--text);border-color:var(--rand)}
-.unterreg-b.an{color:var(--text);background:var(--flaeche);border-color:var(--akzent);font-weight:600}
-#kartelegende .raumpille{font-weight:600}
-#kartelegende .raumwas{margin:6px 0 2px;line-height:1.45}
-#kartelegende .raumwas b{color:var(--akzent);font-weight:600}
-#kartelegende #schiffart{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche);color:var(--text)}
 /* Der Schiffsname: sieht aus wie Text, ist aber immer ein Eingabefeld.
    Der Rahmen kommt erst beim Zeigen und Hineinklicken - so verraet er
    sich als anfassbar, ohne die Zeile mit einem weiteren Kasten zu
@@ -389,13 +397,13 @@ h1{
   color:var(--schwach);transition:color .15s}
 #kartelegende .namensfeld:hover .ico{color:var(--text)}
 #kartelegende .namensfeld:focus-within .ico{color:var(--akzent)}
-#kartelegende .pille{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--rand);background:none;color:var(--schwach);cursor:pointer}
-#kartelegende .pille.an{border:2px solid var(--akzent);color:var(--text)}
-#kartelegende .pille[disabled]{opacity:.4;cursor:default}
-#kartelegende .artpille.an{border-color:var(--af);color:var(--af)}
-#kartelegende .schalter{display:inline-flex;border:1px solid var(--rand);border-radius:999px;overflow:hidden}
-#kartelegende .schalter .pille{border:none;border-radius:0;padding:3px 9px}
-#kartelegende .schalter .pille.an{border:none;background:var(--akzent);color:#000}
+:is(#kartelegende,#schaumrechts) .pille{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--rand);background:none;color:var(--schwach);cursor:pointer}
+:is(#kartelegende,#schaumrechts) .pille.an{border:2px solid var(--akzent);color:var(--text)}
+:is(#kartelegende,#schaumrechts) .pille[disabled]{opacity:.4;cursor:default}
+:is(#kartelegende,#schaumrechts) .artpille.an{border-color:var(--af);color:var(--af)}
+:is(#kartelegende,#schaumrechts) .schalter{display:inline-flex;border:1px solid var(--rand);border-radius:999px;overflow:hidden}
+:is(#kartelegende,#schaumrechts) .schalter .pille{border:none;border-radius:0;padding:3px 9px}
+:is(#kartelegende,#schaumrechts) .schalter .pille.an{border:none;background:var(--akzent);color:#000}
 #kartelegende .legende2{display:flex;flex-direction:column;gap:10px}
 #kartelegende .lblock h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:0 0 4px 8px}
 #kartelegende .lgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
@@ -4117,14 +4125,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
          meinen klangraum zurück." Intern heisst das Register weiter
          'karte'. Gesetzt wird der Name in raumLascheBenennen(). -->
     <button class="reg"    data-reg="karte" id="reg-karte">Klangraum</button>
-    <!-- DIE DREI RAEUME als Unterregister, nicht in einer Lade: Sie
-         entscheiden, WAS man sieht - das gehoert nach oben und
-         sichtbar. Caspar_D, 28.08.2026: "der Register heisst räume aber
-         die unterregister gbibt es nicht" - sie steckten zuerst in der
-         Einstellungen-Lade und waren dort zugeklappt unsichtbar.
-         Gefuellt wird die Leiste erst, wenn feststeht, welche Raeume
-         gerechnet sind (/api/raeume). -->
-    <span class="unterreg" id="raumreg" hidden></span>
+    <!-- Die Unterregister (Klangraum, Geschichten, Klangschaum, Groupieschaum) standen hier bis 1.0.78. Seit dem
+         15.10.2026 stehen die Ansichten als zwei Pillenreihen „Räume" und „Schäume" oben im Panel jeder Ansicht
+         (ansichtHtml) - weiter sichtbar und nicht in einer Lade (Caspar_D, 28.08.2026: „der Register heisst räume aber
+         die unterregister gbibt es nicht" - in der Einstellungen-Lade waren sie zugeklappt unsichtbar). -->
     <!-- Der Größenregler steht bewusst HIER und nicht in einer der
          Filterleisten: Die Spaltenzahl gilt für beide Register - alle
          Ansichten malen in dasselbe Raster. In der Trackleiste wäre
@@ -4202,29 +4206,36 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <!-- Steckbrief des Sterns unter der Maus, darunter die Nachbarn -->
     <div id="kartesteckbrief" hidden></div>
   </div>
+  <!-- Das Schaum-Panel in der Form des Klangraums (Caspar_D, 15.10.2026: „ich möchte alles nach Hausregeln"): oben die
+       Ansichtswahl, dann die Laden Einstellungen und Legende mit Zusammenfassung im Kopf, innen Pillen; die Wahlen setzt
+       schaumZeichnen() mit wahlSetzen() (Pille oder Dropdown, gemessen). Keine Checkboxen (Hausregel 18). -->
   <div id="schaumrechts" hidden>
-    <h3 id="schaumtitel">Klangschaum</h3>
-    <label class="fussnote">Fläche nach<select id="schaummass" onchange="schaumMassWaehlen(this.value)"></select></label>
-    <!-- Nur im Groupieschaum: wie viele bleiben (groupieAuswahl), die Zahl beim Ziehen, neu gelegt beim Loslassen -->
-    <label class="fussnote" id="groupiezeigtzeile" hidden title="Blendet aus, wer beim gewählten Maß die kleinsten Werte hat – die Übrigen bekommen deren Fläche und werden größer. Ganz rechts: alle.">
-      <span id="groupiezeigtzahl"></span>
-      <input type="range" id="groupiezeigt" step="1" oninput="groupieZeigtWaehlen(this.value, false)" onchange="groupieZeigtWaehlen(this.value, true)"></label>
-    <div class="fussnote" id="groupiefarbenzeile" hidden>Farben<div id="groupiefarben" class="farbwahl"></div></div>
-    <div class="fussnote" id="klangschaumfarbenzeile" hidden>Farben<div id="klangschaumfarben" class="farbwahl"></div></div>
-    <label class="fussnote">Gegliedert nach<select id="schaumgliederung" onchange="schaumGliederungWaehlen(this.value)"></select></label>
-    <div id="bilderschauzeile" hidden>
-      <label class="fussnote">Skalentransformation<select id="bildertrafo" onchange="bilderschauWahl('trafo', this.value)"></select></label>
-      <label class="fussnote">Hängung<select id="bilderhaengung" onchange="bilderschauWahl('haengung', this.value)">
-        <option value="salon">Salon – große Bilder zur Mitte</option><option value="achse">Achse – waagrecht durch die Mitte</option><option value="dicht">Dicht – von oben nach unten</option></select></label>
-      <label class="fussnote schalter"><input type="checkbox" id="bilderrahmen" onchange="bilderschauWahl('rahmen', this.checked)">Rahmen in der Klangraum-Farbe</label>
-      <label class="fussnote schalter"><input type="checkbox" id="bilderkopf" onchange="bilderschauWahl('kopf', this.checked)">Überschriften der Gruppen</label>
-      <label class="fussnote schalter"><input type="checkbox" id="bilderunter" onchange="bilderschauWahl('unter', this.checked)">Bildunterschriften</label>
-    </div>
-    <label class="fussnote" id="schaumfarbezeile">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
-      <input type="range" id="schaumfarbe" min="0" max="100" step="1" oninput="schaumFarbeSetzen(this.value)"></label>
-    <p class="fussnote" id="schaumwas" style="margin:0"></p>
-    <div id="schaumlegende"></div>
-    <div id="schaumwerk"></div>
+    <div id="schaumansicht" class="ansichtwahl"></div>
+    <div class="drawer" data-lade="einstellungen"><button class="drawerkopf" title="Einstellungen auf- und zuklappen"><span class="dicon" data-icon="einstellungen"></span><span class="dtitel">Einstellungen</span><span class="dkurz" id="schaumkurz"></span><span class="pfeil">›</span></button>
+      <div class="drawerinhalt"><div class="dinnen"><div class="panel">
+        <div class="pzeile pwahl"><span class="ptitel">Fläche nach</span><span class="pinhalt" id="schaummass"></span></div>
+        <div class="pzeile pwahl"><span class="ptitel">Gegliedert nach</span><span class="pinhalt" id="schaumgliederung"></span></div>
+        <div class="pzeile pwahl bilderzeile" hidden><span class="ptitel">Skalen&shy;transformation</span><span class="pinhalt" id="bildertrafo"></span></div>
+        <div class="pzeile pwahl bilderzeile" hidden><span class="ptitel">Hängung</span><span class="pinhalt" id="bilderhaengung"></span></div>
+        <div class="pzeile bilderzeile" hidden><span class="ptitel">Zeigen</span><span class="pinhalt">
+          <button type="button" class="pille" id="bilderrahmen" onclick="bilderschauWahl('rahmen', !bilderWahl.rahmen)" title="Ein schmaler Rahmen je Bild in der Farbe seiner Gruppe aus dem Klangraum – voll nur unter der Maus und am laufenden Titel">Rahmen</button>
+          <button type="button" class="pille" id="bilderkopf" onclick="bilderschauWahl('kopf', !bilderWahl.kopf)" title="Der Name jeder Gruppe über ihrem Areal">Überschriften</button>
+          <button type="button" class="pille" id="bilderunter" onclick="bilderschauWahl('unter', !bilderWahl.unter)" title="Der Titel unter jedem Bild">Bildunterschriften</button></span></div>
+        <!-- Nur im Groupieschaum: wie viele bleiben (groupieAuswahl), die Zahl beim Ziehen, neu gelegt beim Loslassen -->
+        <div class="pzeile pregler" id="groupiezeigtzeile" hidden title="Blendet aus, wer beim gewählten Maß die kleinsten Werte hat – die Übrigen bekommen deren Fläche und werden größer. Ganz rechts: alle.">
+          <span class="ptitel"><span id="groupiezeigtzahl"></span></span>
+          <input type="range" id="groupiezeigt" step="1" oninput="groupieZeigtWaehlen(this.value, false)" onchange="groupieZeigtWaehlen(this.value, true)"></div>
+        <div class="pzeile" id="groupiefarbenzeile" hidden><span class="ptitel">Farben</span><div id="groupiefarben" class="farbwahl"></div></div>
+        <div class="pzeile" id="klangschaumfarbenzeile" hidden><span class="ptitel">Farben</span><div id="klangschaumfarben" class="farbwahl"></div></div>
+        <div class="pzeile pregler" id="schaumfarbezeile"><span class="ptitel">Farbe über den Bildern <span id="schaumfarbezahl"></span></span>
+          <input type="range" id="schaumfarbe" min="0" max="100" step="1" oninput="schaumFarbeSetzen(this.value)"></div>
+        <p class="fussnote" id="schaumwas"></p>
+      </div></div></div></div>
+    <div class="drawer" data-lade="legende"><button class="drawerkopf" title="Legende auf- und zuklappen"><span class="dicon" data-icon="legende"></span><span class="dtitel">Legende</span><span class="dkurz" id="schaumlegkurz"></span><span class="pfeil">›</span></button>
+      <div class="drawerinhalt"><div class="dinnen">
+        <div id="schaumlegende"></div>
+        <div id="schaumwerk"></div>
+      </div></div></div>
     <button class="pille" id="plakatknopf" type="button" onclick="plakatOeffnen()" title="Den Schaum oder die Bilderschau als Plakat gestalten und als PDF sichern">Als Plakat (PDF)…</button>
   </div>
   <div id="kartefuss" class="fussnote"></div>
@@ -7901,7 +7912,6 @@ function registerSetzen(name){
   $('filterPlaylists').hidden = name !== 'playlists';
   $('raster').hidden = name === 'karte';
   $('karte').hidden  = name !== 'karte';
-  const rr = $('raumreg'); if (rr) rr.hidden = name !== 'karte';
   zeichnen();
 }
 
@@ -7928,14 +7938,13 @@ let karteDaten = null, karteGruppeAn = null;
    "Geschichten-Raum: naechste Schritte". Das Etikett haengt am Namen
    und wandert damit in Pille, Lasche und Fussnote. */
 const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum (beta)', schaum: 'Klangschaum', groupies: 'Groupieschaum' };
-/* Die Unterregister (Caspar_D, 06.10.2026: „die Unterpunkte von Räume und Schäume heißen Klangraum,
-   Klangschaum"). */
-const raumReiter = (r) => r === 'klang' ? 'Klangraum' : r === 'schaum' && schaumArt === 'bilder' ? 'Bilderschau' : RAUM_NAME[r].replace('-Raum', '');
+/* Was jede Ansicht zeigt - die Tooltips der Ansichtspillen (ansichtHtml); bis 1.0.78 die Tooltips der Unterlaschen. */
 const RAUM_WAS  = {
   klang:       'Nähe heißt: klingt ähnlich. Aus dem Ton gerechnet, der Text spielt keine Rolle.',
   geschichten: 'Nähe heißt: handelt von Ähnlichem. Aus den Liedtexten, der Klang spielt keine Rolle.',
   schaum:      'Fläche heißt: wie viel davon da ist — nach Abrufen, Herzen, Länge … gegliedert nach Klang, Modell oder Zeit.',
   groupies:    'Jede Blase eine Person, so groß wie ihre Herzen und Kommentare zusammen.',
+  bilder:      'Fläche heißt: wie viel davon da ist — jedes Cover im Originalformat, an einer Wand in Areale je Gruppe gehängt.',
 };
 let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
 if (!RAUM_NAME[raumJetzt]) raumJetzt = 'klang';   /* gemerkter Raum, den es nicht mehr gibt (lied) */
@@ -8413,7 +8422,8 @@ function ladenDran(leg){
 }
 /* Alle zu -> schmale Leiste, Himmel volle Breite */
 function ladenLeiste(){
-  const alleZu = !karteLaden.einstellungen && !karteLaden.legende && !karteLaden.werk;
+  /* nur im Klangraum und im Geschichten-Raum - die Schaeume haben eigene Laden ohne Leiste (schaumLadenEinrichten) */
+  const alleZu = !karteLaden.einstellungen && !karteLaden.legende && !karteLaden.werk && raumJetzt !== 'schaum' && raumJetzt !== 'groupies';
   const k = $('karte'); if (k) k.classList.toggle('leiste', alleZu);
   if (typeof karteLage !== 'undefined') karteLage = { W: 0, H: 0, xy: null };   // Layout neu messen
   if (typeof karteZeichnen === 'function' && typeof karteDaten !== 'undefined' && karteDaten && !ladenLeiste.laeuft){ ladenLeiste.laeuft = true; setTimeout(() => { ladenLeiste.laeuft = false; karteZeichnen(); }, 260); }
@@ -8487,25 +8497,97 @@ async function raeumeErfragen(){
 }
 raeumeErfragen();
 
-function raumLeisteBauen(){
+/* PILLE ODER DROPDOWN, GEMESSEN (Hausregel 19; Caspar_D, 15.10.2026: „kannst du conditional Pillen oder dropdowns anbieten
+   – also wenn die Pillen mehr als eine Zeile beanspruchen, mach ein Dropdown draus"). Eine Wahl - eins aus mehreren - steht
+   als Pillenreihe da, solange die Reihe in EINE Zeile passt, sonst als echtes Dropdown mit denselben Eintraegen. Gemessen,
+   nicht gezaehlt: Die Pillenreihe liegt immer im Dokument (im Dropdown-Fall unsichtbar), ihre Breite ist der Bedarf, die
+   Breite der Wahl das Angebot. Ein ResizeObserver entscheidet bei jeder Breitenaenderung neu (Fenster, Vollbild, Laden).
+   Hysterese gegen Flackern: zurueck zu Pillen erst, wenn WAHL_LUFT Pixel Luft bleiben. Die letzte Entscheidung je Wahl
+   wird gemerkt (wahlListe), damit ein Neubau des Panels im Graubereich nicht umspringt.
+   Gebaut wird mit wahlHtml(schl, eintraege, jetzt, { leer, titel }) - eintraege [{ id, name, title }]; was eine Wahl tut,
+   steht in wahlTun[schl] und bekommt die id. Pillen und Dropdown teilen sich einen Klick- und einen change-Hoerer am
+   Dokument, also gibt es nach einem Neubau nichts neu zu verdrahten; nur beobachtet werden muss die neue Wahl
+   (wahlenBeobachten, wahlSetzen). Steht der aktuelle Wert nicht in der Liste (die Ansicht steht in der anderen Reihe),
+   traegt das Dropdown den stillen Zustand „leer" als hidden option (Hausregel 19). */
+const WAHL_LUFT = 8;
+const wahlTun = {};
+const wahlListe = new Map();
+function wahlHtml(schl, eintraege, jetzt, o = {}){
+  const da = eintraege.some(e => e.id === jetzt), t = (e) => e.title ? ` title="${esc(e.title)}"` : '';
+  return `<span class="wahl${wahlListe.get(schl) ? ' liste' : ''}" data-wahl="${esc(schl)}"><span class="wahl-p">`
+    + eintraege.map(e => `<button type="button" class="pille${e.id === jetzt ? ' an' : ''}" data-w="${esc(e.id)}"${t(e)}>${esc(e.name)}</button>`).join('')
+    + `</span><select${o.titel ? ` title="${esc(o.titel)}"` : ''}>`
+    + (da ? '' : `<option value="" hidden selected>${esc(o.leer || '—')}</option>`)
+    + eintraege.map(e => `<option value="${esc(e.id)}"${e.id === jetzt ? ' selected' : ''}${t(e)}>${esc(e.name)}</option>`).join('')
+    + '</select></span>';
+}
+function wahlMessen(w){
+  if (!w.isConnected){ wahlRO.unobserve(w); return; }
+  const frei = w.clientWidth; if (!frei) return;              /* zugeklappt oder versteckt: nichts zu entscheiden */
+  const bedarf = w.firstElementChild.offsetWidth, liste = w.classList.contains('liste');
+  const soll = liste ? bedarf + WAHL_LUFT > frei : bedarf > frei;
+  if (soll !== liste) w.classList.toggle('liste', soll);
+  wahlListe.set(w.dataset.wahl, soll);
+}
+const wahlRO = new ResizeObserver(es => { for (const e of es) wahlMessen(e.target); });
+function wahlenBeobachten(wurzel){ wurzel.querySelectorAll('.wahl').forEach(w => wahlRO.observe(w)); }
+/* Fuer feste Plaetze im HTML (Schaum-Panel): neu bauen nur, wenn sich Eintraege oder Wert geaendert haben. */
+function wahlSetzen(platz, schl, eintraege, jetzt, o){
+  const html = wahlHtml(schl, eintraege, jetzt, o), stand = html.replace(/^<span class="wahl( liste)?"/, '');
+  if (platz.dataset.stand === stand) return;
+  platz.dataset.stand = stand; platz.innerHTML = html; wahlenBeobachten(platz);
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('.wahl-p > .pille'); if (!b || b.classList.contains('an')) return;
+  const f = wahlTun[b.closest('.wahl').dataset.wahl]; if (f) f(b.dataset.w);
+});
+document.addEventListener('change', (e) => {
+  const sel = e.target, w = sel.parentElement;
+  if (sel.tagName !== 'SELECT' || !w || !w.classList.contains('wahl') || !sel.value) return;
+  const f = wahlTun[w.dataset.wahl]; if (f) f(sel.value);
+});
+
+/* DIE ANSICHTSWAHL (Caspar_D, 15.10.2026): Die Unterleiste oben in der Registerleiste ist weg. Ganz oben im Panel jeder
+   Ansicht zwei beschriftete Pillenreihen: „Räume" (Klangraum, Geschichten) und „Schäume" (Klangschaum, Bilderschau,
+   Groupieschaum). Ein Klick wechselt; die Erklaersaetze der alten Unterlaschen stehen als Tooltip an den Pillen.
+   Die Bilderschau ist eine eigene Pille - das Dropdown „Klangschaum/Bilderschau" im Schaum-Panel (11.10.2026) ist weg.
+   Intern bleibt es bei raumJetzt (klang, geschichten, schaum, groupies) und schaumArt (klang, bilder); gemerkt werden
+   beide wie bisher (mysuno-raum, mysuno-schaum-art). Was nicht gerechnet ist, erscheint nicht; gibt es nur den
+   Klang-Raum, gibt es nichts zu waehlen und keine Reihe. Jede Reihe ist eine Wahl nach Hausregel 19 (wahlHtml): passt
+   sie nicht in eine Zeile, wird sie ein Dropdown; steht die Ansicht in der anderen Reihe, zeigt das Dropdown
+   „Raum wählen …" bzw. „Schaum wählen …" als stillen Zustand. */
+const ansichtJetzt = () => raumJetzt === 'schaum' ? (schaumArt === 'bilder' ? 'bilderschau' : 'klangschaum') : raumJetzt;
+function ansichtWaehlen(a){
+  if (a === ansichtJetzt()) return;
+  if (a === 'klangschaum' || a === 'bilderschau'){
+    raumJetzt = 'schaum'; schaumArt = a === 'bilderschau' ? 'bilder' : 'klang';
+    try { localStorage.setItem('mysuno-schaum-art', schaumArt); } catch (e) {}
+  } else raumJetzt = a;
+  try { localStorage.setItem('mysuno-raum', raumJetzt); } catch (e) {}
+  /* Die Sternbilder gelten je Raum - sonst zeigt der Geschichten-Raum die Namen aus dem Klang-Raum. */
+  karteSternbilder = [];
+  zeichnen();          /* filtert die Liste neu - im Geschichten-Raum fehlen die Textlosen */
+}
+function ansichtHtml(){
+  if (!raumDa) return '';
+  const raeume = ['klang', 'geschichten'].filter(r => raumDa[r]);
+  const schaeume = raumDa.schaum ? ['klangschaum', 'bilderschau', ...(raumDa.groupies ? ['groupies'] : [])] : [];
+  if (raeume.length + schaeume.length < 2) return '';
+  const name = { klang: 'Klangraum', geschichten: RAUM_NAME.geschichten.replace('-Raum', ''), klangschaum: RAUM_NAME.schaum, bilderschau: 'Bilderschau', groupies: RAUM_NAME.groupies };
+  const was = { klang: RAUM_WAS.klang, geschichten: RAUM_WAS.geschichten, klangschaum: RAUM_WAS.schaum, bilderschau: RAUM_WAS.bilder, groupies: RAUM_WAS.groupies };
+  const reihe = (titel, schl, liste, leer) => `<div class="pzeile pwahl"><span class="ptitel">${titel}</span><span class="pinhalt">`
+    + wahlHtml(schl, liste.map(a => ({ id: a, name: name[a], title: was[a] })), ansichtJetzt(), { leer, titel: was[ansichtJetzt()] || titel }) + '</span></div>';
+  return reihe('Räume', 'ansicht-raeume', raeume, 'Raum wählen …') + (schaeume.length ? reihe('Schäume', 'ansicht-schaeume', schaeume, 'Schaum wählen …') : '');
+}
+wahlTun['ansicht-raeume'] = wahlTun['ansicht-schaeume'] = ansichtWaehlen;
+/* Die Reihe im Schaum-Panel steht fest im HTML; die im Klangraum-Panel baut kartePanelHtml mit. */
+function schaumAnsichtBauen(){
   raumLascheBenennen();
-  const el = $('raumreg'); if (!el) return;
-  const da = Object.keys(RAUM_NAME).filter(r => raumDa && raumDa[r]);
-  if (da.length < 2){ el.hidden = true; el.innerHTML = ''; return; }
-  el.hidden = register !== 'karte';
-  const soll = da.map(r => r + (r === raumJetzt ? '*' : '')).join('|') + '|' + schaumArt;
-  if (el.dataset.stand === soll) return;      /* nichts geaendert - nicht neu bauen */
-  el.dataset.stand = soll;
-  el.innerHTML = da.map(r =>
-    `<button class="unterreg-b${r === raumJetzt ? ' an' : ''}" data-raum="${r}" title="${RAUM_WAS[r]}">`
-    + raumReiter(r) + '</button>').join('');
-  el.querySelectorAll('[data-raum]').forEach(b => b.onclick = () => {
-    if (b.dataset.raum === raumJetzt) return;
-    raumJetzt = b.dataset.raum;
-    try { localStorage.setItem('mysuno-raum', raumJetzt); } catch (e) {}
-    karteSternbilder = [];
-    zeichnen();
-  });
+  const el = $('schaumansicht'); if (!el) return;
+  const html = ansichtHtml();
+  if (el.dataset.stand === html) return;       /* nichts geaendert - nicht neu bauen */
+  el.dataset.stand = html; el.innerHTML = html; el.hidden = !html;
+  wahlenBeobachten(el);
 }
 
 /* ---- DER KLANGSCHAUM ------------------------------------------------------
@@ -8606,6 +8688,7 @@ const SCHAUM_WABERN = '<filter id="schaumwabern" x="-25%" y="-25%" width="150%" 
 function schaumSichtbar(an){
   for (const id of ['kartefeld', 'karterechts']) { const e = $(id); if (e) e.hidden = an; }
   for (const id of ['schaumfeld', 'schaumrechts']) { const e = $(id); if (e) e.hidden = !an; }
+  if (an) { const k = $('karte'); if (k) k.classList.remove('leiste'); }    /* die schmale Leiste gehoert dem Klangraum (ladenLeiste) */
   if (an && schiffLauf){ cancelAnimationFrame(schiffLauf); schiffLauf = 0; }
 }
 let schaumFarbeAnteil = (() => { try { const v = parseFloat(localStorage.getItem('mysuno-schaum-farbe')); return isFinite(v) ? v : 100; } catch (e) { return 100; } })();
@@ -8617,7 +8700,35 @@ function schaumFarbeSetzen(v){
   schaumKontrastMischen();
   const z = $('schaumfarbezahl');
   if (z) z.textContent = schaumFarbeAnteil + ' %' + (schaumFarbeAnteil === 0 ? ' — Cover pur' : schaumFarbeAnteil === 50 ? ' — Farbstich' : schaumFarbeAnteil === 100 ? ' — Farbe deckt' : '');
+  schaumKurzSetzen();
 }
+/* DIE LADEN DES SCHAUM-PANELS (Caspar_D, 15.10.2026: „ich möchte alles nach Hausregeln" - jede Ansicht wie der Klangraum):
+   Einstellungen und Legende klappen auf und zu, im Kopf die Zusammenfassung wie „3D · NMDS · Orbiter · Flugbahn". Eigener
+   Merker (mysuno-schaum-laden), nicht der des Klangraums: dessen schmale Leiste (alle zu) gibt es im Schaum nicht, und
+   wer dort die Laden schliesst, soll im Schaum nicht vor zugeklappten stehen. Vorgabe offen - bis 1.0.78 stand alles da. */
+let schaumLaden = (() => { try { return { einstellungen: true, legende: true, ...JSON.parse(localStorage.getItem('mysuno-schaum-laden') || '{}') }; } catch (e) { return { einstellungen: true, legende: true }; } })();
+function schaumLadenEinrichten(){
+  const r = $('schaumrechts'); if (!r || r.dataset.laden) return;
+  r.dataset.laden = '1';
+  r.querySelectorAll('.drawer').forEach(d => {
+    const k = d.dataset.lade, kopf = d.querySelector('.drawerkopf');
+    d.querySelector('.dicon').innerHTML = LADEN_ICON[k] || '';
+    d.classList.toggle('offen', !!schaumLaden[k]);
+    kopf.onclick = () => { schaumLaden[k] = !schaumLaden[k]; d.classList.toggle('offen', schaumLaden[k]);
+      try { localStorage.setItem('mysuno-schaum-laden', JSON.stringify(schaumLaden)); } catch (e) {} };
+  });
+}
+/* Die Zusammenfassung im Kopf der Einstellungen: was die Ansicht gewaehlt hat (teile, aus schaumZeichnen), dazu die Farbe ueber
+   den Bildern, die sich ohne Neuzeichnen aendert. Die Bilderschau hat keine Farbe ueber den Bildern. */
+let schaumKurzTeile = [];
+function schaumKurzSetzen(teile){
+  if (teile) schaumKurzTeile = teile;
+  const k = $('schaumkurz'); if (!k) return;
+  const bilder = raumJetzt === 'schaum' && schaumArt === 'bilder';
+  k.textContent = [...schaumKurzTeile, bilder ? null : 'Farbe ' + schaumFarbeAnteil + ' %'].filter(Boolean).join(' · ');
+}
+wahlTun.schaummass = (v) => schaumMassWaehlen(v);
+wahlTun.schaumgliederung = (v) => schaumGliederungWaehlen(v);
 function schaumMassWaehlen(id){
   if (raumJetzt === 'groupies'){ groupieMass = id; try { localStorage.setItem('mysuno-groupie-mass', id); } catch (e) {} }
   else { schaumMass = id; try { localStorage.setItem('mysuno-schaum-mass', id); } catch (e) {} }
@@ -8694,11 +8805,15 @@ const BILDER_VORGABE = { trafo: 'wurzel', haengung: 'salon', rahmen: true, kopf:
 /* format, lage, grund gehörten zum eigenen Plakat-Export bis 1.0.73 (bilderPlakat, siehe unten) - gemerkte Reste fallen beim Lesen weg */
 let bilderWahl = (() => { try { const w = { ...BILDER_VORGABE, ...JSON.parse(localStorage.getItem('mysuno-bilderschau') || '{}') }; delete w.format; delete w.lage; delete w.grund; return w; }
   catch (e) { return { ...BILDER_VORGABE }; } })();
-function schaumArtWaehlen(a){
-  schaumArt = a === 'bilder' ? 'bilder' : 'klang';
-  try { localStorage.setItem('mysuno-schaum-art', schaumArt); } catch (e) {}
-  raumLeisteBauen(); schaumZeichnen();
-}
+/* Die Haengungen (bilderschau.js); als Pille der kurze Name, das Prinzip im Tooltip - bis 1.0.78 stand es im Dropdown-Eintrag
+   („Salon – große Bilder zur Mitte") */
+const BILDER_HAENGUNGEN = [
+  { id: 'salon', name: 'Salon', title: 'Große Bilder zur Mitte der Wand' },
+  { id: 'achse', name: 'Achse', title: 'Große Bilder auf der waagrechten Achse durch die Mitte, von dort nach oben und unten' },
+  { id: 'dicht', name: 'Dicht', title: 'Von oben nach unten' },
+];
+wahlTun.bildertrafo = (v) => bilderschauWahl('trafo', v);
+wahlTun.bilderhaengung = (v) => bilderschauWahl('haengung', v);
 function bilderschauWahl(k, v){
   bilderWahl[k] = v;
   try { localStorage.setItem('mysuno-bilderschau', JSON.stringify(bilderWahl)); } catch (e) {}
@@ -8722,9 +8837,12 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm })
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.78'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
   const T = bilderModul.TRANSFORMATIONEN, t = T.find(x => x.id === bilderWahl.trafo) || T[1];
-  { const sel = $('bildertrafo'); if (!sel.options.length) sel.innerHTML = T.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); sel.value = t.id; }
-  $('bilderhaengung').value = bilderWahl.haengung; $('bilderrahmen').checked = !!bilderWahl.rahmen;
-  $('bilderkopf').checked = !!bilderWahl.kopf; $('bilderunter').checked = !!bilderWahl.unter;
+  wahlSetzen($('bildertrafo'), 'bildertrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), t.id, { titel: 'Wie aus dem Wert die Fläche des Bildes wird' });
+  const h = BILDER_HAENGUNGEN.find(x => x.id === bilderWahl.haengung) || BILDER_HAENGUNGEN[0];
+  wahlSetzen($('bilderhaengung'), 'bilderhaengung', BILDER_HAENGUNGEN, h.id, { titel: 'Wie die Bilder in ihren Arealen hängen' });
+  for (const [id, k] of [['bilderrahmen', 'rahmen'], ['bilderkopf', 'kopf'], ['bilderunter', 'unter']]) $(id).classList.toggle('an', !!bilderWahl[k]);
+  schaumKurzSetzen([m.name, gl.name.replace('Klang: ', ''), t.name, h.name,
+    ...[['rahmen', 'Rahmen'], ['kopf', 'Überschriften'], ['unter', 'Bildunterschriften']].filter(([k]) => bilderWahl[k]).map(([, n]) => n)]);
   $('schaumwas').textContent = (m.was || '') + ' ' + t.kurz + '.';
   fuss.textContent = `Bilderschau: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, jedes Cover im Originalformat, ${t.kurz} (${m.name}). `
     + `Ein Schaum teilt die Wand in Areale je ${schaumZoom ? gl.unten.replace(/e$/, '').replace(/s$/, '') : gl.oben.replace(/n$/, '')}; jedes Bild hängt mit seinem Schwerpunkt im Areal seiner Gruppe, `
@@ -9034,22 +9152,16 @@ const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : ''
 
 async function schaumZeichnen(){
   karteHoehe();
-  raumLeisteBauen();
+  schaumAnsichtBauen();
+  schaumLadenEinrichten();
   await schaumVorratLaden();                  /* die verkleinerten Bilder aus der letzten Sitzung, einmal */
   const groupies = raumJetzt === 'groupies';
-  /* Unter „Klangschaum“ ein Dropdown (Caspar_D, 11.10.2026: „Träume sind Schäume … als Dropdown bei den Schäumen
-     – einmal Klangschaum, einmal Bilderschau“; der Groupieschaum bleibt allein) */
-  { const tt = $('schaumtitel');
-    if (groupies) tt.textContent = RAUM_NAME.groupies;
-    else { if (!tt.querySelector('select')) tt.innerHTML = '<select id="schaumart" class="schaumart" onchange="schaumArtWaehlen(this.value)" title="Klangschaum oder Bilderschau">'
-      + '<option value="klang">Klangschaum</option><option value="bilder">Bilderschau</option></select>';
-      $('schaumart').value = schaumArt; } }
+  /* Klangschaum oder Bilderschau waehlt seit dem 15.10.2026 die Ansichtswahl oben (zwei eigene Pillen); bis dahin ein
+     Dropdown in der Ueberschrift (Caspar_D, 11.10.2026: „Träume sind Schäume … als Dropdown bei den Schäumen") */
   { const bilder = !groupies && schaumArt === 'bilder';
-    $('bilderschauzeile').hidden = !bilder; $('schaumfarbezeile').hidden = bilder; }
+    $('schaumrechts').querySelectorAll('.bilderzeile').forEach(z => z.hidden = !bilder); $('schaumfarbezeile').hidden = bilder; }
   { const vb = $('schaumvoll'); if (vb && !vb.onclick) vb.onclick = karteVollbild; }
   karteLaeuftSetzen();
-  { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = false; }
-  { const l = $('schaummass').closest('label'); if (l) l.hidden = false; }
   $('groupiefarbenzeile').hidden = !groupies;
   $('klangschaumfarbenzeile').hidden = groupies;
   if (!groupies) $('groupiezeigtzeile').hidden = true;      /* der Regler „zeigt N von M" gehört dem Groupieschaum (groupieZeigtSetzen) */
@@ -9059,11 +9171,8 @@ async function schaumZeichnen(){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   const masse = schaumMasse(), m = masse.find(x => x.id === schaumMass) || masse[0];
   const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0];
-  for (const [id, liste, jetzt] of [['schaummass', masse, m.id], ['schaumgliederung', glieder, gl.id]]){
-    const sel = $(id), sig = liste.map(x => x.name).join('|');
-    if (sel.dataset.stand !== sig){ sel.dataset.stand = sig; sel.innerHTML = liste.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); }
-    sel.value = jetzt;
-  }
+  wahlSetzen($('schaummass'), 'schaummass', masse.map(x => ({ id: x.id, name: x.name, title: x.was })), m.id, { titel: 'Wonach sich die Fläche jedes Titels richtet' });
+  wahlSetzen($('schaumgliederung'), 'schaumgliederung', glieder.map(x => ({ id: x.id, name: x.name })), gl.id, { titel: 'Wonach die Titel in Gruppen und Untergruppen geteilt werden' });
   $('schaumwas').textContent = m.was || '';
   { const r = $('schaumfarbe'); if (r && +r.value !== schaumFarbeAnteil) r.value = schaumFarbeAnteil; schaumFarbeSetzen(schaumFarbeAnteil); }
 
@@ -9080,6 +9189,9 @@ async function schaumZeichnen(){
   const farbeVon = (n) => !n || /^ohne /.test(n) ? null
     : (gl.farbe && gl.farbe(n)) || NEBEL[obenNamen.filter(x => !/^ohne /.test(x)).indexOf(n) % NEBEL.length];
   const zeilen = schaumZoom ? alleZeilen.filter(z => z.gruppe === schaumZoom) : alleZeilen;
+  schaumKurzSetzen([m.name, gl.name.replace('Klang: ', '')]);
+  $('schaumlegkurz').textContent = (schaumZoom ? '„' + schaumZoom + '" · ' : '') + zeilen.length.toLocaleString('de-DE') + ' Titel · '
+    + obenNamen.length + ' ' + gl.oben;
 
   /* Legende: oben die Gruppen, ein Klick zoomt hinein; gezoomt die Untergruppen und der Weg zurück. */
   const summe = (zs, schl) => { const s = new Map(), n = new Map();
@@ -9135,11 +9247,8 @@ async function groupieZeichnen(){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   const m = GROUPIE_MASSE.find(x => x.id === groupieMass) || GROUPIE_MASSE[0], gl = groupieGl();
   groupieFarbwahlBauen();
-  for (const [id, liste, jetzt] of [['schaummass', GROUPIE_MASSE, m.id], ['schaumgliederung', GROUPIE_GLIEDERUNGEN, gl.id]]){
-    const sel = $(id), sig = 'groupies|' + liste.map(x => x.name).join('|');
-    if (sel.dataset.stand !== sig){ sel.dataset.stand = sig; sel.innerHTML = liste.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); }
-    sel.value = jetzt;
-  }
+  wahlSetzen($('schaummass'), 'schaummass', GROUPIE_MASSE.map(x => ({ id: x.id, name: x.name, title: x.was })), m.id, { titel: 'Wonach sich die Fläche jeder Person richtet' });
+  wahlSetzen($('schaumgliederung'), 'schaumgliederung', GROUPIE_GLIEDERUNGEN.map(x => ({ id: x.id, name: x.name, title: x.was })), gl.id, { titel: 'Wonach die Personen in Areale geteilt werden' });
   if (gl.id === 'geschmack' && !karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
   $('schaumwas').textContent = [m.was, gl.was].filter(Boolean).join(' ');            /* Mass und Gliederung, je ein, zwei Saetze */
   $('schaumwerk').innerHTML = '';
@@ -9148,8 +9257,10 @@ async function groupieZeichnen(){
   if (raumJetzt !== 'groupies') return;
   const zeilen = groupieAuswahl(mitWert).zeilen;
   groupieZeigtSetzen(mitWert.length, zeilen.length);
+  schaumKurzSetzen([m.name, gl.name, zeilen.length < mitWert.length ? zeilen.length.toLocaleString('de-DE') + ' von ' + mitWert.length.toLocaleString('de-DE') : null]);
   /* die Farben aus allen mit Wert (Ankunft zählt die Jahre durch), die Legende nur, was gezeigt ist */
   const klassen = new Set(zeilen.map(z => z.gruppe)), alleKlassen = new Set(mitWert.map(z => z.gruppe)), farbeVon = (n) => gl.farbe(n, alleKlassen);
+  $('schaumlegkurz').textContent = zeilen.length.toLocaleString('de-DE') + (zeilen.length === 1 ? ' Person · ' : ' Personen · ') + klassen.size + ' Areale';
   $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small>' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
     const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0), anzahl = zs.length;
     return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(a)}</b><br><small>${anzahl.toLocaleString('de-DE')} ${anzahl === 1 ? 'Person' : 'Personen'}`
@@ -10677,22 +10788,12 @@ function kartePanelHtml(){
   const zeile = (titel, inhalt) => `<div class="pzeile"><span class="ptitel">${titel}</span><span class="pinhalt">${inhalt}</span></div>`;
   const artFarbe = { Genre: '#c8d7ff', Stimmung: '#ffc896', Instrument: '#a0ebe1' };
   const startSong = aktuellId && song(aktuellId);
-  /* DIE RAUMWAHL STEHT OBEN, vor allem anderen: Sie entscheidet, WAS
-     man sieht - alles darunter entscheidet nur, WIE. Räume, die nicht
-     gerechnet sind, erscheinen gar nicht erst; ein Knopf, der ins Leere
-     führt, ist schlimmer als keiner. */
-  const raumZeile = (raumDa && Object.values(raumDa).filter(Boolean).length > 1)
-    ? zeile('Raum', ['klang', 'geschichten', 'schaum', 'groupies'].filter(r => raumDa[r]).map(r =>
-        `<button class="pille raumpille ${raumJetzt === r ? 'an' : ''}" data-raum="${r}" title="${RAUM_WAS[r]}">`
-        + raumReiter(r) + `</button>`).join(''))
-      + `<p class="fussnote raumwas">${RAUM_WAS[raumJetzt]}`
-      + (raumJetzt !== 'klang' && karteDaten
-          ? ` <b>${karteDaten.songs.length - d.songs.length} Lieder ohne Text fehlen hier.</b>` : '')
-      + `</p>`
-    : '';
+  /* Die Raumwahl stand hier als erste Zeile der Einstellungen; seit dem 15.10.2026 steht sie als Ansichtswahl ueber
+     den Laden (ansichtHtml). Dass im Geschichten-Raum die Lieder ohne Text fehlen, sagt die Fussnote unter der Karte. */
+  /* Eine Wahl je Zeile, damit sie ihre Breite fuer sich messen kann (Hausregel 19, wahlHtml) */
+  const wahlZeile = (titel, html) => `<div class="pzeile pwahl"><span class="ptitel">${titel}</span><span class="pinhalt">${html}</span></div>`;
 
   return ladeHtml('einstellungen', 'Einstellungen', kurz, `<div class="panel">` +
-    raumZeile +
     zeile('Visualisierung',
       `<span class="schalter" title="Fläche oder Raum. Im Raum: Klick dreht den Titel nach vorn, Ziehen dreht frei, Doppelklick zurück."><button class="pille ${karteDim === '2d' ? 'an' : ''}" data-dim="2d">2D</button><button class="pille ${karteDim === '3d' ? 'an' : ''}" data-dim="3d">3D</button></span>` +
       `<span class="schalter" title="NMDS: Rangfolge aller Abstände stimmt (Stress 2D ${String(d.stress ?? '?').replace('.', ',')}, 3D ${String(d.stress3d ?? '?').replace('.', ',')}). UMAP: nur Nachbarschaft, Abstände dazwischen erfunden."><button class="pille ${karteVerf === 'nmds' ? 'an' : ''}" data-verf="nmds">NMDS</button><button class="pille ${karteVerf === 'umap' ? 'an' : ''}" data-verf="umap">UMAP</button></span>`) +
@@ -10716,7 +10817,7 @@ function kartePanelHtml(){
       `<button class="pille ${karteLinien ? 'an' : ''}" id="kartelinien" title="Sternbild-Linien durch die stärksten Titel eines Klassifikators">Sternbilder</button>` +
       `<button class="pille ${karteNebel ? 'an' : ''}" id="kartenebel" title="Staubwolken der Stilgruppen">Nebel</button>` +
       `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>`) +
-    zeile('Farben', `<span class="farbwahl" id="klangraumfarben">${klangraumFarbwahlHtml()}</span>`) +
+    wahlZeile('Farben', `<span class="farbwahl" id="klangraumfarben">${klangraumFarbwahlHtml()}</span>`) +
     /* Der Name steht IN der Zeile, nicht mehr in ihrer Ueberschrift
        (Caspar_D, 26.08.2026: „vorausgefuellt mit dem ganzen Sunohandle,
        bei Klick darauf wird es zu einer editierbaren Box, in der
@@ -10735,44 +10836,30 @@ function kartePanelHtml(){
       `</span>` +
       (kubus ? `<span class="phinweis">Kennung ${esc(matrixKennung())}</span>` : '') +
       `<button class="pille ${probeflug ? 'an' : ''}" id="probeknopf" title="Probeflug ohne Musik: zwei Runden à 1 s um jeden Stern, dann Transit zum nächsten Klangnachbarn — zum Prüfen der Bahnen">Probeflug</button>` +
-      `<select id="gestaltwahl" title="Wer fliegt: das Schiff, der Kubus (jeder verlassene Stern verlischt in einer Supernova) oder der Rabe">` +
-        ['schiff','kubus','rabe'].map(gw => `<option value="${gw}"${gestalt === gw ? ' selected' : ''}>` +
-          (gw === 'schiff' ? 'Schiff' : gw === 'kubus' ? 'Kubus' : 'Rabe') + '</option>').join('') + `</select>` +
-      `<select id="schiffart" title="Flugart des Sound-Schiffs"><option value="direkt" ${schiffArt === 'direkt' ? 'selected' : ''}>Direkte Route</option><option value="orbit" ${schiffArt === 'orbit' ? 'selected' : ''}>Orbiter</option><option value="warp" ${schiffArt === 'warp' ? 'selected' : ''}>Warpsprung</option></select>` +
       (reise ? `<span class="phinweis">unterwegs seit ${song(reiseWeg[0]) ? song(reiseWeg[0]).titel : '?'} · ${reiseWeg.length} Station${reiseWeg.length === 1 ? '' : 'en'}</span><button class="pille an" id="reiseknopf">Reise beenden</button>`
             : startSong ? `<span class="phinweis">Start: ${startSong.titel}</span><button class="pille" id="reiseknopf">Starte Reise</button>`
-            : `<span class="phinweis">Wähle einen Startpunkt — einen Stern anklicken</span><button class="pille" id="reiseknopf" disabled>Starte Reise</button>`)) + `</div>`);
+            : `<span class="phinweis">Wähle einen Startpunkt — einen Stern anklicken</span><button class="pille" id="reiseknopf" disabled>Starte Reise</button>`)) +
+    /* Gestalt und Flugart waren zwei Dropdowns in der Zeile des Schiffs; seit dem 15.10.2026 je eine Wahl nach Hausregel 19 */
+    wahlZeile('Gestalt', wahlHtml('gestalt', [
+      { id: 'schiff', name: 'Schiff', title: 'Das Sound-Schiff fliegt' },
+      { id: 'kubus', name: 'Kubus', title: 'Die Musik-Matrix fliegt: jeder verlassene Stern verlischt in einer Supernova' },
+      { id: 'rabe', name: 'Rabe', title: 'Der Rabe fliegt' }], gestalt, { titel: 'Wer fliegt: das Schiff, der Kubus (jeder verlassene Stern verlischt in einer Supernova) oder der Rabe' })) +
+    wahlZeile('Flugart', wahlHtml('flugart', [
+      { id: 'direkt', name: 'Direkte Route', title: 'Fliegt über die ganze Liedlänge zum nächsten Stern' },
+      { id: 'orbit', name: 'Orbiter', title: 'Kreist um den Stern und fliegt 10 s vor Schluss los' },
+      { id: 'warp', name: 'Warpsprung', title: 'Kreist, der Warpkern lädt in den letzten 3 s; beim Liedwechsel Blitz, Sternstrahlen und Ankunftsring' }],
+      schiffArt, { titel: 'Flugart des Sound-Schiffs' })) + `</div>`);
 }
 function kartePanelDran(leg){
   const merk = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
   ladenDran(leg);
   leg.querySelectorAll('.artpille').forEach(b => b.onclick = () => { karteArten[b.dataset.a] = !karteArten[b.dataset.a]; merk('mysuno-karte-arten', JSON.stringify(karteArten)); karteZeichnen(); });
-  leg.querySelectorAll('[data-raum]').forEach(b => b.onclick = () => {
-    if (b.dataset.raum === raumJetzt) return;
-    raumJetzt = b.dataset.raum; merk('mysuno-raum', raumJetzt);
-    /* Die Sternbilder gelten je Raum - sonst zeigt der Geschichten-Raum
-       die Namen aus dem Klang-Raum. */
-    karteSternbilder = [];
-    zeichnen();          /* filtert die Liste neu - im Geschichten-Raum fehlen die Textlosen */
-  });
+  wahlenBeobachten(leg);              /* Ansichtswahl, Gestalt, Flugart (wahlHtml) */
   leg.querySelectorAll('[data-dim]').forEach(b => b.onclick = () => { karteDim = b.dataset.dim; merk('mysuno-karte-dim', karteDim); karteArt = karteArtAbleiten(); karteZeichnen(); });
   leg.querySelectorAll('[data-verf]').forEach(b => b.onclick = () => { karteVerf = b.dataset.verf; merk('mysuno-karte-verf', karteVerf); karteArt = karteArtAbleiten(); karteZeichnen(); });
   const k = (id, fn) => { const el = leg.querySelector('#' + id); if (el) el.onclick = fn; };
   k('reiseknopf', () => { if (!leg.querySelector('#reiseknopf').disabled) reiseToggle(); });
   k('probeknopf', () => probeflugToggle());
-  const gwSel = leg.querySelector('#gestaltwahl');
-  if (gwSel) gwSel.onchange = () => {
-    const vorher = gestalt;
-    gestalt = gwSel.value; kubus = gestalt === 'kubus';
-    merk('mysuno-gestalt', gestalt);
-    if (vorher === 'kubus' && !kubus){ assimiliert.clear(); if (raumK()) karteHimmel(raumK()); }
-    if (vorher === 'rabe' && gestalt !== 'rabe' && typeof rabeWolkeLeeren === 'function') rabeWolkeLeeren();
-    if (vorher === 'rabe' && gestalt !== 'rabe' && karteSchiffFrame) karteSchiffFrame.rabenFunken = null;
-    if (typeof rabenmagieAnwenden === 'function') rabenmagieAnwenden();
-    klangraumGestaltFarben();
-    karteZeichnen();
-  };
-  const sel = leg.querySelector('#schiffart'); if (sel) sel.onchange = () => { schiffArt = sel.value; merk('mysuno-schiff-art', schiffArt); };
   /* Der Schiffsname. Gespeichert wird bei JEDEM Anschlag, nicht erst
      beim Verlassen: Das Panel wird neu gebaut, sobald sich sonst etwas
      aendert (Songwechsel etwa), und ein noch nicht gesicherter Name
@@ -10796,6 +10883,20 @@ function kartePanelDran(leg){
   k('kartelinien', () => { karteLinien = !karteLinien; merk('mysuno-karte-linien', karteLinien ? 'an' : 'aus'); karteZeichnen(); });
   k('karteloecher', () => { karteLoecher = !karteLoecher; merk('mysuno-karte-loecher', karteLoecher ? 'an' : 'aus'); karteZeichnen(); });
 }
+
+wahlTun.gestalt = (wert) => {
+  const vorher = gestalt;
+  gestalt = wert; kubus = gestalt === 'kubus';
+  try { localStorage.setItem('mysuno-gestalt', gestalt); } catch (e) {}
+  if (vorher === 'kubus' && !kubus){ assimiliert.clear(); if (raumK()) karteHimmel(raumK()); }
+  if (vorher === 'rabe' && gestalt !== 'rabe' && typeof rabeWolkeLeeren === 'function') rabeWolkeLeeren();
+  if (vorher === 'rabe' && gestalt !== 'rabe' && karteSchiffFrame) karteSchiffFrame.rabenFunken = null;
+  if (typeof rabenmagieAnwenden === 'function') rabenmagieAnwenden();
+  klangraumGestaltFarben();
+  karteZeichnen();
+};
+/* Neu zeichnen, damit die gewaehlte Pille „an" ist - das Dropdown zeigte seine Wahl von selbst */
+wahlTun.flugart = (wert) => { schiffArt = wert; try { localStorage.setItem('mysuno-schiff-art', schiffArt); } catch (e) {} karteZeichnen(); };
 
 async function karteZeichnen(){
   karteHoehe();
@@ -10822,7 +10923,7 @@ async function karteZeichnen(){
       svg.innerHTML = ''; return;
     }
   }
-  raumLeisteBauen();
+  raumLascheBenennen();
   { const vb = $('kartevoll'); if (vb && !vb.onclick) vb.onclick = karteVollbild; }
   karteLaeuftSetzen();
   const d = raumDaten[raumJetzt], n = d.gruppen.length;
@@ -10870,12 +10971,12 @@ async function karteZeichnen(){
      (Caspar_D, 22.08.: "irgendwas klaut den Mausfokus" - Nachlauf und
      Drehung zeichnen bis zu 8x/s, und innerHTML ersetzte jedes Mal das
      Element unter der Maus). Signatur aus allem, was im Panel steht. */
-  const panelSig = JSON.stringify([klangraumPal().id, karteDim, karteVerf, schiffArt, reise, probeflug, gestalt, karteArten, karteNebel, karteBahn, karteLoecher, karteLinien, karteLaden, karteGruppeAn, aktuellId, reiseWeg.length, reiseWeg[0], d.anzahl, n]);
+  const panelSig = JSON.stringify([ansichtHtml(), klangraumPal().id, karteDim, karteVerf, schiffArt, reise, probeflug, gestalt, karteArten, karteNebel, karteBahn, karteLoecher, karteLinien, karteLaden, karteGruppeAn, aktuellId, reiseWeg.length, reiseWeg[0], d.anzahl, n]);
   if (leg.dataset.sig !== panelSig){
     leg.dataset.sig = panelSig;
     { const sb0 = $('kartesteckbrief'); if (sb0 && sb0.parentElement !== $('karterechts')) $('karterechts').appendChild(sb0); }   // Steckbrief vor dem Neubau parken
-    leg.innerHTML = kartePanelHtml() + ladeHtml('legende', 'Legende', `${d.anzahl} Titel · ${n} ${gruppenWort}`, gruppenHtml) +
-      ladeHtml('werk', 'Werk', aktuellId && song(aktuellId) ? song(aktuellId).titel : '', '<div id="kartesteckbriefhalter"></div>');
+    { const a = ansichtHtml(); leg.innerHTML = (a ? `<div class="ansichtwahl">${a}</div>` : '') + kartePanelHtml() + ladeHtml('legende', 'Legende', `${d.anzahl} Titel · ${n} ${gruppenWort}`, gruppenHtml) +
+      ladeHtml('werk', 'Werk', aktuellId && song(aktuellId) ? song(aktuellId).titel : '', '<div id="kartesteckbriefhalter"></div>'); }
     /* der Steckbrief (eigenes Element, wird vom Hover befuellt) wandert in die Werk-Lade */
     const sb = $('kartesteckbrief'), halter = leg.querySelector('#kartesteckbriefhalter'); if (sb && halter){ halter.appendChild(sb); sb.hidden = false; }
     kartePanelDran(leg);
