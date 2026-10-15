@@ -9387,7 +9387,8 @@ async function schaumVorrechnen(){
    der Zelle, Wackeln, Schatten, Kissen nur auf den Kacheln; Bilder in der Vorschau aus dem Vorrat, die volle
    Fassung in data-voll fuers PDF). Fuer den Schirm unveraendert, was vorher in malen() stand.
    druck: { titel: 'rauch'|'milch'|'kante'|'ohne', fugen: Faktor, wackeln: 0..1, schatten: 0..1, vignette: 0..1, kissen, deck, ton, massstab,
-            verzeichnis: Nummern in die Zellen und die Liste zurueckgeben, mmJeEinheit: Millimeter je Schaum-Einheit } */
+            verzeichnis: Nummern in die Zellen und die Liste zurueckgeben, mmJeEinheit: Millimeter je Schaum-Einheit,
+            nrSchwelle: kleinste Schrift einer Nummer in Seiteneinheiten (plakat.js nrSchwelle: 1,0 mm, Bildformate 12 Bildpunkte) } */
 /* WOHIN EIN COVER IN SEINER ZELLE RUECKT (Caspar_D, 06./07.10.2026: „wenn immer das Zentrum des Geschehens
    der Coverart in der Kachel zu sehen wäre", „damit keine Gesichter in den PDFs angeschnitten sind").
    bin/gesichter.js sucht die Gesichter je Standbild (GET /api/gesichter). Das Bild deckt seine Zelle wie bisher
@@ -9738,35 +9739,38 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     return { bandY, bh: y + h - bandY, fs: lab.size,
       text: `<text class="kopf" font-size="${lab.size.toFixed(2)}" fill="${milch ? '#141414' : '#f4f4f2'}" text-anchor="middle" clip-path="url(#skz${i})" pointer-events="none">${zeilen}</text>` };
   };
-  /* Die Nummer des Werkverzeichnisses in einer Zelle ohne Glasband: ein kleines Schild unten in der Zelle (dort,
-     wo die Zelle breit genug ist, sonst in ihrer Mitte), Schrift 2,2 bis 5 mm je nach Zellgroesse - lesbar aus der
-     Naehe, auch in der kleinsten Zelle. Rauch- oder Milchglas wie die Titel. */
-  const nummerSchild = (pk, x, y, w, h, nr, tf) => {
+  /* Die Nummer des Werkverzeichnisses in einer Zelle ohne Glasband: ein kleines Schild unten in der Zelle, Schrift 2,2 bis 5 mm je nach
+     Zellgroesse - lesbar aus der Naehe. Rauch- oder Milchglas wie die Titel. */
+  const nummerSchild = (pk, x, y, w, h, nr, tf, i) => {
     /* (Wiedervorlage §77) das Schild so tief wie moeglich, mittig auf der breitesten freien Strecke, ganz in der Zelle und nicht
-       auf einer Wandfuge (render.js rechteckUnten); passt es nicht, kleiner bis 2,2 mm; erst dann wie vorher. Die Ziffern
-       halbfett in der Druckgroesse gemessen (vorher 0,62 em je Ziffer geschaetzt). */
-    const mm = (druck && druck.mmJeEinheit) || 1, poly = pk.map(p => [p[0], -p[1]]);
-    let fs = Math.min(5 / mm, Math.max(2.2 / mm, 0.2 * Math.min(w, h))), cx = 0, cy = 0, sw = 0, sh = 0, platz = null;
-    for (let k = 0; k < 12 && !platz; k++, fs = Math.max(2.2 / mm, fs * 0.9)){
-      sw = textBreite('0'.repeat(String(nr).length), fs, 600) * fs + 0.7 * fs; sh = 1.3 * fs;
-      platz = R.rechteckUnten(poly, sw + 0.4 * fs, sh + 0.4 * fs, waende);
-      if (fs <= 2.2 / mm + 1e-9) break;
+       auf einer Wandfuge (render.js rechteckUnten); passt es nicht, kleiner bis 2,2 mm. Die Ziffern halbfett in der Druckgroesse
+       gemessen (vorher 0,62 em je Ziffer geschaetzt). NUR WAS PASST (Caspar_D, 15.10.2026: „Zeige nur die Nummer, wenn sie
+       [hinein]passt oder lasse sie ganz weg"): unter 2,2 mm weiter kleiner (je 10 %) bis zur Schwelle (druck.nrSchwelle); passt es
+       auch dort nicht, null - die Zelle traegt keine Nummer, ihr Titel steht im Verzeichnis unter „Zu klein für eine Nummer". Bis
+       dahin stand das Schild dann bei 2,2 mm in der Mitte der Zelle oder auf einer Sehne unten, auch ueber ihrem Rand (Klangschaum
+       70 × 100 hoch, Bleiglas: 50 von 330 Schildern, die Ziffern bei 47; Groupieschaum A3: 20 von 220, die Ziffern bei 7). Und bis
+       dahin standen die Ziffern 10 % kleiner als bemessen (die Schleife verkleinerte fs nach dem Treffer noch einmal, das Schild
+       blieb): jetzt in der Groesse, nach der das Schild bemessen ist (Klangschaum A3, Bleiglas: groesste Ziffern 5,0 statt 4,5 mm). */
+    const mm = (druck && druck.mmJeEinheit) || 1, poly = pk.map(p => [p[0], -p[1]]), unten = ((druck && druck.nrSchwelle) || 1) / mm, boden = Math.max(2.2 / mm, unten);
+    const groessen = []; for (let f = Math.min(5 / mm, Math.max(boden, 0.2 * Math.min(w, h))); f > boden + 1e-9; f *= 0.9) groessen.push(f);
+    groessen.push(boden); for (let f = boden * 0.9; f > unten + 1e-9; f *= 0.9) groessen.push(f); if (unten < boden) groessen.push(unten);
+    for (const fs of groessen){
+      const sw = textBreite('0'.repeat(String(nr).length), fs, 600) * fs + 0.7 * fs, sh = 1.3 * fs;
+      const platz = R.rechteckUnten(poly, sw + 0.4 * fs, sh + 0.4 * fs, waende); if (!platz) continue;
+      const cx = platz[0], cy = -platz[1];
+      return `<g pointer-events="none" data-zelle="${i}"${tf ? ` transform="${tf}"` : ''}><rect x="${(cx - sw / 2).toFixed(1)}" y="${(cy - sh / 2).toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" rx="${(sh * 0.3).toFixed(1)}"`
+        + ` fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? 0.72 : 0.58}"/>`
+        + `<text x="${cx.toFixed(1)}" y="${(cy + fs * 0.36).toFixed(1)}" font-size="${fs.toFixed(2)}" font-weight="600" text-anchor="middle"`
+        + ` fill="${milch ? '#141414' : '#f4f4f2'}" style="font-variant-numeric:tabular-nums">${nr}</text></g>`;
     }
-    if (platz){ cx = platz[0]; cy = -platz[1]; }
-    else { for (const p of pk){ cx += p[0]; cy += p[1]; } cx /= pk.length; cy /= pk.length;
-      const yy = y + h - 0.95 * sh, s = sehne(pk, yy); if (s && s[1] - s[0] > sw * 1.3){ cx = (s[0] + s[1]) / 2; cy = yy; } }
-    const schild = `<g pointer-events="none"${tf ? ` transform="${tf}"` : ''}><rect x="${(cx - sw / 2).toFixed(1)}" y="${(cy - sh / 2).toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" rx="${(sh * 0.3).toFixed(1)}"`
-      + ` fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? 0.72 : 0.58}"/>`
-      + `<text x="${cx.toFixed(1)}" y="${(cy + fs * 0.36).toFixed(1)}" font-size="${fs.toFixed(1)}" font-weight="600" text-anchor="middle"`
-      + ` fill="${milch ? '#141414' : '#f4f4f2'}" style="font-variant-numeric:tabular-nums">${nr}</text></g>`;
-    return schild;
+    return null;
   };
   /* TITEL ENTLANG DER KANTE (Plakat, Stufe 2; angekreuzt: „Titel gebogen entlang der unteren Zellkante statt auf einem
      Band"). Die Unterkante: senkrechte Linien quer durch die Zelle, je Linie der tiefste Schnitt mit dem Umriss; diese
      Punkte knapp eine Schriftgroesse nach innen gerueckt und geglaettet - darauf laeuft der Titel (textPath), weiss mit
      dunklem Saum, damit er auf jedem Bild lesbar ist. Schrift 2,2 bis 5,5 mm je nach Zelle; passt der Titel nicht,
      wird er gekuerzt; ist die Kante zu kurz oder zu zerklueftet, gilt wie bisher: Nummer oder nichts. */
-  const kantenTitel = (pk, x, y, w, h, name, i) => {
+  const kantenTitel = (pk, x, y, w, h, name, i, nr = '') => {
     if (w < 26 || h < 22) return null;
     const mm = (druck && druck.mmJeEinheit) || 1;
     let fs = Math.min(5.5 / mm, Math.max(2.2 / mm, 0.11 * Math.min(w, h)));
@@ -9806,9 +9810,27 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
        nicht (∩ oder gerade), bleibt die Grundlinie der Bezug. */
     const mi = gl[gl.length >> 1][1], enden = (gl[0][1] + gl[gl.length - 1][1]) / 2, schale = mi > enden + 0.05 * fs;
     const bahn = schale ? gl.map(p => [p[0], p[1] - km.xh * fs]) : gl, versatz = schale ? ` dy="${km.xh.toFixed(3)}em"` : '';
-    return `<path id="skp${i}" d="M${bahn.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
+    /* NUR WAS PASST (Caspar_D, 15.10.2026: „Zeige nur die Nummer, wenn sie [hinein]passt"): die Nummer steht vorn im Titel, dort, wo die
+       Kante zur Seite steigt, und der Zellumriss schnitt sie an (Klangschaum A3, Galerie mit Verzeichnis, an der Kante: aus „189" wurde
+       „89", 14 von 199 Nummern ragten rechnerisch bis 0,7 mm hinaus). Wo ihre Ziffern stehen, folgt aus der Bahn wie beim Setzen: der
+       Titel mittig (startOffset 50 %), jede Ziffer gerade auf der Tangente ihrer Mitte, die Grundlinie um dy nach aussen, darueber die
+       Ziffernhoehe. Liegt eine Ecke nicht mindestens 0,15 Geviert im Umriss, passt die Nummer hier nicht (nrPasst) - dort dann 163
+       Nummern, 36 Titel stehen ohne Nummer im Abschnitt „Zu klein für eine Nummer". */
+    let nrPasst = true;
+    if (nr){
+      const lauf = [0]; for (let k = 1; k < bahn.length; k++) lauf.push(lauf[k - 1] + Math.hypot(bahn[k][0] - bahn[k - 1][0], bahn[k][1] - bahn[k - 1][1]));
+      const an = (s) => { let k = 1; while (k < bahn.length - 1 && lauf[k] < s) k++; const a = bahn[k - 1], b = bahn[k], l = (lauf[k] - lauf[k - 1]) || 1, u = (s - lauf[k - 1]) / l;
+        const tx = (b[0] - a[0]) / l, ty = (b[1] - a[1]) / l; return { p: [a[0] + u * (b[0] - a[0]), a[1] + u * (b[1] - a[1])], t: [tx, ty], n: [ty, -tx] }; };
+      const innen = (q) => { let c = false; for (let k = 0, j = pk.length - 1; k < pk.length; j = k++){ const [xi, yi] = pk[k], [xj, yj] = pk[j]; if ((yi > q[1]) !== (yj > q[1]) && q[0] < (xj - xi) * (q[1] - yi) / (yj - yi) + xi) c = !c; } return c; };
+      const abstand = (q) => { let d = Infinity; for (let k = 0, j = pk.length - 1; k < pk.length; j = k++){ const [ax, ay] = pk[j], dx = pk[k][0] - ax, dy = pk[k][1] - ay, u = Math.max(0, Math.min(1, ((q[0] - ax) * dx + (q[1] - ay) * dy) / (dx * dx + dy * dy || 1))); d = Math.min(d, Math.hypot(q[0] - ax - u * dx, q[1] - ay - u * dy)); } return d; };
+      const s0 = lang / 2 - breit(txt) / 2, tief = schale ? km.xh * fs : 0, hoch = 0.72 * fs;
+      nrPasst = txt.startsWith(nr) && [...nr].every((_, j) => { const a0 = s0 + (j ? breit(nr.slice(0, j)) : 0), a1 = s0 + breit(nr.slice(0, j + 1)), m = an((a0 + a1) / 2), hb = (a1 - a0) / 2;
+        const g = (u, v) => [m.p[0] + m.t[0] * u + m.n[0] * v, m.p[1] + m.t[1] * u + m.n[1] * v];
+        return [g(-hb, -tief), g(hb, -tief), g(hb, hoch - tief), g(-hb, hoch - tief)].every(q => innen(q) && abstand(q) >= 0.15 * fs); });
+    }
+    return { fs, nrPasst, svg: `<path id="skp${i}" d="M${bahn.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
       + `<text class="kante" font-size="${fs.toFixed(1)}" font-weight="600" fill="#ffffff" fill-opacity="0.7"`
-      + ` clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>`;
+      + ` clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>` };   /* fs: die Nummer davor zählt nur ab der Schwelle */
   };
   /* DIE ECKE (Plakat „Randlos"): bis 1.0.57 eine eigene Zelle mit dem Avatar als Bild und einem Glasfeld darin. Seit 1.0.58
      (Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der Avatar in rundem
@@ -9945,9 +9967,35 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      Zeile ist 0,7 typische Zellweiten hoch), in der Zeile von links nach rechts. Wer eine Nummer sucht, findet sie
      dort, wo die Liste sie vermuten laesst. HOECHSTENS 400 NUMMERN (seit 1.0.48 sind im Groupieschaum alle einzeln,
      bei Tarja 4816): die 400 groessten Zellen tragen eine Nummer, die uebrigen nennt die Liste am Ende ihres Areals als
-     „und N weitere" - so sah das Plakat schon vorher aus, und eine winzige Zelle traegt keine lesbare Nummer. */
-  let nummern = null, verzeichnis = null;
+     „und N weitere" - so sah das Plakat schon vorher aus, und eine winzige Zelle traegt keine lesbare Nummer.
+     NUR WAS PASST (Caspar_D, 15.10.2026: „Zeige nur die Nummer, wenn sie [hinein]passt oder lasse sie ganz weg und schreibe sie ins
+     Werkverzeichnis als extra Abschnitt …, deren Zellen/Rechtecke zu klein für eine Darstellung sind"; gewählt: eigener Abschnitt):
+     eine Zelle bekommt ihre Nummer nur, wenn diese ganz in ihr steht und mindestens in der Schwelle (druck.nrSchwelle) - im Titel, wenn
+     dessen Schrift sie erreicht (an der Kante zudem nur, wenn ihre Ziffern im Umriss stehen: kantenTitel), sonst auf dem Schild
+     (nummerSchild). Darum wird jede Zelle vorab beschriftet, in der Reihenfolge der Nummern und mit der Nummer, die sie bekaeme
+     (beschriften; ein Titel mit Nummer ist laenger): die Nummern laufen lueckenlos 1 … N, die uebrigen Titel stehen ohne Nummer im
+     Abschnitt „Zu klein für eine Nummer" (zuKlein, plakat.js verzeichnisSetzen). Steht die Nummer im Titel unter der Schwelle (die
+     Titel sind mindestens 7 Schaum-Einheiten gross, auf A3 1,8 mm - darunter liegen sie auf kleinen Formaten und bei den
+     Bildformaten), steht der Titel ohne sie, ein Schild darunter gibt es dort nicht. */
+  /* Lage einer Zelle aus ihrem gezeichneten Umriss (d), und was in ihr steht: Titel im Glasfeld (kopfUnten) oder an der Kante
+     (kantenTitel), sonst mit Nummer das Schild. nr: die Nummer, die sie bekaeme (0: keine). */
+  const zellLage = (dd) => { const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number)), xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
+    const x = Math.min(...xs), y = Math.min(...ys); return { pk, x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y }; };
+  const beschriften = (i, dd, nr) => {
+    const { pk, x, y, w, h } = zellLage(dd), leaf = res.leaves[i], roh = (zeilen[leaf.row] || {}).titel || '', mm = (druck && druck.mmJeEinheit) || 1;
+    /* Zierzeichen faellt nur bei Personen weg - bei Songtiteln gehoert die Klammer am Ende dazu */
+    const name0 = (druck ? druck.titel !== 'ohne' : personen) ? (personen ? zierfrei(roh) : (druck ? zellName(leaf) : String(roh).trim())) : '';
+    const name = name0 && nr ? nr + '\u2002' + name0 : name0;
+    const anKante = druck && druck.titel === 'kante';
+    const plan = !anKante && name && h >= 34 && w >= 34 ? kopfUnten(pk, x, y, w, h, name, i) : null;
+    const kante = anKante && name ? kantenTitel(pk, x, y, w, h, name, i, nr ? String(nr) : '') : null;
+    const tf = druck && druck.wackeln > 0 ? schaumWackeln(ids[i], x, y, w, h, druck.wackeln) : '';
+    const schild = nr && !plan && !kante ? nummerSchild(pk, x, y, w, h, nr, tf, i) : null, ab = ((druck && druck.nrSchwelle) || 1) / mm - 1e-9;
+    return { plan, kante, tf, schild, mitNr: !!nr && (plan ? plan.fs >= ab : kante ? kante.fs >= ab && kante.nrPasst : !!schild) };
+  };
+  let nummern = null, verzeichnis = null; const beschriftet = new Map();
   if (druck && druck.verzeichnis){
+    const zellPfade = new Map(); for (const m of svg.matchAll(/<path d="(M[^"]+)"([^>]*?) data-i="(\d+)"([^>]*)\/>/g)) zellPfade.set(+m[3], m[1]);
     const H = res.height;
     const mitte = (o) => { let sx = 0, sy = 0; for (const p of o){ sx += p[0]; sy += p[1]; } return [sx / o.length, H - sy / o.length]; };
     const flaeche = (o) => { let s = 0; for (let q = 0; q < o.length; q++){ const a = o[q], b = o[(q + 1) % o.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s / 2); };
@@ -9961,11 +10009,13 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     for (const [a, liste] of [...gruppen.entries()].sort((p, q) => ((q[0] && q[0].count) || 0) - ((p[0] && p[0].count) || 0))){
       liste.sort((p, q) => Math.floor(p.cy / band) - Math.floor(q.cy / band) || p.cx - q.cx);
       const farbe = (!gezoomt && a && farbeVon(a.name)) || schaumFarbe(liste[0].k, R.chainOf, farbeVon, gezoomt);
-      const eintraege = [], weitere = [];
-      for (const e of liste){ const z = zeilen[e.k.row];
+      const eintraege = [], weitere = [], zuKlein = [];
+      for (const e of liste){ const z = zeilen[e.k.row], titel = personen ? zierfrei(z.titel || '') : String(z.titel || '').trim();
         if (flaeche(e.k.outline) < nummerAb){ weitere.push(1); continue; }
-        nummern.set(e.i, ++nr); eintraege.push({ nr, titel: personen ? zierfrei(z.titel || '') : String(z.titel || '').trim() }); }
-      verzeichnis.push({ name: a ? a.name : '', farbe, eintraege, weitere: weitere.reduce((s, n) => s + n, 0) });
+        const b = zellPfade.has(e.i) ? beschriften(e.i, zellPfade.get(e.i), nr + 1) : null;
+        if (!b || !b.mitNr){ zuKlein.push(titel); continue; }
+        nummern.set(e.i, ++nr); beschriftet.set(e.i, b); eintraege.push({ nr, titel }); }
+      verzeichnis.push({ name: a ? a.name : '', farbe, eintraege, weitere: weitere.reduce((s, n) => s + n, 0), zuKlein });
     }
   }
   /* Die Vorschau des Plakats zeigt die Kachelbilder aus dem Vorrat - die vollen Cover (499 x ~2,5 MB) braucht
@@ -9985,9 +10035,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              if (druck && druck.skizze) return skizzeZelle(alles, dd, +i, id);
              /* die Areal-Farbe aus der Legende an den Pfad - fuer den Rahmen der hervorgehobenen Zelle (rahmenFarbe) */
              { const af = farbeVon((zeilen[res.leaves[+i].row] || {}).gruppe); if (af) alles = alles.replace('<path ', `<path data-farbe="${af}" `); }
-             const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
-             const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
-             const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+             const { x, y, w, h } = zellLage(dd);
              const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
              const quelle = bilder[+i], stufe = schaumStufe(Math.max(w, h) * faktor * massstab);
              /* Platz des Bildes: mit Gesichtern gerueckt (schaumFokus); gezeigt wird am Schirm und in der
@@ -10002,14 +10050,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              const bildAn = !quelle ? '' : druck ? `href="${esc(schaumBildHref(vorschauBilder[+i] || quelle, stufe))}" data-voll="${esc(quelle)}" data-i="${i}"`
                : `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"`;
              let kopf = '';
-             /* Zierzeichen faellt nur bei Personen weg - bei Songtiteln gehoert die Klammer am Ende dazu */
-             const roh = (zeilen[res.leaves[+i].row] || {}).titel || '', nrHier = nummern ? nummern.get(+i) : 0;
-             const name0 = (druck ? druck.titel !== 'ohne' : personen) ? (personen ? zierfrei(roh) : (druck ? zellName(res.leaves[+i]) : String(roh).trim())) : '';
-             const name = name0 && nrHier ? nrHier + '\u2002' + name0 : name0;
-             const anKante = druck && druck.titel === 'kante';
-             const plan = !anKante && name && h >= 34 && w >= 34 ? kopfUnten(pk, x, y, w, h, name, i) : null;
-             const kante = anKante && name ? kantenTitel(pk, x, y, w, h, name, i) : null;
-             const tf = druck && druck.wackeln > 0 ? schaumWackeln(id, x, y, w, h, druck.wackeln) : '';
+             const nrHier = nummern ? nummern.get(+i) : 0;
+             const { plan, kante, tf, schild } = (nrHier && beschriftet.get(+i)) || beschriften(+i, dd, 0);
              if (plan){
                kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
                  + `<g clip-path="url(#skz${i})" pointer-events="none">`
@@ -10018,8 +10060,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
                  + `<rect class="${milch ? 'milch' : 'rauch'}" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? '0.62' : SCHAUM_RAUCH_VORGABE}"/></g>`;
                if (druck) baender.push(tf ? `<g transform="${tf}">${plan.text}</g>` : plan.text); else koepfe.push(plan.text);
              }
-             if (kante) baender.push(tf ? `<g transform="${tf}">${kante}</g>` : kante);
-             if (nrHier && !plan && !kante) baender.push(nummerSchild(pk, x, y, w, h, nrHier, tf));
+             if (kante) baender.push(tf ? `<g transform="${tf}">${kante.svg}</g>` : kante.svg);
+             if (schild) baender.push(schild);
              kacheln.push({ dd, tf });
              const fertig = `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
                + (quelle ? `<image ${bildAn} ${lage}`
