@@ -72,6 +72,14 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
      „wo es zentral eine waagerechte Flucht gibt und sich dann nach oben und unten die Bilder ausbreiten" – die grossen
      mit ihrer Mitte auf der waagrechten Achse durch die Wandmitte, von dort nach oben und unten) */
   const schild = o.schild ?? 15, schildMin = o.schildMin ?? 44, kopf = o.kopf ?? 22, rand = o.rand ?? 8;
+  /* RANDLOS (Caspar_D, 15.10.2026: „Die Cover reichen nicht ganz bis an den Rand – ja schau mal" – „naja, die Hängung muß schon einen
+     Bilderabstand bis zum Rand lassen" – „uneinheitlich ist doch aber normal, wie soll das anders gehen, aber der kleinste darf nicht
+     den Interbildabstand unterschreiten"): o.beschnitt = { l, r, o, u } ist der Teil der Wand je Seite, den der Zuschnitt abnimmt
+     (Wandpunkte). Dann gilt statt des festen Wandrands: Beschnitt plus die Luft der Hängung - beim Hängen die Luft des Versuchs, beim
+     Aufziehen die mitgewachsene. Das randnächste Cover hält genau einen Bilderabstand zum sichtbaren Rand, weiter innen ist es, wie es
+     fällt. Ohne beschnitt bleibt alles wie bisher (8 Wandpunkte). */
+  const bs = o.beschnitt || null;
+  const raender = (luft) => bs ? [bs.l + luft, bs.o + luft, bs.r + luft, bs.u + luft] : [rand, rand, rand, rand];
   const art = o.haengung || (o.salon ? 'salon' : 'dicht');
   const kontakt = o.kontakt ?? 0.15, KONTAKT_N = 30;
   const rahmenBei = (A) => o.rahmen ? Math.max(1.5, Math.min(6, 0.03 * Math.sqrt(A))) : 0;
@@ -114,8 +122,9 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
     const schluessel = (i, j) => i * 100003 + j;
     const eintragen = (r) => { for (let i = Math.floor(r.x / zelle); i <= Math.floor((r.x + r.w) / zelle); i++)
       for (let j = Math.floor(r.y / zelle); j <= Math.floor((r.y + r.h) / zelle); j++){ const k = schluessel(i, j); if (!netz.has(k)) netz.set(k, []); netz.get(k).push(r); } };
+    const [rL, rO, rR, rU] = raender(luft);
     const frei = (x, y, w, h) => {
-      if (x < rand || y < rand || x + w > W - rand || y + h > H - rand) return false;
+      if (x < rL || y < rO || x + w > W - rR || y + h > H - rU) return false;
       for (let i = Math.floor((x - luft) / zelle); i <= Math.floor((x + w + luft) / zelle); i++)
         for (let j = Math.floor((y - luft) / zelle); j <= Math.floor((y + h + luft) / zelle); j++){
           const l = netz.get(schluessel(i, j)); if (!l) continue;
@@ -144,7 +153,7 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
          die uebrigen kommen in einen Heap nach Kosten, und nur so viele werden geprueft, bis eine Stelle frei ist. */
       const bx = ar.box; let k = 0;
       const dazu = (x, y) => {
-        if (x < rand || y < rand || x + w > W - rand || y + h > H - rand) return;
+        if (x < rL || y < rO || x + w > W - rR || y + h > H - rU) return;
         const cx = x + w / 2, cy = y + r + bh / 2;                                   /* Schwerpunkt des Bildes, ohne Schild */
         if (!imAreal(ar, cx, cy)) return;
         /* Abstand zur Wandmitte, auf das Wandformat bezogen und als Rechteck gemessen (Caspar_D, 11.10.2026: „noch mehr auf
@@ -240,6 +249,7 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
   const aufziehen = (lage) => {
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const b of lage){ const q = b.block; x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x + q.w); y1 = Math.max(y1, q.y + q.h); }
+    if (bs) return aufziehenBis(lage, x0, y0, x1, y1);   /* die Gruppenschilder bleiben stehen - dort gelten sie als gesperrte Wand */
     for (const sc of schilder){ x0 = Math.min(x0, sc.x); y0 = Math.min(y0, sc.y); x1 = Math.max(x1, sc.x + sc.w); y1 = Math.max(y1, sc.y + sc.h); }
     const cx = W / 2, cy = H / 2;
     const kMax = Math.min((cx - rand) / Math.max(1e-6, cx - x0), (W - rand - cx) / Math.max(1e-6, x1 - cx),
@@ -253,6 +263,40 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
     if (geht(hi)) lo = hi; else for (let t = 0; t < 14; t++){ const m = (lo + hi) / 2; if (geht(m)) lo = m; else hi = m; }
     if (lo <= 1.001) return;
     for (const b of lage){ const q = b.block; q.x = cx + (q.x - cx) * lo; q.y = cy + (q.y - cy) * lo; q.w *= lo; q.h *= lo;
+      b.w *= lo; b.h *= lo; b.rahmen *= lo; if (b.schild) b.schild *= lo; }
+    lage.faktor = lo;
+  };
+  /* AUFZIEHEN BIS AN DEN BESCHNITT (Randlos, siehe bs): Faktor k und Mittelpunkt (px, py) zusammen gesucht. Nach dem Aufziehen liegt
+     die linke Kante bei px - (px - x0) k und soll mindestens Beschnitt plus Luft k vom Wandrand bleiben, die rechte ebenso - das
+     gibt je Achse ein Fenster für den Mittelpunkt, das bei zu großem k leer wird. Darin werden einige Mittelpunkte versucht (die
+     Hängung mittig zwischen den Rändern, die Wandmitte, die Kanten der gesperrten Wand, die beiden Enden des Fensters), der erste, bei dem jeder Schwerpunkt in
+     seinem Areal bleibt und kein Bild gesperrte Wand (Ecke, Fugen, Gruppenschilder) näher als die Luft berührt, gilt. Mit der Wandmitte
+     allein (wie ohne Beschnitt) hielt die Hängung auf 70 × 100 quer links 32 mm Rand bei 7 mm Luft. */
+  const aufziehenBis = (lage, x0, y0, x1, y1) => {
+    const luft = lage.luft, feste = sperren.concat(schilder);
+    const fenster = (k, a0, a1, rA, rB, laenge, kanten) => {
+      const lo = (a1 * k + luft * k - laenge + rB) / (k - 1), hi = (a0 * k - rA - luft * k) / (k - 1);
+      if (lo > hi + 1e-9) return null;
+      const mitte = ((rA + laenge - rB) / 2 - k * (a0 + a1) / 2) / (1 - k), klemm = (v) => Math.min(hi, Math.max(lo, v));
+      return [...new Set([mitte, laenge / 2, ...kanten].map(klemm).concat([lo, hi]))];
+    };
+    /* die Kanten der gesperrten Wand als Mittelpunkte: um die Innenecke der Ecke aufgezogen, rückt kein Cover auf sie zu */
+    const kx = feste.flatMap(p => [p.x, p.x + p.w]), ky = feste.flatMap(p => [p.y, p.y + p.h]);
+    const geht = (k, px, py) => lage.every(b => { const q = b.block, r = b.rahmen * k, x = px + (q.x - px) * k, y = py + (q.y - py) * k, w = q.w * k, h = q.h * k, l = luft * k;
+      return drin(areal.get(b.gruppe).poly, x + w / 2, y + r + b.h * k / 2)
+        && feste.every(p => !(x < p.x + p.w + l && p.x < x + w + l && y < p.y + p.h + l && p.y < y + h + l)); });
+    const versuche = (k) => { if (k <= 1) return null;
+      const xs = fenster(k, x0, x1, bs.l, bs.r, W, kx), ys = fenster(k, y0, y1, bs.o, bs.u, H, ky); if (!xs || !ys) return null;
+      for (const px of xs) for (const py of ys) if (geht(k, px, py)) return [px, py];
+      return null; };
+    /* das größte k, bei dem die Fenster nicht leer sind: je Achse (Länge - Beschnitte) / (Ausdehnung + 2 Luft) */
+    const kMax = Math.min((W - bs.l - bs.r) / (x1 - x0 + 2 * luft), (H - bs.o - bs.u) / (y1 - y0 + 2 * luft));
+    let lo = 1, hi = kMax, beste = null;
+    if (kMax > 1.001){ beste = versuche(hi); if (beste) lo = hi;
+      else for (let t = 0; t < 14; t++){ const m = (lo + hi) / 2, v = versuche(m); if (v){ lo = m; beste = v; } else hi = m; } }
+    if (!beste || lo <= 1.001) return;
+    const [px, py] = beste;
+    for (const b of lage){ const q = b.block; q.x = px + (q.x - px) * lo; q.y = py + (q.y - py) * lo; q.w *= lo; q.h *= lo;
       b.w *= lo; b.h *= lo; b.rahmen *= lo; if (b.schild) b.schild *= lo; }
     lage.faktor = lo;
   };

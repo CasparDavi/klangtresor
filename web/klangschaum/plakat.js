@@ -588,7 +588,8 @@ function zeichnen(sofort, warteMs, nurSetzen){
       if (!E.schildNameEigen) E.schildName = schildNameVorschlag();
       let v = null, ecke = null;
       /* Randlos: der Schaum bekommt die Ecke als eigene Zelle (schildAuftrag), die Bilderschau als gesperrte Wand (bilderEcke) */
-      if (E.schild && a.art === 'bild'){ v = schildVorgabe(g, a.j.W, a.j.H); ecke = bilderEcke(v, a.j.W, a.j.H); a.j = { ...a.j, lage: a.j.lage + '|ecke:' + v.schluessel }; }
+      if (E.schild && a.art === 'bild'){ v = schildVorgabe(g, a.j.W, a.j.H); ecke = bilderEcke(v, a.j.W, a.j.H);
+        a.j = { ...a.j, lage: a.j.lage + '|ecke:' + v.schluessel, opt: { ...a.j.opt, beschnitt: bilderBeschnitt(g, a.j.W, a.j.H) } }; }
       else if (E.schild && typeof schildAuftrag === 'function'){ v = schildVorgabe(g, a.j.W, a.j.H); a.j = schildAuftrag(a.j, v); }
       if (E.skizze) a.j = dAuftrag(a.j, g.kreis.schnitt);
       let res;
@@ -718,16 +719,34 @@ function bilderSperren(g, W, H){
   const kv = g.karte, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2;
   return f.map(([a, b]) => ({ x: +((a - ox) / k).toFixed(2), y: -10, w: +((b - a) / k).toFixed(2), h: H + 20 }));
 }
+/* RANDLOS: was der Zuschnitt von der Wand abnimmt, je Seite in Wandpunkten (Caspar_D, 15.10.2026: „naja, die Hängung muß schon einen
+   Bilderabstand bis zum Rand lassen" - „der kleinste darf nicht den Interbildabstand unterschreiten"). Die Wand liegt wie in bilderEbene
+   mittig in der Karte (xMidYMid meet); sichtbar ist die Vorderseite (g.vorne, ohne Beschnitt und Umschlag). Mit Rand vorne liegt die Karte
+   innerhalb, dann ist es 0 und der Rand selbst die Kante. Die Hängung hält dazu ihre Luft (bilderschau.js, beschnitt) - bis 1.0.80 hielt
+   sie 8 Wandpunkte vom Rand der Karte, die ohne Rand vorne den Beschnitt einschließt: auf A3 hoch lag ein Cover 0,1 mm im Beschnitt, die
+   anderen randnahen 0,5 bis 0,7 mm vor dem Schnitt bei 3,1 mm Luft zwischen den Covern. */
+function bilderBeschnitt(g, W, H){
+  const kv = g.karte, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2, oy = kv.y + (kv.h - H * k) / 2;
+  const vo = g.vorne || { x: BESCHNITT, y: BESCHNITT, w: g.w, h: g.h }, z = (v) => +Math.max(0, v / k).toFixed(2);
+  return { l: z(vo.x - ox), o: z(vo.y - oy), r: z(ox + W * k - vo.x - vo.w), u: z(oy + H * k - vo.y - vo.h) };
+}
 /* RANDLOS IN DER BILDERSCHAU (Caspar_D, 15.10.2026, 2a: „freigeben; dort sind die Nummern automatisch aus … Ecke mit Avatar, Titel,
-   Legende wie im Klangschaum-Randlos"). Der Block der Ecke (schildVorgabe, Breiten gerundet) samt Luft wird gesperrte Wand bis an die
-   Kanten der Ecke - dort hängt kein Cover. umriss: dasselbe Rechteck in Schaum-Einheiten (y nach oben) für blockReserve beim Setzen,
-   eine Wandpunkt-Luft größer, damit der ungerundete Block sicher hineinpasst. Nummern gibt es dabei keine (mitVerzeichnis). */
+   Legende wie im Klangschaum-Randlos"). Der Block der Ecke (schildVorgabe, Breiten gerundet) wird gesperrte Wand bis an die Kanten der
+   Ecke - dort hängt kein Cover. umriss: dasselbe Rechteck samt Luft der Ecke in Schaum-Einheiten (y nach oben) für blockReserve beim
+   Setzen, eine Wandpunkt-Luft größer, damit der ungerundete Block sicher hineinpasst. Nummern gibt es dabei keine (mitVerzeichnis). */
 function bilderEcke(v, W, H){
   const t = blockLage(v.block, v.ecke, v.rahmen, 1).filter(q => q.typ !== 'luecke' && q.w > 0 && q.h > 0), d = v.luft + 1;
-  let x0 = Math.min(...t.map(q => q.x0)) - d, x1 = Math.max(...t.map(q => q.x1)) + d, y0 = Math.min(...t.map(q => q.y0)) - d, y1 = Math.max(...t.map(q => q.y1)) + d;
-  if (v.ecke[1] === 'r') x1 = W + 10; else x0 = -10;
-  if (v.ecke[0] === 'u') y0 = -10; else y1 = H + 10;
-  return { umriss: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], sperre: { x: +x0.toFixed(2), y: +(H - y1).toFixed(2), w: +(x1 - x0).toFixed(2), h: +(y1 - y0).toFixed(2) } };
+  const bx0 = Math.min(...t.map(q => q.x0)), bx1 = Math.max(...t.map(q => q.x1)), by0 = Math.min(...t.map(q => q.y0)), by1 = Math.max(...t.map(q => q.y1));
+  /* umriss mit der Luft der Ecke (blockReserve prüft daran den Block); gesperrt nur der Block plus ein Wandpunkt zum Runden - die Luft
+     bis zum nächsten Cover hält die Hängung selbst, ein Bilderabstand wie zwischen zwei Covern (Caspar_D, 15.10.2026: „der kleinste
+     darf nicht den Interbildabstand unterschreiten"; bis 1.0.80 kamen Luft der Ecke und Luft der Hängung zusammen: 10,6 mm bei 3,1 mm
+     Luft auf A3 hoch) */
+  const kanten = (e) => { let x0 = bx0 - e, x1 = bx1 + e, y0 = by0 - e, y1 = by1 + e;
+    if (v.ecke[1] === 'r') x1 = W + 10; else x0 = -10;
+    if (v.ecke[0] === 'u') y0 = -10; else y1 = H + 10;
+    return [x0, y0, x1, y1]; };
+  const [x0, y0, x1, y1] = kanten(d), [sx0, sy0, sx1, sy1] = kanten(1);
+  return { umriss: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], sperre: { x: +sx0.toFixed(2), y: +(H - sy1).toFixed(2), w: +(sx1 - sx0).toFixed(2), h: +(sy1 - sy0).toFixed(2) } };
 }
 /* DIE NUMMER AUF DEM COVER (Caspar_D, 11.10.2026: „KEINE Bildunterschriften … die Nummer klein auf jedem Cover in Kontrastfarbe
    (schwarz/weiß), in der Ecke, wo sie am besten lesbar ist"; 15.10.2026: „mach einen Rauchglas Badge unter die Nummer"). Die Ziffern
