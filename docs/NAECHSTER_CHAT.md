@@ -8997,7 +8997,68 @@ PATH nie (in der VM Windows 10 nachgestellt: alt bricht ab, neu erreicht Node)**
 Neustart-Wache beobachtet aktualisieren.js; .gitignore werkzeug/ proben/. Verworfen u. a.: Zip-Weg löscht entfernte Dateien
 nicht (bleibt so, bekannt).
 
-## 99. 15.10.2026 nachts: Bilderschau als dritte Art im Plakat-Studio (Zweig nacht-bilderschau-regler, NICHT ausgeliefert)
+## 99. 15./16.10.2026 Nacht: Bilderschau im Plakat-Studio + Quantil-Regler (NICHT ausgeliefert)
+
+### Stand für Jörg (Klartext)
+
+**Nichts ist ausgeliefert.** Alles liegt auf einem eigenen Zweig. Deine laufende App und dein Archiv sind unberührt: kein Release, kein Zusammenführen mit main, kein Push.
+
+**Was gebaut ist**
+- **Die Bilderschau ist die dritte Art im Plakat-Studio**, neben Klangschaum und Groupieschaum. Vorschau, Formate, Rand, Werkverzeichnis, Zeitleiste, Legende, PDF und PNG kommen wie gewohnt aus dem Studio.
+  - Die Cover hängen im Originalformat und werden für das Seitenformat neu gehängt. Gedruckt wird mit 300 dpi.
+  - Titel „Caspar_Ds Bilderschau", darunter zum Beispiel „330 Titel · Fläche ∝ √Abrufe · gegliedert nach Klang · Oktober 2026".
+  - Keine Bildunterschriften. Jedes Cover trägt klein seine Nummer aus dem Werkverzeichnis, weiß oder schwarz, in der Ecke mit dem besten Kontrast. Deshalb ist das Werkverzeichnis in der Bilderschau immer an.
+  - Ausgegraut, mit Begründung am Knopf: Randlos, Skizzenbuch, Fugen, Wackeln, Schatten, Vignette, Kissen, Titel in der Zelle, freie Grundfarbe.
+  - Der alte eigene PDF-Weg der Bilderschau ist gelöscht. Der eine Plakat-Knopf öffnet jetzt in allen drei Arten das Studio.
+- **Der Regler „zeigt N von M"** steht im Panel unter „Fläche nach", im Groupieschaum, im Klangschaum und in der Bilderschau.
+  - Voreingestellt sind die 350 höchsten im gerade gewählten Maß. Du kannst in beide Richtungen schieben: nach unten bis 12 (so viele braucht das Plakat mindestens), nach oben bis „alle".
+  - Wer unter dem Schnitt liegt, fällt ganz heraus; die Übrigen teilen sich die Fläche. Legende, Fußnote und Plakat nennen die Auswahl.
+  - Die Farbe eines Areals bleibt gleich, auch wenn ein anderes Areal leer wird. Der Wert wird je Raum gemerkt.
+- **Was du nach dem Ausliefern sofort merkst:** Der Groupieschaum zeigt 350 statt bisher 473 Personen. Klangschaum und Bilderschau bleiben, wie sie sind, denn du hast 330 Titel, also weniger als 350.
+
+**Was du am Bild beurteilen sollst**
+
+Alles liegt im Arbeitsbaum im Ordner `_morgen/`, die PDFs zum Hineinzoomen in `_morgen/pdf/`. Die Plakatbilder sind mit Apples Druckdarstellung (sips) aus den PDFs gerendert.
+- **Plakate**, jede Vorlage in A3 hoch und 70 × 100 quer:
+  - `plakat-galerie-A3-hoch.png`, `plakat-galerie-70x100-quer.png`
+  - `plakat-papier-A3-hoch.png`, `plakat-papier-70x100-quer.png`
+  - `plakat-bleiglas-A3-hoch.png`, `plakat-bleiglas-70x100-quer.png`
+  - `plakat-mosaik-A3-hoch.png`, `plakat-mosaik-70x100-quer.png`
+  - A3 trägt nur 185 bis 220 deiner 330 Cover (die Formatgrenze), 70 × 100 trägt alle 330.
+- **Nummern vergrößert:**
+  - `nummern-A3-ausschnitt-1.png` und `nummern-A3-ausschnitt-2.png`: je etwa 8 × 5 cm des A3-Galerie-Plakats. Die Nummern sind dort 1,5 mm hoch, das ist die kleinste Stufe.
+  - `nummern-70x100-ausschnitt.png`: die kleinsten Cover am rechten Rand des 70 × 100-Galerie-Plakats.
+  - Sieh dir an, ob 1,5 mm reicht. Und ob es dich stört, dass eine Nummer manchmal auf der Schrift des Covers sitzt, etwa 91 auf „Mutterns Hände" oder 99 neben „Hat er das". Die Ecke wird bisher nur nach Kontrast gewählt.
+- **Regler am Schirm:**
+  - Groupieschaum: `schirm-groupies-350.png` (Vorgabe, 350 von 473), `schirm-groupies-60.png`, `schirm-groupies-alle.png` (473).
+  - Klangschaum: `schirm-klang-350.png`, `schirm-klang-60.png`, `schirm-klang-alle.png`. Bei dir sind 350 und „alle" dasselbe Bild, weil du nur 330 Titel hast.
+  - Bilderschau: `schirm-bilderschau-350.png` (alle 330) und `schirm-bilderschau-60.png`.
+  - Bei 60 fällt jeweils eine ganze Gruppe weg: im Groupieschaum „nur Kommentare" (bei 350 noch 6 Personen), im Klangschaum „Pop · Rock — Liebe" (bei 350 noch 10 Titel).
+  - Die Schirmbilder zeigen die Vorgaben eines frischen Browsers, zum Beispiel „Farbe über den Bildern 100 %", nicht deine eigenen Einstellungen.
+- `fehler-70x100-arealnamen-stossen.png` zeigt einen älteren Fehler, siehe Punkt 7.
+
+**Was offen ist – deine Entscheidung**
+1. **Bilderschau mit Regler?** Im Moment nimmt sie ihn mit, mit demselben Wert wie der Klangschaum. Oder soll sie ohne Regler bleiben?
+2. **Zoom:** Gezoomt zählt der Regler innerhalb der Gruppe, etwa „zeigt 30 von 104". Die Alternative: Der Schnitt gilt für das ganze Werk, und gezoomt siehst du nur den Teil davon, der in der Gruppe liegt.
+3. **Reglerweg:** Er ist linear in der Zahl. Bei deinen 473 Personen passt das. Bei Tarjas etwa 4000 bliebe für den Bereich unter 350 nur knapp ein Zehntel des Wegs; logarithmisch hätte sie dort mehr Weg.
+4. **Randlos für die Bilderschau:** Dort gibt es kein Werkverzeichnis. Cover ohne Nummer, oder soll die Liste woanders hin? Bis dahin ist Randlos ausgegraut.
+5. **Wie viele Cover je Format:** Die Wand ist nur gut zur Hälfte mit Bildern belegt. Deshalb werden die Cover im Mittel etwa 1,4 cm groß statt der 2 cm, mit denen die Formatgrenze rechnet. So lassen, oder in der Bilderschau nur halb so viele Cover nehmen (auf A3 etwa 100 statt 199), damit jedes wieder etwa 2 cm groß wird?
+6. **Nummern mit wenig Kontrast:** Im Median haben die Nummern 16 bis 17 : 1, die Hausregel verlangt 4,5 : 1. Darunter liegen auf A3 je Plakat 7 bis 10 von 185 bis 220 Nummern, auf 70 × 100 je 4 von 330. Ein Hof um die Ziffern würde helfen, wäre aber eine neue Gestaltungsregel; darum ist er nicht gebaut. Ebenfalls nicht gebaut: der Schrift auf dem Cover ausweichen. Das Archiv weiß schon, wo auf jedem Cover Schrift steht; der Klangschaum nutzt das für seine Ausschnitte.
+7. **Älterer Fehler, nicht von dieser Nacht, betrifft alle Plakate:** Die Textbreite wird etwa 7 % zu schmal gemessen. Auf 70 × 100 quer laufen dadurch die Arealnamen am oberen Rand ineinander: Bei Galerie und Papier stößt „Elektronik · Pop — energisch" an „Pop · Rock — Liebe". Gekürzte Titel im Werkverzeichnis berühren die nächste Spalte. Soll das behoben werden?
+8. **Ebenfalls älter:** In Plakaten mit Kissen liegen im PDF feine Höhenlinien im Kissen. Sie stecken im PDF selbst, nicht in Apples Darstellung. Die Bilderschau hat kein Kissen.
+9. **Speicherplatz:** Auf der Systemplatte sind 69 GB frei, unter deiner 100-GB-Grenze. Die Sandkästen dieser Nacht belegen im Scratchpad noch etwa 4,6 GB. Sie können weg, wenn du es sagst.
+
+### Technik
+
+#### Zweig, Dateien, Ausliefern
+Zweig `nacht-bilderschau-regler` (abgezweigt von main 1.0.73), Arbeitsbaum im Scratchpad. Drei Bau-Commits: Bilderschau im Studio,
+Regler, Behebung nach der Prüfrunde; dazu dieser Bericht. Geändert: `web/klangschaum/plakat.js`, `web/klangschaum/bilderschau.js`,
+`web/index.html`, `docs/haus/HISTORY.md`, dieses Dokument. Der Ordner `_morgen/` (Bilder und PDFs für Caspar_D) ist NICHT eingecheckt.
+Beim Ausliefern: `?v=` hochzählen bei `plakat.js` (index.html lädt `?v=1.0.63`) sowie `bilderschau.js` und `bilderschau-worker.js`
+(`?v=1.0.67`) – Hausbrauch zum Release; der Server sendet für `/klangschaum/` ohnehin `Cache-Control: no-cache`. Danach Release
+wie immer (flaches KlangTresor.zip, feste Adresse).
+
+#### Bilderschau als dritte Art im Plakat-Studio
 Auftrag aus §95 („Weg B"). `plakat.js` kennt neben Titel- und Personenschaum die Bilderschau (`bilderschau()`: Raum Schaum, Art
 „bilder"). Vorschau, Formate (auch Triptychon und Bild 4:5/1:1/9:16), Rand, Werkverzeichnis, Zeitleiste, Edition, Legende, Areale am
 Rand, PDF und PNG kommen vom Studio; neu ist nur die Bildebene `bilderEbene()`.
@@ -9021,24 +9082,8 @@ Rand, PDF und PNG kommen vom Studio; neu ist nur die Bildebene `bilderEbene()`.
   Klangschaum Galerie 70×100 und Bleiglas A3 bitgleich, Groupieschaum 50×50 bitgleich; Randlos 70×100 quer gleich bis auf die
   Rauchglas-Deckung einzelner Zellen (`schaumRauch` misst die Vorschaubilder, und der Bildvorrat war beim zweiten Lauf voller; die
   Geometrie ist gleich, mit 3 % Toleranz 0 abweichende Bildpunkte).
-- **Prüfrunde (bestätigt, behoben):** gezoomte Bilderschau → Plakat-Legende ohne die farbige Zoomgruppe, nur graue Genre-Kästchen
-  (Rahmen und Verzeichnisköpfe trugen #2ec4b6). `auftrag()` gab der Bilderschau kein `ebenen` mit, `arealeDer` erkannte den Zoom
-  nicht und filterte nach den Genres. Jetzt `ebenen: zoom ? ['genre'] : ['gruppe']` wie im Klangschaum-Auftrag. Probe (Sandkasten 8805,
-  Galerie 70×100, Zoom „Metal · Elektronik — energisch"): vorher Legende [Elektronik, Metal, Rock] grau (Regler 30) bzw.
-  [Metal, Elektronik, Rock, dubstep] grau (Vorgabe), nachher = Panel mit Zoomgruppe farbig; ungezoomt unverändert; PDF mit sips angesehen.
 
-### Wiedervorlage (Caspar_Ds Auge/Entscheidung)
-- Randlos für die Bilderschau: dort gibt es kein Verzeichnis – Cover ohne Nummer, oder Verzeichnis wo? (jetzt grau)
-- Kachelzahl: die Wand ist nur gut zur Hälfte belegt, Cover im Mittel also ~1,4 cm statt 2 cm (A3: 185–220 Cover). Gleiche Regel
-  behalten oder für die Bilderschau halbieren?
-- Ecken mit wenig Kontrast: 5–20 Cover je Plakat unter 4,5 : 1 (gemessen gegen die hellsten/dunkelsten 10 %), meist kleine Cover mit
-  unruhigen Ecken. Hof um die Ziffern? (nicht gebaut – wäre eine neue Gestaltungsregel)
-- Bestehend, nicht neu (betrifft alle Arten): `messen()` misst die Systemschrift bei mm·96/25,4 px, das SVG setzt sie im Druck ~7 %
-  breiter (gemessen: 13,30 gegen 14,23 em für „Elektronik · Pop — energisch") – „Areale am Rand" stoßen dadurch aneinander (gesehen:
-  Papier 70×100 quer), gekürzte Verzeichnistitel berühren die nächste Spalte. Randlos: Konsole meldet widerrufene blob:-Adressen
-  (alt wie neu). `aufziehen` in `bilderschau.js` prüft die Gruppenschilder nicht (Überschriften an: ein Bild kann hineinwachsen).
-
-## 100. 15.10.2026 nachts: Regler „zeigt N von M" für Groupieschaum, Klangschaum und Bilderschau (Zweig nacht-bilderschau-regler, NICHT ausgeliefert)
+#### Regler „zeigt N von M"
 Caspar_D, 07.10.: „untere Perzentile auszublenden … sie fliegen raus … auch mal große Bilder zu sehen, wenn man viele follower hat";
 15.10.: „er blendet Quantile der gegenwärtig aktiven Skalierung aus. Er soll auch für Klangschaum gelten" – „per default … die 350
 höchsten …, man kann den slider dann aber in beide richtungen schieben". Gebaut in `index.html` (`schaumAuswahl`, `schaumZeigt`,
@@ -9066,11 +9111,66 @@ Panel `#schaumzeigtzeile` unter „Fläche nach") und `plakat.js`.
   60/30/220 Personen, 100 Titel, Bilderschau 40/25 Titel; Randlos 50×50 und Bild 1:1 mit richtiger Unterzeile. PDF Galerie A3
   (Groupieschaum 60) mit sips/Quick Look angesehen. Konsole in allen Läufen ohne Fehler.
 
+#### Prüfrunde
+5 Funde, 2 bestätigt – beide derselbe Fehler, mit einem Eingriff behoben (Probe `sb-legende/t-legende.mjs`, vorher 3 Prüfungen
+fehlgeschlagen, nachher alle bestanden; Zoomgruppe in der Plakat-Legende in #2ec4b6 wie die Verzeichnisköpfe).
+- **Behoben:** gezoomte Bilderschau → Plakat-Legende ohne die farbige Zoomgruppe, nur graue Genre-Kästchen
+  (Rahmen und Verzeichnisköpfe trugen #2ec4b6). `auftrag()` gab der Bilderschau kein `ebenen` mit, `arealeDer` erkannte den Zoom
+  nicht und filterte nach den Genres. Jetzt `ebenen: zoom ? ['genre'] : ['gruppe']` wie im Klangschaum-Auftrag. Probe (Sandkasten 8805,
+  Galerie 70×100, Zoom „Metal · Elektronik — energisch"): vorher Legende [Elektronik, Metal, Rock] grau (Regler 30) bzw.
+  [Metal, Elektronik, Rock, dubstep] grau (Vorgabe), nachher = Panel mit Zoomgruppe farbig; ungezoomt unverändert; PDF mit sips angesehen.
+
+#### Bilder für den Morgen (Sandkasten 8802, 15.10. früh)
+Sandkasten `sb-morgen` vom Zweigstand (Code per rsync kopiert; library: oberste Ebene, je Titel Titelbild/Cover/Kachel + leere
+audio.mp3, dazu `avatare/` und `liker/` – ohne `liker/` kennt der Groupieschaum nur 184 statt 473 Personen, ohne `avatare/` bleiben
+die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. Im Sandkasten `bilderBereitOk` vorab gesetzt, weil
+`/api/bilder/vorbereiten` eingefroren 405 gibt und der Schaum sonst „kommt mit dem nächsten Morgenlauf" sagt. Proben:
+`probe-matrix.mjs` (Plakate), `probe-schirm.mjs` und `probe-bilder.mjs` (Schirm), im Sandkasten-Ordner.
+- **Plakate** (Bilderschau, Regler auf Vorgabe = alle 330, Maß Abrufe, √, Salon), PDF per printToPDF, PNG per `sips -Z 3000`; alle 8
+  angesehen, die Nummern-Ausschnitte aus `sips -Z 9000` (A3: 21,4 Punkte je mm, Ausschnitt 1800×1150 ≈ 84×54 mm).
+
+| Plakat | Cover | Kontrast min / Median | < 4,5 : 1 | < 3 : 1 | Schrift mm | PDF |
+|---|---|---|---|---|---|---|
+| Galerie A3 hoch | 199 | 2,6 / 16,4 | 9 | 1 | 1,5–2,1 | 2,3 MB |
+| Galerie 70×100 quer | 330 | 3,2 / 17,2 | 4 | 0 | 1,5–3,5 | 8,8 MB |
+| Papier A3 hoch | 185 | 2,6 / 16,7 | 7 | 1 | 1,5–2,1 | 2,2 MB |
+| Papier 70×100 quer | 330 | 3,1 / 17,2 | 4 | 0 | 1,5–3,5 | 7,8 MB |
+| Bleiglas A3 hoch | 220 | 2,7 / 16,4 | 10 | 1 | 1,5–2,2 | 2,5 MB |
+| Bleiglas 70×100 quer | 330 | 3,4 / 17,2 | 4 | 0 | 1,5–3,5 | 9,5 MB |
+| Mosaik A3 hoch | 196 | 2,6 / 16,9 | 10 | 2 | 1,5–2,1 | 2,3 MB |
+| Mosaik 70×100 quer | 330 | 3,2 / 17,2 | 4 | 0 | 1,5–3,5 | 8,4 MB |
+
+- Bei allen 8: Nummern 1…n ohne Lücke und Doppel, gleich dem Verzeichnis, 0 außerhalb ihres Covers, 0 Überlappungen (Cover/Cover,
+  Nummer/Nummer, Nummer/fremdes Cover); alle Druckbilder ladbar. Weiße Nummern 85–94 %, schwarze 6–15 %. Unterzeile auf A3
+  „die 199 stärksten nach Abrufe von 330 Titeln · …" (Formatgrenze), auf 70×100 „330 Titel · …".
+- **Gesehen in den Bildern:** Galerie und Papier 70×100 quer – Arealnamen oben stoßen aneinander („energisc|h" unter „Pop"), die
+  bekannte Textbreiten-Messung (13,30 gegen 14,23 em); Bleiglas/Mosaik zeigen keine Areale am Rand. Nummern sitzen teils auf
+  Coverschrift (91 „Mutterns Hände", 99 „Hat er das", 103 „Leb ich noch?", 60 „Erweckt v2") – die Eckwahl misst nur Leuchtdichte;
+  die Schriftboxen des Gesichterbuchs (`e.t`, genutzt in `schaumFokusVon`) wären der Weg, falls Caspar_D das will.
+- **Schirm:** Groupieschaum Vorgabe „zeigt 350 von 473 Personen" (350 Zellen, Legende 233/111/6), 60 (60 Zellen, Legende 9/51 –
+  „nur Kommentare" leer, Farben rot/gelb unverändert), alle 473 (354/111/8). Klangschaum Vorgabe „zeigt alle 330 Titel", 60 (29/17/14,
+  „Pop · Rock — Liebe" leer), alle = Vorgabe (gleiche Lage; Schirmbild bis auf 69 Bildpunkte gleich bei 3 % Toleranz). Bilderschau
+  60 Cover an der Wand bzw. 330 bei Vorgabe. Konsole: 0 Ausnahmen; einziger Fehler je Lauf 404 auf `/avatar` (Profilbild
+  `avatar.webp` liegt nicht in der Sandkasten-Kopie).
+
 ### Wiedervorlage (Caspar_Ds Auge/Entscheidung)
-- Bilderschau nimmt den Regler mit (gleicher Wert wie der Klangschaum) – so gewollt, oder dort ohne Regler?
-- Gezoomt zählt der Regler in der Gruppe (zoom in eine Gruppe mit 104 Titeln: „zeigt 30 von 104"). Alternative: der Schnitt gilt
+- Bilderschau nimmt den Regler mit (gleicher Wert wie der Klangschaum; die Transformation ist monoton, „die höchsten" sind dieselben)
+  – so gewollt, oder dort ohne Regler?
+- Gezoomt zählt der Regler in der Gruppe (Zoom in eine Gruppe mit 104 Titeln: „zeigt 30 von 104"). Alternative: der Schnitt gilt
   fürs ganze Werk, gezoomt sieht man nur dessen Teil der Gruppe.
-- Linear in der Zahl passt zu 473 Personen; bei Tarjas ~4000 ist der Bereich unter 350 nur ein Zehntel des Reglers
+- Linear in der Zahl passt zu 473 Personen; bei Tarjas ~4000 ist der Bereich unter 350 nur ein knappes Zehntel des Reglers
   (logarithmisch gäbe dort mehr Weg).
-- Nebenbefund, nicht von dieser Änderung: im PDF (Galerie, Kissen an) liegen feine Höhenlinien im Kissen – in Quick Look UND poppler, also im PDF
-  selbst, nicht Apples Darstellung (§93 Wiedervorlage „Kissen mit der Apple-Engine prüfen").
+- Randlos für die Bilderschau: dort gibt es kein Verzeichnis – Cover ohne Nummer, oder Verzeichnis wo? (jetzt grau)
+- Kachelzahl: die Wand ist nur gut zur Hälfte belegt, Cover im Mittel also ~1,4 cm statt 2 cm (A3: 185–220 Cover). Gleiche Regel
+  behalten oder für die Bilderschau halbieren (A3 Galerie ~100 statt 199)?
+- Nummern: reicht 1,5 mm (`nummern-A3-ausschnitt-*.png`)? Ecken unter 4,5 : 1: A3 7–10 je Plakat, 70×100 je 4 (gemessen gegen die
+  hellsten/dunkelsten 10 %). Hof um die Ziffern? Der Coverschrift ausweichen (Schriftboxen des Gesichterbuchs)? Beides wäre eine
+  neue Gestaltungsregel – nicht gebaut.
+- Bestehend, nicht neu (betrifft alle Arten): `messen()` misst die Systemschrift bei mm·96/25,4 px, das SVG setzt sie im Druck ~7 %
+  breiter (13,30 gegen 14,23 em für „Elektronik · Pop — energisch") – „Areale am Rand" stoßen aneinander (gesehen: Galerie und
+  Papier 70×100 quer, Bild `_morgen/fehler-70x100-arealnamen-stossen.png`), gekürzte Verzeichnistitel berühren die nächste Spalte.
+  Randlos: Konsole meldet widerrufene blob:-Adressen (alt wie neu). `aufziehen` in `bilderschau.js` prüft die Gruppenschilder nicht
+  (Überschriften an: ein Bild kann hineinwachsen).
+- Nebenbefund, nicht von dieser Nacht: im PDF (Galerie, Kissen an) liegen feine Höhenlinien im Kissen – in Quick Look UND poppler,
+  also im PDF selbst, nicht Apples Darstellung (§93 Wiedervorlage „Kissen mit der Apple-Engine prüfen").
+- Speicherplatz: Systemplatte 69 GB frei (Grenze 100 GB); die Sandkästen dieser Nacht im Scratchpad belegen noch ~4,6 GB.
