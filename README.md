@@ -195,18 +195,20 @@ Dienstes sofort Schluß.
 
 ---
 
-## Neue Fassung einspielen
+## Update einspielen
 
-Der rote Knopf holt Songdaten, nicht den Code. Die Programm-Fassung liegt
-auf [GitHub](https://github.com/CasparDavi/klangtresor). Ob dort eine
+Der rote Knopf holt Songdaten, nicht den Code. Neue Versionen des Programms
+liegen auf [GitHub](https://github.com/CasparDavi/klangtresor). Ob dort eine
 neue liegt, sieht KlangTresor von selbst nach: beim Öffnen der Seite und,
 solange sie offen ist, alle 12 Stunden (nach einem Fehlschlag nach 2
-Stunden) fragt die Seite den eigenen Server. Der fragt GitHub und hält
-die Antwort eine halbe Stunde vor. Liegt dort eine höhere Nummer, steht
-links neben dem roten Knopf eine Glocke; ein Klick öffnet das Fenster
-„KlangTresor“ (Wer das gebaut hat) mit dem Hinweis. Dort fragt **Nach
-neuer Fassung sehen** auch von Hand. Die eingefrorene Kopie auf dem
-Stick fragt nie.
+Stunden) fragt die Seite den eigenen Server — und jedes Mal, wenn das Fenster
+„KlangTresor“ (Klick auf den Namen oben) aufgeht. Der Server fragt GitHub und
+hält die Antwort eine halbe Stunde vor. Liegt dort eine höhere Nummer, steht
+links neben dem roten Knopf eine Glocke; ein Klick öffnet das Fenster mit dem
+Hinweis: welche Version bereitliegt, in welchem Ordner KlangTresor läuft und
+welches Skript das Update einspielt. **Ordner zeigen** öffnet diesen Ordner im
+Dateifenster (nur am Rechner, auf dem KlangTresor läuft). Die eingefrorene
+Kopie auf dem Stick fragt nie.
 
 Zum Einspielen im **Projektordner** (dort liegen `bin/` und `library/`,
 eine Ebene über `docker/`):
@@ -302,7 +304,7 @@ einrichten-windows.cmd         Einrichten unter Windows (Doppelklick)
 einrichten-macos.command       Einrichten auf dem Mac (Doppelklick)
 einrichten-linux.sh            Einrichten unter Linux
 einrichten-docker-*            dasselbe, ohne Installation - alles im Container
-aktualisieren-*                neue Programm-Fassung von GitHub (Git oder Zip)
+aktualisieren-*                Update auf die neue Version von GitHub (Git oder Zip)
 starten-windows.cmd / -macos.command / -linux.sh   nur starten, nicht einrichten
 docker/    Dockerfile, docker-compose.yml, Einstiegsskript des Containers
 bin/       Sammeln, Aufbereiten, Messen, Farben, Wiederherstellen

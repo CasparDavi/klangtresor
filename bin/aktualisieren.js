@@ -6,7 +6,7 @@
 
    Caspar_D hat uns (Tarja, 14.10.2026) die Aufgabe gegeben, fuer
    Updatemoeglichkeiten zu sorgen. Der rote Knopf holt Suno-Daten, nicht
-   den Code. Die neue Fassung liegt auf GitHub
+   den Code. Die neue Version liegt auf GitHub
    (github.com/CasparDavi/klangtresor), als Release-Zip und als main.
 
    EINE WAHRHEIT, wie bin/einrichten.js: die drei Anlasser
@@ -40,10 +40,13 @@
 
    Stand fuer die Oberflaeche: standHolen() (GET /api/fassung). Die Seite
    fragt von selbst beim Oeffnen und danach alle 12 h (nach einem
-   Fehlschlag nach 2 h), dazu auf den Knopf im Fenster „KlangTresor“; die
-   Glocke oben zeigt eine neue Fassung an. Eine Antwort von GitHub haelt
-   standHolen() 30 min vor. Der eingefrorene Stick fragt nie (server.js
-   sperrt /api/fassung dort).
+   Fehlschlag nach 2 h), dazu jedes Mal, wenn das Fenster „KlangTresor“
+   aufgeht; die Glocke oben zeigt eine neue Version an. Einen Knopf zum
+   Nachsehen gibt es seit dem 15.10.2026 nicht mehr (Caspar_D: „aber er
+   hat doch schon eine gefunden, warum steht dieser Text hier“). Eine
+   Antwort von GitHub haelt standHolen() 30 min vor und nennt mit gefragtAm,
+   wann sie wirklich geholt wurde. Der eingefrorene Stick fragt nie
+   (server.js sperrt /api/fassung dort).
    ============================================================= */
 'use strict';
 const fs = require('node:fs');
@@ -226,7 +229,7 @@ async function githubRelease() {
    Augenblick oeffnen, fragen GitHub je einmal (gemessen 15.10.2026: drei
    gleichzeitige Anfragen, drei Verbindungen). Gemerkt wird nur eine
    Antwort; nach einem Fehlschlag fragt die Seite in 2 h wieder. */
-let standVorrat = null, standVorratBis = 0;
+let standVorrat = null, standVorratBis = 0, standVorratAm = 0;
 
 /** Stand fuer CLI und GET /api/fassung. Fragt GitHub, schreibt nichts.
     mitDocker: false fuer den Server (Caspar_D, 15.10.2026, bei der Uebernahme): dockerZustand() laeuft synchron
@@ -243,6 +246,7 @@ async function standHolen({ mitDocker = true } = {}) {
       github = await githubRelease();
       standVorrat = github;
       standVorratBis = jetzt + 30 * 60 * 1000;
+      standVorratAm = jetzt;
     } catch (e) { grund = e.message || String(e); }
   }
   const ghV = github && github.version;
@@ -263,6 +267,10 @@ async function standHolen({ mitDocker = true } = {}) {
     container: imContainer(),
     grund,
     geprueftAm: new Date().toISOString(),
+    /* WANN GITHUB WIRKLICH GEFRAGT WURDE (Caspar_D, 15.10.2026: „Zuletzt nachgesehen: heute, 13:05“). geprueftAm ist
+       der Augenblick dieser Antwort; kommt sie aus dem Vorrat, ist die Auskunft bis zu 30 min alt - das Fenster
+       nennt darum diese Zeit. Ohne Nummer von GitHub: der eben gescheiterte Versuch. */
+    gefragtAm: new Date(github ? standVorratAm : jetzt).toISOString(),
   };
 }
 
@@ -365,8 +373,8 @@ function gitZustand() {
 
 async function main() {
   sag('');
-  sag('  KlangTresor — neue Fassung einspielen');
-  sag('  =====================================');
+  sag('  KlangTresor — Update einspielen');
+  sag('  ===============================');
   sag('');
 
   if (imContainer()) {
@@ -417,10 +425,10 @@ async function main() {
   sag('');
 
   if (NUR_STAND) {
-    if (stand.lage === 1) sag('  Auf GitHub liegt eine neuere Fassung.');
+    if (stand.lage === 1) sag('  Auf GitHub liegt eine neuere Version.');
     else if (!stand.github) sag('  Nachsehen ist gescheitert: ' + stand.grund);
-    else if (stand.lage === -1) sag('  Deine Fassung ist neuer als die auf GitHub.');
-    else sag('  Das ist dieselbe Fassung.');
+    else if (stand.lage === -1) sag('  Deine Version ist neuer als die neueste auf GitHub.');
+    else sag('  Das ist die neueste Version.');
     sag('');
     return;
   }
@@ -478,7 +486,7 @@ async function main() {
       process.exit(1);
     }
     if ((g.lage === 'gleich' || g.lage === 'davor') && !stand.neuer && !TROTZDEM) {
-      if (nichtsZuHolen(g.lage === 'gleich' ? 'origin/main ist schon da. Nichts zu holen.' : 'Deine Fassung liegt vor origin/main. Nichts zu holen.')) return;
+      if (nichtsZuHolen(g.lage === 'gleich' ? 'origin/main ist schon da. Nichts zu holen.' : 'Deine Version liegt vor origin/main. Nichts zu holen.')) return;
       geholt = false;
     }
     if (geholt) {

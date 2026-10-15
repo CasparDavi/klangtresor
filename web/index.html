@@ -2334,7 +2334,7 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #morgenknopf[hidden]{display:none}
 /* gegen den Uhrzeigersinn: der Pfeilkopf des Symbols zeigt nach links (Caspar_D, 08.09.2026: dreht sich entgegen der Pfeilrichtung) */
 @keyframes morgendreh{to{transform:rotate(-360deg)}}
-/* Die Glocke links daneben: nur sichtbar, wenn GitHub eine neuere Programm-Fassung hat.
+/* Die Glocke links daneben: nur sichtbar, wenn GitHub eine neuere Version des Programms hat.
    Rand und Fuellung aus der Coverpalette (--akzent), nicht das feste Rosa des Morgenknopfs.
    Das Symbol in --text, nicht in --akzent: Akzent auf Akzent ist unsichtbar (Hausregel 13).
    Nachgerechnet am 15.10.2026 ueber alle 330 Titel des Katalogs (310 mit eigener Palette, 20 auf den
@@ -2955,14 +2955,19 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   padding-top:12px;border-top:1px solid #ffffff12;
   display:flex;flex-direction:column;gap:5px}
 .werrecht{font-size:10.5px;line-height:1.5}
-#werfassungknopf{background:none;border:none;padding:0;font:inherit;font-size:12.5px;
-  color:var(--akzent);cursor:pointer;text-decoration:none;
+/* DER ABSCHNITT VERSION (Caspar_D, 15.10.2026: „mir gefaellt der text nicht“). Kopfzeile „Aktuelle Version“,
+   darunter der Stand in Saetzen: was GitHub hat, wo KlangTresor laeuft, welches Skript es einspielt. Nicht in
+   der Fussnotengroesse der Rechtszeilen darunter - das hier liest man, um danach etwas zu tun (12 px Lesegrenze).
+   Pfad und Skriptname in --text: sie sind das, was man im Dateifenster wiederfinden muss. */
+#werversion{font-size:12.5px;color:var(--text)}
+#werfassungstand{font-size:12.5px;line-height:1.5;color:var(--text);margin-top:4px}
+#werfassungstand .vleise{font-size:12px;color:var(--schwach);margin-top:4px}
+#werfassungstand .vname{color:var(--text);overflow-wrap:anywhere}
+#werfassungstand .vname.skript{white-space:nowrap}   /* der Skriptname bricht sonst am Bindestrich - so findet man ihn nicht wieder */
+#werfassungstand .vtaten{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:8px 0 4px}
+#werfassungstand .vtaten a{font-size:12.5px;color:var(--akzent);text-decoration:none;
   border-bottom:1px solid color-mix(in srgb, var(--akzent) 40%, transparent)}
-#werfassungknopf:hover{border-bottom-color:var(--akzent)}
-#werfassungknopf:disabled{opacity:.5;cursor:default;border-bottom-color:transparent}
-#werfassungstand{font-size:12px;line-height:1.5;color:var(--schwach);margin-top:6px}
-#werfassungstand a{color:var(--akzent);text-decoration:none;
-  border-bottom:1px solid color-mix(in srgb, var(--akzent) 40%, transparent)}
+#werfassungstand .vtaten a:hover{border-bottom-color:var(--akzent)}
 
 /* Der Erklaerkasten teilt sich die Form mit dem Ueber-Fenster
    (.werkopf, .werinhalt), ist aber breiter: Es steht eine Tabelle
@@ -4072,11 +4077,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div id="filterkategorien" style="display:none"></div>
       <div id="filterwerte" style="display:none"></div>
     </div>
-    <!-- Neue Programm-Fassung (GitHub), nicht der Bestand. Bleibt versteckt, bis
-         fassungErinnern() eine neuere Nummer sieht. Klick oeffnet das Ueber-Fenster.
+    <!-- Neue Version des Programms (GitHub), nicht der Bestand. Bleibt versteckt, bis
+         fassungErinnern() eine neuere Nummer sieht. Klick oeffnet das Ueber-Fenster, und das
+         sieht beim Aufgehen selbst nach (werAuf).
          Der Tooltip sagt, was der Klick tut: er zeigt, wie man einspielt - einspielen
-         tut nur das Skript im Ordner (Hausregel 22: Prinzip, nicht nur der Name). -->
-    <button id="fassungglocke" type="button" hidden onclick="fassungGlockeAuf()" title="Neue Programm-Fassung auf GitHub — Klick zeigt, wie man sie einspielt">
+         tut nur das Skript im Ordner (Hausregel 22: Prinzip, nicht nur der Name).
+         „Version“ fuers Programm, „Fassung“ bleibt den Liedern (Caspar_D, 15.10.2026). -->
+    <button id="fassungglocke" type="button" hidden onclick="werAuf()" title="Neue Version auf GitHub – Klick zeigt, wie man sie einspielt">
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 22a2.2 2.2 0 0 0 2.2-2.2h-4.4A2.2 2.2 0 0 0 12 22zm7-6.2V11a7 7 0 1 0-14 0v4.8L3 18.2V20h18v-1.8l-2-2.4z"/>
       </svg>
@@ -4306,14 +4313,18 @@ h3 .infoknopf .ico{width:14px;height:14px}
           </div>
         </div>
       <div class="werfuss">
-        <div><span id="werversion">—</span></div>
-        <!-- Neue PROGRAMM-Fassung. Von selbst sieht die Seite beim Oeffnen und
+        <!-- Neue PROGRAMM-Version. Von selbst sieht die Seite beim Oeffnen und
              danach alle 12 h nach (fassungErinnern, nach einem Fehlschlag nach 2 h)
-             und zeigt dann oben die Glocke; dieser Knopf fragt sofort. Beide gehen
-             an den eigenen Server, der haelt eine Antwort von GitHub 30 min vor.
-             Der rote Knopf oben holt Songdaten, nicht Code. -->
+             und zeigt dann oben die Glocke; dazu sieht dieses Fenster bei jedem
+             Aufgehen nach (werAuf). Beide gehen an den eigenen Server, der haelt
+             eine Antwort von GitHub 30 min vor. Der rote Knopf oben holt Songdaten,
+             nicht Code.
+             Bis 15.10.2026 stand hier ein Knopf „Nach neuer Fassung sehen“. Caspar_D:
+             „aber er hat doch schon eine gefunden, warum steht dieser Text hier“ und
+             „die Glocke zeigt schon, wenn etwas neues da ist, warum sollte ich nochmal
+             schauen?“ - der Knopf ist weg, das Fenster fragt beim Aufgehen selbst. -->
         <div>
-          <button type="button" id="werfassungknopf" onclick="fassungPruefen()">Nach neuer Fassung sehen</button>
+          <div id="werversion">—</div>
           <div id="werfassungstand" hidden></div>
         </div>
         <!-- Die Rechtelage gehoert hierher, nicht nur in die README:
@@ -29042,75 +29053,160 @@ function buehneTakt(){
 }
 
 /* Wer das gebaut hat - auf und zu. Die Version kommt aus derselben
-   Quelle wie oben im Kopf (package.json ueber /api/index). */
+   Quelle wie oben im Kopf (package.json ueber /api/index). Beim Aufgehen
+   sieht das Fenster selbst bei GitHub nach (Caspar_D, 15.10.2026) - ausser
+   auf dem eingefrorenen Stick, der greift nicht ins Netz. */
 function werAuf(){
   const w = document.getElementById('werversion');
-  if (w) w.textContent = paketVersion ? 'Version ' + paketVersion : '—';
-  /* Auf dem eingefrorenen Stick greift nichts ins Netz, und einspielen ginge dort ohnehin nicht (die Skripte
-     aktualisieren-* liegen nicht darauf) - der Knopf faellt weg, an seiner Stelle ein Satz. */
-  { const k = document.getElementById('werfassungknopf'), s = document.getElementById('werfassungstand');
-    if (k && s && archivEingefroren()){ k.hidden = true; s.hidden = false;
-      s.textContent = 'Eingefrorene Kopie: neue Fassungen kommen mit einem neuen Export vom Rechner, auf dem KlangTresor läuft.'; } }
+  if (w) w.textContent = paketVersion ? 'Aktuelle Version ' + paketVersion : '—';
   document.getElementById('wer').classList.add('auf');
+  fassungNachsehen();
 }
 function werZu(){ document.getElementById('wer').classList.remove('auf'); }
-/* GitHub-Release nachsehen: auf den Knopf im Fenster und von selbst
+/* GitHub-Release nachsehen: bei jedem Aufgehen des Fensters und von selbst
    ueber fassungErinnern() (beim Oeffnen, dann alle 12 h, nach einem Fehlschlag in 2 h). Der Server fragt
    api.github.com (User-Agent mit Projektadresse) und haelt eine Antwort
    30 min vor, die Seite selbst fragt GitHub nie. Einspielen tut das Skript
-   auf dem Rechner — im Container waere ein Overlay beim naechsten Restart weg. */
+   auf dem Rechner — im Container waere ein Overlay beim naechsten Restart weg.
+   Glocke und gemerkter Stand werden dabei nachgezogen wie in fassungErinnern(): ein Fehlschlag ist kein Stand.
+   Oeffnet man das Fenster zweimal schnell hintereinander, gilt die Antwort auf die letzte Frage. */
+let fassungFrage = 0;
+async function fassungNachsehen(){
+  const s = document.getElementById('werfassungstand');
+  if (!s) return;
+  s.hidden = false;
+  if (archivEingefroren()){ fassungStandZeigen({ eingefroren: true }); return; }
+  const nr = ++fassungFrage;
+  s.textContent = 'sehe nach …';
+  let d = null;
+  /* Auch die Absagen des Servers kommen als JSON (405 eingefroren, 502 mit grund) - nur ein Netz, das reisst,
+     oder eine Antwort ohne JSON laesst d leer. */
+  try { d = await (await fetch('/api/fassung')).json(); } catch (e) { d = null; }
+  if (nr !== fassungFrage) return;
+  if (d){ fassungMerken(d); fassungGlockeSetzen(d); }
+  fassungStandZeigen(d);
+}
+/* „heute, 13:05“ / „gestern, 08:12“ / „12.10.2026, 21:40“ - nach der Uhr dieses Browsers. */
+function fassungZeitpunkt(iso){
+  const t = new Date(iso);
+  if (!iso || isNaN(t)) return '';
+  const tag = (x) => x.getFullYear() + '-' + x.getMonth() + '-' + x.getDate();
+  const heute = new Date(), gestern = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate() - 1);
+  const wann = tag(t) === tag(heute) ? 'heute' : tag(t) === tag(gestern) ? 'gestern' : t.toLocaleDateString('de-DE');
+  return wann + ', ' + t.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+/* DER STAND IN SAETZEN (Caspar_D, 15.10.2026). Sein Vorschlag: „Auf GitHub liegt das neuere 1.0.75 (15.10.2026)
+   bereit. Du hast noch 1.0.74. KlangTresor läuft im Ordner. Zum Einspielen des Updates: gehe in den Ordner und
+   rufe … auf. library/ bleibt.“ und zur Skizze „den ordner zeigen, damit man ihn finden kann“. Darum steht der
+   Ordner voll ausgeschrieben da, dazu nur das EINE Skript, das auf dem Rechner des Servers laeuft (nicht alle
+   drei), und die Pille „Ordner zeigen“ oeffnet ihn dort. „Version“ fuers Programm, „Update“ fuer den Vorgang;
+   „Fassung“ bleibt den Liedern. Gebaut mit Knoten statt innerHTML: grund und Pfad kommen von aussen. */
 function fassungStandZeigen(d){
   const s = document.getElementById('werfassungstand');
   if (!s) return;
   s.hidden = false;
-  const wo = d.container
-    ? ' Diese Seite läuft im Container: einspielen im Projektordner auf dem Rechner (aktualisieren-linux.sh oder das Geschwisterskript).'
-    : '';
-  if (d.eingefroren) {
-    s.textContent = 'Eingefrorene Kopie: sie greift nicht ins Netz.';
-  } else if (!d.github) {
-    s.textContent = 'GitHub hat nicht geantwortet' + (d.grund ? ' (' + d.grund + ')' : '') + '.' + wo;
-  } else if (d.neuer) {
-    const am = d.am ? new Date(d.am).toLocaleDateString('de-DE') : '';
-    s.textContent = 'Auf GitHub liegt ' + d.github + (am ? ' (' + am + ')' : '')
-      + '. Du hast ' + (d.hier || '—') + '. Einspielen im Ordner: aktualisieren-linux.sh, '
-      + 'aktualisieren-macos.command oder aktualisieren-windows.cmd. library/ bleibt.' + wo;
-    const okSeite = d.seite && /^https:\/\/github\.com\/CasparDavi\/klangtresor\//.test(d.seite);
-    if (okSeite) {
-      s.appendChild(document.createTextNode(' '));
-      const a = document.createElement('a');
-      a.href = d.seite; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Release';
-      s.appendChild(a);
+  s.textContent = '';
+  const zeile = (klasse, ...teile) => {
+    const e = document.createElement('div');
+    if (klasse) e.className = klasse;
+    e.append(...teile);
+    s.appendChild(e);
+    return e;
+  };
+  const name = (t, klasse) => { const e = document.createElement('span'); e.className = 'vname' + (klasse ? ' ' + klasse : ''); e.textContent = t; return e; };
+  if (archivEingefroren() || (d && d.eingefroren)) {
+    zeile('', 'Eingefrorene Kopie: neue Versionen kommen mit einem neuen Export vom Rechner, auf dem KlangTresor läuft.');
+    return;
+  }
+  /* Wie man einspielt: der Satz zum Ordner (oder zum Container), darunter die Pille und der Link zur Release. */
+  const einspielen = (d, seite) => {
+    if (d.container) {
+      /* docker-compose.yml liegt im Unterordner docker/, nicht im Projektordner selbst - eingespielt wird eine
+         Ebene darueber (bin/aktualisieren.js, README). */
+      zeile('vleise', 'KlangTresor läuft in einem Container. Zum Einspielen des Updates gehst du auf dem Rechner in den '
+        + 'Projektordner (dort liegen library/ und der Unterordner docker/ mit docker-compose.yml) und startest das '
+        + 'Skript deines Systems. library/ bleibt, wie sie ist.');
+    } else {
+      const skript = d.plattform === 'darwin' ? 'aktualisieren-macos.command'
+        : d.plattform === 'win32' ? 'aktualisieren-windows.cmd' : 'aktualisieren-linux.sh';
+      zeile('vleise', 'KlangTresor läuft im Ordner ', name(d.ordner || '—'),
+        '. Zum Einspielen des Updates gehst du in diesen Ordner und startest ', name(skript, 'skript'),
+        '. library/ bleibt, wie sie ist.');
     }
+    const taten = zeile('vtaten');
+    if (!d.container && d.ordner) {
+      const k = document.createElement('button');
+      k.type = 'button'; k.className = 'pille'; k.textContent = 'Ordner zeigen';
+      k.title = 'Öffnet den Ordner, in dem KlangTresor läuft, im Dateifenster dieses Rechners – '
+        + 'dort liegt das Skript, das das Update einspielt. Geht nur am Rechner, auf dem KlangTresor läuft.';
+      k.onclick = () => fassungOrdnerZeigen(k);
+      taten.appendChild(k);
+    }
+    /* Die Release-Seite nur, wenn sie zu diesem Projekt gehoert - die Adresse nennt die Antwort von GitHub
+       (html_url), und quellen.txt kann die Abfrage auf eine andere Quelle lenken. */
+    if (seite && /^https:\/\/github\.com\/CasparDavi\/klangtresor\//.test(seite)) {
+      const a = document.createElement('a');
+      a.href = seite; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Was ist neu? ›';
+      taten.appendChild(a);
+    }
+    if (!taten.childElementCount) taten.remove();
+  };
+  if (!d || !d.github) {
+    zeile('', d ? 'GitHub hat gerade nicht geantwortet' + (d.grund ? ' (' + d.grund + ')' : '') + '.'
+      : 'Nachsehen ging nicht – der KlangTresor-Server hat nicht geantwortet.');
+    /* Der letzte Stand, bei dem GitHub eine Nummer genannt hat. Aeltere Eintraege (vor 15.10.2026) tragen keine Zeit. */
+    const g = fassungLesen();
+    if (g && g.github) zeile('vleise', g.gefragtAm
+      ? 'Zuletzt erfolgreich nachgesehen: ' + fassungZeitpunkt(g.gefragtAm) + ' – da war ' + g.github + ' die neueste.'
+      : 'Beim letzten erfolgreichen Nachsehen war ' + g.github + ' die neueste.');
+    /* Die Glocke bleibt bei einem Fehlschlag stehen (fassungGlockeSetzen) - wer sie anklickt, soll auch dann
+       lesen, wie man einspielt. Nur, solange die gemerkte Nummer noch gegen DIESE Version verglichen ist. */
+    if (d && g && g.neuer && g.hier && g.hier === d.hier) einspielen(d, g.seite);
+    return;
+  }
+  if (d.neuer) {
+    const am = d.am ? new Date(d.am).toLocaleDateString('de-DE') : '';
+    zeile('', 'Auf GitHub liegt die neuere Version ' + d.github + (am ? ' (' + am + ')' : '')
+      + ' bereit. Du hast noch ' + (d.hier || '—') + '.');
+    einspielen(d, d.seite);
   } else if (d.lage === -1) {
-    /* deine ist neuer als das jüngste Release (ein Git-Stand vor dem nächsten Release) - nicht „dieselbe" */
-    s.textContent = 'Du hast ' + (d.hier || '—') + ', auf GitHub liegt noch ' + d.github + ' — deine Fassung ist neuer.' + wo;
+    /* deine ist neuer als das juengste Release (ein Git-Stand vor dem naechsten Release) - nicht „die neueste" */
+    zeile('', 'Deine Version ' + (d.hier || '—') + ' ist neuer als die neueste auf GitHub (' + d.github + ').');
+  } else if (d.lage === 0) {
+    zeile('', 'Das ist die neueste Version.');
+    const wann = fassungZeitpunkt(d.gefragtAm);
+    zeile('vleise', (wann ? 'Zuletzt nachgesehen: ' + wann + '. ' : '')
+      + 'KlangTresor sieht beim Öffnen und alle 12 Stunden selbst nach – und jedes Mal, wenn du dieses Fenster öffnest.');
   } else {
-    s.textContent = 'Du hast ' + (d.hier || '—') + ', auf GitHub liegt ' + d.github + ' — das ist dieselbe Fassung.' + wo;
+    /* lage null: die eigene Nummer fehlt (package.json nicht lesbar) - vergleichen laesst sich nichts */
+    zeile('', 'Auf GitHub ist ' + d.github + ' die neueste Version.');
   }
 }
-async function fassungPruefen(){
-  const k = document.getElementById('werfassungknopf');
-  const s = document.getElementById('werfassungstand');
-  if (!k || !s) return;
-  k.disabled = true; s.hidden = false; s.textContent = 'Frage GitHub …';
+/* Die Pille „Ordner zeigen“: der Server oeffnet seinen Programmordner im Dateifenster (POST /api/ordner-zeigen,
+   ohne Eingabe). Geht das nicht, steht der Pfad ja schon da - das sagt der leise Satz darunter. */
+async function fassungOrdnerZeigen(k){
+  const taten = k.parentElement;
+  const alt = taten && taten.parentElement && taten.parentElement.querySelector('.vordnerfehler');
+  if (alt) alt.remove();
+  let ok = false, grund = '';
   try {
-    const r = await fetch('/api/fassung');
-    const d = await r.json();
-    fassungMerken(d);
-    fassungGlockeSetzen(d);
-    fassungStandZeigen(d);
-  } catch (e) {
-    s.textContent = 'Nachsehen ging nicht.';
-  }
-  k.disabled = false;
+    const r = await fetch('/api/ordner-zeigen', { method: 'POST' });
+    const d = await r.json().catch(() => ({}));
+    ok = r.ok && d.ok;
+    grund = d.grund || '';
+  } catch (e) {}
+  if (ok || !taten || !taten.isConnected) return;
+  const f = document.createElement('div');
+  f.className = 'vleise vordnerfehler';
+  f.textContent = 'Der Ordner ließ sich nicht öffnen' + (grund ? ' (' + grund + ')' : '') + ' – der Pfad steht oben.';
+  taten.after(f);
 }
-/* ERINNERUNG AN EINE NEUE PROGRAMM-FASSUNG. Der rote Knopf bleibt beim
+/* ERINNERUNG AN EINE NEUE PROGRAMM-VERSION. Der rote Knopf bleibt beim
    Bestand. Die Glocke links daneben kommt nur, wenn GitHub eine hoehere
    Nummer hat. Beim Oeffnen der Seite einmal den eigenen Server fragen
    (der merkt sich GitHub eine halbe Stunde, die Seite selbst nicht).
    Zwoelf Stunden galten zuerst auch fuer den naechsten Blick — eine
-   Fassung, die am selben Morgen kam, blieb dann bis zum naechsten Tag
+   Version, die am selben Morgen kam, blieb dann bis zum naechsten Tag
    unsichtbar, auch nach hartem Neuladen. Offen bleibende Seiten fragen
    danach hoechstens zweimal am Tag nach, nach einem Fehlschlag schon
    nach zwei Stunden. Der letzte Stand liegt im Browser, damit die
@@ -29131,30 +29227,27 @@ function fassungLesen(){
   try { return JSON.parse(localStorage.getItem(FASSUNG_MERK) || 'null'); } catch (e) { return null; }
 }
 /* Gemerkt wird, was fassungStandZeigen() fuer den Hinweis braucht. Ohne github kommt
-   hier nichts an, ein grund (nur bei Fehlschlag gesetzt) waere also immer leer. */
+   hier nichts an, ein grund (nur bei Fehlschlag gesetzt) waere also immer leer.
+   gefragtAm (seit 15.10.2026): wann der Server GitHub dafuer gefragt hat - nach einem Fehlschlag
+   sagt das Fenster damit „Zuletzt erfolgreich nachgesehen: …“. */
 function fassungMerken(d){
   if (!d || d.eingefroren || !d.github) return;
   try { localStorage.setItem(FASSUNG_MERK, JSON.stringify({
     hier: d.hier || null, github: d.github,
     neuer: !!d.neuer, am: d.am || null, seite: d.seite || null,
     container: !!d.container, lage: d.lage == null ? null : d.lage,
+    gefragtAm: d.gefragtAm || null,
   })); } catch (e) {}
 }
 function fassungGlockeSetzen(d){
   const g = document.getElementById('fassungglocke');
   if (!g) return;
   if (archivEingefroren() || (d && d.eingefroren)){ g.hidden = true; return; }
-  /* Keine Nummer von GitHub: Die Glocke bleibt, wie sie ist - ein Ausfall sagt nichts ueber die Fassung. */
+  /* Keine Nummer von GitHub: Die Glocke bleibt, wie sie ist - ein Ausfall sagt nichts ueber die Version. */
   if (!d || !d.github) return;
   if (!d.neuer){ g.hidden = true; return; }
   g.hidden = false;
-  g.title = 'Neue Programm-Fassung ' + d.github + ' auf GitHub — Klick zeigt, wie man sie einspielt';
-}
-function fassungGlockeAuf(){
-  werAuf();
-  const gemerkt = fassungLesen();
-  if (gemerkt && gemerkt.neuer) fassungStandZeigen(gemerkt);
-  else fassungPruefen();
+  g.title = 'Neue Version ' + d.github + ' auf GitHub – Klick zeigt, wie man sie einspielt';
 }
 let fassungWecker = 0;
 async function fassungErinnern(){

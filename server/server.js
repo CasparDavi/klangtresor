@@ -1654,10 +1654,17 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
     try { return JSON.parse(fs.readFileSync(path.join(WURZEL, 'package.json'), 'utf8')).version || null; }
     catch (e) { return null; }
   };
-  /* Neue PROGRAMM-Fassung, nicht die Songdaten. Die Seite fragt hier von selbst beim Oeffnen und
-     danach alle 12 h (nach einem Fehlschlag nach 2 h), dazu auf den Knopf; /api/index fragt nie.
+  /* Neue PROGRAMM-Version, nicht die Songdaten. Die Seite fragt hier von selbst beim Oeffnen und
+     danach alle 12 h (nach einem Fehlschlag nach 2 h), dazu jedes Mal, wenn das Fenster „KlangTresor“
+     aufgeht (seit 15.10.2026; den Knopf „Nach neuer Fassung sehen“ gibt es nicht mehr); /api/index fragt nie.
      GitHub selbst fragt standHolen(), eine Antwort haelt es 30 min vor. Antwortet GitHub nicht,
      kommt das mit 200 und github:null - die Seite erkennt den Fehlschlag am Inhalt, nicht am Status.
+     Dazu, was das Fenster fuers Einspielen braucht (Caspar_D, 15.10.2026: „den ordner zeigen, damit man
+     ihn finden kann“): ordner (der Programmordner, voll ausgeschrieben), plattform (welches der drei
+     Skripte aktualisieren-* passt - das System des SERVERS, nicht das des Browsers: eingespielt wird auf
+     dem Rechner, auf dem KlangTresor laeuft) und gefragtAm (wann GitHub wirklich gefragt wurde).
+     container nimmt auch die Erkennung des Servers (IM_CONTAINER: Podman, KLANGTRESOR_CONTAINER) dazu -
+     dieselbe, an der /api/ordner-zeigen ablehnt; sonst stuende eine Pille da, die nie ginge.
      Die ZWEITE Stelle, die nach draussen greift (die erste: /api/profil-pruefen) - darum eingefroren
      gesperrt wie jene: der Stick soll „autonom isoliert laufen koennen" (Caspar_D, 11.09.2026), und
      einspielen koennte er ohnehin nicht (die Skripte aktualisieren-* liegen dort nicht). Bei der
@@ -1665,10 +1672,49 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
   if (p === '/api/fassung') {
     if (EINGEFROREN) return jsonAntwort(res,
       { fehler: 'Archiv eingefroren - es greift nicht ins Netz', eingefroren: true }, 405);
-    fassungStand({ mitDocker: false }).then(d => jsonAntwort(res, d)).catch(e => jsonAntwort(res, {
-      hier: paketVersion(), github: null, neuer: false,
-      grund: (e && e.message) || String(e), geprueftAm: new Date().toISOString(),
-    }, 502));
+    const wo = { ordner: WURZEL, plattform: process.platform };
+    fassungStand({ mitDocker: false })
+      .then(d => jsonAntwort(res, Object.assign(d, wo, { container: !!d.container || IM_CONTAINER })))
+      .catch(e => jsonAntwort(res, Object.assign({
+        hier: paketVersion(), github: null, neuer: false,
+        grund: (e && e.message) || String(e), geprueftAm: new Date().toISOString(),
+        gefragtAm: new Date().toISOString(), container: IM_CONTAINER,
+      }, wo), 502));
+    return;
+  }
+  /* DEN PROGRAMMORDNER ZEIGEN (Caspar_D, 15.10.2026: „den ordner zeigen, damit man ihn finden kann“).
+     Zum Einspielen eines Updates muss man in den Ordner, in dem KlangTresor laeuft, und dort das Skript
+     starten - die Pille „Ordner zeigen“ im Fenster „KlangTresor“ oeffnet ihn im Dateifenster des Systems
+     (Finder, Explorer, xdg-open). Der Pfad ist fest (WURZEL), die Anfrage traegt keine Eingabe; gestartet
+     wird ohne Shell und abgekoppelt, das Dateifenster lebt weiter, wenn der Server neu startet.
+     Dieselben Grenzen wie der Ordnerdialog (/api/ordner/dialog): nur vom selben Rechner - ein Fenster auf
+     dem Server-Bildschirm nuetzt dem Handy im WLAN nichts, und ein Fremder im Netz soll dort keine Fenster
+     aufmachen. Im Container gibt es keinen Bildschirm (409). Eingefroren faengt die allgemeine Sperre
+     oben (405 fuer alles ausser GET/HEAD) - auf dem Stick liegen die Skripte aktualisieren-* ohnehin nicht. */
+  if (p === '/api/ordner-zeigen') {
+    if (req.method !== 'POST') return jsonAntwort(res, { ok: false, grund: 'nur POST' }, 405);
+    if (IM_CONTAINER) return jsonAntwort(res, { ok: false,
+      grund: 'KlangTresor läuft in einem Container – dort kann sich kein Ordnerfenster öffnen.' }, 409);
+    const von = String(req.socket.remoteAddress || '');
+    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(von))
+      return jsonAntwort(res, { ok: false, grund: 'nur auf dem Rechner, auf dem KlangTresor läuft' }, 403);
+    const befehl = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'explorer' : 'xdg-open';
+    let fertig = false;
+    const antwort = (ok, grund) => { if (fertig) return; fertig = true;
+      jsonAntwort(res, ok ? { ok: true } : { ok: false, grund }, ok ? 200 : 500); };
+    let kind;
+    try { kind = require('node:child_process').spawn(befehl, [WURZEL], { detached: true, stdio: 'ignore', windowsHide: false }); }
+    catch (e) { antwort(false, (e && e.message) || String(e)); return; }
+    kind.on('error', (e) => antwort(false, befehl + ': ' + ((e && e.message) || e)));
+    /* Ob es ging, sagt open/xdg-open mit dem Rueckgabewert, und zwar schnell (sie geben das Oeffnen ans
+       Dateifenster ab). explorer.exe meldet auch beim Gelingen 1 - unter Windows zaehlt nur, dass es startet.
+       Wer nach zwei Sekunden noch laeuft, hat das Fenster offen. */
+    if (process.platform === 'win32') kind.on('spawn', () => antwort(true));
+    else {
+      kind.on('exit', (code) => antwort(code === 0, befehl + ' endete mit ' + code));
+      setTimeout(() => antwort(true), 2000);
+    }
+    kind.unref();
     return;
   }
   const KONFIG = path.join(WURZEL, 'library', 'konfig.json');

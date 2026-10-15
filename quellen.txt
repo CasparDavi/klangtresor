@@ -54,13 +54,14 @@ nodejs-startseite = https://nodejs.org/
 ffmpeg-startseite = https://www.gyan.dev/ffmpeg/builds/
 
 # ---------------------------------------------------------------------
-# PROGRAMM-FASSUNG - neue Software, nicht die Songdaten.
+# PROGRAMM-VERSION - neue Software, nicht die Songdaten.
 #
 # Das Aktualisieren (bin/aktualisieren.js, GET /api/fassung) fragt hier
 # nach der juengsten GitHub-Release: das Skript bei jedem Lauf, die Seite
 # beim Oeffnen und danach alle 12 h (nach einem Fehlschlag nach 2 h) und
-# auf den Knopf im Fenster. Eine Antwort haelt der Server 30 min vor; der
-# eingefrorene Stick fragt nie. Das Zip ist dasselbe, das START-HIER.md nennt.
+# jedes Mal, wenn das Fenster "KlangTresor" aufgeht. Eine Antwort haelt
+# der Server 30 min vor; der eingefrorene Stick fragt nie. Das Zip ist
+# dasselbe, das START-HIER.md nennt.
 # Im Docker-Container und auf dem eingefrorenen Stick liegt diese Datei
 # nicht - dort gelten dieselben Adressen, fest in bin/aktualisieren.js.
 

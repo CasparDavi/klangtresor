@@ -21,7 +21,7 @@ erkennt das Programm selbst, sobald du einmal sammelst.
 
 ## Der schnelle Weg — ein Skript, das alles macht
 
-Das Paket gibt es hier, immer in der jüngsten Fassung:
+Das Paket gibt es hier, immer in der jüngsten Version:
 
     https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip
 
@@ -35,7 +35,7 @@ dir die Zeile für dein System und deinen Weg:
 | **macOS** | `einrichten-macos.command` doppelklicken | `einrichten-docker-macos.command` doppelklicken |
 | **Linux** | `./einrichten-linux.sh` | `./einrichten-docker-linux.sh` |
 
-Mehr liegt dort nicht: sechs Einrichtungsdateien, dazu `starten-*` für später und `aktualisieren-*` für neue Fassungen.
+Mehr liegt dort nicht: sechs Einrichtungsdateien, dazu `starten-*` für später und `aktualisieren-*` für neue Versionen.
 Jede hat drei Stufen, jede fängt die nächste auf — erst holt das Skript des
 Systems Node.js (falls es fehlt), dann übernimmt `bin/einrichten.js` und
 öffnet die Einrichtung **als Seite im Browser**: Schrittliste,
@@ -59,16 +59,18 @@ Browser (Chrome, wenn da). Wer sie löscht, nimmt `starten-windows.cmd`,
 `starten-macos.command` oder `starten-linux.sh` aus dem Ordner — die richten
 nichts mehr ein, sie starten nur.
 
-### Neue Fassung einspielen
+### Update einspielen
 
-Der rote Knopf holt neue *Titel* bei Suno. Eine neue *Programm*-Fassung
+Der rote Knopf holt neue *Titel* bei Suno. Eine neue *Version* des Programms
 kommt von GitHub. KlangTresor sieht selbst nach — beim Öffnen der Seite
 und, solange sie offen ist, alle 12 Stunden (nach einem Fehlschlag nach 2
-Stunden). GitHub selbst fragt der Server, und eine Antwort merkt er sich
-eine halbe Stunde; die eingefrorene Kopie auf dem Stick fragt nie. Gibt
-es eine neue, steht links neben dem roten Knopf eine Glocke; ein Klick
-öffnet das Fenster „KlangTresor“ (Wer das gebaut hat) mit dem Hinweis.
-Dort fragt **Nach neuer Fassung sehen** auch von Hand.
+Stunden), dazu jedes Mal, wenn das Fenster „KlangTresor“ (Klick auf den
+Namen oben) aufgeht. GitHub selbst fragt der Server, und eine Antwort merkt
+er sich eine halbe Stunde; die eingefrorene Kopie auf dem Stick fragt nie.
+Gibt es eine neue, steht links neben dem roten Knopf eine Glocke; ein Klick
+öffnet das Fenster mit dem Hinweis: welche Version bereitliegt, in welchem
+Ordner KlangTresor läuft und welches Skript das Update einspielt.
+**Ordner zeigen** öffnet diesen Ordner im Dateifenster deines Rechners.
 
 Zum Einspielen, im selben Ordner wie die Einrichtung (dort liegen `bin/`
 und `library/`, nicht der Unterordner `docker/`):
@@ -521,7 +523,7 @@ wählen.
   der Einschleusungen über npm-Pakete. KlangTresor hat genau eines
   davon: `onnxruntime-node` holt damit die KI-Laufzeit für den
   Klangraum. Die Freigabe steht seit dem 27.08.2026 in der
-  `package.json`. Siehst du die Meldung trotzdem, ist deine Fassung
+  `package.json`. Siehst du die Meldung trotzdem, ist deine Version
   älter — lade sie neu, oder führe einmal
   `npm approve-scripts onnxruntime-node` aus. Bei npm 11 läuft
   unterdessen alles, es ist bloß eine Warnung; ab npm 12 blockiert npm
