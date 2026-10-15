@@ -9173,4 +9173,14 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
   (Überschriften an: ein Bild kann hineinwachsen).
 - Nebenbefund, nicht von dieser Nacht: im PDF (Galerie, Kissen an) liegen feine Höhenlinien im Kissen – in Quick Look UND poppler,
   also im PDF selbst, nicht Apples Darstellung (§93 Wiedervorlage „Kissen mit der Apple-Engine prüfen").
-- Speicherplatz: Systemplatte 69 GB frei (Grenze 100 GB); die Sandkästen dieser Nacht im Scratchpad belegen noch ~4,6 GB.
+- Speicherplatz: Systemplatte 69 GB frei (Grenze 100 GB). Die Prüf-Sandkästen dieser Nacht (sb-pruefer-bs, sb-gegenleser,
+  sb-legende, sb-regler-pruefer, sb-plakat, sb-widerleg; ~4,1 GB) sind morgens gelöscht → 73 GB frei. Behalten: wt-nacht (Zweig),
+  sb-morgen, sb-plakat-werk, sb-regler.
+- Eigene Sichtung morgens (Claude, nach dem Workflow): Das A3-Plakat (`plakat-galerie-A3-hoch.png`) ist lockerer gehängt als die
+  Wand am Schirm. Zwischen den Covern liegt sichtbar Leerraum, die Ecken oben links und unten rechts bleiben leer, die Wand wirkt
+  rundlich statt rechteckig. Das widerspricht den Regeln aus §95: „innen darf kein negativ space erscheinen“ und „wirklich die
+  Ecken ausfüllen“. 70×100 quer trägt alle 330 Cover und liegt nah am Schirmbild.
+  Vermutung, nicht gemessen: Auf A3 hängen nur die 199 größten Cover. Es fehlen also die kleinen, die am Schirm die Lücken
+  füllen, und die Areale aus dem Schaum sind für diese Menge zu groß.
+  Hängt mit der Frage „Kachelzahl“ zusammen. Halbieren würde die Lücken eher vergrößern; gefragt ist, dass die Hängung bei
+  einer Formatgrenze trotzdem dicht und rechteckig bleibt.
