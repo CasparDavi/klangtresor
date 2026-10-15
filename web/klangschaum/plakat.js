@@ -249,12 +249,13 @@ let avatarStand = null;
 async function avatarPruefen(){ try { const r = await fetch('/avatar', { cache: 'no-store' }); avatarStand = r.ok; } catch (e) { avatarStand = false; } }
 function avatarDa(){ if (avatarStand != null) return avatarStand; const i = document.getElementById('ichbild'); return !!i && i.style.display !== 'none' && !(i.complete && !i.naturalWidth); }
 /* Die Teile von oben nach unten, in Millimetern der Seite. Die Systemschrift wird klein gesetzt breiter (1.0.57: die Vorschau lief
-   im Glasfeld ueber). Fuer die Suche und den Lage-Schluessel wird darum fest bei 6 px gemessen, der breitesten Stufe (darunter
-   gleich breit) - vorher bei der Breite der Vorschau, und die hing am Fenster: Oeffnen, Formatwechsel oder Fenstergroesse legten
-   den Schaum ungefragt neu (Fallensuche 1.0.58). Das Setzen misst in der echten Vorschaugroesse (pxJeMm). */
-function eckTeile(g, pxJeMm = null){
+   im Glasfeld ueber). Gemessen wird wie gesetzt (messen: bei der Zahl der Schriftgroesse in mm), fuer die Suche, den
+   Lage-Schluessel und das Setzen gleich - nie bei der Breite der Vorschau, die hing am Fenster: Oeffnen, Formatwechsel oder
+   Fenstergroesse legten den Schaum ungefragt neu (Fallensuche 1.0.58). Bis 15.10.2026 fest bei 6 px, der breitesten Stufe: auf
+   A3 fast gleich (Titel 2 % zu breit), auf grossen Formaten ein zu breiter Block (70 × 100: Titel 12 %). */
+function eckTeile(g){
   const T = g.T, U = g.U, L = g.L;
-  const breite = (t, fw, fs) => messen(t, fw, Math.min(fs, pxJeMm ? fs * pxJeMm * 25.4 / 96 : 6 * 25.4 / 96)) * fs;
+  const breite = (t, fw, fs) => messen(t, fw, fs) * fs;
   const zeile = (t, fs, fw, rolle) => ({ typ: 'zeile', t, fs, fw, rolle, w: breite(t, fw, fs), h: fs * 1.32 });
   const text = [];
   if (E.schildName) text.push(zeile(E.schildName, U * 1.25, 500, 'name'));
@@ -271,13 +272,13 @@ function eckTeile(g, pxJeMm = null){
 /* Fuer den Auftrag (Worker) und fuers Setzen: Block, Rahmen (Schnitt + Abstand) und Luft in Schaum-Einheiten (y nach oben), im
    Triptychon die Grenze der aeusseren Tafel. runden: Breiten fuer die Suche auf 3 % der Breite aufgerundet - sonst legte jeder
    Buchstabe im Titelfeld den Schaum neu; gesetzt wird ungerundet. */
-function schildVorgabe(g, W, H, runden = true, pxJeMm = null){
+function schildVorgabe(g, W, H, runden = true){
   const kv = g.karte, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2, oy = kv.y + (kv.h - H * k) / 2;
   /* Abstand von der Vorderseite (bei Umschlag die Falz), mit Rand vorne von dessen Innenkante - Avatar und Text nie auf dem Rand */
   const vo = g.vorne || { x: BESCHNITT, y: BESCHNITT, w: g.w, h: g.h }, randV = g.randKante ? g.randKante.randV : 0;
   const ecke = eckeJetzt(), abstand = (randV ? 0.03 : 0.04) * g.kurz + randV, xu = (x) => (x - ox) / k, yu = (y) => H - (y - oy) / k;
   const rahmen = { x0: xu(vo.x + abstand), x1: xu(vo.x + vo.w - abstand), y0: yu(vo.y + vo.h - abstand), y1: yu(vo.y + abstand) };
-  const teile = eckTeile(g, pxJeMm), q = 0.03 * W;
+  const teile = eckTeile(g), q = 0.03 * W;
   const block = teile.map(t => t.typ === 'kreis' ? { typ: 'kreis', d: t.d / k } : t.typ === 'luecke' ? { typ: 'luecke', h: t.h / k }
     : { typ: t.typ, w: runden ? Math.ceil(t.w / k / q) * q : t.w / k, h: t.h / k });
   let xMin = 0, xMax = W;
@@ -294,8 +295,8 @@ function schildVorgabe(g, W, H, runden = true, pxJeMm = null){
 /* Setzen: dieselbe Lage, die der Worker geprueft hat (blockLage), auf dem Grund der Seite. Passt der Block nicht mehr (Text nach
    dem Legen verlaengert, grosser Schaum anders gelegt), wird er so weit verkleinert, dass er passt - der naechste Lauf legt neu. */
 function eckeSetzen(g, fg, leise){
-  const res = aktuell.res, H = res.height, pxJeMm = ((el('ps-blatt') || {}).clientWidth || 800) / g.PW;
-  const v = schildVorgabe(g, res.width, H, false, pxJeMm), { k, ox, oy } = v;
+  const res = aktuell.res, H = res.height;
+  const v = schildVorgabe(g, res.width, H, false), { k, ox, oy } = v;
   const knoten = (res.nodes || []).find(n => n.depth === 0 && n.name === SCHILD_NAME && n.outline);
   const r = knoten ? blockReserve(knoten.outline, v.block, v.ecke, v.rahmen, v.luft) : 0;
   /* passt der Block nicht (mehr), wird er genau so weit verkleinert, dass er passt; unter 0,3 wird er nicht gesetzt, ein Hinweis
@@ -614,11 +615,17 @@ function legendenEintraege(alle = false){   /* alle: ungefiltert - für die Beme
     return i && b ? { farbe: i.style.background || '#888', name: b.textContent.trim() } : null;
   }).filter(Boolean).filter((e, _, liste) => alle || !legendeAreale || legendeAreale.has(e.name) || !liste.some(x => legendeAreale.has(x.name)));   /* passt kein Name, bleibt alles */
 }
-/* Breite in em, gemessen in der Druckgroesse mm (die Seite rechnet in Millimetern; 96/25,4 Punkte je mm) - vorher bei 100 px mit
-   Zuschlaegen 1,12 und 1,15: die Systemschrift des Mac wird klein gesetzt breiter (bei 1-2 mm Schrift bis 22 %), die Zuschlaege
-   reichten fuer das Verzeichnis nicht einmal (Wiedervorlage §77, 07.10.2026). */
+/* Breite in em, gemessen bei der Schriftgroesse, mit der das SVG setzt: der Zahl in font-size, in den Einheiten seiner viewBox
+   (Seite: mm; Bildebene der Bilderschau: Wandpunkte) als px - nicht die Groesse im Druck. Die Systemschrift des Mac wird klein
+   gesetzt breiter (bis 6 px gleich breit, darueber enger); bis 1.0.73 wurde bei mm·96/25,4 px gemessen (davor bei 100 px mit
+   Zuschlaegen 1,12 und 1,15, Wiedervorlage §77), und das Verzeichnis lief in die naechste Spalte, Arealnamen stiessen aneinander
+   (Caspar_D, 15.10.2026: „Das Textbreitenproblem lösen"). Gemessen auf 70 × 100 quer gegen getComputedTextLength: vorher
+   Arealnamen 15 %, Verzeichnis 7 % (bis 8,7 %), Edition 12 % zu schmal; nachher, auch auf A3, hoechstens 0,15 % daneben (ein
+   Titel mit zwei Leerzeichen 3 % zu breit - das SVG fasst sie zusammen, gekuerzt wird dort etwas zu frueh). Vorschau und PDF
+   setzen gleich breit (auf 0,3 %), auch bei doppelter Pixeldichte und 4400 px breitem Fenster; text-rendering=
+   "geometricPrecision" verschob die Breiten nur (bis 0,9 %, auf A3 dann knapp zu schmal gemessen) und bleibt weg. */
 const messen = (() => { const c = document.createElement('canvas').getContext('2d');
-  return (t, gewicht = 400, mm = null) => { const px = mm ? Math.max(1, mm * 96 / 25.4) : 100; c.font = `${gewicht} ${px.toFixed(2)}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`; return c.measureText(t).width / px; }; })();
+  return (t, gewicht = 400, groesse = null) => { const px = groesse ? Math.max(1, groesse) : 100; c.font = `${gewicht} ${px.toFixed(2)}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`; return c.measureText(t).width / px; }; })();
 /* TRIPTYCHON: die beiden Wandfugen in Millimetern der Seite - dort schneidet das PDF jede Tafel zu, was darauf liegt, fehlt im
    Druck (Wiedervorlage §77: „keine Textsetzung kennt die Wandfugen"). freieStrecken: [a, b] ohne die Fugen. */
 function wandFugen(g){
@@ -731,11 +738,14 @@ async function bilderEbene(g, kv, lauf){
     const r = b.rahmen || 0, u = artworkBild(b.id), stufe = schaumStufe(Math.max(b.w, b.h) * k * pxJeMm);
     if (r > 0) out += `<rect x="${f2(b.x - r)}" y="${f2(b.y - r)}" width="${f2(b.w + 2 * r)}" height="${f2(b.h + 2 * r)}" fill="${misch(farbe(b.gruppe))}"/>`;
     out += `<image href="${esc2(schaumBildHref(u, stufe))}" data-voll="${esc2(u)}" data-id="${esc2(b.id)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none"/>`;
-    /* die Nummer: Größe, Feld je Ecke (Anteile des Covers), Wahl nach dem Kontrast */
+    /* die Nummer: Größe, Feld je Ecke (Anteile des Covers), Wahl nach dem Kontrast. Sie steht in dieser Ebene (Wandpunkte,
+       font-size fs/k) und wird bei fs/k gesetzt, darum dort gemessen (15.10.2026, A3 hoch, fs/k 6,7 bis 9,5: Leinwand gegen SVG
+       −0,2 bis +0,2 %, bei fs in mm +0,7 bis +3,0 %). Nullen sind 1 bis 2 % breiter als die gesetzten Tabellenziffern - eine
+       Obergrenze für jede Nummer; em ebenso, bei 2 px, der breitesten Stufe. */
     const t = String(nummer.get(b.id)), bw = b.w * k, bh = b.h * k, em = messen('0'.repeat(t.length), 600, 2);
     let fs = Math.min(3.5, Math.max(1.5, 0.085 * Math.min(bw, bh)));
     fs = Math.max(0.8, Math.min(fs, bw / (em + 1), bh / (hoch + 1)));
-    const tw = messen('0'.repeat(t.length), 600, fs) * fs, ch = hoch * fs, halo = 0.25 * fs, m = mess.get(b.id);
+    const tw = messen('0'.repeat(t.length), 600, fs / k) * fs, ch = hoch * fs, halo = 0.25 * fs, m = mess.get(b.id);
     /* je Ecke zwei Abstände von den Kanten: ein halbes Geviert, und - nur wenn dort keine Ecke 4,5 : 1 erreicht (WCAG für Text) - anderthalb.
        Viele Cover tragen einen eigenen Rahmen (Holzschnitte: dunkle Linie, helle Bordüre); ein halbes Geviert setzt die Ziffern genau
        auf die Linie, ein Stück weiter innen stehen sie auf der ruhigen Bordüre - immer noch in der Ecke. */
@@ -889,8 +899,9 @@ function eigeneIds(svg, vor){
 }
 /* DAS WERKVERZEICHNIS setzen: ueber die volle Breite in Spalten, von oben nach unten und dann nach rechts; je
    Areal ein Kopf mit Farbquadrat, dann die Nummern (rechtsbuendig, leise) mit den Titeln. Ein Kopf steht nie
-   allein am Fuss einer Spalte. Zu lange Titel werden mit … gekuerzt (Leinwandmass mal 1,15 - sie misst etwas zu
-   schmal). Reichen die Zeilen mit den echten Arealen nicht, wird die Schrift kleiner, bis der Block passt. */
+   allein am Fuss einer Spalte. Zu lange Titel werden mit … gekuerzt, gemessen wie gesetzt (messen; die Koepfe in ihrem
+   Gewicht 600 - bis 15.10.2026 mit 400 gemessen, rund 4 % zu schmal). Reichen die Zeilen mit den echten Arealen nicht, wird die
+   Schrift kleiner, bis der Block passt. */
 /* AREALE AM RAND (Caspar_D, 06.10.2026: „Beschriftet wird um das Bild herum in der Farbe des Areals, dort wo der
    Rand dem Areal am nächsten ist"). Je Areal sein Name in seiner Farbe im Passepartout - an der Seite, an der es den
    Kartenrand am laengsten beruehrt, mittig ueber dem laengsten Stueck; oben waagerecht, links und rechts entlang der
@@ -1011,7 +1022,7 @@ function verzeichnisSetzen(gruppen, g, x0, y0, fg, leise){
   const fug = wandFugen(g), strecken = fug.length ? freieStrecken(x0, x0 + g.w - 2 * g.rand, fug).map(([a, b]) => [a - x0, b - a]) : null;
   const m = verzeichnisMass(n, g.w - 2 * g.rand, g.kurz, g.verz.hoehe * 1.02, gruppen.length, 1, strecken);
   const L = m.L, zh = L * 1.38, nrB = messen('0'.repeat(String(n).length), 400, L) * L;
-  const kuerzen = (t, b) => { if (messen(t, 400, L) * L <= b) return t; let k = t.length; while (k > 1 && messen(t.slice(0, k) + '…', 400, L) * L > b) k--; return t.slice(0, k) + '…'; };
+  const kuerzen = (t, b, fw = 400) => { if (messen(t, fw, L) * L <= b) return t; let k = t.length; while (k > 1 && messen(t.slice(0, k) + '…', fw, L) * L > b) k--; return t.slice(0, k) + '…'; };
   let out = `<text x="${x0.toFixed(2)}" y="${(y0 + L * 1.2).toFixed(2)}" font-size="${(L * 1.1).toFixed(2)}" font-weight="600" letter-spacing="${(L * 0.06).toFixed(2)}" fill="${leise}">`
     + `${personen ? 'VERZEICHNIS DER PERSONEN' : 'WERKVERZEICHNIS'} · ${n.toLocaleString('de-DE')} ${personen ? 'Personen' : 'Titel'}</text>`;
   const oben = y0 + 2.4 * L;
@@ -1021,7 +1032,7 @@ function verzeichnisSetzen(gruppen, g, x0, y0, fg, leise){
     const sp = Math.min(s, m.xs.length - 1), x = x0 + m.xs[sp], y = oben + r * zh + L, spB = m.bs[sp], titelB = spB - nrB - 1.6 * L;
     if (z.kopf !== undefined){
       out += `<rect x="${x.toFixed(2)}" y="${(y - L * 0.78).toFixed(2)}" width="${(L * 0.8).toFixed(2)}" height="${(L * 0.8).toFixed(2)}" rx="${(L * 0.15).toFixed(2)}" fill="${z.farbe}"/>`
-        + `<text x="${(x + L * 1.2).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(kuerzen(z.kopf, spB - 2.6 * L))}</text>`;
+        + `<text x="${(x + L * 1.2).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(kuerzen(z.kopf, spB - 2.6 * L, 600))}</text>`;
     } else if (z.rest){
       out += `<text x="${(x + nrB + 0.6 * L).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" font-style="italic" fill="${leise}">${esc2(z.rest)}</text>`;
     } else {
