@@ -14,7 +14,7 @@ import { blattSchmuck, blattGrund, dAuftrag, anzeigeName } from './skizze-blatt.
 import { ohneKlammern } from './skizze-hand.js';
 import { blattDatenHolen, refrainAus } from './skizze-daten.js';
 import { bildnisseBereit } from './skizze-bildnisse.js';
-import { TRANSFORMATIONEN } from './bilderschau.js';
+import { TRANSFORMATIONEN, eckeFuellen } from './bilderschau.js';
 
 const FORMATE = [
   { id: 'A3', name: 'A3', w: 297, h: 420 }, { id: 'A2', name: 'A2', w: 420, h: 594 },
@@ -47,7 +47,7 @@ const VORLAGEN = [
 ];
 /* RANDLOS (1.0.57; Caspar_D: „ich hätte gern noch eine Randlose Variante mit einer fehlenden Ecke im gleichen Format wie das
    Biold, wo Titel, Legende, Avatar und Name drin stehen"): der Schaum reicht bis an den Beschnitt, kein Passepartout, kein
-   Museumsschild, keine Arealnamen am Rand. Seit 1.0.58 eine eigene Zelle, seit dem 15.10.2026 als Schaum aus grauen Kissen (eckZellen); darin Avatar, Legende und Text, bündig
+   Museumsschild, keine Arealnamen am Rand. Seit 1.0.58 eine eigene Zelle, seit dem 15.10.2026 als Schaum aus grauen Kissen (eckZellen), in der Bilderschau mit grauen Covern behängt (eckeFuellen); darin Avatar, Legende und Text, bündig
    zur gewählten Ecke (eckeSetzen; Größe und Form sucht schild.js). */
 VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Avatar und Titel in der Ecke',
   e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true, skizze: false, randVorne: 15, umschlag: 0 } });
@@ -361,7 +361,7 @@ function schildVorgabe(g, W, H, runden = true){
 /* DIE ECKE ALS SCHAUM (Randlos, 15.10.2026). Caspar_D: „wir zerlegen die Ecke in typische Zellen der Restmap und machen da graue
    Strukturen rein" – gewählt: „die 2, aber heterogener wie im Restschaum" – an der Probe: „die hellsten Zellen sind gut".
    Die Eckzelle wird mit foamtree zerlegt wie jedes Gefäß des Schaums (bis ECK_FOAM_BIS Zellen gekrümmte Wände, darüber gerade, power):
-   die Zielflächen sind eine Stichprobe der echten Blattflächen der übrigen Karte (Bilderschau: der Cover), auf die Fläche der Ecke
+   die Zielflächen sind eine Stichprobe der echten Blattflächen der übrigen Karte, auf die Fläche der Ecke
    gebracht - so viele Zellen wie Ecke / mittlere Blattfläche, gestreut wie im Rest. Die Saat kommt aus der Lage der Ecke: gleiche
    Lage, gleiches Bild. Jede Zelle ist ein graues Kissen (ECK_KISSEN: radialer Verlauf, Licht oben links), die Fugen sind die des
    Schaums dieses Formats (SCHAUM_STRICHE mal Fugen-Regler; zur Restkarte die Ebene der Ecke, innen die des Blatts): der Grund
@@ -374,6 +374,9 @@ const ECK_KISSEN = { cx: '42%', cy: '38%', r: '72%',
   mitte: (t) => { const v = Math.round(30 + 34 * (0.55 + 0.45 * t)); return `rgb(${v},${v},${v + 3})`; },
   rand: (t) => { const r = Math.round(21 + 6 * t); return `rgb(${r},${r},${r + 2})`; } };
 const ECK_FOAM_BIS = 90;
+/* Rahmen der grauen Cover in der Bilderschau-Ecke (eckeFuellen): rgb(70,70,73), L 0,062 - #f1efe9 darauf 8,2 : 1; die hellste Kissenmitte
+   bleibt rgb(64,64,67) mit 9,0 : 1 */
+const ECK_FAKE_RAHMEN = 'rgb(70,70,73)';
 /* ABSTAND ZUR ZELLGRENZE (Caspar_D, 15.10.2026: „und da jetzt eine Zelle mit Grenzen da ist, muß ein Abstand zu den Zellgrenzen da
    sein, der größer als ein Wortabstand ist"): jedes Teil des Blocks hält zur Grenze der Eckzelle mindestens ECK_WORTLUFT_EM der
    größten Schrift im Block (Wortabstand der Systemschrift etwa 0,25–0,3 em), gemessen ab der sichtbaren Kante (halbe Fuge);
@@ -388,14 +391,13 @@ function eckZellen(res, knoten){
   const W = res.width, H = res.height, zl = aktuell.j.zeilen;
   const blatt = (res.leaves || []).find(k => k.row != null && (zl[k.row] || {}).id === SCHILD_ID && k.outline);
   let aussen = (blatt || knoten).outline, tags = blatt && blatt.tags, tiefe = blatt ? blatt.depth : 1;
-  /* Bilderschau: die Ecke ist ein Rechteck über den Seitenrand hinaus - Kanten draußen ohne Fuge, innen die der obersten Ebene */
+  /* ohne Blatt der Ecke: Kanten außerhalb der Seite ohne Fuge, innen die der obersten Ebene */
   if (!tags) tags = aussen.map((p, i) => { const q = aussen[(i + 1) % aussen.length], m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
     return m[0] <= 0 || m[0] >= W || m[1] <= 0 || m[1] >= H ? -1 : 0; });
   if (shoelace(aussen) < 0){ aussen = aussen.slice().reverse(); tags = tags.slice(0, -1).reverse().concat(tags.slice(-1)); }
   const fugen = eckFugen(), schl = textHash(aussen.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(';') + '|' + tags.join(',') + '|' + fugen[0].toFixed(3));
   if (eckVorrat.has(schl)) return eckVorrat.get(schl);
-  const flaechen = res.bilder ? res.bilder.map(b => b.w * b.h)
-    : (res.leaves || []).filter(k => k !== blatt && k.outline && k.outline.length > 2).map(k => Math.abs(shoelace(k.outline)));
+  const flaechen = (res.leaves || []).filter(k => k !== blatt && k.outline && k.outline.length > 2).map(k => Math.abs(shoelace(k.outline)));
   const rnd = eckZufall(schl), C = makeContainer(aussen), A = C.area;
   /* Stichprobe mit Zurücklegen, bis die Summe die Ecke erreicht (der letzte Zug bleibt, wenn er näher heranführt), dann auf die Ecke */
   let ziel = [A];
@@ -429,8 +431,9 @@ function eckeSetzen(g, fg, leise){
   const knoten = (res.nodes || []).find(n => n.depth === 0 && n.name === SCHILD_NAME && n.outline);
   const r = knoten ? blockReserve(knoten.outline, v.block, v.ecke, v.rahmen, v.luft) : 0;
   const X = (x) => ox + x * k, Y = (y) => oy + (H - y) * k, f2 = (n) => n.toFixed(2), hell = hellerGrund();
-  /* die Ecke als Schaum aus grauen Kissen (eckZellen), darauf alles in ECK_SCHRIFT */
-  let out = knoten ? eckKissen(eckZellen(res, knoten), X, Y) : '';
+  /* die Ecke als Schaum aus grauen Kissen (eckZellen), darauf alles in ECK_SCHRIFT; die Bilderschau hängt dort graue Cover
+     (eckeFuellen, gemalt in bilderEbene unter dieser Schrift) */
+  let out = knoten && !res.bilder ? eckKissen(eckZellen(res, knoten), X, Y) : '';
   fg = leise = ECK_SCHRIFT;
   /* passt der Block nicht (mehr), wird er genau so weit verkleinert, dass er passt; unter 0,3 wird er nicht gesetzt, ein Hinweis
      sagt warum - vorher stand er mit mindestens 0,5 über den Zellen (Fallensuche 1.0.58) */
@@ -711,7 +714,8 @@ function zeichnen(sofort, warteMs, nurSetzen){
         /* die Areale als Knoten wie beim Schaum (y nach oben), davor die Ecke als Schild-Knoten: eckeSetzen prüft daran den Block, der Rand
            nimmt daraus seine Farben (randFarben) - gemerkte Hängungen bleiben unverändert */
         res = { ...res, nodes: (ecke ? [{ depth: 0, name: SCHILD_NAME, outline: ecke.umriss }] : [])
-          .concat((res.areale || []).map(ar => ({ depth: 0, name: ar.name, outline: ar.poly.map(q => [q[0], res.H - q[1]]) }))) };
+          .concat((res.areale || []).map(ar => ({ depth: 0, name: ar.name, outline: ar.poly.map(q => [q[0], res.H - q[1]]) }))),
+          platzhalter: ecke ? eckeFuellen(res, ecke.sperre, a.j.opt.beschnitt) : [] };
       } else {
         standSetzen('Der Schaum wird für das Plakat gelegt …');
         try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }, true); }
@@ -843,7 +847,7 @@ function bilderBeschnitt(g, W, H){
 }
 /* RANDLOS IN DER BILDERSCHAU (Caspar_D, 15.10.2026, 2a: „freigeben; dort sind die Nummern automatisch aus … Ecke mit Avatar, Titel,
    Legende wie im Klangschaum-Randlos"). Der Block der Ecke (schildVorgabe, Breiten gerundet) wird gesperrte Wand bis an die Kanten der
-   Ecke - dort hängt kein Cover. umriss: dasselbe Rechteck samt Luft der Ecke in Schaum-Einheiten (y nach oben) für blockReserve beim
+   Ecke - dort hängt kein echtes Cover, danach hängt eckeFuellen (bilderschau.js) dort graue. umriss: dasselbe Rechteck samt Luft der Ecke in Schaum-Einheiten (y nach oben) für blockReserve beim
    Setzen, eine Wandpunkt-Luft größer, damit der ungerundete Block sicher hineinpasst. Nummern gibt es dabei keine (mitVerzeichnis). */
 function bilderEcke(v, W, H){
   const { x0: bx0, x1: bx1, y0: by0, y1: by1 } = blockRechteck(v.block, v.ecke, v.rahmen, 1), d = v.luft + 1;
@@ -1161,6 +1165,11 @@ async function bilderEbene(g, kv, lauf){
   const alsHex = (f) => { const v = farbWert(f); return v ? '#' + v.map(x => x.toString(16).padStart(2, '0')).join('') : null; };
   const basisVon = (b) => { const s = typeof song === 'function' ? song(b.id) : null, fa = s && s.farben;
     return fa && fa.toene && fa.toene.length && okFarbe(fa.akzent) ? { farbe: fa.akzent, ton: 'akzent' } : { farbe: alsHex(farbe(b.gruppe)) || '#8a8d94', ton: 'areal' }; };
+  /* die grauen Cover der Randlos-Ecke (eckeFuellen): Kissen wie im Klangschaum (ECK_KISSEN), ein dünner grauer Rahmen
+     (ECK_FAKE_RAHMEN); ohne Nummer, ohne Verzeichnis, ohne Steckbrief, nicht anklickbar */
+  (res.platzhalter || []).forEach((b, i) => {
+    out += `<radialGradient id="ps-fake${i}" cx="${ECK_KISSEN.cx}" cy="${ECK_KISSEN.cy}" r="${ECK_KISSEN.r}"><stop offset="0" stop-color="${ECK_KISSEN.mitte(b.t)}"/><stop offset="1" stop-color="${ECK_KISSEN.rand(b.t)}"/></radialGradient>`
+      + `<rect class="ps-fake" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" fill="url(#ps-fake${i})" stroke="${ECK_FAKE_RAHMEN}" stroke-width="${f2(Math.max(0.3, 0.15 / k))}" pointer-events="none"/>`; });
   for (const [i, b] of res.bilder.entries()){
     const r = b.rahmen || 0, u = artworkBild(b.id), href = esc2(schaumBildHref(u, schaumStufe(Math.max(b.w, b.h) * k * pxJeMm)));
     if (r > 0) out += `<rect x="${f2(b.x - r)}" y="${f2(b.y - r)}" width="${f2(b.w + 2 * r)}" height="${f2(b.h + 2 * r)}" fill="${misch(farbe(b.gruppe))}"/>`;

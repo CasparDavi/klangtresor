@@ -308,7 +308,8 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
   if (!best && o.vorher) return haengenInArealen(gruppen, W, H, areale, { ...o, vorher: null });
   if (!best) return null;
   if (o.verdichten !== false) verdichten(best); else { aufziehen(best); for (const b of best){ b.x = b.block.x + b.rahmen; b.y = b.block.y + b.rahmen; delete b.block; } }
-  return { W, H, massstab: bestS * (best.faktor || 1) ** 2, grenze: grenzeBei, bilder: best, schilder, sperren, areale, belegt: best.reduce((s, b) => s + b.w * b.h, 0) / (W * H) };
+  /* luft: der Bilderabstand nach dem Aufziehen (die Lage traegt ihn als Eigenschaft, die der Worker nicht mitschickt) - fuer eckeFuellen */
+  return { W, H, massstab: bestS * (best.faktor || 1) ** 2, grenze: grenzeBei, bilder: best, luft: (best.luft || 0) * (best.faktor || 1), schilder, sperren, areale, belegt: best.reduce((s, b) => s + b.w * b.h, 0) / (W * H) };
 }
 
 /* Areale und Haengung zusammen: legeAreale(gewichte: Map Name -> Gewicht) -> [{ name, poly }]. Erst nach der Summe der
@@ -330,4 +331,61 @@ export function haengenMitSchaum(gruppen, W, H, legeAreale, o = {}){
     gew = new Map([...bedarf].map(([n, x]) => [n, x * extra.get(n)]));
   }
   return best;
+}
+
+/* GRAUE COVER IN DER ECKE (Randlos der Bilderschau, Caspar_D 15.10.2026: „bei der Bilderhängung müssen wir das anders machen, da
+   brauchen wir ein paar graue Fake-Bilder, die wir unter die Schildbeschriftung hängen" – „wenn die anderen Ecken nicht hart am Rand
+   sind, darf es hier auch nicht sein, schau dir die anderen Ecken an, wie die vom Format her aussehen" – „das ist nur im Context zu
+   entscheiden"). Die Hängung bleibt, wie sie ist (die Ecke als gesperrte Wand); danach wird die gesperrte Wand mit grauen Covern
+   nachgehängt, nach den Regeln der Hängung: ein Bilderabstand (res.luft) zu jedem Cover, Gruppenschild und jeder anderen Sperre, Beschnitt
+   plus Bilderabstand zum Rand (bs wie o.beschnitt), von innen nach außen - jedes an die freie Stelle, die der Wandmitte am nächsten liegt,
+   mit seiner Mitte im Fenster der Ecke; zum Rand hin franst es aus wie in den anderen Ecken.
+   Das FENSTER ist das Rechteck der Sperre ab der sichtbaren Blattecke; dasselbe Fenster an den drei anderen Ecken sagt, wie dicht dort
+   gehängt ist (Anteil der Fläche unter Covern) und wie die Cover dort aussehen: die ECK_K Cover, die der jeweiligen Blattecke am nächsten
+   sind, geben Breite und Höhe (Stichprobe mit Zurücklegen). Gehängt wird, bis die Ecke so dicht ist wie der Mittelwert der anderen oder
+   ECK_VERSUCHE Züge nicht passten. Die Saat kommt aus der Lage der Sperre: gleiche Lage, gleiches Bild.
+   Ergebnis: [{ x, y, w, h, t }] in Wandpunkten (y nach unten), t 0…1 für die Helligkeit; keine Nummer, kein Eintrag, nicht anklickbar. */
+const ECK_K = 6, ECK_VERSUCHE = 60;
+export function eckeFuellen(res, sperre, bs){
+  const W = res.W, H = res.H, luft = res.luft || 3, B = res.bilder || [];
+  bs = bs || { l: 0, o: 0, r: 0, u: 0 };
+  const links = sperre.x <= 0, oben = sperre.y <= 0;
+  /* die Ausdehnung der Sperre ab der sichtbaren Ecke */
+  const ew = links ? sperre.x + sperre.w - bs.l : W - bs.r - sperre.x, eh = oben ? sperre.y + sperre.h - bs.o : H - bs.u - sperre.y;
+  if (!(ew > 0 && eh > 0)) return [];
+  const fenster = (l, o) => ({ x: l ? bs.l : W - bs.r - ew, y: o ? bs.o : H - bs.u - eh, w: ew, h: eh, px: l ? bs.l : W - bs.r, py: o ? bs.o : H - bs.u });
+  const bedeckt = (f, liste) => liste.reduce((s, b) => s + Math.max(0, Math.min(f.x + f.w, b.x + b.w) - Math.max(f.x, b.x))
+    * Math.max(0, Math.min(f.y + f.h, b.y + b.h) - Math.max(f.y, b.y)), 0) / (f.w * f.h);
+  const andere = [[true, true], [false, true], [true, false], [false, false]].filter(([l, o]) => l !== links || o !== oben).map(([l, o]) => fenster(l, o));
+  const dichte = andere.reduce((s, f) => s + bedeckt(f, B), 0) / andere.length;
+  const abstand = (b, f) => Math.hypot(Math.max(0, b.x - f.px, f.px - b.x - b.w), Math.max(0, b.y - f.py, f.py - b.y - b.h));
+  const vorbild = andere.flatMap(f => B.slice().sort((p, q) => abstand(p, f) - abstand(q, f)).slice(0, ECK_K)).map(b => [b.w, b.h]);
+  if (!vorbild.length || !(dichte > 0)) return [];
+  const ich = fenster(links, oben);
+  let a = Math.round(sperre.x * 7 + sperre.y * 131 + sperre.w * 17 + sperre.h * 29) | 1;
+  const rnd = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const gross = Math.max(...vorbild.map(([w, h]) => Math.max(w, h)));
+  /* was in der Nähe hängt oder gesperrt ist (ohne die Sperre der Ecke selbst) */
+  const nah = (p) => p.x < ich.x + ich.w + gross + luft && p.x + p.w > ich.x - gross - luft && p.y < ich.y + ich.h + gross + luft && p.y + p.h > ich.y - gross - luft;
+  const istEcke = (p) => Math.abs(p.x - sperre.x) < 0.01 && Math.abs(p.y - sperre.y) < 0.01 && Math.abs(p.w - sperre.w) < 0.01;
+  const feste = B.map(b => { const r = b.rahmen || 0; return { x: b.x - r, y: b.y - r, w: b.w + 2 * r, h: b.h + 2 * r + (b.schild || 0) }; })
+    .concat(res.schilder || [], (res.sperren || []).filter(p => !istEcke(p))).filter(nah);
+  const fakes = [], cx = W / 2, cy = H / 2, schritt = Math.max(1, luft / 2);
+  const setzen = (w, h) => {
+    let best = null, d = Infinity;
+    for (let x = Math.max(bs.l + luft, ich.x - w / 2); x + w <= Math.min(W - bs.r - luft, ich.x + ich.w + w / 2); x += schritt)
+      for (let y = Math.max(bs.o + luft, ich.y - h / 2); y + h <= Math.min(H - bs.u - luft, ich.y + ich.h + h / 2); y += schritt){
+        const mx = x + w / 2, my = y + h / 2;
+        if (mx < ich.x || mx > ich.x + ich.w || my < ich.y || my > ich.y + ich.h) continue;
+        const dd = Math.hypot(mx - cx, my - cy); if (dd >= d) continue;
+        if (feste.some(p => x < p.x + p.w + luft && p.x < x + w + luft && y < p.y + p.h + luft && p.y < y + h + luft)) continue;
+        best = { x, y, w, h }; d = dd; }
+    return best;
+  };
+  for (let n = 0, fehl = 0; fehl < ECK_VERSUCHE && bedeckt(ich, fakes) < dichte && n < 400; n++){
+    const [w, h] = vorbild[Math.floor(rnd() * vorbild.length)], p = setzen(w, h);
+    if (!p){ fehl++; continue; }
+    p.t = rnd(); fakes.push(p); feste.push(p);
+  }
+  return fakes;
 }
