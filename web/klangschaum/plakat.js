@@ -171,7 +171,9 @@ function geometrie(n = 0){
    Mittel etwa 2 cm groß bleibt (Fläche des Schaums / 4 cm²), höchstens 700, mindestens 12; genommen werden die mit den höchsten Werten
    des gezeigten Maßes, bei Gleichstand der neuere Titel bzw. die zuletzt aktive Person. Die Startpunkte werden für die Auswahl neu
    gerechnet, der Lage-Schlüssel trägt die Zahl. Was das ganze Archiv beschreibt (Tabula, Steckbrief, Würdigung, Wachstum), bleibt
-   beim ganzen Archiv. Fläche: der angeschnittene Kreis ist πr² minus das abgeschnittene Segment (Sehne bei r/2) = 2,5274 r². */
+   beim ganzen Archiv. Fläche: der angeschnittene Kreis ist πr² minus das abgeschnittene Segment (Sehne bei r/2) = 2,5274 r².
+   Vor dieser Grenze wirkt der Regler am Schirm („zeigt N von M", index.html schaumAuswahl, 15.10.2026): das Studio nimmt, was gezeigt
+   ist, und die Unterzeile nennt die Zahl ohne beide Grenzen. */
 const KACHEL_MM2 = 400, KACHELN_HOECHSTENS = 700, KACHELN_MINDESTENS = 12;
 function kachelZahl(g){
   const flaeche = g.skizze && g.kreis ? 2.5274 * g.kreis.r * g.kreis.r : g.karte.w * g.karte.h;
@@ -197,7 +199,7 @@ function bilderAmSchirm(){
   const bg = typeof bilderGezeigt !== 'undefined' ? bilderGezeigt : null, d = bg && bg.r && bg.r.daten;
   if (!d || !d.wahl) return { fehlt: 'Bitte die Bilderschau einmal anzeigen lassen, dann das Plakat öffnen.' };
   const w = d.wahl, jetzt = { mass: schaumMass, trafo: bilderWahl.trafo, gliederung: schaumGliederung, zoom: schaumZoom || '', haengung: bilderWahl.haengung,
-    rahmen: !!bilderWahl.rahmen, verf: typeof karteVerf !== 'undefined' ? karteVerf : '' };
+    rahmen: !!bilderWahl.rahmen, verf: typeof karteVerf !== 'undefined' ? karteVerf : '', zeigt: typeof schaumZeigt !== 'undefined' ? String(schaumZeigt.schaum) : '' };
   if (Object.keys(jetzt).some(k => String(w[k]) !== String(jetzt[k]))) return { fehlt: 'Die Bilderschau wird am Schirm noch neu gehängt – das Plakat bitte gleich noch einmal öffnen.' };
   return { bg, d };
 }
@@ -216,7 +218,7 @@ async function auftrag(verh){
     const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === d.wahl.gliederung) || glieder[0];
     const t = TRANSFORMATIONEN.find(x => x.id === d.wahl.trafo) || TRANSFORMATIONEN[1];
     const W = verh >= 1 ? Math.round(1400 / verh) : 1400, H = verh >= 1 ? 1400 : Math.round(1400 * verh);
-    return { j: { zeilen: d.zeilen, gruppen: d.gruppen, opt: { ...d.opt, kopf: 0, schild: 0 }, kopfBreite: d.kopfBreite, W, H, lage: 'bild|' + bilderStand() + '|' + verh },
+    return { j: { zeilen: d.zeilen, gruppen: d.gruppen, opt: { ...d.opt, kopf: 0, schild: 0 }, kopfBreite: d.kopfBreite, W, H, lage: 'bild|' + bilderStand() + '|' + verh, ohneRegler: d.ohneRegler },
              art: 'bild', m, gl, t, farbe: bg.farbe, gezoomt: !!d.wahl.zoom };
   }
   if (raumJetzt === 'groupies'){
@@ -504,7 +506,9 @@ function zeichnen(sofort, warteMs, nurSetzen){
     /* was das Haus zeigt (Maß, Gliederung, Zoom): ändert es sich, ist der Plakatschaum ein anderer - auch die Auswahl der stärksten
        (vorher blieb nach einem Maßwechsel im Haus die alte Auswahl samt Unterzeile stehen; Fallensuche 1.0.62) */
     let hausS = '';
-    try { hausS = raumJetzt === 'groupies' ? [groupieMass, groupieGl().id].join('|') : [schaumMass, schaumGliederung, JSON.stringify(schaumZoom ?? null), typeof karteVerf !== 'undefined' ? karteVerf : ''].join('|')
+    /* dazu der Regler „zeigt N von M" (schaumAuswahl): er ändert die Zeilen, ohne dass sich Maß oder Gliederung ändern */
+    const zeigtS = typeof schaumZeigt !== 'undefined' ? '|zeigt' + schaumZeigt[raumJetzt === 'groupies' ? 'groupies' : 'schaum'] : '';
+    try { hausS = (raumJetzt === 'groupies' ? [groupieMass, groupieGl().id].join('|') : [schaumMass, schaumGliederung, JSON.stringify(schaumZoom ?? null), typeof karteVerf !== 'undefined' ? karteVerf : ''].join('|')) + zeigtS
       + (bilderschau() ? '|bilder|' + bilderStand() : ''); } catch (e) {}   /* Bilderschau: Transformation, Hängung, Rahmen und die gezeigte Auswahl */
     const gleichesHaus = !!aktuell && aktuell.raum === raumJetzt && aktuell.hausS === hausS;
     /* Gesamtzahl der Zeilen (ohne die Ecke von Randlos) - das Verzeichnis braucht sie vor dem Legen */
@@ -578,8 +582,10 @@ function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.hand
 function kopfUnterVorschlag(a = aktuell){
   if (!a) return '';
   const zl = a.j.zeilen.filter(z => z.id !== SCHILD_ID), n = zl.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }), person = a.art === 'person';   /* ohne die Ecke von Randlos */
-  /* begrenzt (kachelZahl): „die 360 stärksten nach Herzen von 1.523 Titeln" */
-  const menge = a.j.gesamt > n ? `die ${n} stärksten nach ${a.m.name} von ${a.j.gesamt.toLocaleString('de-DE')} ${person ? 'Personen' : 'Titeln'}` : '';
+  /* begrenzt (kachelZahl, oder schon am Schirm vom Regler „zeigt N von M"): „die 360 stärksten nach Herzen von 1.523 Titeln" - genannt wird
+     die Zahl ohne beide Grenzen */
+  const ganz = Math.max(a.j.gesamt || 0, a.j.ohneRegler || 0);
+  const menge = ganz > n ? `die ${n} stärksten nach ${a.m.name} von ${ganz.toLocaleString('de-DE')} ${person ? 'Personen' : 'Titeln'}` : '';
   if (E.schild || E.skizze){
     const datum = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
     if (person) return `${datum} / ${menge || `${n} ${n === 1 ? 'Person' : 'Personen'}`}`;

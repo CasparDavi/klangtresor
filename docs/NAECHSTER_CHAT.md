@@ -9032,3 +9032,40 @@ Rand, PDF und PNG kommen vom Studio; neu ist nur die Bildebene `bilderEbene()`.
   breiter (gemessen: 13,30 gegen 14,23 em für „Elektronik · Pop — energisch") – „Areale am Rand" stoßen dadurch aneinander (gesehen:
   Papier 70×100 quer), gekürzte Verzeichnistitel berühren die nächste Spalte. Randlos: Konsole meldet widerrufene blob:-Adressen
   (alt wie neu). `aufziehen` in `bilderschau.js` prüft die Gruppenschilder nicht (Überschriften an: ein Bild kann hineinwachsen).
+
+## 100. 15.10.2026 nachts: Regler „zeigt N von M" für Groupieschaum, Klangschaum und Bilderschau (Zweig nacht-bilderschau-regler, NICHT ausgeliefert)
+Caspar_D, 07.10.: „untere Perzentile auszublenden … sie fliegen raus … auch mal große Bilder zu sehen, wenn man viele follower hat";
+15.10.: „er blendet Quantile der gegenwärtig aktiven Skalierung aus. Er soll auch für Klangschaum gelten" – „per default … die 350
+höchsten …, man kann den slider dann aber in beide richtungen schieben". Gebaut in `index.html` (`schaumAuswahl`, `schaumZeigt`,
+Panel `#schaumzeigtzeile` unter „Fläche nach") und `plakat.js`.
+- **Regel:** der Regler zählt, wie viele bleiben (linear in der Zahl = in Quantilen), von 12 (Mindestzahl des Plakats) bis alle;
+  Vorgabe 350. Es bleiben die höchsten Werte des gewählten Maßes; Gleichstand am Schnitt: Groupieschaum zuletzt reagiert
+  (`letzte`), Klangschaum der neuere Titel (`erstellt`), danach die Kennung (bestimmt). Ausgeblendete fliegen raus, die Übrigen
+  teilen sich die Fläche. Beim Ziehen nur die Zahl („zeigt 60 von 473 Personen", „zeigt alle 330 Titel"), beim Loslassen bzw. je
+  Pfeiltaste neu gelegt. Gemerkt je Raum (`mysuno-schaum-zeigt`, `mysuno-groupie-zeigt`); ganz rechts = „alle" (bleibt alle).
+- **Wo es wirkt:** in `groupieAuftrag` und `schaumKlangAuftrag` – damit tragen Lage-Schlüssel (IDs und Werte), IndexedDB-Lagen,
+  das Vorrechnen der übrigen Maße und das Plakat die Auswahl. Gezoomt zählt der Regler in der Gruppe. Legende, Fußnote („Der Regler
+  zeigt die 60 mit den höchsten Werten bei …; 413 weitere sind ausgeblendet (bei Gleichstand bleibt, …)"), Werk-Kasten („vom Regler
+  ausgeblendet") nennen die Auswahl; Arealfarben rechnen weiter aus allen mit Wert. Plakat: `hausS` trägt den Regler, Unterzeile
+  „die 60 stärksten nach … von 473 Personen" (Zahl ohne Regler und ohne Formatgrenze, `j.ohneRegler`).
+- **Bilderschau** nimmt ihn mit (gleiche Zeilen wie der Klangschaum, gleicher Wert wie Maß/Gliederung/Zoom; die Transformation ist
+  monoton, „die höchsten" sind also dieselben). Die Wand trägt den Stand in `wahl.zeigt`; zieht man und öffnet sofort das Plakat,
+  sagt das Studio „wird noch neu gehängt".
+- **Geprüft (Sandkasten 8803, headless Chrome):** Groupieschaum (473 Personen mit Wert): Vorgabe 350 Zellen, echtes Ziehen mit der
+  Maus auf 60, Pfeiltaste 59, 40, alle 473, 120 + Neuladen = 120 aus dem Speicher; Maßwechsel bei 40: Herzen 40/465, Kommentare
+  40/119, Treue 40/198. Klangschaum (330 Titel): Vorgabe „alle 330" (unverändert), 100, 30, Herzen 30/272, Kommentare 30/140,
+  Anzahl 30/330 (alle gleich – die 30 neuesten), Zoom „Metal · Elektronik — energisch" 30/104, alle. Bilderschau 100, 40, Neuladen.
+  Jede Stellung: Zellen = N, eindeutig, Legende summiert N, kein Gezeigter unter einem Ausgeblendeten, am Schnitt kein Ausgeblendeter
+  jünger als ein Gezeigter. Konstruierte Gleichstände (Personen mit gleicher Zahl und gleicher Zeit, Titel mit gleichem Wert):
+  erwartete Auswahl, gleich bei fünf Eingabe-Reihenfolgen. Gemerkte Werte „5" → 12, „xyz" → 350. Plakat: Bleiglas A3 = Verzeichnis
+  60/30/220 Personen, 100 Titel, Bilderschau 40/25 Titel; Randlos 50×50 und Bild 1:1 mit richtiger Unterzeile. PDF Galerie A3
+  (Groupieschaum 60) mit sips/Quick Look angesehen. Konsole in allen Läufen ohne Fehler.
+
+### Wiedervorlage (Caspar_Ds Auge/Entscheidung)
+- Bilderschau nimmt den Regler mit (gleicher Wert wie der Klangschaum) – so gewollt, oder dort ohne Regler?
+- Gezoomt zählt der Regler in der Gruppe (zoom in eine Gruppe mit 104 Titeln: „zeigt 30 von 104"). Alternative: der Schnitt gilt
+  fürs ganze Werk, gezoomt sieht man nur dessen Teil der Gruppe.
+- Linear in der Zahl passt zu 473 Personen; bei Tarjas ~4000 ist der Bereich unter 350 nur ein Zehntel des Reglers
+  (logarithmisch gäbe dort mehr Weg).
+- Nebenbefund, nicht von dieser Änderung: im PDF (Galerie, Kissen an) liegen feine Höhenlinien im Kissen – in Quick Look UND poppler, also im PDF
+  selbst, nicht Apples Darstellung (§93 Wiedervorlage „Kissen mit der Apple-Engine prüfen").
