@@ -4181,17 +4181,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <label class="fussnote schalter"><input type="checkbox" id="bilderrahmen" onchange="bilderschauWahl('rahmen', this.checked)">Rahmen in der Klangraum-Farbe</label>
       <label class="fussnote schalter"><input type="checkbox" id="bilderkopf" onchange="bilderschauWahl('kopf', this.checked)">Überschriften der Gruppen</label>
       <label class="fussnote schalter"><input type="checkbox" id="bilderunter" onchange="bilderschauWahl('unter', this.checked)">Bildunterschriften</label>
-      <label class="fussnote">Plakat<select id="bilderformat" onchange="bilderschauWahl('format', this.value)"></select></label>
-      <label class="fussnote">Lage und Grund<select id="bilderlage" onchange="bilderschauWahl('lage', this.value)"><option value="hoch">Hochformat</option><option value="quer">Querformat</option></select>
-        <select id="bildergrund" onchange="bilderschauWahl('grund', this.value)"><option value="schwarz">schwarzer Grund</option><option value="weiss">weißer Grund</option></select></label>
-      <button class="pille" id="bilderplakatknopf" type="button" onclick="bilderPlakat()" title="Die Bilderschau im gewählten Format neu hängen und als PDF sichern (Druckfenster, 300 dpi)">Als Plakat (PDF)…</button>
     </div>
     <label class="fussnote" id="schaumfarbezeile">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
       <input type="range" id="schaumfarbe" min="0" max="100" step="1" oninput="schaumFarbeSetzen(this.value)"></label>
     <p class="fussnote" id="schaumwas" style="margin:0"></p>
     <div id="schaumlegende"></div>
     <div id="schaumwerk"></div>
-    <button class="pille" id="plakatknopf" type="button" onclick="plakatOeffnen()" title="Den Schaum als Plakat gestalten und als PDF sichern">Als Plakat (PDF)…</button>
+    <button class="pille" id="plakatknopf" type="button" onclick="plakatOeffnen()" title="Den Schaum oder die Bilderschau als Plakat gestalten und als PDF sichern">Als Plakat (PDF)…</button>
   </div>
   <div id="kartefuss" class="fussnote"></div>
 </div>
@@ -8597,8 +8593,10 @@ function schaumZoomen(name){ schaumZoom = name; schaumZeichnen(); }
    Ueberschriften gibt es, aber aus („mach mal gar keine Beschriftungen rein, die stören … so kann es rein, genauso
    auch der Default“). Klick spielt den Titel, der laufende hat einen hellen Rahmen. */
 let schaumArt = (() => { try { return localStorage.getItem('mysuno-schaum-art') === 'bilder' ? 'bilder' : 'klang'; } catch (e) { return 'klang'; } })();
-const BILDER_VORGABE = { trafo: 'wurzel', haengung: 'salon', rahmen: true, kopf: false, unter: false, format: '70x100', lage: 'hoch', grund: 'schwarz' };
-let bilderWahl = (() => { try { return { ...BILDER_VORGABE, ...JSON.parse(localStorage.getItem('mysuno-bilderschau') || '{}') }; } catch (e) { return { ...BILDER_VORGABE }; } })();
+const BILDER_VORGABE = { trafo: 'wurzel', haengung: 'salon', rahmen: true, kopf: false, unter: false };
+/* format, lage, grund gehörten zum eigenen Plakat-Export bis 1.0.73 (bilderPlakat, siehe unten) - gemerkte Reste fallen beim Lesen weg */
+let bilderWahl = (() => { try { const w = { ...BILDER_VORGABE, ...JSON.parse(localStorage.getItem('mysuno-bilderschau') || '{}') }; delete w.format; delete w.lage; delete w.grund; return w; }
+  catch (e) { return { ...BILDER_VORGABE }; } })();
 function schaumArtWaehlen(a){
   schaumArt = a === 'bilder' ? 'bilder' : 'klang';
   try { localStorage.setItem('mysuno-schaum-art', schaumArt); } catch (e) {}
@@ -8630,8 +8628,6 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm })
   { const sel = $('bildertrafo'); if (!sel.options.length) sel.innerHTML = T.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); sel.value = t.id; }
   $('bilderhaengung').value = bilderWahl.haengung; $('bilderrahmen').checked = !!bilderWahl.rahmen;
   $('bilderkopf').checked = !!bilderWahl.kopf; $('bilderunter').checked = !!bilderWahl.unter;
-  { const sel = $('bilderformat'); if (!sel.options.length) sel.innerHTML = BILDER_FORMATE.map(f => `<option value="${f.id}">${f.name} cm</option>`).join('');
-    sel.value = bilderWahl.format; $('bilderlage').value = bilderWahl.lage; $('bildergrund').value = bilderWahl.grund === 'weiss' ? 'weiss' : 'schwarz'; }
   $('schaumwas').textContent = (m.was || '') + ' ' + t.kurz + '.';
   fuss.textContent = `Bilderschau: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, jedes Cover im Originalformat, ${t.kurz} (${m.name}). `
     + `Ein Schaum teilt die Wand in Areale je ${schaumZoom ? gl.unten.replace(/e$/, '').replace(/s$/, '') : gl.oben.replace(/n$/, '')}; jedes Bild hängt mit seinem Schwerpunkt im Areal seiner Gruppe, `
@@ -8678,7 +8674,9 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm })
   if (bilderArbeit === meine) bilderArbeit = null;
   if (res.fehler || !res.res){ console.log('Bilderschau:', res.fehler || 'passt nicht'); if (bilderArbeit === null) stand.textContent = 'Die Bilder passen nicht auf die Wand.'; return; }
   res.res.ms = Math.round(performance.now() - t0);
-  res.res.daten = { ...daten, zeilen: zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })) };    /* fuers Plakat: dort wird im Format der Seite neu gehaengt */
+  /* fuers Plakat (plakat.js): dort wird im Format der Seite neu gehaengt; wahl sagt, zu welchen Einstellungen diese Wand gehoert */
+  res.res.daten = { ...daten, zeilen: zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })),
+    wahl: { mass: m.id, trafo: t.id, gliederung: gl.id, zoom: schaumZoom || '', haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen, verf: karteVerf } };
   bilderFertig.set(schluessel, res.res);
   if (register === 'karte' && raumJetzt === 'schaum' && schaumArt === 'bilder') schaumZeichnen();
 }
@@ -8691,76 +8689,14 @@ function bilderImWorker(auftrag, merke = () => {}){
     w.postMessage(auftrag);
   });
 }
-/* DAS PLAKAT DER BILDERSCHAU (Caspar_D, 11.10.2026: „der Posterexport muß schon wie beim Schaum funktionieren, also als PDF,
-   Format wählbar, und Hintergrund in weiß oder schwarz, keine Farben, wie bei den anderen Postern auch"). Die Formate wie im
-   Plakat des Klangschaums (plakat.js), hoch oder quer; die Galerie wird im Format der Seite neu gehaengt (die Wand ist die
-   Seite ohne einen Rand von 7 % der kurzen Seite), jedes Bild auf 300 dpi seiner Groesse gerechnet, dann wie dort ein
-   unsichtbarer Rahmen und das Druckfenster („Als PDF sichern"). Grund schwarz wie die Vorlage „Galerie", weiss rein. Rahmen
-   wie am Schirm: Gruppenfarbe zu 38 % in den Grund gemischt. Erste Fassung; ausgebaut wird ab Mittwoch. */
-const BILDER_FORMATE = [
-  { id: 'A3', name: 'A3 · 29,7 × 42', w: 297, h: 420 }, { id: 'A2', name: 'A2 · 42 × 59,4', w: 420, h: 594 },
-  { id: 'A1', name: 'A1 · 59,4 × 84,1', w: 594, h: 841 }, { id: 'A0', name: 'A0 · 84,1 × 118,9', w: 841, h: 1189 },
-  { id: '50x70', name: '50 × 70', w: 500, h: 700 }, { id: '70x100', name: '70 × 100', w: 700, h: 1000 },
-  { id: '100x140', name: '100 × 140', w: 1000, h: 1400 }, { id: 'q50', name: '50 × 50', w: 500, h: 500 }, { id: 'q70', name: '70 × 70', w: 700, h: 700 },
-];
-const BILDER_GRUND = { schwarz: '#0c0d10', weiss: '#ffffff' };
+/* DAS PLAKAT DER BILDERSCHAU macht seit dem 15.10.2026 das Plakat-Studio (plakat.js, Bilderschau als dritte Art neben Titel- und
+   Personenschaum; Caspar_D, 11.10.2026: „Weg B", Übergabe §95). Bis dahin stand hier ein eigener Export (bilderPlakat, 1.0.66/1.0.67:
+   „der Posterexport muß schon wie beim Schaum funktionieren, also als PDF, Format wählbar, und Hintergrund in weiß oder schwarz") mit
+   Format, Lage und Grund im Panel - als erste Fassung gebaut (Caspar_D: „ausbauen tun wir es ab Mittwoch"). Mit dem Studio gibt
+   es Vorschau, Rand, Werkverzeichnis, Zeitleiste und Edition; zwei Wege für dieselbe Frage wären einer zu viel, darum ist der alte
+   samt seinen Einstellungen gelöscht. Das Studio liest die gezeigte Wand aus bilderGezeigt (r.daten: Gruppen, Zeilen, Hängung,
+   wahl). */
 let bilderGezeigt = null;
-const bilderMisch = (a, b, t) => { const h = (c) => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
-  if (!/^#[0-9a-f]{6}$/i.test(a) || !/^#[0-9a-f]{6}$/i.test(b)) return a;
-  const x = h(a), y = h(b); return '#' + x.map((v, i) => Math.round(v * t + y[i] * (1 - t)).toString(16).padStart(2, '0')).join(''); };
-async function bilderPlakat(){
-  const knopf = $('bilderplakatknopf'), stand = $('schaumstand'); if (!bilderGezeigt || knopf.disabled) return;
-  const { r, farbe } = bilderGezeigt, d = r.daten; if (!d) return;
-  knopf.disabled = true;
-  try {
-    const f = BILDER_FORMATE.find(x => x.id === bilderWahl.format) || BILDER_FORMATE[5];
-    let PW = f.w, PH = f.h; if ((bilderWahl.lage === 'quer') !== (PW > PH) && PW !== PH) [PW, PH] = [PH, PW];
-    const grund = BILDER_GRUND[bilderWahl.grund] || BILDER_GRUND.schwarz, randMm = 0.07 * Math.min(PW, PH);
-    /* die Wand in Punkten: 1400 an der langen Seite, im Verhaeltnis der Flaeche innerhalb des Randes */
-    const iw = PW - 2 * randMm, ih = PH - 2 * randMm, P = 1400 / Math.max(iw, ih), W = Math.round(iw * P), H = Math.round(ih * P);
-    stand.textContent = 'Die Galerie wird fürs Plakat aufgehängt …';
-    const saat = schaumSaat(d.zeilen, ['gruppe'], W, H), seeds = {};
-    for (const g of d.gruppen) if (saat && saat[g.name]) seeds[g.name] = saat[g.name];
-    const res = await bilderImWorker({ gruppen: d.gruppen, W, H, seeds: Object.keys(seeds).length === d.gruppen.length ? seeds : null, opt: d.opt, kopfBreite: d.kopfBreite });
-    if (res.fehler || !res.res){ stand.textContent = 'Die Galerie passt nicht aufs Plakat.'; console.log('Bilderschau, Plakat:', res.fehler); return; }
-    const p = res.res, mm = 1 / P, titel = new Map(d.zeilen.map(z => [z.id, z.titel || '']));
-    /* jedes Bild auf 300 dpi seiner Groesse auf dem Plakat (wie druckBilder in plakat.js) */
-    const PX_MM = 300 / 25.4, adressen = new Map(); let n = 0;
-    const liste = p.bilder.slice();
-    await Promise.all(Array.from({ length: 3 }, async () => { while (liste.length){ const b = liste.shift(), u = artworkBild(b.id);
-      try { const roh = await (await fetch(u)).blob(), bm = await createImageBitmap(roh), lang = Math.ceil(Math.max(b.w, b.h) * mm * PX_MM), k = Math.min(1, lang / Math.max(bm.width, bm.height));
-        const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(bm.width * k)); c.height = Math.max(1, Math.round(bm.height * k));
-        const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(bm, 0, 0, c.width, c.height); if (bm.close) bm.close();
-        const blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.9)); if (blob) adressen.set(b.id, URL.createObjectURL(blob)); } catch (e) {}
-      stand.textContent = `Bilder für den Druck: ${++n} von ${p.bilder.length}`; } }));
-    const X = (v) => (randMm + v * mm).toFixed(2), L = (v) => (v * mm).toFixed(2), schrift = getComputedStyle(document.body).fontFamily.replace(/"/g, "'");
-    let svg = `<svg class="seite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PW} ${PH}"><rect width="${PW}" height="${PH}" fill="${grund}"/>`;
-    for (const b of p.bilder){
-      const rr = b.rahmen || 0;
-      if (rr > 0) svg += `<rect x="${X(b.x - rr)}" y="${X(b.y - rr)}" width="${L(b.w + 2 * rr)}" height="${L(b.h + 2 * rr)}" fill="${bilderMisch(farbe(b.gruppe), grund, 0.38)}"/>`;
-      svg += `<image href="${adressen.get(b.id) || artworkBild(b.id)}" x="${X(b.x)}" y="${X(b.y)}" width="${L(b.w)}" height="${L(b.h)}" preserveAspectRatio="none"/>`;
-      if (b.schild) svg += `<text x="${X(b.x)}" y="${X(b.y + b.h + rr + 12)}" font-size="${L(10.5)}" font-family="${schrift}" fill="${grund === BILDER_GRUND.weiss ? '#3a3d42' : '#a9acb3'}">${esc(titel.get(b.id) || '')}</text>`;
-    }
-    for (const a of p.schilder || []) svg += `<text x="${X(a.x)}" y="${X(a.y + 13)}" font-size="${L(12.5)}" font-family="${schrift}" fill="${farbe(a.name)}">${esc(a.name)}</text>`;
-    svg += '</svg>';
-    const name = 'Bilderschau-' + f.id + (PW > PH ? '-quer' : '');
-    const doc = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(name)}</title><style>@page{size:${PW}mm ${PH}mm;margin:0}`
-      + `html,body{margin:0;padding:0;background:${grund};-webkit-print-color-adjust:exact;print-color-adjust:exact}svg.seite{display:block;width:${PW}mm;height:${PH}mm}</style></head><body>${svg}</body></html>`;
-    let rahmen = $('bilderdruckrahmen'); if (rahmen) rahmen.remove();
-    rahmen = document.createElement('iframe'); rahmen.id = 'bilderdruckrahmen';
-    rahmen.style.cssText = 'position:fixed;left:-10000px;top:0;width:800px;height:800px;border:0;visibility:hidden';
-    document.body.appendChild(rahmen);
-    await new Promise(ok => { rahmen.onload = ok; rahmen.srcdoc = doc; });
-    const w = rahmen.contentWindow, hrefs = [...rahmen.contentDocument.querySelectorAll('image')].map(i => i.getAttribute('href'));
-    let geladen = 0;
-    await Promise.race([Promise.all(hrefs.map(u => new Promise(ok => { const i = new w.Image(); i.onload = i.onerror = () => { stand.textContent = `Druckbilder geladen: ${++geladen} von ${hrefs.length}`; ok(); }; i.src = u; }))),
-      new Promise(ok => setTimeout(ok, 90000))]);
-    stand.textContent = 'Im Druckfenster „Als PDF sichern“ wählen.';
-    setTimeout(() => { if (stand.textContent.startsWith('Im Druckfenster')) stand.textContent = ''; }, 8000);
-    w.focus(); w.print();
-    setTimeout(() => adressen.forEach(u => URL.revokeObjectURL(u)), 300000);
-  } finally { knopf.disabled = false; }
-}
 function bilderEinsetzen(r, farbe, m, zeilen){
   bilderGezeigt = { r, farbe, zeilen };
   const bild = $('schaumbild'), dpr = window.devicePixelRatio || 1, roh = new Map(zeilen.map(z => [z.id, z]));
@@ -9011,7 +8947,7 @@ async function schaumZeichnen(){
       + '<option value="klang">Klangschaum</option><option value="bilder">Bilderschau</option></select>';
       $('schaumart').value = schaumArt; } }
   { const bilder = !groupies && schaumArt === 'bilder';
-    $('bilderschauzeile').hidden = !bilder; $('schaumfarbezeile').hidden = bilder; $('plakatknopf').hidden = bilder; }
+    $('bilderschauzeile').hidden = !bilder; $('schaumfarbezeile').hidden = bilder; }
   { const vb = $('schaumvoll'); if (vb && !vb.onclick) vb.onclick = karteVollbild; }
   karteLaeuftSetzen();
   { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = false; }

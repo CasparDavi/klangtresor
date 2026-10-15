@@ -8996,3 +8996,39 @@ Anlasser überleben ihr eigenes Ersetzen; **Windows-Anlasser: nackte „)" im ec
 PATH nie (in der VM Windows 10 nachgestellt: alt bricht ab, neu erreicht Node)**; Oberfläche „deine Fassung ist neuer";
 Neustart-Wache beobachtet aktualisieren.js; .gitignore werkzeug/ proben/. Verworfen u. a.: Zip-Weg löscht entfernte Dateien
 nicht (bleibt so, bekannt).
+
+## 99. 15.10.2026 nachts: Bilderschau als dritte Art im Plakat-Studio (Zweig nacht-bilderschau-regler, NICHT ausgeliefert)
+Auftrag aus §95 („Weg B"). `plakat.js` kennt neben Titel- und Personenschaum die Bilderschau (`bilderschau()`: Raum Schaum, Art
+„bilder"). Vorschau, Formate (auch Triptychon und Bild 4:5/1:1/9:16), Rand, Werkverzeichnis, Zeitleiste, Edition, Legende, Areale am
+Rand, PDF und PNG kommen vom Studio; neu ist nur die Bildebene `bilderEbene()`.
+- **Hängung:** die Wand am Schirm (`bilderGezeigt.r.daten`, neu mit `wahl` = Maß, Trafo, Gliederung, Zoom, Hängung, Rahmen, Verfahren)
+  wird im Seitenformat der Karte neu gehängt (1400 Punkte an der langen Seite, Worker `bilderschau-worker.js`, ohne Gruppenschilder und
+  Bildunterschriften). Passt `wahl` nicht mehr zu den Einstellungen (Wand hängt noch neu), sagt das Studio es statt die alte zu zeigen.
+  Kachelzahl wie überall nach Format (Fläche / 4 cm², 12–700, die stärksten nach Maß). Triptychon: die Wandfugen sind gesperrte Wand
+  (`o.sperren` in `bilderschau.js`, gilt beim Hängen, Verdichten und Aufziehen) – kein Cover über einem Schnitt.
+- **Nummern:** jedes Cover trägt seine Nummer aus dem Werkverzeichnis (Areale in Legendenreihenfolge, darin Lesereihenfolge). Schrift
+  1,5–3,5 mm (8,5 % der kurzen Coverseite), schwarz oder weiß; je Ecke Feld messen (hellste/dunkelste 10 % der Leuchtdichte, Messbild
+  192 Punkte aus dem Original), höchster WCAG-Kontrast gewinnt; erreicht keine Ecke 4,5 : 1, auch 1,5 Geviert tiefer (Holzschnitt-Cover
+  mit eigener Bordüre). Das Verzeichnis ist in der Bilderschau immer an (Pille grau mit Grund).
+- **Grau mit Grund in der Bilderschau:** Fugen, Wackeln, Schatten, Vignette, Kissen, Titel in der Zelle, freie Grundfarbe, Vorlagen
+  Randlos und Skizzenbuch (Studio öffnet dann mit Galerie). Titel „Caspar_Ds Bilderschau", Unterzeile „… · Fläche ∝ √Abrufe · …".
+- **index.html:** `bilderPlakat()`, `BILDER_FORMATE`, `BILDER_GRUND`, `bilderMisch`, Format/Lage/Grund-Auswahl und `#bilderplakatknopf`
+  gelöscht (Begründung im Kommentar und in `docs/haus/HISTORY.md`); `#plakatknopf` jetzt auch in der Bilderschau sichtbar.
+- **Geprüft (Sandkasten 8802, headless Chrome):** 4 Vorlagen (Galerie, Papier, Bleiglas, Mosaik) × A3 hoch, 70×100 quer, 50×50 – alle
+  12: Nummern 1…n ohne Lücke/Doppel, = Verzeichnis, keine Nummer außerhalb ihres Covers (auch in Druckgröße), keine Überlappung.
+  Dazu 70×100 hoch, Triptychon 3×50×70 quer (3 Seiten, 0 Cover über Fugen), Bild 4:5 (PNG), Zoom, Trafo keine + Hängung dicht,
+  fehlende/veraltete Wand. Konsole ohne Fehler. PDFs mit sips/QuickLook angesehen. Gegenprobe alt/neu mit gleichem Ausgangszustand:
+  Klangschaum Galerie 70×100 und Bleiglas A3 bitgleich, Groupieschaum 50×50 bitgleich; Randlos 70×100 quer gleich bis auf die
+  Rauchglas-Deckung einzelner Zellen (`schaumRauch` misst die Vorschaubilder, und der Bildvorrat war beim zweiten Lauf voller; die
+  Geometrie ist gleich, mit 3 % Toleranz 0 abweichende Bildpunkte).
+
+### Wiedervorlage (Caspar_Ds Auge/Entscheidung)
+- Randlos für die Bilderschau: dort gibt es kein Verzeichnis – Cover ohne Nummer, oder Verzeichnis wo? (jetzt grau)
+- Kachelzahl: die Wand ist nur gut zur Hälfte belegt, Cover im Mittel also ~1,4 cm statt 2 cm (A3: 185–220 Cover). Gleiche Regel
+  behalten oder für die Bilderschau halbieren?
+- Ecken mit wenig Kontrast: 5–20 Cover je Plakat unter 4,5 : 1 (gemessen gegen die hellsten/dunkelsten 10 %), meist kleine Cover mit
+  unruhigen Ecken. Hof um die Ziffern? (nicht gebaut – wäre eine neue Gestaltungsregel)
+- Bestehend, nicht neu (betrifft alle Arten): `messen()` misst die Systemschrift bei mm·96/25,4 px, das SVG setzt sie im Druck ~7 %
+  breiter (gemessen: 13,30 gegen 14,23 em für „Elektronik · Pop — energisch") – „Areale am Rand" stoßen dadurch aneinander (gesehen:
+  Papier 70×100 quer), gekürzte Verzeichnistitel berühren die nächste Spalte. Randlos: Konsole meldet widerrufene blob:-Adressen
+  (alt wie neu). `aufziehen` in `bilderschau.js` prüft die Gruppenschilder nicht (Überschriften an: ein Bild kann hineinwachsen).

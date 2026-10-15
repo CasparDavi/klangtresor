@@ -64,7 +64,9 @@ function schildPlatz(ps, w, h, mx){
 }
 
 /* areale: [{ name, poly }] in Bildschirmkoordinaten (y nach unten). o wie bei haengen, dazu
-   o.kopfBreite(name) -> Breite des Gruppenschilds in Punkten. */
+   o.kopfBreite(name) -> Breite des Gruppenschilds in Punkten und o.sperren: [{ x, y, w, h }], Wandstuecke ohne
+   Bild (Plakat-Studio, Triptychon: die Wandfugen zwischen den Rahmen - dort schnitte der Druck ein Cover entzwei).
+   Sie gelten wie die Gruppenschilder beim Haengen und Verdichten, und das Aufziehen schiebt kein Bild hinein. */
 export function haengenInArealen(gruppen, W, H, areale, o = {}){
   /* Haengung: salon (gross zur Wandmitte), dicht (von oben nach unten) oder achse (Achsenhaengung, Caspar_D 11.10.2026:
      „wo es zentral eine waagerechte Flucht gibt und sich dann nach oben und unten die Bilder ausbreiten" – die grossen
@@ -102,6 +104,7 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
   if (kopf > 0) for (const a of areale){ const ar = areal.get(a.name);
     const p = schildPlatz(a.poly, (o.kopfBreite ? o.kopfBreite(a.name) : 8 * a.name.length) + 4, kopf - 4, ar.mitte[0]);
     if (p) schilder.push({ name: a.name, ...p }); }
+  const sperren = (o.sperren || []).filter(r => r && r.w > 0 && r.h > 0).map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h }));
   const mitte = alle[alle.length >> 1].wert;
   let fehl = null, grenzeBei = null;                       /* die Gruppe, die keinen Platz mehr fand */
   const versuch = (s) => {
@@ -129,6 +132,7 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
             if (ox > 0 && (Math.abs(p.y + p.h + luft - y) < 1 || Math.abs(y + h + luft - p.y) < 1)) L += ox; } }
       return L; };
     for (const sc of schilder) eintragen(sc);
+    for (const sp of sperren) eintragen(sp);
     const gelegt = [], lage = [];
     let kx = new Float64Array(4096), ky = new Float64Array(4096), kk = new Float64Array(4096), heapIdx = new Uint32Array(4096);
     for (const b of alle){
@@ -196,7 +200,7 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
      weit zur Wandmitte nach, wie es frei ist - senkrecht, dann waagrecht, im Wechsel, die mittenahen zuerst. Der
      Schwerpunkt bleibt in seinem Areal, kein Bild wird groesser oder kleiner; freie Wand bleibt nur aussen. */
   const verdichten = (lage) => {
-    const luft = lage.luft, B = lage.map(b => b.block), feste = schilder;
+    const luft = lage.luft, B = lage.map(b => b.block), feste = schilder.concat(sperren);
     const im = (i, x, y) => { const b = lage[i]; return drin(areal.get(b.gruppe).poly, x + b.block.w / 2, y + b.rahmen + b.h / 2); };
     for (let runde = 0; runde < 8; runde++){
       const senk = runde % 2 === 0;
@@ -241,8 +245,10 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
     const kMax = Math.min((cx - rand) / Math.max(1e-6, cx - x0), (W - rand - cx) / Math.max(1e-6, x1 - cx),
                           (cy - rand) / Math.max(1e-6, cy - y0), (H - rand - cy) / Math.max(1e-6, y1 - cy));
     if (!(kMax > 1.001)) return;
-    const geht = (k) => lage.every(b => { const q = b.block, r = b.rahmen * k;
-      return drin(areal.get(b.gruppe).poly, cx + (q.x - cx) * k + q.w * k / 2, cy + (q.y - cy) * k + r + b.h * k / 2); });
+    const luft = lage.luft;
+    const geht = (k) => lage.every(b => { const q = b.block, r = b.rahmen * k, x = cx + (q.x - cx) * k, y = cy + (q.y - cy) * k, w = q.w * k, h = q.h * k;
+      return drin(areal.get(b.gruppe).poly, x + w / 2, y + r + b.h * k / 2)
+        && sperren.every(p => !(x < p.x + p.w + luft && p.x < x + w + luft && y < p.y + p.h + luft && p.y < y + h + luft)); });
     let lo = 1, hi = kMax;
     if (geht(hi)) lo = hi; else for (let t = 0; t < 14; t++){ const m = (lo + hi) / 2; if (geht(m)) lo = m; else hi = m; }
     if (lo <= 1.001) return;
@@ -258,7 +264,7 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
   if (!best && o.vorher) return haengenInArealen(gruppen, W, H, areale, { ...o, vorher: null });
   if (!best) return null;
   if (o.verdichten !== false) verdichten(best); else { aufziehen(best); for (const b of best){ b.x = b.block.x + b.rahmen; b.y = b.block.y + b.rahmen; delete b.block; } }
-  return { W, H, massstab: bestS * (best.faktor || 1) ** 2, grenze: grenzeBei, bilder: best, schilder, areale, belegt: best.reduce((s, b) => s + b.w * b.h, 0) / (W * H) };
+  return { W, H, massstab: bestS * (best.faktor || 1) ** 2, grenze: grenzeBei, bilder: best, schilder, sperren, areale, belegt: best.reduce((s, b) => s + b.w * b.h, 0) / (W * H) };
 }
 
 /* Areale und Haengung zusammen: legeAreale(gewichte: Map Name -> Gewicht) -> [{ name, poly }]. Erst nach der Summe der

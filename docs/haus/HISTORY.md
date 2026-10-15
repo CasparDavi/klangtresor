@@ -1480,3 +1480,25 @@ ist es für den Browser eine neue Adresse.
 Revalidierung — sonst bleibt jede Verbesserung an ihnen unsichtbar, bis
 der Cache von selbst verfällt. Und: Wer einen Anzeigefehler im CSS sucht,
 sollte früh prüfen, ob er nicht in der Datei steckt.
+
+## 15.10.2026 — Der eigene Plakat-Export der Bilderschau ausgebaut
+
+Die Bilderschau (1.0.65) bekam am 11.10.2026 sofort einen eigenen Weg aufs Papier: erst ein PNG mit
+7000 Punkten (1.0.66), dann `bilderPlakat()` in `index.html` mit Format, Lage und schwarzem oder
+weißem Grund im Panel der Bilderschau (1.0.67; Caspar_D: *„der Posterexport muß schon wie beim Schaum
+funktionieren, also als PDF, Format wählbar, und Hintergrund in weiß oder schwarz"*). Er war
+ausdrücklich die erste Fassung — *„ausbauen tun wir es ab Mittwoch"*.
+
+Ausgebaut wurde er nicht, sondern ersetzt: Caspar_D entschied, dass die Bilderschau eine dritte Art
+im Plakat-Studio (`plakat.js`) wird, neben Titel- und Personenschaum („Weg B"). Dort gab es Vorschau,
+Rand, Werkverzeichnis, Zeitleiste, Edition und alle Formate schon; der eigene Weg hätte jedes davon
+noch einmal gebraucht. Zwei Antworten auf dieselbe Frage — welches Plakat bekomme ich? — wären eine
+zu viel. Gelöscht wurden die Funktion, ihre Formatliste und Grundfarben, die drei Auswahlfelder und
+der eigene Knopf im Panel; die gemerkten Einstellungen `format`, `lage`, `grund` in
+`mysuno-bilderschau` fallen beim Lesen weg. Der Knopf „Als Plakat (PDF)…" unter der Legende öffnet
+jetzt in beiden Arten das Studio.
+
+Was vom alten Weg bleibt, sind seine Maße: die Druckbilder auf 300 dpi ihrer Größe, der Rahmen in der
+Farbe des Areals zu 38 % in den Grund gemischt. Neu ist, was der alte nicht hatte: keine
+Bildunterschriften mehr, dafür auf jedem Cover seine Nummer aus dem Werkverzeichnis, in der Ecke
+mit dem besten Kontrast.
