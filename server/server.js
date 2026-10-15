@@ -17,6 +17,7 @@ const path = require('node:path');
 const os   = require('node:os');
 const K    = require('../bin/katalog.js');
 const { Behaelter, INDEX: BEHAELTER_INDEX } = require('../bin/behaelter.js');
+const { standHolen: fassungStand } = require('../bin/aktualisieren.js');
 
 /* Argumente (Caspar_D, 09.09.2026): fuer den Archiv-Export auf den
    USB-Stick. Die Startskripte dort rufen
@@ -1653,6 +1654,17 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
     try { return JSON.parse(fs.readFileSync(path.join(WURZEL, 'package.json'), 'utf8')).version || null; }
     catch (e) { return null; }
   };
+  /* Neue PROGRAMM-Fassung, nicht die Songdaten. Fragt GitHub erst hier,
+     wenn die Oberflaeche den Knopf drueckt — nicht beim /api/index.
+     Eingefroren: nachsehen darf man, einspielen laeuft ohnehin nur auf
+     dem Rechner (bin/aktualisieren.js), nicht auf dem Stick. */
+  if (p === '/api/fassung') {
+    fassungStand().then(d => jsonAntwort(res, d)).catch(e => jsonAntwort(res, {
+      hier: paketVersion(), github: null, neuer: false,
+      grund: (e && e.message) || String(e), geprueftAm: new Date().toISOString(),
+    }, 502));
+    return;
+  }
   const KONFIG = path.join(WURZEL, 'library', 'konfig.json');
   const konfigLesen = () => { try { return JSON.parse(fs.readFileSync(KONFIG, 'utf8')); } catch (e) { return {}; } };
   if (p === '/api/konfig' && req.method === 'GET') {

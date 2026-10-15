@@ -15,7 +15,8 @@
     "modelle": "node bin/modelle-holen.js",
     "klang": "node bin/klang.js",
     "karte": "node bin/karte.js",
-    "paket": "node bin/paket.js"
+    "paket": "node bin/paket.js",
+    "aktualisieren": "node bin/aktualisieren.js"
   },
   "engines": {
     "node": ">=20"
