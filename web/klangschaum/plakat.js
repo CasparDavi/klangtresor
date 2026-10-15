@@ -738,19 +738,30 @@ const lageKontrast = (y) => { const s = y <= 0.15 ? 1 : Math.pow(0.15 / y, 1 / 2
    muß, die ist ja schon berechnet"). Die Ziffern stehen in der Akzentfarbe ihres Covers (farben.akzent - dieselbe, mit der uiFaerben die
    Oberfläche färbt, wenn der Titel läuft); ein Cover ohne Palette (dort färbt uiFaerben grau) nimmt die Farbe seines Areals, die seines
    Rahmens ungedämpft - Grau heißt unsicher. Ihr Kontrast gegen den Grund unter den Ziffern (grundUnter: Cover weichgezeichnet wie das
-   Glas, hellste 10 %, mal Glas) liegt zwischen 4,5 : 1 und NR_KONTRAST_MAX: zu schwach → heller im selben Farbton, zu stark → dunkler.
-   Farbton heißt OKLCH: die Helligkeit L wandert, der Ton H bleibt, die Buntheit C auch, soweit der Bildschirm sie in dieser Helligkeit
-   darstellen kann (sonst weniger, wie ausOklch in bin/farben.js - okZuHex schnitte die Kanäle ab, das verschöbe den Ton). Aufgehellt
-   wird höchstens bis L 0,92, so weit hellt auch bin/farben.js einen Akzent gegen seinen Grund auf. Reicht das nicht, kommt das Glas dazu,
-   nur so dunkel, wie die Ziffer bei L 0,92 es für 4,5 : 1 braucht (Caspar_D: „glasempfehlung a – machen wir so"; kein Mindestschild -
-   ohne Bedarf kein Schwarz, das Schild ist dann nur weichgezeichnet). Weiß braucht es nie: bei L 0,92 hat jede Farbe mindestens die
-   Leuchtdichte 0,757 (nachgerechnet über alle Töne und Buntheiten bis 0,4), also reicht auf dem hellsten Grund ein Glas von 0,61. Die
-   Ziffern stehen damit immer heller als ihr Grund, wie bisher. NR_KONTRAST_MAX 7 : 1 ist der Startwert - Caspar_D beurteilt am Bild.
-   Gezielt wird auf 4,5 mal NR_SICHER und 7 durch NR_SICHER, weil die Rechnung im Messbild den gemalten Grund nicht genau trifft
-   (Bildschirmfoto mit den Originalen wie im PDF, A3 hoch, Galerie, 262 Nummern): gemalt ist der Kontrast im Median 1 % höher als
-   gerechnet, bei 95 % der Nummern höchstens 1,5 % niedriger, bei 90 % höchstens 5 % höher. Genau auf 4,5 und 7 gezielt lagen gemalt 34
-   knapp unter 4,5 und 14 knapp über 7, mit NR_SICHER 8 und 5. */
-const NR_KONTRAST_MIN = 4.5, NR_KONTRAST_MAX = 7, NR_HELL_MAX = 0.92, NR_SICHER = 1.02;
+   Glas, mal Glas) liegt im Band 4,5 … NR_KONTRAST_MAX : 1, in einer von zwei Richtungen: heller als der Grund oder dunkler. Die
+   Untergrenze gilt gegen den ungünstigsten Teil des Grunds - für eine helle Ziffer die hellsten 10 %, für eine dunkle die dunkelsten
+   10 % -, denn dort muss sie noch lesbar sein. Die Obergrenze gilt gegen das Mittel des Grunds: wie kräftig eine Ziffer wirkt, sieht man
+   über ihrer ganzen Fläche, nicht nur am hellsten Fleck; gegen die hellsten 10 % geprüft standen helle Ziffern über dunklen Teilen
+   kräftiger als 7 : 1 da (bis 15.10.2026, Gegenprüfung zu c5066cc: gemalt gegen das Mittel bis 10 : 1, 56 von 262 über 7). Farbton heißt
+   OKLCH: die Helligkeit L wandert, der Ton H bleibt, die Buntheit C auch, soweit der Bildschirm sie in dieser Helligkeit darstellen kann
+   (sonst weniger, wie ausOklch in bin/farben.js - okZuHex schnitte die Kanäle ab, das verschöbe den Ton); L bleibt so nah am Akzent, wie
+   das Band es erlaubt. Hell wird höchstens bis L 0,92, so weit hellt auch bin/farben.js einen Akzent gegen seinen Grund auf; dunkel ohne
+   Grenze, nahe L 0 ist die Ziffer fast schwarz. Bis 15.10.2026 stand die Ziffer immer heller als ihr Grund, und auf hellen Covern kam
+   darum immer Glas darunter; vereinbart war „zu stark → abdunkeln, je nach Grund" (Caspar_D: „gut, gefällt mir das Plakat, du darfst die
+   letzten Polierungen noch machen"). Jetzt: je Cover die Richtung, die das Band ohne Glas erreicht, bei beiden die mit dem kleineren
+   Schritt vom Akzent (dann hell). Erreicht keine das Band, kommt Glas unter eine helle Ziffer (unter eine dunkle nähme es den Kontrast),
+   so wenig wie möglich (Caspar_D: „glasempfehlung a – machen wir so"; kein Mindestschild - ohne Bedarf kein Schwarz, das Schild ist dann
+   nur weichgezeichnet): so viel, dass die Ziffer bei L 0,92 gegen die hellsten 10 % die Untergrenze erreicht, und so viel, dass hellste
+   10 % und Mittel nicht weiter auseinander liegen als die Grenzen (MAX / MIN) - Glas rückt beide zusammen; sonst läge die Farbe, die die
+   Untergrenze hält, über der Obergrenze. Weiß braucht es nie: bei L 0,92 hat jede Farbe mindestens die Leuchtdichte 0,757 (nachgerechnet
+   über alle Töne und Buntheiten bis 0,4). NR_KONTRAST_MAX 7 : 1 ist der Startwert - Caspar_D beurteilt am Bild. Gezielt wird mit Abstand
+   zu den Grenzen, weil die Rechnung im Messbild den gemalten Grund nicht genau trifft (gemalt unter der Tinte: Bildschirmfoto mit den
+   Originalen wie im PDF, Ziffern an und aus, Galerie A3 hoch, Papier A3 hoch, Galerie 70 × 100 quer). Gemalt zu gerechnet, bei NR_SICHER
+   1,02 auf allen Seiten: gegen das Mittel Median 1,00 bis 1,01, 95 % höchstens 1,08 - Obergrenze 7 durch NR_SICHER; gegen die hellsten
+   10 % (helle Ziffern) Median 1,01, 5 % unter 0,97 bis 0,98 - Untergrenze mal NR_SICHER_HELL 1,03; gegen die dunkelsten 10 % (dunkle
+   Ziffern) Median 0,98 bis 0,99, 5 % unter 0,90 bis 0,95 - mal NR_SICHER_DUNKEL 1,08. Damit lagen gemalt gegen den ungünstigsten Teil 11,
+   12 und 11 Ziffern unter 4,5 (vorher 14, 15, 13), gegen das Mittel 17, 25 und 23 über 7 (vorher 56, 59, 52). */
+const NR_KONTRAST_MIN = 4.5, NR_KONTRAST_MAX = 7, NR_HELL_MAX = 0.92, NR_SICHER = 1.02, NR_SICHER_HELL = 1.03, NR_SICHER_DUNKEL = 1.08;
 /* OKLCH in linearem RGB (die Umkehrung von okFarbe im Haus); imTon nimmt die Buntheit in Schritten von 0,004 zurück, bis die Farbe darstellbar ist */
 function okLinear(L, C, H){
   const h = H * Math.PI / 180, a = C * Math.cos(h), b = C * Math.sin(h);
@@ -762,28 +773,53 @@ function imTon(L, C, H){
     if (c === 0 || v.every(x => x >= -1e-6 && x <= 1 + 1e-6))
       return '#' + v.map(x => { x = Math.max(0, Math.min(1, x)); return Math.round(255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055)).toString(16).padStart(2, '0'); }).join(''); }
 }
-/* Farbe der Ziffern und Deckkraft a des Glases über dem Grund mit der Leuchtdichte y; k ist der Kontrast, mit dem sie gesetzt wird */
-function nummerFarbe(basis, y){
-  const o = okFarbe(basis), bei = (L) => imTon(L, o.C, o.H), K = (f, a = 0) => (leuchte(f) + 0.05) / (y * Math.pow(1 - a, 2.2) + 0.05);
-  const MIN = NR_KONTRAST_MIN * NR_SICHER, MAX = NR_KONTRAST_MAX / NR_SICHER, k0 = K(basis);
-  if (k0 >= MIN && k0 <= MAX) return { farbe: basis, a: 0, k: k0 };
-  if (k0 > MAX){ let lo = 0, hi = o.L;                                   /* zu stark: die hellste Farbe des Tons, die MAX hält */
-    for (let i = 0; i < 24; i++){ const L = (lo + hi) / 2; if (K(bei(L)) <= MAX) lo = L; else hi = L; }
-    return { farbe: bei(lo), a: 0, k: K(bei(lo)) }; }
+/* Farbe der Ziffern und Deckkraft a des Glases über dem Grund g (Leuchtdichten: hell und dunkel die hellsten und dunkelsten 10 %, mittel
+   das Mittel); k ist der Kontrast gegen den ungünstigsten Teil, km der gegen das Mittel, hell die Richtung (Ziffer heller als der Grund) */
+function nummerFarbe(basis, g){
+  const o = okFarbe(basis), bei = (L) => imTon(L, o.C, o.H), MIN = NR_KONTRAST_MIN * NR_SICHER_HELL, MIND = NR_KONTRAST_MIN * NR_SICHER_DUNKEL, MAX = NR_KONTRAST_MAX / NR_SICHER;
+  const KH = (f, y, a = 0) => (leuchte(f) + 0.05) / (y * Math.pow(1 - a, 2.2) + 0.05), KD = (f, y) => (y + 0.05) / (leuchte(f) + 0.05);
+  /* die Grenze zwischen lo und hi, an der ja(L) umschlägt (ja gilt bei lo, nicht bei hi) */
+  const grenze = (lo, hi, ja) => { for (let i = 0; i < 24; i++){ const L = (lo + hi) / 2; if (ja(L)) lo = L; else hi = L; } return lo; };
+  const wahl = [];
+  /* hell, über Glas der Deckkraft a (der Grund mal (1 - a) hoch 2,2): L von unten (die dunkelste Farbe, die gegen die hellsten 10 % MIN
+     erreicht) bis oben (die hellste, die gegen das Mittel MAX hält), höchstens bis L1; so nah am Akzent wie möglich. Liegt oben unter
+     unten, gilt unten - die Untergrenze geht vor */
   const L1 = Math.max(o.L, NR_HELL_MAX), hell = bei(L1);
-  if (K(hell) >= MIN){ let lo = o.L, hi = L1;                              /* zu schwach: die dunkelste Farbe des Tons, die MIN erreicht */
-    for (let i = 0; i < 24; i++){ const L = (lo + hi) / 2; if (K(bei(L)) >= MIN) hi = L; else lo = L; }
-    return { farbe: bei(hi), a: 0, k: K(bei(hi)) }; }
-  /* Glas: der Grund muss auf (Leuchtdichte der Ziffer + 0,05) / MIN - 0,05; a aufgerundet, gesetzt wird es auf drei Stellen */
-  const a = Math.ceil((1 - Math.pow(((leuchte(hell) + 0.05) / MIN - 0.05) / y, 1 / 2.2)) * 1000) / 1000;
-  return { farbe: hell, a, k: K(hell, a) };
+  const setze = (a) => { const KA = (f, y) => KH(f, y, a);
+    const unten = KA(bei(0), g.hell) >= MIN ? 0 : L1 - grenze(0, L1, (d) => KA(bei(L1 - d), g.hell) >= MIN);
+    const oben = KA(bei(0), g.mittel) > MAX ? 0 : grenze(0, L1, (L) => KA(bei(L), g.mittel) <= MAX);
+    const f = bei(Math.max(unten, Math.min(o.L, oben)));
+    return { farbe: f, a, k: KA(f, g.hell), km: KA(f, g.mittel), hell: true }; };
+  const ohne = setze(0);
+  if (ohne.k >= MIN && ohne.km <= MAX + 1e-9) wahl.push(ohne);
+  else {
+    /* Glas, so wenig wie möglich: s = (1 - a) hoch 2,2 so klein, dass L1 gegen die hellsten 10 % MIN erreicht und das Band zwischen
+       hellsten 10 % und Mittel nicht weiter ist als MAX / MIN ((hell · s + 0,05) / (mittel · s + 0,05) - Glas rückt beide zusammen);
+       a aufgerundet, gesetzt wird es auf drei Stellen */
+    const r = MAX / MIN, sMin = Math.min(1, ((leuchte(hell) + 0.05) / MIN - 0.05) / g.hell, g.hell > r * g.mittel ? 0.05 * (r - 1) / (g.hell - r * g.mittel) : 1);
+    wahl.push(sMin >= 1 ? ohne : setze(Math.ceil((1 - Math.pow(sMin, 1 / 2.2)) * 1000) / 1000));
+  }
+  /* dunkel: L von unten (die dunkelste Farbe, die gegen das Mittel MAX hält) bis oben (die hellste, die gegen die dunkelsten 10 % MIND
+     erreicht); ohne Glas - Schwarz darunter nähme der dunklen Ziffer den Kontrast */
+  if (KD(bei(0), g.dunkel) >= MIND){
+    const oben = grenze(0, 1, (L) => KD(bei(L), g.dunkel) >= MIND);
+    const unten = KD(bei(0), g.mittel) <= MAX ? 0 : 1 - grenze(0, 1, (d) => KD(bei(1 - d), g.mittel) <= MAX);
+    const f = bei(Math.min(oben, Math.max(unten, o.L)));
+    wahl.push({ farbe: f, a: 0, k: KD(f, g.dunkel), km: KD(f, g.mittel), hell: false });
+  }
+  /* zuerst die Richtung im Band, dann die mit dem wenigsten Glas, dann die mit dem kleinsten Schritt vom Akzent (L), dann hell */
+  const schritt = (w) => Math.abs(okFarbe(w.farbe).L - o.L);
+  const imBand = (w) => w.k >= (w.hell ? MIN : MIND) - 1e-9 && w.km <= MAX + 1e-9;
+  wahl.sort((p, q) => imBand(q) - imBand(p) || p.a - q.a || schritt(p) - schritt(q) || q.hell - p.hell);
+  return wahl[0];
 }
 /* Leuchtdichte des Grunds unter den Ziffern, wie Chrome das Schild malt: das Cover weichgezeichnet (Gauß mit sx, sy in Anteilen; drei
    Kastenfilter), dabei nimmt der Filter das Cover rund um das Schild mit - er schneidet erst das Ergebnis aufs Schild zu, edgeMode ändert
    daran nichts (Probe 15.10.2026) -, und jenseits der Kante des Covers ist nichts: dort wird das Glas durchsichtig, und darunter liegt das
    scharfe Cover. Gerechnet in den Werten des Messbilds (Wurzel der Leuchtdichte, nahe an sRGB, wie das Glas mit
-   color-interpolation-filters="sRGB"); davon die hellsten 10 % im Feld T der Ziffern (ihre Breite, Grundlinie bis Ziffernhöhe). Wie gut
-   das trifft, steht bei NR_SICHER; nur das Schild mit fortgesetzten Rändern zu rechnen traf kaum schlechter. */
+   color-interpolation-filters="sRGB"); davon im Feld T der Ziffern (ihre Breite, Grundlinie bis Ziffernhöhe) die hellsten und die
+   dunkelsten 10 % und das Mittel der Leuchtdichte. Wie gut das trifft, steht bei NR_SICHER; nur das Schild mit fortgesetzten Rändern zu
+   rechnen traf kaum schlechter. */
 function grundUnter(m, R, T, sx, sy){
   const radius = (s) => Math.max(0, Math.round((Math.sqrt(4 * s * s + 1) - 1) / 2));   /* drei Kästen der Breite 2r + 1 ≈ Gauß mit s */
   const rx = radius(sx * m.w), ry = radius(sy * m.h);
@@ -802,7 +838,9 @@ function grundUnter(m, R, T, sx, sy){
   const ty0 = Math.max(0, Math.floor(T[1] * m.h) - Y0), ty1 = Math.min(h, Math.max(ty0 + 1, Math.ceil(T[3] * m.h) - Y0));
   const werte = []; for (let y = ty0; y < ty1; y++) for (let x = tx0; x < tx1; x++){ const i = y * w + x; werte.push(glas[i] + (1 - d[i]) * v[i]); }
   werte.sort((p, q) => p - q);
-  return (werte[Math.min(werte.length - 1, Math.floor(0.9 * werte.length))] / 255) ** 2;
+  const L = (v) => (v / 255) ** 2;
+  return { hell: L(werte[Math.min(werte.length - 1, Math.floor(0.9 * werte.length))]), dunkel: L(werte[Math.floor(0.1 * werte.length)]),
+    mittel: werte.reduce((s, v) => s + L(v), 0) / werte.length };
 }
 /* Höhe der Ziffern in em (Oberkante über der Grundlinie), aus der Schrift gemessen */
 let ziffernHoch = null;
@@ -847,8 +885,8 @@ const xHoehe = (gewicht) => { if (!xVorrat.has(gewicht)){ const c = document.cre
    (Hausregel 14: 12 px; das PNG ist 1080 Punkte breit, eine Seiteneinheit sind 1080 / Breite Punkte - bildSichern); bis dahin 1,0
    Seiteneinheiten, 5 Punkte bei 1:1 und 4 bei 4:5 quer. Ohne Eintrag im Buch weicht nichts aus (Hinweis im Studio). An jeder Nummer:
    data-ecke (die Ecke, 'kante' oder 'min'), data-stufe (ecke: Ecke in voller Größe, kleiner: Ecke kleiner, kante, min), data-feld (das
-   Schild in Anteilen des Covers: x0,y0,x1,y1), data-k (Kontrast, wie gesetzt), data-a (Deckkraft des Glases), data-ton (akzent oder
-   areal: woher die Farbe kommt). Bis 15.10.2026 hatte jede Ecke einen zweiten, tieferen Abstand (anderthalb Geviert), wenn keine
+   Schild in Anteilen des Covers: x0,y0,x1,y1), data-k (Kontrast gegen den ungünstigsten Teil des Grunds, wie gesetzt), data-km (gegen
+   sein Mittel), data-a (Deckkraft des Glases), data-ton (akzent oder areal: woher die Farbe kommt). Bis 15.10.2026 hatte jede Ecke einen zweiten, tieferen Abstand (anderthalb Geviert), wenn keine
    4,5 : 1 erreichte - die Ziffern standen sonst auf dem eigenen Rahmen mancher Cover (Holzschnitte). Das Glas deckt diese Linie ab;
    der zweite Abstand ist gelöscht. */
 const schneidet = (a, b, mx = 0, my = 0) => Math.min(a[2] + mx, b[2]) > Math.max(a[0] - mx, b[0]) && Math.min(a[3] + my, b[3]) > Math.max(a[1] - my, b[1]);
@@ -889,8 +927,8 @@ function nummerPlatz(t, bw, bh, k, m, schrift, gesichter, schwelle, basis){
     return lagen; };
   /* Farbe und Glas zuletzt, über dem Grund unter den Ziffern (ihre Breite, Grundlinie bis Ziffernhöhe, mittig im Schild) */
   const fertig = (R, f, ecke, stufe) => { const tw = messen(t, 600, f / k) * f / bw, th = hoch * f / bh, cx = (R[0] + R[2]) / 2, cy = (R[1] + R[3]) / 2;
-    const y = m ? grundUnter(m, R, [cx - tw / 2, cy - th / 2, cx + tw / 2, cy + th / 2], 0.25 * f / bw, 0.25 * f / bh) : leuchte(grund());
-    return { R, f, ecke, stufe, ...nummerFarbe(basis, y) }; };
+    const y = m ? 0 : leuchte(grund()), g = m ? grundUnter(m, R, [cx - tw / 2, cy - th / 2, cx + tw / 2, cy + th / 2], 0.25 * f / bw, 0.25 * f / bh) : { hell: y, dunkel: y, mittel: y };
+    return { R, f, ecke, stufe, ...nummerFarbe(basis, g) }; };
   for (const [i, f] of groessen.entries()){ const S = schild(f);
     const ecken = ECKEN.map(e => { const x0 = e[1] === 'r' ? 1 - S.gx - S.fw : S.gx, y0 = e[0] === 'u' ? 1 - S.gy - S.fh : S.gy;
       return { R: [x0, y0, x0 + S.fw, y0 + S.fh], d: 0, ecke: e }; }).filter(l => frei(l.R, S));
@@ -965,7 +1003,7 @@ async function bilderEbene(g, kv, lauf){
       + `<image href="${href}" data-voll="${esc2(u)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none" filter="url(#ps-nrg${i})" clip-path="url(#ps-nrs${i})"/>`
       + (p.a > 0 ? `<rect class="ps-rauch" ${form} rx="${f2(0.3 * sh)}" fill="#000" opacity="${p.a.toFixed(3)}"/>` : '')
       + `<text class="ps-nr" x="${f2(sx + sw / 2)}" y="${f2(sy + sh / 2 + hoch * p.f / 2 / k)}" font-size="${(Math.ceil(p.f / k * 1000 - 1e-6) / 1000).toFixed(3)}" font-weight="600" fill="${p.farbe}" text-anchor="middle"`
-      + ` data-id="${esc2(b.id)}" data-ecke="${p.ecke}" data-stufe="${p.stufe}" data-feld="${p.R.map(v => v.toFixed(4)).join(',')}" data-k="${p.k.toFixed(2)}" data-a="${p.a.toFixed(3)}" data-ton="${ba.ton}"`
+      + ` data-id="${esc2(b.id)}" data-ecke="${p.ecke}" data-stufe="${p.stufe}" data-feld="${p.R.map(v => v.toFixed(4)).join(',')}" data-k="${p.k.toFixed(2)}" data-km="${p.km.toFixed(2)}" data-a="${p.a.toFixed(3)}" data-ton="${ba.ton}"`
       + ` style="font-variant-numeric:tabular-nums">${t}</text>`;
   }
   standSetzen('');
