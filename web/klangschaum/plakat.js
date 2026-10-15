@@ -377,6 +377,157 @@ const ECK_FOAM_BIS = 90;
 /* Rahmen der grauen Cover in der Bilderschau-Ecke (eckeFuellen): rgb(70,70,73), L 0,062 - #f1efe9 darauf 8,2 : 1; die hellste Kissenmitte
    bleibt rgb(64,64,67) mit 9,0 : 1 */
 const ECK_FAKE_RAHMEN = 'rgb(70,70,73)';
+/* DIE ECKE IM TON DES BILDES (15.10.2026). Caspar_D: „Was jetzt noch wichtig ist: die Ecke darf nicht massiv unter oder über den
+   Restkontrast des ganzen Bildes fallen, damit dieses Schwarz-Loch-Gefühl nicht so stark entsteht." Bis dahin waren die Kissen fest
+   dunkelgrau (ECK_KISSEN: Mitte rgb 48…64, Rand 21…27) - an der Vorschau gemessen (Klangschaum, A3 hoch, Grund der Ecke ohne Schrift
+   und Avatar): relative Leuchtdichte der Ecke im Mittel 0,024 (90 %: 0,036), die übrige Karte 0,117 (90 %: 0,227); danach 0,104 (0,232).
+   Seitdem bekommt jede Kissenzelle (Klangschaum, Groupieschaum) und jedes graue Cover (Bilderschau) ihr Grau aus dem Bild:
+   1. DIE ÜBRIGE KARTE (eckRest): je Zelle bzw. Cover das Messbild (messbild, 192 Punkte) des Bildes, das die Vorschau zeigt - Kachel
+      oder Avatar, eine Adresse, die die Seite schon geladen hat (Avatare nur aus der eigenen Kopie, nichts von Suno) -, im Schaum so
+      eingefärbt, wie das Plakat es malt (Farbstich soft-light mit druck.ton, Zellfarbe mit druck.deck darüber, je Kanal in sRGB), nach
+      Fläche gewichtet. Daraus Mittel, 10 %- und 90 %-Quantil der relativen Leuchtdichte und die Verteilung der Zellmittel. Ohne Ecke,
+      ohne Rand; Fugen und Abstände zählen auf keiner Seite (die Ecke hat dieselben). NÄHERUNG: Titelglas, Kissenlicht und Vignette
+      des Schaums und die Rahmen der Cover bleiben außen vor, das Messbild ist das ganze Bild, nicht sein Ausschnitt in der Zelle -
+      die Probe am gemalten Plakat (Vorschau) liegt darum etwas neben der Rechnung.
+   2. DIE ECKE (eckToene): die Zellen, nach ihrer Saat t geordnet, bekommen das Zellmittel des Rests an derselben Stelle der Verteilung
+      (nach Fläche) - so streut die Ecke von Zelle zu Zelle wie der Rest -, dann alle mit einem gemeinsamen Faktor so, dass das
+      Flächenmittel der Ecke das des Rests trifft; keine Zelle heller als das ECK_HELLSTE-Quantil der Zellmittel des Rests (mit der
+      hellsten Zelle als Grenze waren es an der Probe fast weiße Kissen neben der Schrift, 90 % der Ecke bei 0,34 statt 0,23). Die Form bleibt das Kissen: Licht
+      in der Mitte, ECK_RAND_ANTEIL davon am Rand (vorher etwa 0,43).
+   3. LESBARKEIT GEHT VOR: ECK_SCHRIFT hat gegen die hellste Stelle unter jeder Zeile (Zeilen, Legende, Signatur; ihr Kasten plus
+      ECK_ZEILE_LUFT Geviert) mindestens ECK_LESBAR : 1 - das ist relative Leuchtdichte höchstens (0,863 + 0,05) / 7 - 0,05 = 0,080
+      (sRGB-Grau 79). Eine Zelle unter Schrift wird höchstens so hell (eine Graustufe Luft); damit sie dabei so hell wie erlaubt
+      bleibt, darf ihr Kissen flacher werden (Rand ECK_RAND_UNTER_SCHRIFT der Mitte statt ECK_RAND_ANTEIL - genommen, was das hellere
+      Mittel erlaubt). Die übrigen Zellen tragen dann mehr, bis zur Grenze ECK_HELLSTE. Reicht auch das nicht, bleibt die Ecke so hell, wie die Schrift es erlaubt - dunkler als der Rest -,
+      und das Studio sagt es (eckHinweis, unter ECK_HINWEIS_AB des Mittels).
+   Gerechnet wird bei jedem Bau, ohne Zufall: Messbilder je Sitzung gemerkt, die Saat der Zellen aus der Lage der Ecke. */
+const ECK_LESBAR = 7;
+const ECK_RAND_ANTEIL = 0.45;
+const ECK_RAND_UNTER_SCHRIFT = 0.75;
+const ECK_ZEILE_LUFT = 0.15;
+const ECK_PROBE = 24;              /* Stichproben je Zelle und Achse (Verteilung des Verlaufs in der Zelle) */
+const ECK_HINWEIS_AB = 0.85;
+const ECK_HELLSTE = 0.9;           /* keine Zelle der Ecke heller als dieses Quantil der Zellmittel des Rests */
+const ECK_T_STUFEN = 32;
+let eckLetzt = null;               /* die Töne des letzten Baus (Hinweis, data-eckton am Blatt für Proben von außen) */
+const linW = (v) => { v = Math.max(0, Math.min(1, v)); return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+const srgbW = (l) => { l = Math.max(0, Math.min(1, l)); return l <= 0.0031308 ? 12.92 * l : 1.055 * Math.pow(l, 1 / 2.4) - 0.055; };
+const eckLmax = () => (leuchte(ECK_SCHRIFT) + 0.05) / ECK_LESBAR - 0.05;
+/* Stopps eines Kissens mit der Mitte c (Graustufe 0…255), mit dem Hauch Blau von ECK_KISSEN */
+const kissenStopps = (c, a = ECK_RAND_ANTEIL) => { const m = Math.round(c), r = Math.round(c * a); return [[m, m, Math.min(255, m + 3)], [r, r, Math.min(255, r + 2)]]; };
+/* Leuchtdichte im Kissen der Mitte c an der Stelle t des Verlaufs (0 Mitte … 1 Rand; SVG mischt die Stopps in sRGB) */
+const kissenL = (c, t, a) => { const [m, r] = kissenStopps(c, a), w = [0.2126, 0.7152, 0.0722]; let L = 0;
+  for (let j = 0; j < 3; j++) L += w[j] * linW((m[j] + (r[j] - m[j]) * t) / 255); return L; };
+const kissenTafel = new Map();     /* Randanteil -> [c][Stufe des Verlaufs] -> Leuchtdichte */
+const kissenTafelHolen = (a) => kissenTafel.get(a) || kissenTafel.set(a, Array.from({ length: 256 }, (_, c) => Float64Array.from({ length: ECK_T_STUFEN }, (_, b) => kissenL(c, (b + 0.5) / ECK_T_STUFEN, a)))).get(a);
+/* Die Kästen der Zeilen im Block (Schaum-Einheiten, y nach oben): wie eckeSetzen sie setzt - Grundlinie 0,3 Geviert über der
+   Unterkante, Versalien bis etwa 1 Geviert darüber; dazu ECK_ZEILE_LUFT rundum */
+function eckZeilen(v, s){
+  return blockLage(v.block, v.ecke, v.rahmen, s).map((t, i) => {
+    const q = v.teile[i]; if (!q || !['zeile', 'legende', 'signatur'].includes(q.typ) || !(t.w > 0)) return null;
+    const fs = (q.fs || 0) * s / v.k, d = ECK_ZEILE_LUFT * fs;
+    return { x0: t.x0 - d, x1: t.x1 + d, y0: t.y0 - d, y1: Math.max(t.y1, t.y0 + 1.35 * fs) + d };
+  }).filter(Boolean);
+}
+/* Eine Zelle der Ecke: Fläche, wie sich ihr Verlauf über die Fläche verteilt, und die hellste Stelle unter einer Zeile (tmin) */
+function kissenZelle(o, zeilen){
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const p of o){ x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
+  const bw = x1 - x0 || 1e-9, bh = y1 - y0 || 1e-9, cx = parseFloat(ECK_KISSEN.cx) / 100, cy = parseFloat(ECK_KISSEN.cy) / 100, rr = parseFloat(ECK_KISSEN.r) / 100;
+  const tb = new Float64Array(ECK_T_STUFEN), proben = []; let n = 0;
+  for (let i = 0; i < ECK_PROBE; i++) for (let j = 0; j < ECK_PROBE; j++){
+    const p = [x0 + (i + 0.5) / ECK_PROBE * bw, y0 + (j + 0.5) / ECK_PROBE * bh]; if (!imUmriss(p, o)) continue;
+    const t = Math.min(1, Math.hypot((p[0] - x0) / bw - cx, (y1 - p[1]) / bh - cy) / rr); tb[Math.min(ECK_T_STUFEN - 1, Math.floor(t * ECK_T_STUFEN))]++; n++; proben.push(p); }
+  if (!n){ tb[0] = 1; n = 1; }
+  for (let b = 0; b < ECK_T_STUFEN; b++) tb[b] /= n;
+  /* trifft eine Zeile die Zelle (eine Probe im Kasten, eine Ecke des Kastens in der Zelle oder ein Punkt der Zelle im Kasten), zählt
+     der Punkt des Kastens, der der Mitte des Verlaufs am nächsten ist - im Kasten der Zelle gesucht, also eher zu hell als zu dunkel */
+  let tmin = Infinity;
+  for (const z of zeilen){
+    if (z.x1 < x0 || z.x0 > x1 || z.y1 < y0 || z.y0 > y1) continue;
+    const drin = (p) => p[0] >= z.x0 && p[0] <= z.x1 && p[1] >= z.y0 && p[1] <= z.y1;
+    if (!(proben.some(drin) || o.some(drin) || [[z.x0, z.y0], [z.x1, z.y0], [z.x0, z.y1], [z.x1, z.y1]].some(p => imUmriss(p, o)))) continue;
+    const u0 = Math.max(0, (z.x0 - x0) / bw), u1 = Math.min(1, (z.x1 - x0) / bw), v0 = Math.max(0, (y1 - z.y1) / bh), v1 = Math.min(1, (y1 - z.y0) / bh);
+    tmin = Math.min(tmin, Math.min(1, Math.hypot(Math.max(u0 - cx, 0, cx - u1), Math.max(v0 - cy, 0, cy - v1)) / rr));
+  }
+  return { a: Math.abs(shoelace(o)), tb, tmin };
+}
+/* Die Töne der Ecke: zellen [{ o: Umriss (y nach oben), t: Saat 0…1 }], zeilen aus eckZeilen, rest aus eckRest.
+   ziel: das Flächenmittel, das die Zellen zusammen treffen sollen (ohne Angabe das des Rests).
+   Ergebnis { c: Graustufe der Kissenmitte je Zelle, a: Randanteil je Zelle, ecke/rest: { m, q10, q90 }, gekappt } */
+function eckToene(zellen, zeilen, rest, ziel0 = rest.m){
+  const Lmax = eckLmax(), Z = zellen.map(z => kissenZelle(z.o, zeilen)), A = Z.reduce((s, z) => s + z.a, 0) || 1;
+  const mittelMit = (i, c, a) => { let L = 0; const tb = Z[i].tb, tf = kissenTafelHolen(a)[c]; for (let b = 0; b < ECK_T_STUFEN; b++) L += tb[b] * tf[b]; return L; };
+  /* höchste Mitte je Zelle: unter Schrift so, dass auch eine Graustufe mehr noch ECK_LESBAR hielte - mit dem Randanteil, der das
+     hellere Mittel erlaubt */
+  const kappeMit = (z, a) => { let c = 255; while (c > 0 && kissenL(c + 1, z.tmin, a) > Lmax) c--; return c; };
+  const anteil = Z.map((z, i) => z.tmin === Infinity ? ECK_RAND_ANTEIL
+    : [ECK_RAND_ANTEIL, ECK_RAND_UNTER_SCHRIFT].reduce((x, a) => mittelMit(i, kappeMit(z, a), a) > mittelMit(i, kappeMit(z, x), x) ? a : x));
+  const kappe = Z.map((z, i) => z.tmin === Infinity ? 255 : kappeMit(z, anteil[i]));
+  const mittel = (i, c) => mittelMit(i, c, anteil[i]);
+  /* Zielmittel je Zelle: nach Saat geordnet an derselben Stelle der Verteilung der Zellmittel des Rests (nach Fläche) */
+  const quantil = (u) => { const zl = rest.zellen; let s = 0; for (const z of zl){ s += z.a; if (s >= u * rest.zellA) return z.m; } return zl.length ? zl[zl.length - 1].m : rest.m; };
+  const ziel = new Float64Array(Z.length); let s = 0;
+  zellen.map((z, i) => i).sort((p, q) => zellen[p].t - zellen[q].t || p - q).forEach(i => { ziel[i] = quantil((s + Z[i].a / 2) / A); s += Z[i].a; });
+  /* die hellste Graustufe bis zur Kappe, deren Zellmittel das Ziel nicht übersteigt (das Mittel steigt mit c) */
+  const stufe = (i, L) => { let lo = 0, hi = kappe[i]; while (lo < hi){ const m = (lo + hi + 1) >> 1; if (mittel(i, m) <= L) lo = m; else hi = m - 1; } return lo; };
+  const mit = (f) => { const c = Z.map((_, i) => stufe(i, Math.min(rest.zellMax, f * ziel[i]))); return { c, m: Z.reduce((s, z, i) => s + z.a * mittel(i, c[i]), 0) / A }; };
+  let lo = 0, hi = 16, best = mit(hi);
+  const gekappt = best.m < ECK_HINWEIS_AB * ziel0;
+  if (best.m > ziel0){ for (let k = 0; k < 30; k++){ const f = (lo + hi) / 2, r = mit(f); if (r.m > ziel0) hi = f; else lo = f; } best = mit(lo); }
+  /* die Verteilung der Ecke, wie gerechnet (Flächen mal Stufen des Verlaufs) */
+  const werte = []; Z.forEach((z, i) => { const tf = kissenTafelHolen(anteil[i])[best.c[i]]; for (let b = 0; b < ECK_T_STUFEN; b++) if (z.tb[b]) werte.push([tf[b], z.a * z.tb[b]]); });
+  werte.sort((p, q) => p[0] - q[0]);
+  const q = (u) => { let s = 0; for (const [L, w] of werte){ s += w; if (s >= u * A) return L; } return werte.length ? werte[werte.length - 1][0] : 0; };
+  const r4 = (x) => +x.toFixed(4);
+  return { c: best.c, a: anteil, gekappt, ziel: r4(ziel0), ecke: { m: r4(best.m), q10: r4(q(0.1)), q90: r4(q(0.9)) }, rest: { m: r4(rest.m), q10: r4(rest.q10), q90: r4(rest.q90) } };
+}
+/* Soft-light nach W3C (Compositing Level 1), je Kanal 0…1 */
+const weichesLicht = (cb, cs) => cs <= 0.5 ? cb - (1 - 2 * cs) * cb * (1 - cb) : cb + (2 * cs - 1) * ((cb <= 0.25 ? ((16 * cb - 12) * cb + 4) * cb : Math.sqrt(cb)) - cb);
+/* Die übrige Karte: teile [{ u: Bildadresse, a: Fläche, fuell: [r, g, b] oder null }], ton und deck wie im Druckauftrag. Gemerkt nach Auftrag. */
+let eckRestVorrat = { schl: null, wert: null };
+async function eckRest(teile, ton, deck){
+  teile = teile.filter(t => t.u && t.u[0] === '/' && t.a > 0);
+  if (!teile.length) return null;
+  const schl = textHash(JSON.stringify([teile, ton, deck]));
+  if (eckRestVorrat.schl === schl) return eckRestVorrat.wert;
+  const BIN = 1024, roh = new Array(teile.length); let n = 0;
+  await Promise.all(Array.from({ length: 4 }, async () => { while (n < teile.length){ const i = n++; roh[i] = await messbild(teile[i].u); } }));
+  const h = new Float64Array(BIN), zellen = []; let summe = 0, A = 0;
+  teile.forEach((t, i) => {
+    const m = roh[i]; if (!m) return;
+    /* je Wert des Messbilds (Wurzel der Leuchtdichte) die Leuchtdichte nach dem Färben */
+    const lut = new Float64Array(256), f = t.fuell ? t.fuell.map(x => x / 255) : null;
+    for (let q = 0; q < 256; q++){ const L = (q / 255) ** 2;
+      if (!f || !(ton > 0 || deck > 0)){ lut[q] = L; continue; }
+      const cb = srgbW(L), w = [0.2126, 0.7152, 0.0722]; let L2 = 0;
+      for (let j = 0; j < 3; j++){ let x = (1 - ton) * cb + ton * weichesLicht(cb, f[j]); x = (1 - deck) * x + deck * f[j]; L2 += w[j] * linW(x); }
+      lut[q] = L2; }
+    const anz = new Uint32Array(256); for (let p = 0; p < m.q.length; p++) anz[m.q[p]]++;
+    const g = t.a / m.q.length; let zm = 0;
+    for (let q = 0; q < 256; q++) if (anz[q]){ h[Math.min(BIN - 1, Math.floor(lut[q] * BIN))] += anz[q] * g; zm += anz[q] * lut[q]; }
+    zm /= m.q.length; zellen.push({ m: zm, a: t.a }); summe += zm * t.a; A += t.a;
+  });
+  if (!(A > 0)) return null;
+  zellen.sort((p, q) => p.m - q.m);
+  const q = (u) => { let s = 0; for (let b = 0; b < BIN; b++){ s += h[b]; if (s >= u * A) return (b + 0.5) / BIN; } return 1; };
+  let za = 0; const zellMax = (zellen.find(z => (za += z.a) >= ECK_HELLSTE * A) || zellen[zellen.length - 1]).m;
+  const wert = { m: summe / A, q10: q(0.1), q90: q(0.9), zellen, zellA: A, zellMax };
+  eckRestVorrat = { schl, wert };
+  return wert;
+}
+/* Der Schaum: je Blatt außer der Ecke sein Bild (wie die Vorschau es zeigt, schaumSvgBauen vorschauBilder) und die Zellfarbe aus dem
+   gebauten Bild (der Pfad mit fill-opacity und data-i) */
+async function eckRestSchaum(svg, druck){
+  const res = aktuell.res, zl = aktuell.j.zeilen, personen = aktuell.art === 'person', fuell = new Map();
+  for (const m of svg.matchAll(/<path [^>]*?data-i="(\d+)"[^>]*>/g)){ if (!/fill-opacity="/.test(m[0])) continue;
+    const f = (m[0].match(/ fill="([^"]*)"/) || [])[1]; if (f && !/^url/.test(f)) fuell.set(+m[1], farbWert(f)); }
+  const teile = (res.leaves || []).map((k, i) => { const z = k.row != null ? zl[k.row] : null; if (!z || z.id === SCHILD_ID || !k.outline || k.outline.length < 3) return null;
+    const u = (typeof schaumAvatarAdresse === 'function' ? schaumAvatarAdresse(z.bild) : null) || (personen ? null : typeof artworkKachel === 'function' ? artworkKachel(z.id) : artworkBild(z.id));
+    return { u, a: Math.abs(shoelace(k.outline)), fuell: fuell.get(i) || null }; }).filter(Boolean);
+  return eckRest(teile, +druck.ton || 0, +druck.deck || 0);
+}
+const eckHinweis = (t) => `Die Ecke bleibt dunkler als das übrige Bild (Leuchtdichte ${t.ecke.m.toLocaleString('de-DE', { maximumFractionDigits: 3 })} statt ${t.ziel.toLocaleString('de-DE', { maximumFractionDigits: 3 })}): unter der Schrift nur so hell, dass sie ${ECK_LESBAR} : 1 Kontrast behält.`;
 /* ABSTAND ZUR ZELLGRENZE (Caspar_D, 15.10.2026: „und da jetzt eine Zelle mit Grenzen da ist, muß ein Abstand zu den Zellgrenzen da
    sein, der größer als ein Wortabstand ist"): jedes Teil des Blocks hält zur Grenze der Eckzelle mindestens ECK_WORTLUFT_EM der
    größten Schrift im Block (Wortabstand der Systemschrift etwa 0,25–0,3 em), gemessen ab der sichtbaren Kante (halbe Fuge);
@@ -413,11 +564,13 @@ function eckZellen(res, knoten){
   eckVorrat.set(schl, zellen);
   return zellen;
 }
-/* Die Kissen als SVG (Seitenmaß mm): je Zelle ein radialer Verlauf nach ECK_KISSEN */
-function eckKissen(zellen, X, Y){
+/* Die Kissen als SVG (Seitenmaß mm): je Zelle ein radialer Verlauf nach ECK_KISSEN, mit Tönen aus dem Bild (eckToene) in deren Grau */
+const kissenVerlauf = (id, ton, i, t) => { const [m, r] = ton ? kissenStopps(ton.c[i], ton.a[i]).map(q => `rgb(${q.join(',')})`) : [ECK_KISSEN.mitte(t), ECK_KISSEN.rand(t)];
+  return `<radialGradient id="${id}" cx="${ECK_KISSEN.cx}" cy="${ECK_KISSEN.cy}" r="${ECK_KISSEN.r}"><stop offset="0" stop-color="${m}"/><stop offset="1" stop-color="${r}"/></radialGradient>`; };
+function eckKissen(zellen, X, Y, ton){
   let defs = '', pfade = '';
   zellen.forEach((z, i) => {
-    defs += `<radialGradient id="ps-kissen${i}" cx="${ECK_KISSEN.cx}" cy="${ECK_KISSEN.cy}" r="${ECK_KISSEN.r}"><stop offset="0" stop-color="${ECK_KISSEN.mitte(z.t)}"/><stop offset="1" stop-color="${ECK_KISSEN.rand(z.t)}"/></radialGradient>`;
+    defs += kissenVerlauf(`ps-kissen${i}`, ton, i, z.t);
     pfade += `<path d="M${z.o.map(p => X(p[0]).toFixed(2) + ',' + Y(p[1]).toFixed(2)).join('L')}Z" fill="url(#ps-kissen${i})"/>`;
   });
   return `<g class="ps-eckzellen"><defs>${defs}</defs>${pfade}</g>`;
@@ -425,20 +578,26 @@ function eckKissen(zellen, X, Y){
 /* Setzen: dieselbe Lage, die der Worker geprueft hat (blockLage: jedes Teil zu drei Vierteln zur Schaumgrenze, zu einem Viertel
    zur Blattkante an einer gemeinsamen Achse - die Viertel-Lösung vom 15.10.2026), auf den grauen Kissen der Ecke (eckZellen). Passt der Block nicht mehr (Text nach
    dem Legen verlaengert, grosser Schaum anders gelegt), wird er so weit verkleinert, dass er passt - der naechste Lauf legt neu. */
-function eckeSetzen(g, fg, leise){
-  const res = aktuell.res, H = res.height;
-  const v = schildVorgabe(g, res.width, H, false), { k, ox, oy } = v;
+/* Lage des Blocks in der Ecke, wie eckeSetzen ihn setzt (auch für die Töne der grauen Cover in bilderEbene) */
+function eckBlock(g){
+  const res = aktuell.res, H = res.height, v = schildVorgabe(g, res.width, H, false);
   const knoten = (res.nodes || []).find(n => n.depth === 0 && n.name === SCHILD_NAME && n.outline);
   const r = knoten ? blockReserve(knoten.outline, v.block, v.ecke, v.rahmen, v.luft) : 0;
+  return { v, knoten, r, s: Math.min(1, r), zeilen: r < 0.3 ? [] : eckZeilen(v, Math.min(1, r)) };
+}
+function eckeSetzen(g, fg, leise, rest){
+  const res = aktuell.res, H = res.height;
+  const { v, knoten, r, s, zeilen } = eckBlock(g), { k, ox, oy } = v;
   const X = (x) => ox + x * k, Y = (y) => oy + (H - y) * k, f2 = (n) => n.toFixed(2), hell = hellerGrund();
-  /* die Ecke als Schaum aus grauen Kissen (eckZellen), darauf alles in ECK_SCHRIFT; die Bilderschau hängt dort graue Cover
-     (eckeFuellen, gemalt in bilderEbene unter dieser Schrift) */
-  let out = knoten && !res.bilder ? eckKissen(eckZellen(res, knoten), X, Y) : '';
+  /* die Ecke als Schaum aus grauen Kissen (eckZellen) im Ton des übrigen Bildes (eckToene), darauf alles in ECK_SCHRIFT; die
+     Bilderschau hängt dort graue Cover (eckeFuellen, gemalt in bilderEbene unter dieser Schrift) */
+  let out = '';
+  if (knoten && !res.bilder){ const zellen = eckZellen(res, knoten), ton = rest ? eckToene(zellen, zeilen, rest) : null; eckLetzt = ton; out = eckKissen(zellen, X, Y, ton); }
   fg = leise = ECK_SCHRIFT;
   /* passt der Block nicht (mehr), wird er genau so weit verkleinert, dass er passt; unter 0,3 wird er nicht gesetzt, ein Hinweis
      sagt warum - vorher stand er mit mindestens 0,5 über den Zellen (Fallensuche 1.0.58) */
   if (r < 0.3){ standSetzen('Avatar und Text passen nicht in die Ecke – Titel oder Zeilen kürzen, Legende ausschalten oder eine andere Ecke wählen.'); return out; }
-  const s = Math.min(1, r), rechts = v.ecke[1] === 'r', anker = rechts ? 'end' : 'start';
+  const rechts = v.ecke[1] === 'r', anker = rechts ? 'end' : 'start';
   blockLage(v.block, v.ecke, v.rahmen, s).forEach((t, i) => {
     const q = v.teile[i], fs = (q.fs || 0) * s, x = rechts ? X(t.x1) : X(t.x0), basis = Y(t.y0) - fs * 0.3;
     if (q.typ === 'kreis'){
@@ -1165,10 +1324,27 @@ async function bilderEbene(g, kv, lauf){
   const alsHex = (f) => { const v = farbWert(f); return v ? '#' + v.map(x => x.toString(16).padStart(2, '0')).join('') : null; };
   const basisVon = (b) => { const s = typeof song === 'function' ? song(b.id) : null, fa = s && s.farben;
     return fa && fa.toene && fa.toene.length && okFarbe(fa.akzent) ? { farbe: fa.akzent, ton: 'akzent' } : { farbe: alsHex(farbe(b.gruppe)) || '#8a8d94', ton: 'areal' }; };
-  /* die grauen Cover der Randlos-Ecke (eckeFuellen): Kissen wie im Klangschaum (ECK_KISSEN), ein dünner grauer Rahmen
-     (ECK_FAKE_RAHMEN); ohne Nummer, ohne Verzeichnis, ohne Steckbrief, nicht anklickbar */
+  /* die grauen Cover der Randlos-Ecke (eckeFuellen): Kissen wie im Klangschaum (ECK_KISSEN) im Ton der übrigen Wand (eckToene: die
+     Cover aus ihren Kacheln gemessen, die Schrift der Ecke als Grenze), ein dünner grauer Rahmen (ECK_FAKE_RAHMEN); ohne Nummer, ohne
+     Verzeichnis, ohne Steckbrief, nicht anklickbar */
+  let fakeTon = null;
+  if ((res.platzhalter || []).length){
+    const rest = await eckRest(res.bilder.map(b => ({ u: typeof artworkKachel === 'function' ? artworkKachel(b.id) : artworkBild(b.id), a: b.w * b.h })), 0, 0);
+    if (lauf !== bauLauf) return null;
+    if (rest){ const { zeilen } = E.schild && aktuell.schild && aktuell.ecke === eckeJetzt() ? eckBlock(g) : { zeilen: [] };
+      /* GLEICH DICHT GEHÄNGT HEISST NICHT GLEICH HELL: in der Ecke bleibt die Fläche des Blocks frei (gesperrt, Grund), die grauen
+         Cover decken sie also dünner als die echten den Rest der Wand. Ihr Ziel ist darum das Mittel, mit dem die Ecke samt Grund
+         so hell wird wie die übrige Wand samt Grund: dichte_rest · m + (dichte_ecke − dichte_rest) · L_grund, geteilt durch dichte_ecke */
+      const um = ((res.nodes || []).find(n => n.name === SCHILD_NAME) || {}).outline, fl = (b) => b.w * b.h, Lg = leuchte(grund());
+      let ziel;
+      if (um){ const xs = um.map(p => Math.min(W, Math.max(0, p[0]))), ys = um.map(p => Math.min(H, Math.max(0, p[1])));
+        const Ae = (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys)), dr = res.bilder.reduce((s, b) => s + fl(b), 0) / Math.max(1, W * H - Ae),
+          de = res.platzhalter.reduce((s, b) => s + fl(b), 0) / Math.max(1, Ae);
+        if (de > 0 && dr > 0) ziel = (dr * rest.m + (de - dr) * Lg) / de; }
+      fakeTon = eckLetzt = eckToene(res.platzhalter.map(b => ({ o: [[b.x, H - b.y - b.h], [b.x + b.w, H - b.y - b.h], [b.x + b.w, H - b.y], [b.x, H - b.y]], t: b.t })), zeilen, rest, ziel); }
+  }
   (res.platzhalter || []).forEach((b, i) => {
-    out += `<radialGradient id="ps-fake${i}" cx="${ECK_KISSEN.cx}" cy="${ECK_KISSEN.cy}" r="${ECK_KISSEN.r}"><stop offset="0" stop-color="${ECK_KISSEN.mitte(b.t)}"/><stop offset="1" stop-color="${ECK_KISSEN.rand(b.t)}"/></radialGradient>`
+    out += kissenVerlauf(`ps-fake${i}`, fakeTon, i, b.t)
       + `<rect class="ps-fake" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" fill="url(#ps-fake${i})" stroke="${ECK_FAKE_RAHMEN}" stroke-width="${f2(Math.max(0.3, 0.15 / k))}" pointer-events="none"/>`; });
   for (const [i, b] of res.bilder.entries()){
     const r = b.rahmen || 0, u = artworkBild(b.id), href = esc2(schaumBildHref(u, schaumStufe(Math.max(b.w, b.h) * k * pxJeMm)));
@@ -1209,6 +1385,7 @@ async function bilderEbene(g, kv, lauf){
 async function bauen(g){
   if (!aktuell) return;
   const lauf = ++bauLauf, blatt = el('ps-blatt'); if (!blatt) return;
+  eckLetzt = null; delete blatt.dataset.eckton;
   legendeAreale = arealeDer(aktuell.j);
   const s = schaumFarbeAnteil / 100, kv = g.karte;
   /* Vorschau-Massstab fuer den Bildvorrat: Bildschirmpunkte je Schaum-Einheit */
@@ -1293,7 +1470,13 @@ async function bauen(g){
   if (E.areale && !E.schild && !E.skizze && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
   let verzL = null;
   if (g.verz && verzeichnis){ const v = verzeichnisSetzen(verzeichnis, g, ux, uy + g.schildH + g.rand * 0.4, fg, leise); kopf += v.svg; verzL = v.L; }
-  if (E.schild && aktuell.schild && aktuell.ecke === eckeJetzt()) kopf += eckeSetzen(g, fg, leise);
+  if (E.schild && aktuell.schild && aktuell.ecke === eckeJetzt()){
+    /* der Ton der übrigen Karte für die Kissen der Ecke (eckRest; die Bilderschau hat ihn in bilderEbene schon gerechnet) */
+    const rest = aktuell.art !== 'bild' ? await eckRestSchaum(svg, druck) : null; if (lauf !== bauLauf) return;
+    kopf += eckeSetzen(g, fg, leise, rest);
+    if (eckLetzt){ blatt.dataset.eckton = JSON.stringify({ rest: eckLetzt.rest, ziel: eckLetzt.ziel, ecke: eckLetzt.ecke, gekappt: eckLetzt.gekappt });
+      if (eckLetzt.gekappt) standSetzen(eckHinweis(eckLetzt)); }
+  }
   if (E.skizze && g.skizze && aktuell.skizze){
     const leg = la.gezoomt && areale ? areale.map(a => ({ name: a.name, farbe: a.farbe })) : legendenEintraege();
     const eb = aktuell.j.ebenen[0], zahl = new Map(); for (const z of aktuell.j.zeilen){ const a = z[eb] || z.gruppe; zahl.set(a, (zahl.get(a) || 0) + 1); }
