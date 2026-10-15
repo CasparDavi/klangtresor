@@ -2329,6 +2329,17 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #morgenknopf:hover{background:#e31c7930;border-color:#e31c79}
 #morgenknopf .ico{width:17px;height:17px;fill:currentColor}
 #morgenknopf.laeuft .ico{animation:morgendreh 1.4s linear infinite}
+/* Die Glocke links daneben: nur sichtbar, wenn GitHub eine neuere Programm-Fassung hat.
+   Farbe aus der Coverpalette (--akzent), nicht das feste Rosa des Morgenknopfs. */
+#fassungglocke{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;
+  border:1px solid color-mix(in srgb, var(--akzent) 55%, transparent);
+  background:color-mix(in srgb, var(--akzent) 16%, transparent);
+  color:var(--akzent);border-radius:50%;cursor:pointer;
+  transition:background .15s,border-color .15s}
+#fassungglocke:hover{background:color-mix(in srgb, var(--akzent) 30%, transparent);
+  border-color:var(--akzent)}
+#fassungglocke .ico{width:16px;height:16px;fill:currentColor}
+#fassungglocke[hidden]{display:none}
 /* gegen den Uhrzeigersinn: der Pfeilkopf des Symbols zeigt nach links (Caspar_D, 08.09.2026: dreht sich entgegen der Pfeilrichtung) */
 @keyframes morgendreh{to{transform:rotate(-360deg)}}
 
@@ -4056,6 +4067,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
     </div>
     <!-- Der Morgenknopf. Rot und immer da: Er ist das eine, was man
          täglich drückt, und soll nicht gesucht werden müssen. -->
+    <!-- Neue Programm-Fassung (GitHub), nicht der Bestand. Bleibt versteckt, bis
+         fassungErinnern() eine neuere Nummer sieht. Klick oeffnet das Ueber-Fenster. -->
+    <button id="fassungglocke" type="button" hidden onclick="fassungGlockeAuf()" title="Neue Fassung">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 22a2.2 2.2 0 0 0 2.2-2.2h-4.4A2.2 2.2 0 0 0 12 22zm7-6.2V11a7 7 0 1 0-14 0v4.8L3 18.2V20h18v-1.8l-2-2.4z"/>
+      </svg>
+    </button>
     <button id="morgenknopf" onclick="morgenAuf()" title="Bestand aktualisieren">
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/>
@@ -4611,8 +4629,10 @@ function eingefrorenAnwenden(){
     b.innerHTML = `<b>Archiv${wer} vom ${tag}</b> — eingefroren, nur Abspielen`
       + (n ? ` · ${n.toLocaleString('de-DE')} Titel` : '');
   b.hidden = false;
-  /* Der rote Knopf holt und schreibt - im Archiv gibt es nichts zu holen. */
+  /* Der rote Knopf holt und schreibt - im Archiv gibt es nichts zu holen.
+     Die Glocke fragt GitHub — der Stick greift nicht ins Netz. */
   const k = $('morgenknopf'); if (k) k.hidden = true;
+  const g = $('fassungglocke'); if (g) g.hidden = true;
 }
 
 async function start(){
@@ -4656,6 +4676,7 @@ async function start(){
   zeichnen();
   hashOeffnen();
   tonHinweis();
+  fassungErinnern();
 }
 
 /* TITEL DA, TON FEHLT - dann sagt die Seite, was zu tun ist.
@@ -29025,6 +29046,36 @@ function werZu(){ document.getElementById('wer').classList.remove('auf'); }
    api.github.com (User-Agent mit Projektadresse), die Seite selbst nicht.
    Einspielen tut das Skript auf dem Rechner — im Container waere ein
    Overlay beim naechsten Restart weg. */
+function fassungStandZeigen(d){
+  const s = document.getElementById('werfassungstand');
+  if (!s) return;
+  s.hidden = false;
+  const wo = d.container
+    ? ' Diese Seite läuft im Container: einspielen im Projektordner auf dem Rechner (aktualisieren-linux.sh oder das Geschwisterskript).'
+    : '';
+  if (d.eingefroren) {
+    s.textContent = 'Eingefrorene Kopie: sie greift nicht ins Netz.';
+  } else if (!d.github) {
+    s.textContent = 'GitHub hat nicht geantwortet' + (d.grund ? ' (' + d.grund + ')' : '') + '.' + wo;
+  } else if (d.neuer) {
+    const am = d.am ? new Date(d.am).toLocaleDateString('de-DE') : '';
+    s.textContent = 'Auf GitHub liegt ' + d.github + (am ? ' (' + am + ')' : '')
+      + '. Du hast ' + (d.hier || '—') + '. Einspielen im Ordner: aktualisieren-linux.sh, '
+      + 'aktualisieren-macos.command oder aktualisieren-windows.cmd. library/ bleibt.' + wo;
+    const okSeite = d.seite && /^https:\/\/github\.com\/CasparDavi\/klangtresor\//.test(d.seite);
+    if (okSeite) {
+      s.appendChild(document.createTextNode(' '));
+      const a = document.createElement('a');
+      a.href = d.seite; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Release';
+      s.appendChild(a);
+    }
+  } else if (d.lage === -1) {
+    /* deine ist neuer als das jüngste Release (ein Git-Stand vor dem nächsten Release) - nicht „dieselbe" */
+    s.textContent = 'Du hast ' + (d.hier || '—') + ', auf GitHub liegt noch ' + d.github + ' — deine Fassung ist neuer.' + wo;
+  } else {
+    s.textContent = 'Du hast ' + (d.hier || '—') + ', auf GitHub liegt ' + d.github + ' — das ist dieselbe Fassung.' + wo;
+  }
+}
 async function fassungPruefen(){
   const k = document.getElementById('werfassungknopf');
   const s = document.getElementById('werfassungstand');
@@ -29033,35 +29084,71 @@ async function fassungPruefen(){
   try {
     const r = await fetch('/api/fassung');
     const d = await r.json();
-    const wo = d.container
-      ? ' Diese Seite läuft im Container: einspielen im Projektordner auf dem Rechner (aktualisieren-linux.sh oder das Geschwisterskript).'
-      : '';
-    if (d.eingefroren) {
-      s.textContent = 'Eingefrorene Kopie: sie greift nicht ins Netz.';
-    } else if (!d.github) {
-      s.textContent = 'GitHub hat nicht geantwortet' + (d.grund ? ' (' + d.grund + ')' : '') + '.' + wo;
-    } else if (d.neuer) {
-      const am = d.am ? new Date(d.am).toLocaleDateString('de-DE') : '';
-      s.textContent = 'Auf GitHub liegt ' + d.github + (am ? ' (' + am + ')' : '')
-        + '. Du hast ' + (d.hier || '—') + '. Einspielen im Ordner: aktualisieren-linux.sh, '
-        + 'aktualisieren-macos.command oder aktualisieren-windows.cmd. library/ bleibt.' + wo;
-      const okSeite = d.seite && /^https:\/\/github\.com\/CasparDavi\/klangtresor\//.test(d.seite);
-      if (okSeite) {
-        s.appendChild(document.createTextNode(' '));
-        const a = document.createElement('a');
-        a.href = d.seite; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Release';
-        s.appendChild(a);
-      }
-    } else if (d.lage === -1) {
-      /* deine ist neuer als das jüngste Release (ein Git-Stand vor dem nächsten Release) - nicht „dieselbe" */
-      s.textContent = 'Du hast ' + (d.hier || '—') + ', auf GitHub liegt noch ' + d.github + ' — deine Fassung ist neuer.' + wo;
-    } else {
-      s.textContent = 'Du hast ' + (d.hier || '—') + ', auf GitHub liegt ' + d.github + ' — das ist dieselbe Fassung.' + wo;
-    }
+    fassungMerken(d);
+    fassungGlockeSetzen(d);
+    fassungStandZeigen(d);
   } catch (e) {
     s.textContent = 'Nachsehen ging nicht.';
   }
   k.disabled = false;
+}
+/* ERINNERUNG AN EINE NEUE PROGRAMM-FASSUNG. Der rote Knopf bleibt beim
+   Bestand. Die Glocke links daneben kommt nur, wenn GitHub eine hoehere
+   Nummer hat. Beim Oeffnen der Seite einmal den eigenen Server fragen
+   (der merkt sich GitHub eine halbe Stunde, die Seite selbst nicht).
+   Zwoelf Stunden galten zuerst auch fuer den naechsten Blick — eine
+   Fassung, die am selben Morgen kam, blieb dann bis zum naechsten Tag
+   unsichtbar, auch nach hartem Neuladen. Offen bleibende Seiten fragen
+   danach hoechstens zweimal am Tag nach. Der letzte Stand liegt im
+   Browser, damit die Glocke sofort wieder da ist. Der Stick
+   (eingefroren) fragt nicht. */
+const FASSUNG_PAUSE = 12 * 60 * 60 * 1000;
+const FASSUNG_MERK = 'klangtresor-fassung';
+function fassungLesen(){
+  try { return JSON.parse(localStorage.getItem(FASSUNG_MERK) || 'null'); } catch (e) { return null; }
+}
+function fassungMerken(d){
+  if (!d || d.eingefroren) return;
+  try { localStorage.setItem(FASSUNG_MERK, JSON.stringify({
+    wann: Date.now(), hier: d.hier || null, github: d.github || null,
+    neuer: !!d.neuer, am: d.am || null, seite: d.seite || null,
+    container: !!d.container, lage: d.lage == null ? null : d.lage, grund: d.grund || null,
+  })); } catch (e) {}
+}
+function fassungGlockeSetzen(d){
+  const g = document.getElementById('fassungglocke');
+  if (!g) return;
+  if (archivEingefroren() || !d || !d.neuer){ g.hidden = true; return; }
+  g.hidden = false;
+  g.title = 'Neue Fassung ' + (d.github || '') + ' — zum Einspielen';
+}
+function fassungGlockeAuf(){
+  werAuf();
+  const gemerkt = fassungLesen();
+  if (gemerkt && gemerkt.neuer) fassungStandZeigen(gemerkt);
+  else fassungPruefen();
+}
+let fassungWecker = 0;
+async function fassungErinnern(){
+  if (archivEingefroren()) return;
+  const gemerkt = fassungLesen();
+  /* Nach einem Einspielen stimmt die gemerkte Nummer nicht mehr — dann
+     sofort nachsehen, nicht zwoelf Stunden die alte Glocke stehen lassen. */
+  const veraltet = gemerkt && paketVersion && gemerkt.hier && gemerkt.hier !== paketVersion;
+  if (gemerkt && gemerkt.neuer && !veraltet) fassungGlockeSetzen(gemerkt);
+  try {
+    const r = await fetch('/api/fassung');
+    if (!r.ok){
+      clearTimeout(fassungWecker);
+      fassungWecker = setTimeout(fassungErinnern, 2 * 60 * 60 * 1000);
+      return;
+    }
+    const d = await r.json();
+    fassungMerken(d);
+    fassungGlockeSetzen(d);
+  } catch (e) {}
+  clearTimeout(fassungWecker);
+  fassungWecker = setTimeout(fassungErinnern, FASSUNG_PAUSE);
 }
 
 /* ---- Der Erklaerkasten zum Hirschfaktor ---------------------------
