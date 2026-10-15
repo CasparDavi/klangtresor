@@ -9421,7 +9421,9 @@ async function schaumVorrechnen(){
    Fassung in data-voll fuers PDF). Fuer den Schirm unveraendert, was vorher in malen() stand.
    druck: { titel: 'rauch'|'milch'|'kante'|'ohne', fugen: Faktor, wackeln: 0..1, schatten: 0..1, vignette: 0..1, kissen, deck, ton, massstab,
             verzeichnis: Nummern in die Zellen und die Liste zurueckgeben, mmJeEinheit: Millimeter je Schaum-Einheit,
-            nrSchwelle: kleinste Schrift einer Nummer in Seiteneinheiten (plakat.js nrSchwelle: 1,0 mm, Bildformate 12 Bildpunkte) } */
+            nrSchwelle: kleinste Schrift einer Nummer in Seiteneinheiten, halbfett (Schild), nrSchwelleTitel: dasselbe in normaler Schrift
+            (Nummer im Titel) - plakat.js nrSchwelle: im Druck DIN 1450 (x-Hoehe 1,16 mm, auf dem Mac 2,25 bzw. 2,29 mm Schrift), Bildformate
+            12 Bildpunkte } */
 /* WOHIN EIN COVER IN SEINER ZELLE RUECKT (Caspar_D, 06./07.10.2026: „wenn immer das Zentrum des Geschehens
    der Coverart in der Kachel zu sehen wäre", „damit keine Gesichter in den PDFs angeschnitten sind").
    bin/gesichter.js sucht die Gesichter je Standbild (GET /api/gesichter). Das Bild deckt seine Zelle wie bisher
@@ -9802,8 +9804,9 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     /* (Wiedervorlage §77) das Schild so tief wie moeglich, mittig auf der breitesten freien Strecke, ganz in der Zelle und nicht
        auf einer Wandfuge (render.js rechteckUnten); passt es nicht, kleiner bis 2,2 mm. Die Ziffern halbfett in der Druckgroesse
        gemessen (vorher 0,62 em je Ziffer geschaetzt). NUR WAS PASST (Caspar_D, 15.10.2026: „Zeige nur die Nummer, wenn sie
-       [hinein]passt oder lasse sie ganz weg"): unter 2,2 mm weiter kleiner (je 10 %) bis zur Schwelle (druck.nrSchwelle). Passt es
-       auf der Mitte der Strecken bei keiner Groesse, gleitet es auf jeder Hoehe die Strecken entlang (rechteckUnten, gleiten) - wieder
+       [hinein]passt oder lasse sie ganz weg"): unter 2,2 mm weiter kleiner (je 10 %) bis zur Schwelle (druck.nrSchwelle - nach DIN 1450
+       liegt sie meist darueber, auf dem Mac bei 2,25 mm; dann endet es dort). Passt es auf der Mitte der Strecken bei keiner Groesse,
+       gleitet es auf jeder Hoehe die Strecken entlang (rechteckUnten, gleiten) - wieder
        von gross nach klein; was vorher einen Platz fand, steht wie vorher. Passt es auch so nicht, null - die Zelle traegt keine Nummer,
        ihr Titel steht im Verzeichnis unter „Zu klein für eine Nummer". Bis dahin stand das Schild dann bei 2,2 mm in der Mitte der Zelle
        oder auf einer Sehne unten, auch ueber ihrem Rand (Klangschaum 70 × 100 hoch, Bleiglas: 50 von 330 Schildern, die Ziffern bei 47;
@@ -10038,9 +10041,9 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      (nummerSchild). Darum wird jede Zelle vorab beschriftet, in der Reihenfolge der Nummern und mit der Nummer, die sie bekaeme
      (beschriften; ein Titel mit Nummer ist laenger): die Nummern laufen lueckenlos 1 … N, die uebrigen Titel stehen ohne Nummer im
      Abschnitt „Zu klein für eine Nummer" (zuKlein, plakat.js verzeichnisSetzen). Steht die Nummer im Titel unter der Schwelle (die
-     Titel sind mindestens 7 Schaum-Einheiten gross, auf A3 1,8 mm - darunter liegen sie auf kleinen Formaten und bei den
-     Bildformaten) oder nicht ganz in der Zelle, steht der Titel ohne sie und die Nummer auf dem Schild darueber, sofern es dort Platz
-     hat. Im ersten Bau dieser Regel wurde das Schild dort gar nicht erst versucht: in der Gegenpruefung kamen so Zellen in „Zu klein", in die
+     Titel sind mindestens 7 Schaum-Einheiten gross, auf A3 1,8 mm - unter der Schwelle nach DIN 1450, ebenso auf kleinen Formaten und
+     bei den Bildformaten; gemessen in ihrer Schrift, normal: druck.nrSchwelleTitel) oder nicht ganz in der Zelle, steht der Titel ohne
+     sie und die Nummer auf dem Schild darueber, sofern es dort Platz hat. Im ersten Bau dieser Regel wurde das Schild dort gar nicht erst versucht: in der Gegenpruefung kamen so Zellen in „Zu klein", in die
      es passte (Klangschaum Bild 1:1, Galerie mit Verzeichnis: 64 von 70, die groesste 232 × 227 Bildpunkte). „Zu klein" heisst
      jetzt: die Nummer passt weder in den Titel noch als Schild in die Zelle. */
   /* Lage einer Zelle aus ihrem gezeichneten Umriss (d), und was in ihr steht: Titel im Glasfeld (kopfUnten) oder an der Kante
@@ -10056,7 +10059,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     const anKante = druck && druck.titel === 'kante';
     const titel = (n) => { const name = name0 && n ? n + '\u2002' + name0 : name0, t = n ? String(n) : '';
       return { plan: !anKante && name && h >= 34 && w >= 34 ? kopfUnten(pk, x, y, w, h, name, i, t) : null, kante: anKante && name ? kantenTitel(pk, x, y, w, h, name, i, t) : null }; };
-    const tf = druck && druck.wackeln > 0 ? schaumWackeln(ids[i], x, y, w, h, druck.wackeln) : '', ab = ((druck && druck.nrSchwelle) || 1) / mm - 1e-9;
+    const tf = druck && druck.wackeln > 0 ? schaumWackeln(ids[i], x, y, w, h, druck.wackeln) : '', ab = ((druck && (druck.nrSchwelleTitel || druck.nrSchwelle)) || 1) / mm - 1e-9;
     let { plan, kante } = titel(nr); const t = plan || kante;
     if (!nr) return { plan, kante, tf, schild: null, mitNr: false };
     if (t && t.fsSatz >= ab && t.nrPasst) return { plan, kante, tf, schild: null, mitNr: true };

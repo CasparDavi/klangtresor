@@ -693,22 +693,17 @@ function bilderSperren(g, W, H){
 }
 /* DIE NUMMER AUF DEM COVER (Caspar_D, 11.10.2026: „KEINE Bildunterschriften … die Nummer klein auf jedem Cover in Kontrastfarbe
    (schwarz/weiß), in der Ecke, wo sie am besten lesbar ist"; 15.10.2026: „mach einen Rauchglas Badge unter die Nummer"). Die Ziffern
-   stehen hell auf einem Schild aus Rauchglas, wie die Titel in den Zellen des Schaum-Plakats (Vorlage-Wert titel 'rauch'): darunter
-   das Cover weichgezeichnet (Gauß, Ränder fortgesetzt, wie SCHAUM_GLAS im Haus), darüber Schwarz nur so dicht, wie die helle Schrift es
-   braucht (schaumRauch im Haus: Leuchtdichte darunter höchstens 0,15, die Abdunklung mal SCHAUM_RAUCH_STAERKE, höchstens 0,85). Die Form
-   ist das Nummernschild der Zellen (nummerSchild im Haus): Ziffern plus 0,7 Geviert breit, 1,3 Geviert hoch, Ecken zu 0,3 der Höhe
-   gerundet, Schrift #f4f4f2 halbfett. Zwei Abweichungen mit Grund: Das Glas bemisst die hellsten 10 % unter dem Schild statt der
-   hellsten 20 % - das Schild ist klein, ein heller Fleck darin genügt; mit 20 % blieben in der Simulation an den 330 Covern (4 mm kurze
-   Coverseite, Kontrast gegen die hellsten 10 % des ungeglätteten Messbilds) 49 Nummern unter 4,5 : 1. Dass mit 10 % keine darunter
-   bleibt, folgt schon aus der Formel (rauchglas gibt bei jeder Leuchtdichte mindestens 4,77 : 1, am knappsten bei 0,15 ohne Glas) -
-   data-k ist also keine Messung. Gemessen am gemalten Schild (A3 hoch, Galerie, Vorschau, Ziffern ausgeblendet, je Schild die inneren
-   60 %, hellste 10 %): kleinster Kontrast 5,6, Median 14,8, keiner unter 4,5 : 1. Und weichgezeichnet wird mit einem Viertel
-   Geviert der Ziffern statt mit 3 Punkten: die Wand des Plakats hat 1400 Punkte an der langen Seite, 3 Punkte wären auf 70 × 100 dreimal so weich wie auf A3.
+   stehen auf einem Schild aus Rauchglas, wie die Titel in den Zellen des Schaum-Plakats (Vorlage-Wert titel 'rauch'): darunter das
+   Cover weichgezeichnet (Gauß wie SCHAUM_GLAS im Haus, mit einem Viertel Geviert der Ziffern statt mit 3 Punkten -
+   die Wand des Plakats hat 1400 Punkte an der langen Seite, 3 Punkte wären auf 70 × 100 dreimal so weich wie auf A3), darüber Schwarz
+   nur so dicht, wie die Ziffer es braucht. Die Form ist das Nummernschild der Zellen (nummerSchild im Haus): Ziffern plus 0,7 Geviert
+   breit, 1,3 Geviert hoch, Ecken zu 0,3 der Höhe gerundet, Schrift halbfett. Welche Farbe die Ziffern haben und wie dunkel das Glas
+   ist, sagt nummerFarbe. Bis 15.10.2026 standen sie #f4f4f2 auf Glas nach schaumRauch (Leuchtdichte darunter höchstens 0,15, die
+   Abdunklung mal SCHAUM_RAUCH_STAERKE, höchstens 0,85; gegen die hellsten 10 % unter dem Schild statt 20 %) - gemessen am gemalten
+   Grund unter den Ziffern (A3 hoch, Galerie, hellste 10 %): 5,7 bis 19 : 1, Median 14,7, 317 von 330 über 7 : 1.
    Gemessen wird im Messbild: das Original, aus dem auch das Druckbild entsteht, in Stufen (verkleinert) auf 192 Punkte gebracht - die
    Druckbilder (300 dpi) zu messen hieße, jedes Cover bei jeder Vorschau neu zu rechnen; je Bildpunkt die relative Leuchtdichte als
-   Wurzel in einem Byte (dunkle Töne fein aufgelöst); einmal je Sitzung und Adresse. Der Kontrast gilt gegen die hellsten 10 % ohne
-   Weichzeichnen, ist also eher zu streng. Unter den freien Ecken gewinnt die mit dem höchsten Kontrast der hellen Ziffer durch das
-   Glas (bei Gleichstand die erste von ur, ul, or, ol). */
+   Wurzel in einem Byte (dunkle Töne fein aufgelöst); einmal je Sitzung und Adresse. */
 const MESS_PX = 192, messVorrat = new Map();
 const LIN = Array.from({ length: 256 }, (_, i) => { const c = i / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
 function messbild(u){
@@ -732,81 +727,181 @@ function feldHell(m, x0, x1, y0, y1){
   let s = 0; for (let v = 0; v < 256; v++){ s += anz[v]; if (s >= 0.9 * n) return (v / 255) ** 2; }
   return 1;
 }
-/* Rauchglas über der Leuchtdichte y: Deckkraft a des Schwarz (schaumRauch) und Kontrast der hellen Ziffer. Abdunkeln um den Faktor
-   1 - a senkt die Leuchtdichte etwa um (1 - a) hoch 2,2 (wie dort gerechnet). */
-const NR_ZIFFER = '#f4f4f2', NR_ZIFFER_L = leuchte(NR_ZIFFER);
-function rauchglas(y){
-  const s = y <= 0.15 ? 1 : Math.pow(0.15 / y, 1 / 2.2), a = Math.min(0.85, SCHAUM_RAUCH_STAERKE * (1 - s));
-  return { a, k: (NR_ZIFFER_L + 0.05) / (y * Math.pow(1 - a, 2.2) + 0.05) };
+/* Das Maß, nach dem die Lage bei Gleichstand gewählt wird (nummerPlatz): der Kontrast einer hellen Ziffer #f4f4f2 über dem Feld mit der
+   Leuchtdichte y, durch Rauchglas nach schaumRauch (Deckkraft a, Abdunkeln um 1 - a senkt die Leuchtdichte etwa um (1 - a) hoch 2,2).
+   Bis 15.10.2026 waren das Farbe und Glas jeder Nummer; seit nummerFarbe ist es nur noch das Maß der Lage - so stehen die Nummern auf
+   Covern ohne Schrift, wo sie standen (bei gleicher Größe nachgemessen: A3 hoch Galerie und Papier, 70 × 100 quer, keine anders). */
+const lageKontrast = (y) => { const s = y <= 0.15 ? 1 : Math.pow(0.15 / y, 1 / 2.2), a = Math.min(0.85, SCHAUM_RAUCH_STAERKE * (1 - s));
+  return (leuchte('#f4f4f2') + 0.05) / (y * Math.pow(1 - a, 2.2) + 0.05); };
+/* DIE FARBE DER NUMMER (Caspar_D, 15.10.2026: „manchmal erscheinen die Nummern zu dominant, du machst einen minimal contrast aber
+   deckelst du auch bei einem maximalcontrast – wie wärs, wenn wir die coverakzentfarbe für die Nummern nehmen, wenn gedeckelt werden
+   muß, die ist ja schon berechnet"). Die Ziffern stehen in der Akzentfarbe ihres Covers (farben.akzent - dieselbe, mit der uiFaerben die
+   Oberfläche färbt, wenn der Titel läuft); ein Cover ohne Palette (dort färbt uiFaerben grau) nimmt die Farbe seines Areals, die seines
+   Rahmens ungedämpft - Grau heißt unsicher. Ihr Kontrast gegen den Grund unter den Ziffern (grundUnter: Cover weichgezeichnet wie das
+   Glas, hellste 10 %, mal Glas) liegt zwischen 4,5 : 1 und NR_KONTRAST_MAX: zu schwach → heller im selben Farbton, zu stark → dunkler.
+   Farbton heißt OKLCH: die Helligkeit L wandert, der Ton H bleibt, die Buntheit C auch, soweit der Bildschirm sie in dieser Helligkeit
+   darstellen kann (sonst weniger, wie ausOklch in bin/farben.js - okZuHex schnitte die Kanäle ab, das verschöbe den Ton). Aufgehellt
+   wird höchstens bis L 0,92, so weit hellt auch bin/farben.js einen Akzent gegen seinen Grund auf. Reicht das nicht, kommt das Glas dazu,
+   nur so dunkel, wie die Ziffer bei L 0,92 es für 4,5 : 1 braucht (Caspar_D: „glasempfehlung a – machen wir so"; kein Mindestschild -
+   ohne Bedarf kein Schwarz, das Schild ist dann nur weichgezeichnet). Weiß braucht es nie: bei L 0,92 hat jede Farbe mindestens die
+   Leuchtdichte 0,757 (nachgerechnet über alle Töne und Buntheiten bis 0,4), also reicht auf dem hellsten Grund ein Glas von 0,61. Die
+   Ziffern stehen damit immer heller als ihr Grund, wie bisher. NR_KONTRAST_MAX 7 : 1 ist der Startwert - Caspar_D beurteilt am Bild.
+   Gezielt wird auf 4,5 mal NR_SICHER und 7 durch NR_SICHER, weil die Rechnung im Messbild den gemalten Grund nicht genau trifft
+   (Bildschirmfoto mit den Originalen wie im PDF, A3 hoch, Galerie, 262 Nummern): gemalt ist der Kontrast im Median 1 % höher als
+   gerechnet, bei 95 % der Nummern höchstens 1,5 % niedriger, bei 90 % höchstens 5 % höher. Genau auf 4,5 und 7 gezielt lagen gemalt 34
+   knapp unter 4,5 und 14 knapp über 7, mit NR_SICHER 8 und 5. */
+const NR_KONTRAST_MIN = 4.5, NR_KONTRAST_MAX = 7, NR_HELL_MAX = 0.92, NR_SICHER = 1.02;
+/* OKLCH in linearem RGB (die Umkehrung von okFarbe im Haus); imTon nimmt die Buntheit in Schritten von 0,004 zurück, bis die Farbe darstellbar ist */
+function okLinear(L, C, H){
+  const h = H * Math.PI / 180, a = C * Math.cos(h), b = C * Math.sin(h);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+  return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s];
+}
+function imTon(L, C, H){
+  for (let c = C; ; c = Math.max(0, c - 0.004)){ const v = okLinear(L, c, H);
+    if (c === 0 || v.every(x => x >= -1e-6 && x <= 1 + 1e-6))
+      return '#' + v.map(x => { x = Math.max(0, Math.min(1, x)); return Math.round(255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055)).toString(16).padStart(2, '0'); }).join(''); }
+}
+/* Farbe der Ziffern und Deckkraft a des Glases über dem Grund mit der Leuchtdichte y; k ist der Kontrast, mit dem sie gesetzt wird */
+function nummerFarbe(basis, y){
+  const o = okFarbe(basis), bei = (L) => imTon(L, o.C, o.H), K = (f, a = 0) => (leuchte(f) + 0.05) / (y * Math.pow(1 - a, 2.2) + 0.05);
+  const MIN = NR_KONTRAST_MIN * NR_SICHER, MAX = NR_KONTRAST_MAX / NR_SICHER, k0 = K(basis);
+  if (k0 >= MIN && k0 <= MAX) return { farbe: basis, a: 0, k: k0 };
+  if (k0 > MAX){ let lo = 0, hi = o.L;                                   /* zu stark: die hellste Farbe des Tons, die MAX hält */
+    for (let i = 0; i < 24; i++){ const L = (lo + hi) / 2; if (K(bei(L)) <= MAX) lo = L; else hi = L; }
+    return { farbe: bei(lo), a: 0, k: K(bei(lo)) }; }
+  const L1 = Math.max(o.L, NR_HELL_MAX), hell = bei(L1);
+  if (K(hell) >= MIN){ let lo = o.L, hi = L1;                              /* zu schwach: die dunkelste Farbe des Tons, die MIN erreicht */
+    for (let i = 0; i < 24; i++){ const L = (lo + hi) / 2; if (K(bei(L)) >= MIN) hi = L; else lo = L; }
+    return { farbe: bei(hi), a: 0, k: K(bei(hi)) }; }
+  /* Glas: der Grund muss auf (Leuchtdichte der Ziffer + 0,05) / MIN - 0,05; a aufgerundet, gesetzt wird es auf drei Stellen */
+  const a = Math.ceil((1 - Math.pow(((leuchte(hell) + 0.05) / MIN - 0.05) / y, 1 / 2.2)) * 1000) / 1000;
+  return { farbe: hell, a, k: K(hell, a) };
+}
+/* Leuchtdichte des Grunds unter den Ziffern, wie Chrome das Schild malt: das Cover weichgezeichnet (Gauß mit sx, sy in Anteilen; drei
+   Kastenfilter), dabei nimmt der Filter das Cover rund um das Schild mit - er schneidet erst das Ergebnis aufs Schild zu, edgeMode ändert
+   daran nichts (Probe 15.10.2026) -, und jenseits der Kante des Covers ist nichts: dort wird das Glas durchsichtig, und darunter liegt das
+   scharfe Cover. Gerechnet in den Werten des Messbilds (Wurzel der Leuchtdichte, nahe an sRGB, wie das Glas mit
+   color-interpolation-filters="sRGB"); davon die hellsten 10 % im Feld T der Ziffern (ihre Breite, Grundlinie bis Ziffernhöhe). Wie gut
+   das trifft, steht bei NR_SICHER; nur das Schild mit fortgesetzten Rändern zu rechnen traf kaum schlechter. */
+function grundUnter(m, R, T, sx, sy){
+  const radius = (s) => Math.max(0, Math.round((Math.sqrt(4 * s * s + 1) - 1) / 2));   /* drei Kästen der Breite 2r + 1 ≈ Gauß mit s */
+  const rx = radius(sx * m.w), ry = radius(sy * m.h);
+  /* das Schild samt 3 r ringsum (so weit reichen die drei Kästen), am Cover abgeschnitten */
+  const X0 = Math.max(0, Math.floor(R[0] * m.w) - 3 * rx), X1 = Math.min(m.w, Math.max(X0 + 1, Math.ceil(R[2] * m.w) + 3 * rx));
+  const Y0 = Math.max(0, Math.floor(R[1] * m.h) - 3 * ry), Y1 = Math.min(m.h, Math.max(Y0 + 1, Math.ceil(R[3] * m.h) + 3 * ry));
+  const w = X1 - X0, h = Y1 - Y0, v = new Float32Array(w * h), d = new Float32Array(w * h).fill(1), t = new Float32Array(Math.max(w, h));
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) v[y * w + x] = m.q[(Y0 + y) * m.w + X0 + x];
+  /* ein Kasten über n Werte im Abstand schritt, für zeilen Zeilen ab z · zs; außerhalb zählt 0 (jenseits des Covers durchsichtig) */
+  const kasten = (a, r, n, schritt, zeilen, zs) => { if (!r) return; for (let z = 0; z < zeilen; z++){ const o = z * zs;
+    for (let i = 0; i < n; i++){ let s = 0; for (let j = Math.max(0, i - r); j <= Math.min(n - 1, i + r); j++) s += a[o + j * schritt]; t[i] = s / (2 * r + 1); }
+    for (let i = 0; i < n; i++) a[o + i * schritt] = t[i]; } };
+  const glas = v.slice();
+  for (const a of [glas, d]) for (let p = 0; p < 3; p++){ kasten(a, rx, w, 1, h, w); kasten(a, ry, h, w, w, 1); }
+  const tx0 = Math.max(0, Math.floor(T[0] * m.w) - X0), tx1 = Math.min(w, Math.max(tx0 + 1, Math.ceil(T[2] * m.w) - X0));
+  const ty0 = Math.max(0, Math.floor(T[1] * m.h) - Y0), ty1 = Math.min(h, Math.max(ty0 + 1, Math.ceil(T[3] * m.h) - Y0));
+  const werte = []; for (let y = ty0; y < ty1; y++) for (let x = tx0; x < tx1; x++){ const i = y * w + x; werte.push(glas[i] + (1 - d[i]) * v[i]); }
+  werte.sort((p, q) => p - q);
+  return (werte[Math.min(werte.length - 1, Math.floor(0.9 * werte.length))] / 255) ** 2;
 }
 /* Höhe der Ziffern in em (Oberkante über der Grundlinie), aus der Schrift gemessen */
 let ziffernHoch = null;
 const ziffernHoehe = () => ziffernHoch || (ziffernHoch = (() => { const c = document.createElement('canvas').getContext('2d');
   c.font = '600 100px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'; const a = c.measureText('0123456789').actualBoundingBoxAscent / 100;
   return a > 0.4 && a < 1 ? a : 0.72; })());
-/* WO DIE NUMMER STEHT (Caspar_D, 15.10.2026: Die Nummer meidet die Coverschrift; „Gesichter sollten die Nummern auch meiden"). Eine
-   Ecke ist frei, wenn ihr Schild samt einem Viertel Geviert Luft keine Schriftbox und kein Gesicht aus dem Gesichterbuch berührt
-   (schaumFokus: alle Boxen, ohne die 35-%-Regel und ab der Schwelle des Erkenners). Das Schild hält ein Viertel Geviert Abstand
-   von den Kanten des Covers. Größe der Ziffern 1,5 bis 3,5 mm (8,5 % der kurzen Coverseite; 1,5 mm ist die kleinste Schrift des
-   Verzeichnisses ab 333 mm kurzer Seite - auf A3 steht es bei 1,34 mm, verzeichnisMass), so klein, dass das Schild samt Luft ins Cover
-   passt (nummerStart), nie kleiner als die Schwelle (nrSchwelle: 1,0 mm, Bildformate 12 Punkte). Ist keine Ecke frei, wird die Nummer
-   schrittweise kleiner (je 10 %) bis zur Schwelle, bis eine frei ist. Ist auch dann keine frei, gleitet sie bei der Schwelle an der Kante
-   entlang in die nächste freie Lücke (kürzester Weg von einer Ecke; was bis ein Viertel Geviert weiter liegt, gilt als gleich nah, dort
-   entscheidet der Kontrast); gibt es keine, steht sie an der Kante dort, wo das Schild Schrift und Gesichter am wenigsten überdeckt.
-   Jede Stufe legt das Schild samt Luft ganz ins Cover. NUR WAS PASST (Caspar_D, 15.10.2026: „warum zeigen wir was, was eigentlich nicht
-   geht … Zeige nur die Nummer, wenn sie [hinein]passt oder lasse sie ganz weg und schreibe sie ins Werkverzeichnis als extra Abschnitt
-   …, deren Zellen/Rechtecke zu klein für eine Darstellung sind"): passt sie bei der Schwelle nicht, bekommt das Cover keine Nummer und
+/* MINDESTGRÖSSE NACH DIN 1450 (Caspar_D, 15.10.2026: „und 1 mm kleine Nummern kann keiner lesen, 2.5 mm ist das kleinste" - „wir nehmen
+   die offizielle Standardgrenze für Gedrucktes"). DIN 1450:2013 (Schriften - Leserlichkeit), Textart Konsultationstext (Nummern,
+   Verzeichnis), Leseabstand 40 cm, gute Beleuchtung, Visus 0,7: die x-Höhe sieht man unter mindestens 10′, x = 2 · 400 mm · tan(5′) =
+   1,16 mm (DIN_X; Rechenweg wie leserlich.info/schriftgroessenrechner). DIN misst die x-Höhe, nicht die Schriftgröße: die Schwelle der
+   Schriftgröße ist DIN_X durch das x-Höhen-Verhältnis der Schrift, wie sie gesetzt wird (xHoehe: „x" bei 100 px, actualBoundingBoxAscent,
+   gemessen wie messen() misst) - gleiches Maß beidseits. leserlich.info rechnet mit 0,47 und kommt auf 7 pt; system-ui misst auf dem Mac
+   0,508 (normal) und 0,518 (halbfett), die Schwelle liegt dort bei 2,29 mm = 6,5 pt bzw. 2,25 mm = 6,4 pt. Liefert die Leinwand nichts
+   Brauchbares, gilt 0,47. Ersetzt die 1,0 mm, die bis 15.10.2026 galten. */
+const DIN_X = 2 * 400 * Math.tan(5 / 60 * Math.PI / 180), xVorrat = new Map();
+const xHoehe = (gewicht) => { if (!xVorrat.has(gewicht)){ const c = document.createElement('canvas').getContext('2d');
+  c.font = `${gewicht} 100px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`; const a = c.measureText('x').actualBoundingBoxAscent / 100;
+  xVorrat.set(gewicht, a > 0.3 && a < 0.8 ? a : 0.47); } return xVorrat.get(gewicht); };
+/* WO DIE NUMMER STEHT (Caspar_D, 15.10.2026: Die Nummer meidet die Coverschrift; „Gesichter sollten die Nummern auch meiden"; „kannst du
+   die nummer noch so weit wie möglich weg vom Text positionieren bitte"). Eine Lage ist frei, wenn ihr Schild samt einem Viertel Geviert
+   Luft keine Schriftbox und kein Gesicht aus dem Gesichterbuch berührt (schaumFokus: alle Boxen, ohne die 35-%-Regel und ab der Schwelle
+   des Erkenners); das Schild hält ein Viertel Geviert Abstand von den Kanten des Covers. Größe der Ziffern von der Schwelle (nrSchwelle)
+   bis 3,5 mm, sonst 8,5 % der kurzen Coverseite, höchstens so groß, dass das Schild samt Luft ins Cover passt (nummerStart). Je Größe,
+   von der größten an in Schritten von 10 % bis zur Schwelle, zuerst die vier Ecken, dann die Kanten (je Kante 41 Lagen, gleich
+   verteilt); die erste Größe mit einer freien Lage gilt - eine Lage an der Kante in voller Größe geht also vor einer kleineren Nummer in
+   der Ecke. Unter den freien Lagen gewinnt die mit dem größten Abstand zur Coverschrift (Rand des Schilds bis zum Rand der nächsten
+   Schriftbox, in mm); was bis ein Viertel Geviert näher liegt, gilt als gleich weit, dort entscheidet der Kontrast (lageKontrast; dann
+   die erste von ur, ul, or, ol bzw. entlang der Kante). Nach der Lesbarkeit wählt die Lage nicht mehr, die Farbe passt sich an
+   (nummerFarbe). Ein Cover ohne erkannte Schrift wählt wie bisher: in den Ecken nach dem Kontrast, an der Kante die Lage mit dem
+   kürzesten Weg von einer Ecke (bis ein Viertel Geviert weiter gleich nah, dann der Kontrast). Ist bei keiner Größe eine Lage frei, steht
+   sie bei der Schwelle an der Kante dort, wo das Schild Schrift und Gesichter am wenigsten überdeckt ('min'). Bis 15.10.2026 entschied
+   in den Ecken immer der Kontrast, und an die Kante kam die Nummer erst, wenn auch bei der Schwelle keine Ecke frei war; bei gleicher
+   Größe (beide mit der Schwelle nach DIN 1450) standen die Nummern auf Covern mit Schrift im Mittel 4,89 mm von ihr, jetzt 5,73 mm (A3
+   hoch, Galerie, 237 Nummern, eine davon näher als vorher; 70 × 100 quer 15,41 und 19,06 mm, keine näher). Die Untergrenze 1,5 mm der
+   Startgröße (die kleinste Schrift des Verzeichnisses ab 333 mm kurzer Seite) ist gelöscht: die Schwelle liegt darüber (im Druck auf
+   dem Mac 2,25 mm, unter 1,5 mm erst bei einer x-Höhe über 0,77 der Schriftgröße; Bildformate 2,4 Seiteneinheiten). Jede Stufe legt
+   das Schild samt Luft ganz ins Cover. NUR WAS PASST (Caspar_D, 15.10.2026: „warum zeigen wir was, was eigentlich nicht geht … Zeige
+   nur die Nummer, wenn sie [hinein]passt oder lasse sie ganz weg und schreibe sie ins Werkverzeichnis als extra Abschnitt …, deren Zellen/Rechtecke zu klein für eine Darstellung sind"): passt sie bei der Schwelle nicht, bekommt das Cover keine Nummer und
    kein Schild, sein Titel steht im Verzeichnis unter „Zu klein für eine Nummer" (bilderEbene). Bis dahin hielt eine Mindestgröße von
    0,8 mm die Nummer auch auf zu kleinen Covern, das Schild ragte dann über den Rand (330 Titel: frei 10 × 10 cm 132 Schilder, die
    Ziffern bei 87; 10 × 15 cm 55; Bild 1:1 41). Die Bildformate sind fürs Lesen am Bildschirm, dort gilt die Lesegrenze des Hauses
    (Hausregel 14: 12 px; das PNG ist 1080 Punkte breit, eine Seiteneinheit sind 1080 / Breite Punkte - bildSichern); bis dahin 1,0
    Seiteneinheiten, 5 Punkte bei 1:1 und 4 bei 4:5 quer. Ohne Eintrag im Buch weicht nichts aus (Hinweis im Studio). An jeder Nummer:
-   data-ecke (die Ecke, 'kante' oder 'min'), data-stufe (ecke, kleiner, kante, min), data-feld (das Schild in Anteilen des Covers:
-   x0,y0,x1,y1), data-k (Kontrast), data-a (Deckkraft). Bis 15.10.2026 hatte jede Ecke einen zweiten, tieferen Abstand (anderthalb
-   Geviert), wenn keine 4,5 : 1 erreichte - die Ziffern standen sonst auf dem eigenen Rahmen mancher Cover (Holzschnitte). Das Glas
-   deckt diese Linie ab; der zweite Abstand ist gelöscht. */
+   data-ecke (die Ecke, 'kante' oder 'min'), data-stufe (ecke: Ecke in voller Größe, kleiner: Ecke kleiner, kante, min), data-feld (das
+   Schild in Anteilen des Covers: x0,y0,x1,y1), data-k (Kontrast, wie gesetzt), data-a (Deckkraft des Glases), data-ton (akzent oder
+   areal: woher die Farbe kommt). Bis 15.10.2026 hatte jede Ecke einen zweiten, tieferen Abstand (anderthalb Geviert), wenn keine
+   4,5 : 1 erreichte - die Ziffern standen sonst auf dem eigenen Rahmen mancher Cover (Holzschnitte). Das Glas deckt diese Linie ab;
+   der zweite Abstand ist gelöscht. */
 const schneidet = (a, b, mx = 0, my = 0) => Math.min(a[2] + mx, b[2]) > Math.max(a[0] - mx, b[0]) && Math.min(a[3] + my, b[3]) > Math.max(a[1] - my, b[1]);
 const ueberdeckt = (a, b) => Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])) * Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
-/* Schwelle einer Nummer in Seiteneinheiten (mm): 1,0 mm im Druck, 12 Punkte des PNG bei den Bildformaten (Hausregel 14) */
-const nrSchwelle = (g) => (FORMATE.find(x => x.id === E.format) || {}).bild ? 12 * g.w / 1080 : 1;
+/* Schwelle einer Nummer in Seiteneinheiten (mm): im Druck DIN 1450 für die Schrift im Gewicht gewicht (halbfett wie die Nummern auf
+   Covern und Schildern; die Titel der Zellen und das Verzeichnis stehen normal), bei den Bildformaten 12 Punkte des PNG (Hausregel 14) */
+const nrSchwelle = (g, gewicht = 600) => (FORMATE.find(x => x.id === E.format) || {}).bild ? 12 * g.w / 1080 : DIN_X / xHoehe(gewicht);
 /* Startgröße der Nummer t auf einem Cover bw × bh (mm), höchstens so groß, dass das Schild samt einem Viertel Geviert Luft hineinpasst
    (Ziffern plus 1,2 Geviert breit, 1,8 Geviert hoch); null, wenn es selbst bei der Schwelle nicht passt */
 function nummerStart(t, bw, bh, schwelle){
   const em = messen('0'.repeat(t.length), 600, 2);   /* Nullen bei 2 px: eine Obergrenze für jede Nummer (B1, 15.10.2026) */
-  const fs0 = Math.min(Math.max(schwelle, Math.min(3.5, Math.max(1.5, 0.085 * Math.min(bw, bh)))), bw / (em + 1.2), bh / 1.8);
+  const fs0 = Math.min(Math.max(schwelle, Math.min(3.5, 0.085 * Math.min(bw, bh))), bw / (em + 1.2), bh / 1.8);
   return fs0 >= schwelle - 1e-9 ? fs0 : null;
 }
-function nummerPlatz(t, bw, bh, k, m, sperre, schwelle){
-  const fs0 = nummerStart(t, bw, bh, schwelle);
+/* Lage, Größe, Farbe und Glas der Nummer t auf einem Cover bw × bh (mm); k: mm je Wandpunkt, m: Messbild, schrift und gesichter: Boxen
+   in Anteilen des Covers, basis: die Farbe vor dem Anpassen */
+function nummerPlatz(t, bw, bh, k, m, schrift, gesichter, schwelle, basis){
+  const fs0 = nummerStart(t, bw, bh, schwelle), sperre = schrift.concat(gesichter), hoch = ziffernHoehe();
   const groessen = []; for (let f = fs0; f > schwelle + 1e-9; f *= 0.9) groessen.push(f); groessen.push(Math.min(fs0, schwelle));
   /* das Schild bei Schriftgröße f, in Anteilen des Covers; die Ziffern bei f/k gemessen wie gesetzt (Wandpunkte) */
   const schild = (f) => { const tw = messen('0'.repeat(t.length), 600, f / k) * f, luft = 0.25 * f;
     return { f, fw: (tw + 0.7 * f) / bw, fh: 1.3 * f / bh, gx: luft / bw, gy: luft / bh }; };
   const frei = (R, S) => !sperre.some(b => schneidet(R, b, S.gx, S.gy));
-  const glas = (R) => rauchglas(m ? feldHell(m, R[0], R[2], R[1], R[3]) : leuchte(grund()));   /* Bild nicht zu laden: es fehlt auch im Plakat */
-  for (const [i, f] of groessen.entries()){ const S = schild(f); let beste = null;
-    for (const e of ECKEN){
-      const x0 = e[1] === 'r' ? 1 - S.gx - S.fw : S.gx, y0 = e[0] === 'u' ? 1 - S.gy - S.fh : S.gy, R = [x0, y0, x0 + S.fw, y0 + S.fh];
-      if (!frei(R, S)) continue;
-      const v = glas(R); if (!beste || v.k > beste.k) beste = { ...v, R, f, ecke: e, stufe: i ? 'kleiner' : 'ecke' };
+  const kontrast = (R) => lageKontrast(m ? feldHell(m, R[0], R[2], R[1], R[3]) : leuchte(grund()));   /* Bild nicht zu laden: es fehlt auch im Plakat */
+  const abstand = (R) => Math.min(...schrift.map(b => Math.hypot(Math.max(0, b[0] - R[2], R[0] - b[2]) * bw, Math.max(0, b[1] - R[3], R[1] - b[3]) * bh)));
+  /* die beste der Lagen (R; d: Weg von der Ecke): mit Schrift die weiteste von ihr, ohne die nächste an einer Ecke - bis ein Viertel
+     Geviert schlechter gilt als gleich, dort der Kontrast */
+  const waehle = (lagen, f) => { const wert = lagen.map(schrift.length ? (l) => abstand(l.R) : (l) => -l.d), gut = Math.max(...wert) - 0.25 * f - 1e-9;
+    let beste = null, bk = -Infinity; lagen.forEach((l, i) => { if (wert[i] < gut) return; const kk = kontrast(l.R); if (kk > bk){ bk = kk; beste = l; } }); return beste; };
+  /* die Lagen entlang der vier Kanten (Ecken eingeschlossen) */
+  const kanten = (S) => { const N = 40, lagen = [];
+    for (let j = 0; j <= N; j++){
+      const x0 = S.gx + (1 - S.fw - 2 * S.gx) * j / N, y0 = S.gy + (1 - S.fh - 2 * S.gy) * j / N;
+      const dx = Math.min(x0 - S.gx, 1 - S.gx - S.fw - x0) * bw, dy = Math.min(y0 - S.gy, 1 - S.gy - S.fh - y0) * bh;   /* Weg von der Ecke in mm */
+      for (const y of [S.gy, 1 - S.gy - S.fh]) lagen.push({ R: [x0, y, x0 + S.fw, y + S.fh], d: dx });
+      for (const x of [S.gx, 1 - S.gx - S.fw]) lagen.push({ R: [x, y0, x + S.fw, y0 + S.fh], d: dy });
     }
-    if (beste) return beste;
+    return lagen; };
+  /* Farbe und Glas zuletzt, über dem Grund unter den Ziffern (ihre Breite, Grundlinie bis Ziffernhöhe, mittig im Schild) */
+  const fertig = (R, f, ecke, stufe) => { const tw = messen(t, 600, f / k) * f / bw, th = hoch * f / bh, cx = (R[0] + R[2]) / 2, cy = (R[1] + R[3]) / 2;
+    const y = m ? grundUnter(m, R, [cx - tw / 2, cy - th / 2, cx + tw / 2, cy + th / 2], 0.25 * f / bw, 0.25 * f / bh) : leuchte(grund());
+    return { R, f, ecke, stufe, ...nummerFarbe(basis, y) }; };
+  for (const [i, f] of groessen.entries()){ const S = schild(f);
+    const ecken = ECKEN.map(e => { const x0 = e[1] === 'r' ? 1 - S.gx - S.fw : S.gx, y0 = e[0] === 'u' ? 1 - S.gy - S.fh : S.gy;
+      return { R: [x0, y0, x0 + S.fw, y0 + S.fh], d: 0, ecke: e }; }).filter(l => frei(l.R, S));
+    if (ecken.length){ const l = waehle(ecken, f); return fertig(l.R, f, l.ecke, i ? 'kleiner' : 'ecke'); }
+    const kante = kanten(S).filter(l => frei(l.R, S));
+    if (kante.length){ const l = waehle(kante, f); return fertig(l.R, f, 'kante', 'kante'); }
   }
-  const S = schild(groessen[groessen.length - 1]), N = 40, lagen = [];
-  for (let j = 0; j <= N; j++){
-    const x0 = S.gx + (1 - S.fw - 2 * S.gx) * j / N, y0 = S.gy + (1 - S.fh - 2 * S.gy) * j / N;
-    const dx = Math.min(x0 - S.gx, 1 - S.gx - S.fw - x0) * bw, dy = Math.min(y0 - S.gy, 1 - S.gy - S.fh - y0) * bh;   /* Weg von der Ecke in mm */
-    for (const y of [S.gy, 1 - S.gy - S.fh]) lagen.push({ R: [x0, y, x0 + S.fw, y + S.fh], d: dx });
-    for (const x of [S.gx, 1 - S.gx - S.fw]) lagen.push({ R: [x, y0, x + S.fw, y0 + S.fh], d: dy });
-  }
-  const freie = lagen.filter(l => frei(l.R, S));
-  if (freie.length){ const nah = Math.min(...freie.map(l => l.d)) + 0.25 * S.f; let beste = null;
-    for (const l of freie) if (l.d <= nah){ const v = glas(l.R); if (!beste || v.k > beste.k) beste = { ...v, R: l.R, f: S.f, ecke: 'kante', stufe: 'kante' }; }
-    return beste; }
-  let beste = null;
-  for (const l of lagen){ const u = sperre.reduce((s, b) => s + ueberdeckt(l.R, b), 0), v = glas(l.R);
-    if (!beste || u < beste.u - 1e-12 || (Math.abs(u - beste.u) <= 1e-12 && v.k > beste.k)) beste = { ...v, u, R: l.R, f: S.f, ecke: 'min', stufe: 'min' }; }
-  return beste;
+  const f = groessen[groessen.length - 1]; let beste = null;
+  for (const l of kanten(schild(f))){ const u = sperre.reduce((s, b) => s + ueberdeckt(l.R, b), 0), kk = kontrast(l.R);
+    if (!beste || u < beste.u - 1e-12 || (Math.abs(u - beste.u) <= 1e-12 && kk > beste.kk)) beste = { u, kk, R: l.R }; }
+  return fertig(beste.R, f, 'min', 'min');
 }
 /* DIE BILDEBENE: Rahmen (die Farbe des Areals zu 38 % in den Grund gemischt, wie am Schirm gedämpft), das Cover im Originalformat -
    in der Vorschau aus dem Bildvorrat, fürs PDF das Original (data-voll; druckBilder rechnet es auf 300 dpi seiner Größe) - und die
@@ -847,28 +942,30 @@ async function bilderEbene(g, kv, lauf){
   const misch = (f) => '#' + (farbWert(f) || [138, 141, 148]).map((v, i) => Math.round(v * 0.38 + gr[i] * 0.62).toString(16).padStart(2, '0')).join('');
   const pxJeMm = ((el('ps-blatt') || {}).clientWidth || 800) / g.PW * (window.devicePixelRatio || 1), hoch = ziffernHoehe(), f2 = (v) => v.toFixed(2);
   let out = '';
-  /* klein heißt unter 1,5 mm (die kleinste Schrift des Verzeichnisses ab 333 mm kurzer Seite), gezählt unter den Nummern, die stehen.
-     Nur im Druck: bei den Bildformaten zählte die Zeile bis 15.10.2026 ab 7,5 Punkten des PNG, die Schwelle (12 Bildpunkte) liegt
-     darüber - dort ist keine Nummer mehr klein. */
-  const kleinAb = (FORMATE.find(x => x.id === E.format) || {}).bild ? 0 : 1.5;
-  const nrStand = mitNummern ? { klein: 0, kleinAb, von: ids.length, kleinste: Infinity, kante: 0, min: 0, ohneBuch: 0 } : null;
+  /* Bis 15.10.2026 zählte nrStand auch die Nummern unter 1,5 mm (die kleinste Schrift des Verzeichnisses ab 333 mm kurzer Seite); seit
+     der Schwelle nach DIN 1450 (auf dem Mac 2,25 mm, siehe nummerStart) gibt es keine mehr - gelöscht. */
+  const nrStand = mitNummern ? { von: ids.length, kante: 0, min: 0, ohneBuch: 0 } : null;
+  /* die Farbe vor dem Anpassen (nummerFarbe): der Akzent des Covers, wenn es eine Palette hat (wie uiFaerben: farben.toene), sonst die
+     Farbe seines Areals - als #rrggbb */
+  const alsHex = (f) => { const v = farbWert(f); return v ? '#' + v.map(x => x.toString(16).padStart(2, '0')).join('') : null; };
+  const basisVon = (b) => { const s = typeof song === 'function' ? song(b.id) : null, fa = s && s.farben;
+    return fa && fa.toene && fa.toene.length && okFarbe(fa.akzent) ? { farbe: fa.akzent, ton: 'akzent' } : { farbe: alsHex(farbe(b.gruppe)) || '#8a8d94', ton: 'areal' }; };
   for (const [i, b] of res.bilder.entries()){
     const r = b.rahmen || 0, u = artworkBild(b.id), href = esc2(schaumBildHref(u, schaumStufe(Math.max(b.w, b.h) * k * pxJeMm)));
     if (r > 0) out += `<rect x="${f2(b.x - r)}" y="${f2(b.y - r)}" width="${f2(b.w + 2 * r)}" height="${f2(b.h + 2 * r)}" fill="${misch(farbe(b.gruppe))}"/>`;
     out += `<image href="${href}" data-voll="${esc2(u)}" data-id="${esc2(b.id)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none"/>`;
     if (!nummer.has(b.id)) continue;
     const fo = typeof schaumFokus === 'function' ? schaumFokus(b.id) : null; if (!fo) nrStand.ohneBuch++;
-    const t = String(nummer.get(b.id)), p = nummerPlatz(t, b.w * k, b.h * k, k, mess.get(b.id), fo ? (fo.schrift || []).concat(fo.gesichter || []) : [], schwelle);
-    if (p.f < kleinAb){ nrStand.klein++; nrStand.kleinste = Math.min(nrStand.kleinste, p.f); }
+    const t = String(nummer.get(b.id)), ba = basisVon(b), p = nummerPlatz(t, b.w * k, b.h * k, k, mess.get(b.id), fo ? fo.schrift || [] : [], fo ? fo.gesichter || [] : [], schwelle, ba.farbe);
     if (p.ecke === 'kante') nrStand.kante++; if (p.ecke === 'min') nrStand.min++;
-    /* das Schild in Wandpunkten; darunter das Cover weichgezeichnet (Filter nur über dem Schild), darauf Schwarz in der Deckkraft a */
+    /* das Schild in Wandpunkten; darunter das Cover weichgezeichnet (Filter nur über dem Schild), darauf Schwarz in der Deckkraft a - nur, wo es gebraucht wird */
     const sx = b.x + p.R[0] * b.w, sy = b.y + p.R[1] * b.h, sw = (p.R[2] - p.R[0]) * b.w, sh = (p.R[3] - p.R[1]) * b.h, form = `x="${f2(sx)}" y="${f2(sy)}" width="${f2(sw)}" height="${f2(sh)}"`;
     out += `<clipPath id="ps-nrs${i}"><rect ${form} rx="${f2(0.3 * sh)}"/></clipPath>`
       + `<filter id="ps-nrg${i}" filterUnits="userSpaceOnUse" ${form} color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${(0.25 * p.f / k).toFixed(3)}" edgeMode="duplicate"/></filter>`
       + `<image href="${href}" data-voll="${esc2(u)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none" filter="url(#ps-nrg${i})" clip-path="url(#ps-nrs${i})"/>`
-      + `<rect class="ps-rauch" ${form} rx="${f2(0.3 * sh)}" fill="#000" opacity="${p.a.toFixed(3)}"/>`
-      + `<text class="ps-nr" x="${f2(sx + sw / 2)}" y="${f2(sy + sh / 2 + hoch * p.f / 2 / k)}" font-size="${(Math.ceil(p.f / k * 1000 - 1e-6) / 1000).toFixed(3)}" font-weight="600" fill="${NR_ZIFFER}" text-anchor="middle"`
-      + ` data-id="${esc2(b.id)}" data-ecke="${p.ecke}" data-stufe="${p.stufe}" data-feld="${p.R.map(v => v.toFixed(4)).join(',')}" data-k="${p.k.toFixed(1)}" data-a="${p.a.toFixed(3)}"`
+      + (p.a > 0 ? `<rect class="ps-rauch" ${form} rx="${f2(0.3 * sh)}" fill="#000" opacity="${p.a.toFixed(3)}"/>` : '')
+      + `<text class="ps-nr" x="${f2(sx + sw / 2)}" y="${f2(sy + sh / 2 + hoch * p.f / 2 / k)}" font-size="${(Math.ceil(p.f / k * 1000 - 1e-6) / 1000).toFixed(3)}" font-weight="600" fill="${p.farbe}" text-anchor="middle"`
+      + ` data-id="${esc2(b.id)}" data-ecke="${p.ecke}" data-stufe="${p.stufe}" data-feld="${p.R.map(v => v.toFixed(4)).join(',')}" data-k="${p.k.toFixed(2)}" data-a="${p.a.toFixed(3)}" data-ton="${ba.ton}"`
       + ` style="font-variant-numeric:tabular-nums">${t}</text>`;
   }
   standSetzen('');
@@ -884,7 +981,8 @@ async function bauen(g){
   const pxBreite = blatt.clientWidth || 800, massstab = (pxBreite * (kv.w / g.PW)) / aktuell.res.width * (window.devicePixelRatio || 1);
   const druck = { titel: E.titel, fugen: E.fugen, wackeln: E.wackeln, schatten: E.schatten, vignette: E.vignette, kissen: E.kissen,
                   deck: (Math.max(0, 2 * s - 1) * 0.65).toFixed(3), ton: Math.min(1, 2 * s).toFixed(3), massstab,
-                  verzeichnis: !!g.verz, mmJeEinheit: Math.min(kv.w / aktuell.res.width, kv.h / aktuell.res.height), nrSchwelle: nrSchwelle(g) };
+                  verzeichnis: !!g.verz, mmJeEinheit: Math.min(kv.w / aktuell.res.width, kv.h / aktuell.res.height), nrSchwelle: nrSchwelle(g),
+                  nrSchwelleTitel: nrSchwelle(g, 400) };
   { const k = druck.mmJeEinheit, ox = kv.x + (kv.w - aktuell.res.width * k) / 2;             /* die Fugen in Schaum-Einheiten */
     druck.waende = wandFugen(g).map(([a, b]) => [(a - ox) / k, (b - ox) / k]); }
   /* Bilderschau: Farben und Zoom von der Wand am Schirm (der Klangschaum-Auftrag gehört zum Schaum) */
@@ -996,22 +1094,27 @@ async function bauen(g){
   /* WAS BEI DIESER EINSTELLUNG NICHT GEHT (Caspar_D, 15.10.2026: „warum zeigen wir was, was eigentlich nicht geht, wenigstens eine
      Warnung vor Dingen die sinnfrei sind, wäre schön"): eine Zeile unter dem Format, gesperrt wird nichts. Sie nennt, wie viele Cover
      bzw. Zellen zu klein für ihre Nummer sind (sie stehen am Ende des Verzeichnisses), und ob das Verzeichnis selbst unter der Schwelle
-     steht (nrSchwelle: 1,0 mm, Bildformate 12 Bildpunkte; verzL ist seine Schrift, abgerundet - gerundet stünde bei 0,996 mm „nicht
-     lesbar (Schrift 1 mm)"). Danach, nur in der Bilderschau, wie die Nummern stehen: unter 1,5 mm, an der Kante, ohne freie Stelle, und
-     wie viele Cover das Gesichterbuch noch nicht kennt (bilderEbene, nummerPlatz). Bleibt stehen wie das Maß, standSetzen leert es nicht;
-     bei Bildformaten in Punkten des PNG (1080 breit, wie in der Zeile darüber). Einen Lauf des Buchs stößt das Studio nicht an. Bis
-     15.10.2026 zählte die Zeile auch Schilder, die über ihr Cover ragten - entschieden am 15.10.2026: der Satz entfällt, keines ragt mehr
-     hinaus. Wie viele Nummern kleiner als 1,5 mm sind, steht weiter da: der erste Bau dieser Regel hatte es mit dem Überstand gestrichen,
-     entschieden war nur der Überstand (Gegenprüfung). Gezählt unter den Nummern, die stehen; die kleinste abgerundet auf eine Stelle wie
-     vorher. Bei K = 1 in der Einzahl (stand: „1 Zellen … sie stehen", Gegenprüfung). */
+     steht - im Druck der nach DIN 1450 für seine Schrift (normal gesetzt; nrSchwelle, DIN_X). Caspar_D, 15.10.2026, zum Werkverzeichnis
+     („a, genau"): nur warnen, nicht vergrößern, etwa „Werkverzeichnis unter DIN 1450 (3,8 pt statt 7 pt)". Beide Zahlen sind Schriftgrößen
+     in Punkt (72 je Zoll) der Schrift, wie sie gesetzt ist - gleiches Maß beidseits: die 7 pt aus leserlich.info gelten für eine x-Höhe
+     von 0,47 der Schriftgröße, system-ui hat auf dem Mac 0,508, die Schwelle steht dort bei 6,5 pt (2,29 mm). Auf eine Stelle, die Schrift
+     gerundet, die Schwelle aufgerundet; träfen sie sich, die Schrift abgerundet - so steht nie „6,5 pt statt 6,5 pt". Bei den
+     Bildformaten bleibt es bei 12 Bildpunkten („nicht lesbar (Schrift … Bildpunkte)", abgerundet - gerundet stünde bei 11,996
+     „12 Bildpunkte"). Danach, nur in der Bilderschau, wie die Nummern stehen: an der Kante, ohne freie Stelle, und wie viele Cover das
+     Gesichterbuch noch nicht kennt (bilderEbene, nummerPlatz). Bleibt stehen wie das Maß, standSetzen leert es nicht. Einen Lauf des
+     Buchs stößt das Studio nicht an. Bis 15.10.2026
+     zählte die Zeile auch Schilder, die über ihr Cover ragten - entschieden am 15.10.2026: der Satz entfällt, keines ragt mehr hinaus -,
+     und Nummern unter 1,5 mm: seit der Schwelle nach DIN 1450 gibt es keine mehr (nrStand). Bei K = 1 in der Einzahl (stand: „1 Zellen …
+     sie stehen", Gegenprüfung). */
   { const h = el('ps-nrklein'), st = nrStand, pt = fm.bild ? 1080 / g.w : 0, sinnfrei = [], teile = [];
-    const zahl = (v) => { const x = pt ? v * pt : v; return (Math.floor(x * 100 + 1e-6) / 100).toLocaleString('de-DE', { maximumFractionDigits: 2 }) + (pt ? ' Bildpunkte' : ' mm'); };
     const K = (verzeichnis || []).reduce((n, q) => n + (q.zuKlein || []).length, 0), personen = aktuell.art === 'person';
     if (g.verz && K) sinnfrei.push(aktuell.art === 'bild' ? (K === 1 ? '1 Cover zu klein für seine Nummer – es steht am Ende des Verzeichnisses' : `${K} Cover zu klein für ihre Nummer – sie stehen am Ende des Verzeichnisses`)
       : K === 1 ? '1 Zelle zu klein für ihre Nummer – sie steht am Ende des Verzeichnisses' : `${K} Zellen zu klein für ihre Nummer – sie stehen am Ende des Verzeichnisses`);
-    if (verzL != null && verzL < nrSchwelle(g) - 1e-9) sinnfrei.push(`${personen ? 'Verzeichnis der Personen' : 'Werkverzeichnis'} nicht lesbar (Schrift ${zahl(verzL)})`);
-    const mm1 = (v) => (Math.floor(v * 10 + 1e-6) / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' mm';
-    if (st && st.klein) teile.push(`${st.klein} von ${st.von} kleiner als ${mm1(st.kleinAb)}, die kleinste ${mm1(st.kleinste)}`);
+    const verzName = personen ? 'Verzeichnis der Personen' : 'Werkverzeichnis', verzMin = nrSchwelle(g, 400);
+    const zehntelPt = (mm) => mm * 72 / 25.4 * 10, soll = Math.ceil(zehntelPt(verzMin) - 1e-6), ist = (z) => Math.round(z) < soll ? Math.round(z) : Math.floor(z + 1e-6);
+    const punkt = (z) => (z / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' pt';
+    if (verzL != null && verzL < verzMin - 1e-9) sinnfrei.push(pt ? `${verzName} nicht lesbar (Schrift ${(Math.floor(verzL * pt * 100 + 1e-6) / 100).toLocaleString('de-DE', { maximumFractionDigits: 2 })} Bildpunkte)`
+      : `${verzName} unter DIN 1450 (${punkt(ist(zehntelPt(verzL)))} statt ${punkt(soll)})`);
     if (st && st.kante) teile.push(`${st.kante} an der Kante, weil keine Ecke frei war`);
     if (st && st.min) teile.push(`${st.min} ohne freie Stelle – sie decken Schrift oder Gesicht so wenig wie möglich`);
     const text = [sinnfrei.length ? sinnfrei.join('; ') + '.' : '', teile.length ? `Nummern auf den Covern: ${teile.join('; ')}.` : '',
