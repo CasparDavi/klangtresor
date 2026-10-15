@@ -119,6 +119,15 @@ Auszeichnungssprache des Boten.
     Zeile, sonst gibt es keine eigene Breite. Gebaut wird mit der
     einen Komponente wahlHtml/wahlSetzen in web/index.html, nicht je
     Ansicht kopiert.
+    **Legenden ein- oder zweispaltig, ebenso gemessen** (Caspar_D,
+    15.10.2026: „ich hätte gern noch die Legende ebenfalls conditional
+    ein oder zweispaltig, die ist jetzt mal so mal so"): Jede Liste
+    einer Legende steht zweispaltig, wenn JEDER Name in eine halbe
+    Spalte passt, ohne umzubrechen oder gekürzt zu werden, sonst
+    einspaltig. Je Liste entschieden, nicht fürs ganze Panel; bei jeder
+    Breitenänderung neu, zurück zu zwei Spalten erst mit ≥ 8 px Luft.
+    Eine Funktion für alle Ansichten: legendenBeobachten in
+    web/index.html (Listen als .lgrid).
 20. **Zustände sind keine Mengen**: Slider für Zustände (Tempo,
     Stereo-Breite) ohne Füllbalken — die Mitte ist die Heimat.
     Mengen-Slider dürfen sich füllen.

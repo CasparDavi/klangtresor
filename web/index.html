@@ -406,7 +406,10 @@ h1{
 :is(#kartelegende,#schaumrechts) .schalter .pille.an{border:none;background:var(--akzent);color:#000}
 #kartelegende .legende2{display:flex;flex-direction:column;gap:10px}
 #kartelegende .lblock h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:0 0 4px 8px}
-#kartelegende .lgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
+/* ein- oder zweispaltig nach Messung (legendenMessen, Hausregel 19) - ohne Klasse eine Spalte */
+#kartelegende .lgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:0 14px;align-items:start}
+#schaumlegende .lgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:5px 14px;align-items:start}
+:is(#kartelegende,#schaumlegende) .lgrid.zwei{grid-template-columns:repeat(2,minmax(0,1fr))}
 #kartelegende .karteart{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap}
 #kartelegende .karteart .pille{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--rand);background:none;color:var(--schwach);cursor:pointer}
 #kartelegende .karteart .pille.an{border:2px solid var(--akzent);color:var(--text)}
@@ -8419,7 +8422,7 @@ function karteTippWeg(){ const t = document.getElementById('kartetipp'); if (t) 
    vom 22.08.2026: Biografie statt Geometrie. */
 function karteLesarten(){
   const z = (farbe, titel, text) => `<div class="kartelesart"><span class="farbe" style="${farbe}"></span><span><b>${titel}</b><small>${text}</small></span></div>`;
-  const block = (titel, inhalt) => `<div class="lblock"><h4>${titel}</h4><div class="lgrid">${inhalt}</div></div>`;
+  const block = (titel, inhalt) => `<div class="lblock"><h4>${titel}</h4><div class="lgrid" data-leg="${titel}">${inhalt}</div></div>`;
   return block('Sterne',
     z('background:radial-gradient(#fff,#fff 20%,transparent 70%);transform:scale(1.25)', 'Größe = Abrufe', 'je öfter gehört, desto größer (logarithmisch, nach Rang)') +
     z('background:radial-gradient(#fff,#fff 30%,transparent 70%)', 'Helligkeit = Herzen', 'beliebte Titel leuchten') +
@@ -8589,6 +8592,38 @@ document.addEventListener('change', (e) => {
   if (sel.tagName !== 'SELECT' || !w || !w.classList.contains('wahl') || !sel.value) return;
   const f = wahlTun[w.dataset.wahl]; if (f) f(sel.value);
 });
+
+/* LEGENDE EIN- ODER ZWEISPALTIG, GEMESSEN (Caspar_D, 15.10.2026: „ich hätte gern noch die Legende ebenfalls conditional ein oder
+   zweispaltig, die ist jetzt mal so mal so"; Hausregel 19). Jede Liste (.lgrid: Stilgruppen, Sterne, Lebende Sterne, Zuschaltbar im
+   Klangraum und in den Geschichten, die Gruppen bzw. Areale der drei Schäume) entscheidet fuer sich: zwei Spalten, wenn JEDER Name in
+   eine halbe Spalte passt, ohne umzubrechen oder gekuerzt zu werden, sonst eine. Bis 1.0.79 stand der Klangraum immer zweispaltig
+   (lange Namen brachen um), die Schaeume immer einspaltig. Gemessen wird der Name (das b des Eintrags) in seiner gesetzten Schrift
+   auf der Leinwand, dazu, was im Eintrag links davor und rechts als Innenabstand liegt; das haengt nicht an der Spaltenzahl. Wie bei
+   wahlMessen: ein ResizeObserver entscheidet bei jeder Breitenaenderung neu, zurueck zu zwei Spalten erst mit WAHL_LUFT (8 px) Luft;
+   die letzte Entscheidung je Liste (data-leg) ist gemerkt, damit ein Neubau im Graubereich nicht umspringt. */
+const legListe = new Map(), legMessLeinwand = document.createElement('canvas').getContext('2d');
+function legendeMessen(l){
+  if (!l.isConnected){ legRO.unobserve(l); return; }
+  const frei = l.clientWidth; if (!frei) return;                /* zugeklappt oder versteckt */
+  const cs = getComputedStyle(l), luecke = parseFloat(cs.columnGap) || 0, halb = (frei - luecke) / 2, zwei = l.classList.contains('zwei');
+  let bedarf = 0;
+  for (const e of l.children){
+    const b = e.querySelector('b') || e, ce = getComputedStyle(e), cb = getComputedStyle(b);
+    legMessLeinwand.font = `${cb.fontStyle} ${cb.fontWeight} ${cb.fontSize} ${cb.fontFamily}`;
+    const er = e.getBoundingClientRect(), br = b.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    /* der Eintrag darf mit negativem Rand ueber die Spalte ragen (Schaum: margin 0 -5px) - dann hat er so viel mehr Platz */
+    const ueber = -(parseFloat(ce.marginLeft) || 0) - (parseFloat(ce.marginRight) || 0);
+    bedarf = Math.max(bedarf, (br.left - er.left) + Math.ceil(legMessLeinwand.measureText(b.textContent.trim()).width * d) / d + (parseFloat(ce.paddingRight) || 0) + (parseFloat(ce.borderRightWidth) || 0) - ueber);
+  }
+  const soll = zwei ? bedarf <= halb : bedarf + WAHL_LUFT <= halb;
+  if (soll !== zwei) l.classList.toggle('zwei', soll);
+  if (l.dataset.leg) legListe.set(l.dataset.leg, soll);
+}
+const legRO = new ResizeObserver(es => { for (const e of es) legendeMessen(e.target); });
+function legendenBeobachten(wurzel){
+  wurzel.querySelectorAll('.lgrid').forEach(l => { if (l.dataset.leg && legListe.has(l.dataset.leg)) l.classList.toggle('zwei', legListe.get(l.dataset.leg));
+    legendeMessen(l); legRO.observe(l); });
+}
 
 /* DIE ANSICHTSWAHL (Caspar_D, 15.10.2026): Die Unterleiste oben in der Registerleiste ist weg. Ganz oben im Panel jeder
    Ansicht zwei beschriftete Pillenreihen: „Räume" (Klangraum, Geschichten) und „Schäume" (Klangschaum, Bilderschau,
@@ -9253,16 +9288,17 @@ async function schaumZeichnen(){
     + `<i style="background:${farbe || '#5d6066'}"></i><span><b>${esc(name)}</b><br><small>${n} Titel · ${m.text(wert)}</small></span></${knopf ? 'button' : 'span'}>`;
   if (!schaumZoom){
     const [s, n] = summe(alleZeilen, 'gruppe');
-    $('schaumlegende').innerHTML = `<small>${gl.oben} — ein Klick zeigt nur diese</small>`
-      + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g, farbeVon(g), n.get(g), w, true)).join('');
+    $('schaumlegende').innerHTML = `<small>${gl.oben} — ein Klick zeigt nur diese</small><div class="lgrid" data-leg="schaum-oben">`
+      + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g, farbeVon(g), n.get(g), w, true)).join('') + '</div>';
   } else {
     const [s, n] = summe(zeilen, 'genre');
     const ges = zeilen.reduce((a, z) => a + +z.w, 0);
     $('schaumlegende').innerHTML = `<button type="button" class="zurueck" data-zoom="">← alle ${gl.oben}</button>`
       + zeileHtml(schaumZoom, farbeVon(schaumZoom), zeilen.length, ges, false)
-      + `<small>${gl.unten}</small>`
-      + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g === '(ohne)' ? 'ohne Angabe' : g, null, n.get(g), w, false)).join('');
+      + `<small>${gl.unten}</small><div class="lgrid" data-leg="schaum-unten">`
+      + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g === '(ohne)' ? 'ohne Angabe' : g, null, n.get(g), w, false)).join('') + '</div>';
   }
+  legendenBeobachten($('schaumlegende'));
   $('schaumlegende').querySelectorAll('[data-zoom]').forEach(b => b.onclick = () => schaumZoomen(b.dataset.zoom || null));
 
   /* Werk: der laufende Titel mit seinem Wert und Rang. */
@@ -9315,11 +9351,12 @@ async function groupieZeichnen(){
   /* die Farben aus allen mit Wert (Ankunft zählt die Jahre durch), die Legende nur, was gezeigt ist */
   const klassen = new Set(zeilen.map(z => z.gruppe)), alleKlassen = new Set(mitWert.map(z => z.gruppe)), farbeVon = (n) => gl.farbe(n, alleKlassen);
   $('schaumlegkurz').textContent = zeilen.length.toLocaleString('de-DE') + (zeilen.length === 1 ? ' Person · ' : ' Personen · ') + klassen.size + ' Areale';
-  $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small>' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
+  $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small><div class="lgrid" data-leg="groupies">' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
     const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0), anzahl = zs.length;
     return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(a)}</b><br><small>${anzahl.toLocaleString('de-DE')} ${anzahl === 1 ? 'Person' : 'Personen'}`
       + `${zs.length ? ' · ' + m.text(summe) : ''}</small></span></span>`;
-  }).join('');
+  }).join('') + '</div>';
+  legendenBeobachten($('schaumlegende'));
   const gezeigt = zeilen.length, grossAreal = [...klassen].some(a => zeilen.filter(z => z.gruppe === a).length > 600);
   fuss.textContent = `Groupieschaum: ${gezeigt.toLocaleString('de-DE')} Personen, die auf deine Titel reagiert haben, gegliedert nach ${gl.name}; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
     + groupieZeigtSatz(gezeigt, mitWert.length, m)
@@ -10909,6 +10946,7 @@ function kartePanelDran(leg){
   ladenDran(leg);
   leg.querySelectorAll('.artpille').forEach(b => b.onclick = () => { karteArten[b.dataset.a] = !karteArten[b.dataset.a]; merk('mysuno-karte-arten', JSON.stringify(karteArten)); karteZeichnen(); });
   wahlenBeobachten(leg);              /* Ansichtswahl, Gestalt, Flugart (wahlHtml) */
+  legendenBeobachten(leg);            /* Stilgruppen und Lesarten: ein- oder zweispaltig */
   leg.querySelectorAll('[data-dim]').forEach(b => b.onclick = () => { karteDim = b.dataset.dim; merk('mysuno-karte-dim', karteDim); karteArt = karteArtAbleiten(); karteZeichnen(); });
   leg.querySelectorAll('[data-verf]').forEach(b => b.onclick = () => { karteVerf = b.dataset.verf; merk('mysuno-karte-verf', karteVerf); karteArt = karteArtAbleiten(); karteZeichnen(); });
   const k = (id, fn) => { const el = leg.querySelector('#' + id); if (el) el.onclick = fn; };
@@ -11011,7 +11049,7 @@ async function karteZeichnen(){
      Ortsbegriffen benannt (bin/ortsbegriffe.js) - "Stilgruppen" waere
      dort das falsche Wort. */
   const gruppenWort = d.raum === 'geschichten' ? 'Themengruppen' : 'Stilgruppen';
-  const gruppenHtml = `<div class="legende2"><div class="lblock"><h4>${gruppenWort}</h4><div class="lgrid">` + d.gruppen.map(g => {
+  const gruppenHtml = `<div class="legende2"><div class="lblock"><h4>${gruppenWort}</h4><div class="lgrid" data-leg="${gruppenWort}">` + d.gruppen.map(g => {
     const e = g.erdung || {};
     const erd = [e.bpm && `${e.bpm} BPM`, e.lufs != null && `${String(e.lufs).replace('.', ',')} LUFS`,
       /* Moll-Anteil und Stimme sind totgelegt (docs/analyse/ANALYZER-REVIEW.md) und
