@@ -8,7 +8,7 @@
    Das Bild selbst baut das Haus (schaumSvgBauen mit druck): dieselben Zellen, Farben und Bilder wie am
    Schirm, im Plakat als Kacheln mit Luecken. Die Vorschau nimmt die Bilder aus dem Vorrat, das PDF die
    Originale (data-voll). Masse auf der Seite in Millimetern; 3 mm Beschnitt rundum. */
-import { blockAufSehnen, blockLage, blockRechteck, blockReserve, ECKEN } from './eckblock.js';
+import { blockLage, blockRechteck, blockReserve, ECKEN } from './eckblock.js';
 import { blattSchmuck, blattGrund, dAuftrag, anzeigeName } from './skizze-blatt.js';
 import { ohneKlammern } from './skizze-hand.js';
 import { blattDatenHolen, refrainAus } from './skizze-daten.js';
@@ -307,7 +307,17 @@ function eckTeile(g){
   let sig = null;
   if (E.edition){ const t = E.auflage || '1/1', fs = U * 0.85, tw = breite(t, 400, fs), linie = 0.07 * g.kurz;
     sig = { typ: 'signatur', t, fs, tw, linie, w: tw + fs * 0.8 + linie, h: U * 2.6 }; }
-  const leg = E.legende ? legendenEintraege().map(e => ({ typ: 'legende', t: e.name, farbe: e.farbe, fs: L, w: breite(e.name, 400, L) + L * 1.2, h: L * 1.55 })) : [];
+  /* DIE LEGENDE ALS BLOCK (Caspar_D, 15.10.2026, zur Viertel-Lösung): die Farbpunkte in einer Spalte; was im Namen vor „ — " steht
+     (der Stil), rechtsbündig vor dem Punkt, was danach steht (die Stimmung), linksbündig dahinter - der Punkt ersetzt den
+     Gedankenstrich. Ohne „ — " in den Namen (Groupieschaum: Modell › Jahr) wie bisher: Punkt, dann der Name. Jeder Eintrag trägt
+     die Breite des ganzen Blocks (längster linker Teil + Punktspalte + längster rechter Teil), so stellt blockLage ihn als Ganzes
+     an die Viertel-Achse. */
+  const eintr = E.legende ? legendenEintraege() : [], STRICH = ' \u2014 ', geteilt = eintr.some(e => e.name.includes(STRICH));
+  const pu = L * 0.34, spalt = L * 0.45, teilen = (n) => { const i = n.indexOf(STRICH); return i < 0 ? [n, ''] : [n.slice(0, i), n.slice(i + STRICH.length)]; };
+  const links = geteilt ? Math.max(0, ...eintr.map(e => breite(teilen(e.name)[0], 400, L))) : 0;
+  const rechts = Math.max(0, ...eintr.map(e => breite(geteilt ? teilen(e.name)[1] : e.name, 400, L)));
+  const legW = geteilt ? links + 2 * spalt + 2 * pu + rechts : 2 * pu + spalt + rechts;
+  const leg = eintr.map(e => ({ typ: 'legende', t: e.name, teile: geteilt ? teilen(e.name) : null, links, pu, spalt, farbe: e.farbe, fs: L, w: legW, h: L * 1.55 }));
   const av = avatarDa() ? [{ typ: 'kreis', d: 0.12 * g.kurz }] : [];
   /* Die Zeilen darunter so breit wie der uebrige Block (Caspar_D, 15.10.2026: „die untere Schriftzeile ist doppelt so breit wie der
      Rest, darueber ist alles leer"): eine laengere wird ausgewogen umbrochen - zuerst an den Trennpunkten „ · ", reicht das nicht,
@@ -344,8 +354,8 @@ function schildVorgabe(g, W, H, runden = true){
     ['x0', 'x1', 'y0', 'y1'].map(z => Math.round(rahmen[z])).join(','), Math.round(xMin), Math.round(xMax), Math.round(luft * 10)].join(':');
   return { ecke, block, rahmen, luft, xMin, xMax, schluessel, teile, k, ox, oy };
 }
-/* Setzen: dieselbe Lage, die der Worker geprueft hat (blockLage, seit 15.10.2026 jedes Teil mittig auf der Sehne der Zelle und die
-   breiteste Zeile an der Wand: blockAufSehnen), auf dem Grund der Seite. Passt der Block nicht mehr (Text nach
+/* Setzen: dieselbe Lage, die der Worker geprueft hat (blockLage: jedes Teil zu drei Vierteln zur Schaumgrenze, zu einem Viertel
+   zur Blattkante an einer gemeinsamen Achse - die Viertel-Lösung vom 15.10.2026), auf dem Grund der Seite. Passt der Block nicht mehr (Text nach
    dem Legen verlaengert, grosser Schaum anders gelegt), wird er so weit verkleinert, dass er passt - der naechste Lauf legt neu. */
 function eckeSetzen(g, fg, leise){
   const res = aktuell.res, H = res.height;
@@ -358,7 +368,7 @@ function eckeSetzen(g, fg, leise){
   const s = Math.min(1, r), rechts = v.ecke[1] === 'r', anker = rechts ? 'end' : 'start';
   const X = (x) => ox + x * k, Y = (y) => oy + (H - y) * k, f2 = (n) => n.toFixed(2), hell = hellerGrund();
   let out = '';
-  blockAufSehnen(knoten.outline, v.block, v.ecke, v.rahmen, v.luft, s).forEach((t, i) => {
+  blockLage(v.block, v.ecke, v.rahmen, s).forEach((t, i) => {
     const q = v.teile[i], fs = (q.fs || 0) * s, x = rechts ? X(t.x1) : X(t.x0), basis = Y(t.y0) - fs * 0.3;
     if (q.typ === 'kreis'){
       const rr = (t.x1 - t.x0) / 2 * k, cx = X((t.x0 + t.x1) / 2), cy = Y((t.y0 + t.y1) / 2);
@@ -370,12 +380,13 @@ function eckeSetzen(g, fg, leise){
         + `<image href="/avatar" data-voll="/avatar" x="${f2(cx - rr)}" y="${f2(cy - rr)}" width="${f2(2 * rr)}" height="${f2(2 * rr)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#ps-eckav)"${hell ? ' filter="url(#ps-anthrazit)"' : ''}/>`
         + (hell ? '' : `<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(rr)}" fill="none" stroke="${fg}" stroke-opacity="0.45" stroke-width="${f2(g.kurz / 1400)}"/>`);
     } else if (q.typ === 'legende'){
-      /* die Legende ist ein Block: Farbpunkt links, Eintrag linksbündig daneben, in jeder Ecke (Caspar_D, 15.10.2026: „die Legende
-         selbst wahrscheinlich als Block zentrieren, weil die Farben exakt untereinander müssen"; bis 1.0.81 in rechten Ecken
-         rechtsbündig mit dem Punkt rechts) */
-      const pu = fs * 0.34, lx = X(t.x0), dx = lx + pu, tx = lx + 2 * pu + fs * 0.45;
-      out += `<circle cx="${f2(dx)}" cy="${f2(basis - fs * 0.32)}" r="${f2(pu)}" fill="${q.farbe}"/>`
-        + `<text x="${f2(tx)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" fill-opacity="0.8">${esc2(q.t)}</text>`;
+      /* die Legende als Block an der Viertel-Achse (eckTeile): die Punkte in einer Spalte, Stil rechtsbündig davor, Stimmung
+         linksbündig dahinter; ohne „ — " Punkt, dann der Name */
+      const lx = X(t.x0), pu = q.pu * s, sp = q.spalt * s, dx = lx + (q.teile ? q.links * s + sp : 0) + pu, cy = f2(basis - fs * 0.32);
+      out += `<circle cx="${f2(dx)}" cy="${cy}" r="${f2(pu)}" fill="${q.farbe}"/>`;
+      if (q.teile && q.teile[0]) out += `<text x="${f2(dx - pu - sp)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" fill-opacity="0.8" text-anchor="end">${esc2(q.teile[0])}</text>`;
+      const rt = q.teile ? q.teile[1] : q.t;
+      if (rt) out += `<text x="${f2(dx + pu + sp)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" fill-opacity="0.8">${esc2(rt)}</text>`;
     } else if (q.typ === 'signatur'){
       const tw = q.tw * s, l = q.linie * s, gap = fs * 0.8, l0 = rechts ? x - tw - gap - l : x + tw + gap;
       out += `<text x="${f2(x)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${leise}" text-anchor="${anker}">${esc2(q.t)}</text>`
