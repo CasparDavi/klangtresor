@@ -9478,11 +9478,14 @@ function schaumFokusVon(e){
      selbst - dann weicht nichts aus, sonst blieben nach dem Zoom nur Streifen. Gemessen an 261 Covern mit Schrift:
      231 unter 10 %; darueber Sternen-Scan 31 % und ICE 23 % (Ausweichen zeigt Fadenkreuz und Zug), dagegen
      „Aktion erforderlich" 57 %, „Stille Nacht" 47 %, „Erweckt" 41 % - reine Schriftcover. */
-  let texte = Array.isArray(e.t) ? e.t : [];
+  const schrift = Array.isArray(e.t) ? e.t : [];
+  let texte = schrift;
   if (texte.length){ let n = 0;
     for (let i = 0; i < 24; i++) for (let j = 0; j < 24; j++){ const x = (i + .5) / 24, y = (j + .5) / 24; if (texte.some(b => x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3])) n++; }
     if (n / 576 > 0.35) texte = []; }
-  return { a: e.w / e.h, fokus, texte };
+  /* schrift und gesichter: alle Boxen, ohne die 35-%-Regel und ohne die Auswahl der wichtigen Gesichter - die Nummer auf dem Cover im
+     Plakat der Bilderschau meidet jede Schrift und jedes Gesicht (plakat.js bilderEbene) */
+  return { a: e.w / e.h, fokus, texte, schrift, gesichter: g.map(x => x.slice(0, 4)) };
 }
 function schaumFokusAvatar(url){ const d = url && schaumAvatare[url]; return d && schaumGesichter ? schaumFokusVon(schaumGesichter['avatar/' + d]) : null; }
 function schaumFokus(id){

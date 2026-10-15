@@ -64,15 +64,17 @@ const SPEICHER = 'mysuno-plakat';
    Bild vom Studio, neu ist nur die Bildebene (bilderEbene): die Cover-Rechtecke im Originalformat, im Seitenformat neu gehängt mit
    Maß, Transformation, Hängung, Gliederung und Rahmen, wie die Bilderschau am Schirm gerade steht. Titel „Caspar_Ds Bilderschau"
    (erst „Bildertraum" gesagt, dann: „nein, auf dem Plakat auch Bilderschau"). KEINE Bildunterschriften; jedes Cover trägt seine
-   Nummer aus dem Werkverzeichnis - darum gehört das Verzeichnis hier immer dazu. Was nur den Schaum betrifft (Fugen, Wackeln,
-   Schatten, Vignette, Kissen, Titel in der Zelle), ist grau mit Grund; Randlos und Skizzenbuch auch (das eine hat kein
-   Verzeichnis für die Nummern, das andere zeichnet den Klangschaum mit der Feder). Grund schwarz oder weiß wie die Vorlagen, keine
-   freie Farbe (Caspar_D: „Hintergrund in weiß oder schwarz, keine Farben, wie bei den anderen Postern auch"). Bis 1.0.73 hatte die
-   Bilderschau einen eigenen Not-Export in index.html (bilderPlakat: Format, Lage, Grund im Panel) - er ist mit diesem Weg gelöscht. */
+   Nummer aus dem Werkverzeichnis. Bis 15.10.2026 gehörte das Verzeichnis darum immer dazu; seitdem (Caspar_D: „Mach wie in den Treemaps
+   die Nummer ausblendbar") ist der Schalter frei, eigens gemerkt (bildNummern, Vorgabe an - die Vorlagen setzen ihn nicht): aus heißt
+   keine Nummern und keine Liste. Was nur den Schaum betrifft (Fugen, Wackeln, Schatten, Vignette, Kissen, Titel in der Zelle), ist
+   grau mit Grund; Randlos und Skizzenbuch auch (das eine hat kein Verzeichnis für die Nummern, das andere zeichnet den Klangschaum mit
+   der Feder). Grund schwarz oder weiß wie die Vorlagen, keine freie Farbe (Caspar_D: „Hintergrund in weiß oder schwarz, keine Farben,
+   wie bei den anderen Postern auch"). Bis 1.0.73 hatte die Bilderschau einen eigenen Not-Export in index.html (bilderPlakat: Format,
+   Lage, Grund im Panel) - er ist mit diesem Weg gelöscht. */
 const bilderschau = () => raumJetzt !== 'groupies' && typeof schaumArt !== 'undefined' && schaumArt === 'bilder';
 const GRUENDE_DER_VORLAGEN = /^#(0c0d10|08090b|f3efe6|ffffff|ece7dc)$/i;
 const grund = () => bilderschau() && !GRUENDE_DER_VORLAGEN.test(E.grund) ? (VORLAGEN.find(v => v.id === E.vorlage) || VORLAGEN[0]).e.grund : E.grund;
-const mitVerzeichnis = () => !!E.verzeichnis || (bilderschau() && !E.schild && !E.skizze);
+const mitVerzeichnis = () => bilderschau() ? E.bildNummern !== false && !E.schild && !E.skizze : !!E.verzeichnis;
 
 let E = (() => { try { return JSON.parse(localStorage.getItem(SPEICHER)) || null; } catch (e) { return null; } })()
   || { vorlage: 'galerie', format: '70x100', freiW: 80, freiH: 120, lage: 'hoch', kopfTitel: '', kopfUnter: '', legende: true, ...VORLAGEN[0].e };
@@ -680,16 +682,21 @@ function bilderSperren(g, W, H){
   const kv = g.karte, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2;
   return f.map(([a, b]) => ({ x: +((a - ox) / k).toFixed(2), y: -10, w: +((b - a) / k).toFixed(2), h: H + 20 }));
 }
-/* DIE ECKE FÜR DIE NUMMER (Caspar_D, 11.10.2026: „KEINE Bildunterschriften … die Nummer klein auf jedem Cover in Kontrastfarbe
-   (schwarz/weiß), in der Ecke, wo sie am besten lesbar ist"): je Cover die vier Eckfelder, in denen die Ziffern stünden, im Bild
-   messen; je Ecke Schwarz oder Weiß nach dem höheren Kontrast (WCAG), genommen wird die Ecke mit dem höchsten. Gemessen wird nicht der
-   Mittelwert des Feldes, sondern seine hellsten und dunkelsten zehn Prozent: Weiß muss gegen die hellen Stellen bestehen, Schwarz gegen
-   die dunklen - ein Mittel machte aus einer halb weißen, halb schwarzen Ecke ein Grau, gegen das Schwarz gewönne, und die Ziffern
-   stünden zur Hälfte auf Schwarz. Das Messbild ist das Original, aus dem auch das Druckbild entsteht, in Stufen (verkleinert) auf
-   192 Punkte gebracht - die Ecken der Druckbilder (300 dpi) zu messen hieße, jedes Cover bei jeder Vorschau neu zu rechnen; je
-   Bildpunkt die relative Leuchtdichte als Wurzel in einem Byte (dunkle Töne fein aufgelöst). Einmal je Sitzung und Adresse.
-   Gegengerechnet am 15.10.2026 (70 × 100 hoch, 330 Cover): an den Druckbildern selbst fiele die Wahl 304-mal auf dieselbe Ecke, die
-   26 anderen sind Beinahe-Gleichstände; die gewählte Ecke hat im Druckbild mindestens 3,0 : 1, im Median 17 : 1. */
+/* DIE NUMMER AUF DEM COVER (Caspar_D, 11.10.2026: „KEINE Bildunterschriften … die Nummer klein auf jedem Cover in Kontrastfarbe
+   (schwarz/weiß), in der Ecke, wo sie am besten lesbar ist"; 15.10.2026: „mach einen Rauchglas Badge unter die Nummer"). Die Ziffern
+   stehen hell auf einem Schild aus Rauchglas, wie die Titel in den Zellen des Schaum-Plakats (Vorlage-Wert titel 'rauch'): darunter
+   das Cover weichgezeichnet (Gauß, Ränder fortgesetzt, wie SCHAUM_GLAS im Haus), darüber Schwarz nur so dicht, wie die helle Schrift es
+   braucht (schaumRauch im Haus: Leuchtdichte darunter höchstens 0,15, die Abdunklung mal SCHAUM_RAUCH_STAERKE, höchstens 0,85). Die Form
+   ist das Nummernschild der Zellen (nummerSchild im Haus): Ziffern plus 0,7 Geviert breit, 1,3 Geviert hoch, Ecken zu 0,3 der Höhe
+   gerundet, Schrift #f4f4f2 halbfett. Zwei Abweichungen mit Grund: Das Glas bemisst die hellsten 10 % unter dem Schild statt der
+   hellsten 20 % - das Schild ist klein, ein heller Fleck darin genügt; mit 20 % blieben in der Simulation an den 330 Covern (4 mm kurze
+   Coverseite) 49 Nummern unter 4,5 : 1, mit 10 % keine. Und weichgezeichnet wird mit einem Viertel Geviert der Ziffern statt mit 3
+   Punkten: die Wand des Plakats hat 1400 Punkte an der langen Seite, 3 Punkte wären auf 70 × 100 dreimal so weich wie auf A3.
+   Gemessen wird im Messbild: das Original, aus dem auch das Druckbild entsteht, in Stufen (verkleinert) auf 192 Punkte gebracht - die
+   Druckbilder (300 dpi) zu messen hieße, jedes Cover bei jeder Vorschau neu zu rechnen; je Bildpunkt die relative Leuchtdichte als
+   Wurzel in einem Byte (dunkle Töne fein aufgelöst); einmal je Sitzung und Adresse. Der Kontrast gilt gegen die hellsten 10 % ohne
+   Weichzeichnen, ist also eher zu streng. Unter den freien Ecken gewinnt die mit dem höchsten Kontrast der hellen Ziffer durch das
+   Glas (bei Gleichstand die erste von ur, ul, or, ol). */
 const MESS_PX = 192, messVorrat = new Map();
 const LIN = Array.from({ length: 256 }, (_, i) => { const c = i / 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
 function messbild(u){
@@ -704,87 +711,132 @@ function messbild(u){
   })());
   return messVorrat.get(u);
 }
-/* Kontrast der besseren Schriftfarbe in einem Feld (Anteile des Bildes 0..1) */
-function feldKontrast(m, x0, x1, y0, y1){
+/* Leuchtdichte der hellsten 10 % in einem Feld des Messbilds (Anteile des Bildes 0..1) */
+function feldHell(m, x0, x1, y0, y1){
   const X0 = Math.max(0, Math.min(m.w - 1, Math.floor(x0 * m.w))), X1 = Math.max(X0 + 1, Math.min(m.w, Math.ceil(x1 * m.w)));
   const Y0 = Math.max(0, Math.min(m.h - 1, Math.floor(y0 * m.h))), Y1 = Math.max(Y0 + 1, Math.min(m.h, Math.ceil(y1 * m.h)));
   const anz = new Uint32Array(256); let n = 0;
   for (let y = Y0; y < Y1; y++) for (let x = X0; x < X1; x++){ anz[m.q[y * m.w + x]]++; n++; }
-  const quantil = (p) => { let s = 0; for (let v = 0; v < 256; v++){ s += anz[v]; if (s >= p * n) return v; } return 255; };
-  const hell = (quantil(0.9) / 255) ** 2, dunkel = (quantil(0.1) / 255) ** 2, weiss = 1.05 / (hell + 0.05), schwarz = (dunkel + 0.05) / 0.05;
-  return weiss >= schwarz ? { k: weiss, farbe: '#ffffff' } : { k: schwarz, farbe: '#000000' };
+  let s = 0; for (let v = 0; v < 256; v++){ s += anz[v]; if (s >= 0.9 * n) return (v / 255) ** 2; }
+  return 1;
+}
+/* Rauchglas über der Leuchtdichte y: Deckkraft a des Schwarz (schaumRauch) und Kontrast der hellen Ziffer. Abdunkeln um den Faktor
+   1 - a senkt die Leuchtdichte etwa um (1 - a) hoch 2,2 (wie dort gerechnet). */
+const NR_ZIFFER = '#f4f4f2', NR_ZIFFER_L = leuchte(NR_ZIFFER);
+function rauchglas(y){
+  const s = y <= 0.15 ? 1 : Math.pow(0.15 / y, 1 / 2.2), a = Math.min(0.85, SCHAUM_RAUCH_STAERKE * (1 - s));
+  return { a, k: (NR_ZIFFER_L + 0.05) / (y * Math.pow(1 - a, 2.2) + 0.05) };
 }
 /* Höhe der Ziffern in em (Oberkante über der Grundlinie), aus der Schrift gemessen */
 let ziffernHoch = null;
 const ziffernHoehe = () => ziffernHoch || (ziffernHoch = (() => { const c = document.createElement('canvas').getContext('2d');
   c.font = '600 100px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'; const a = c.measureText('0123456789').actualBoundingBoxAscent / 100;
   return a > 0.4 && a < 1 ? a : 0.72; })());
+/* WO DIE NUMMER STEHT (Caspar_D, 15.10.2026: Die Nummer meidet die Coverschrift; „Gesichter sollten die Nummern auch meiden"). Eine
+   Ecke ist frei, wenn ihr Schild samt einem Viertel Geviert Luft keine Schriftbox und kein Gesicht aus dem Gesichterbuch berührt
+   (schaumFokus: alle Boxen, ohne die 35-%-Regel und ab der Schwelle des Erkenners). Das Schild hält ein Viertel Geviert Abstand
+   von den Kanten des Covers. Größe der Ziffern 1,5 bis 3,5 mm (8,5 % der kurzen Coverseite; 1,5 mm ist die Untergrenze, bis zu der das
+   Verzeichnis schrumpft), so klein, dass das Schild ins Cover passt, aber nicht unter 0,8 mm (auf winzigen Covern, flächentreu mit
+   Wert 1, ragt es dann über den Rand). Ist keine Ecke frei, wird die Nummer schrittweise kleiner (je 10 %) bis 1,0 mm (Bildformate:
+   1,0 Seiteneinheiten, 5 Punkte), bis eine frei ist. Ist auch dann keine frei, gleitet sie in der kleinsten Größe an der Kante entlang
+   in die nächste freie Lücke (kürzester Weg von einer Ecke; was bis ein Viertel Geviert weiter liegt, gilt als gleich nah, dort
+   entscheidet der Kontrast); gibt es keine, steht sie an der Kante dort, wo das Schild Schrift und Gesichter am wenigsten überdeckt.
+   Ohne Eintrag im Buch weicht nichts aus (Hinweis im Studio). An jeder Nummer: data-ecke (die Ecke, 'kante' oder 'min'), data-stufe
+   (ecke, kleiner, kante, min), data-feld (das Schild in Anteilen des Covers: x0,y0,x1,y1), data-k (Kontrast), data-a (Deckkraft).
+   Bis 15.10.2026 hatte jede Ecke einen zweiten, tieferen Abstand (anderthalb Geviert), wenn keine 4,5 : 1 erreichte - die Ziffern
+   standen sonst auf dem eigenen Rahmen mancher Cover (Holzschnitte). Das Glas deckt diese Linie ab; der zweite Abstand ist gelöscht. */
+const schneidet = (a, b, mx = 0, my = 0) => Math.min(a[2] + mx, b[2]) > Math.max(a[0] - mx, b[0]) && Math.min(a[3] + my, b[3]) > Math.max(a[1] - my, b[1]);
+const ueberdeckt = (a, b) => Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])) * Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
+function nummerPlatz(t, bw, bh, k, m, sperre){
+  const em = messen('0'.repeat(t.length), 600, 2);   /* Nullen bei 2 px: eine Obergrenze für jede Nummer (B1, 15.10.2026) */
+  let fs0 = Math.min(3.5, Math.max(1.5, 0.085 * Math.min(bw, bh)));
+  fs0 = Math.max(0.8, Math.min(fs0, bw / (em + 1.2), bh / 1.8));
+  const groessen = []; for (let f = fs0; f > 1 + 1e-9; f *= 0.9) groessen.push(f); groessen.push(Math.min(fs0, 1));
+  /* das Schild bei Schriftgröße f, in Anteilen des Covers; die Ziffern bei f/k gemessen wie gesetzt (Wandpunkte) */
+  const schild = (f) => { const tw = messen('0'.repeat(t.length), 600, f / k) * f, luft = 0.25 * f;
+    return { f, fw: (tw + 0.7 * f) / bw, fh: 1.3 * f / bh, gx: luft / bw, gy: luft / bh }; };
+  const frei = (R, S) => !sperre.some(b => schneidet(R, b, S.gx, S.gy));
+  const glas = (R) => rauchglas(m ? feldHell(m, R[0], R[2], R[1], R[3]) : leuchte(grund()));   /* Bild nicht zu laden: es fehlt auch im Plakat */
+  for (const [i, f] of groessen.entries()){ const S = schild(f); let beste = null;
+    for (const e of ECKEN){
+      const x0 = e[1] === 'r' ? 1 - S.gx - S.fw : S.gx, y0 = e[0] === 'u' ? 1 - S.gy - S.fh : S.gy, R = [x0, y0, x0 + S.fw, y0 + S.fh];
+      if (!frei(R, S)) continue;
+      const v = glas(R); if (!beste || v.k > beste.k) beste = { ...v, R, f, ecke: e, stufe: i ? 'kleiner' : 'ecke' };
+    }
+    if (beste) return beste;
+  }
+  const S = schild(groessen[groessen.length - 1]), N = 40, lagen = [];
+  for (let j = 0; j <= N; j++){
+    const x0 = S.gx + (1 - S.fw - 2 * S.gx) * j / N, y0 = S.gy + (1 - S.fh - 2 * S.gy) * j / N;
+    const dx = Math.min(x0 - S.gx, 1 - S.gx - S.fw - x0) * bw, dy = Math.min(y0 - S.gy, 1 - S.gy - S.fh - y0) * bh;   /* Weg von der Ecke in mm */
+    for (const y of [S.gy, 1 - S.gy - S.fh]) lagen.push({ R: [x0, y, x0 + S.fw, y + S.fh], d: dx });
+    for (const x of [S.gx, 1 - S.gx - S.fw]) lagen.push({ R: [x, y0, x + S.fw, y0 + S.fh], d: dy });
+  }
+  const freie = lagen.filter(l => frei(l.R, S));
+  if (freie.length){ const nah = Math.min(...freie.map(l => l.d)) + 0.25 * S.f; let beste = null;
+    for (const l of freie) if (l.d <= nah){ const v = glas(l.R); if (!beste || v.k > beste.k) beste = { ...v, R: l.R, f: S.f, ecke: 'kante', stufe: 'kante' }; }
+    return beste; }
+  let beste = null;
+  for (const l of lagen){ const u = sperre.reduce((s, b) => s + ueberdeckt(l.R, b), 0), v = glas(l.R);
+    if (!beste || u < beste.u - 1e-12 || (Math.abs(u - beste.u) <= 1e-12 && v.k > beste.k)) beste = { ...v, u, R: l.R, f: S.f, ecke: 'min', stufe: 'min' }; }
+  return beste;
+}
 /* DIE BILDEBENE: Rahmen (die Farbe des Areals zu 38 % in den Grund gemischt, wie am Schirm gedämpft), das Cover im Originalformat -
    in der Vorschau aus dem Bildvorrat, fürs PDF das Original (data-voll; druckBilder rechnet es auf 300 dpi seiner Größe) - und die
-   Nummer. Nummeriert wird wie im Werkverzeichnis des Schaums: Areal für Areal in der Reihenfolge der Legende, darin in
-   Lesereihenfolge (Zeilen von 0,7 mittleren Bildkanten Höhe, in der Zeile von links nach rechts); jedes Cover hat seine Nummer, die
-   Liste unten nennt sie alle. Schriftgröße 1,5 bis 3,5 mm (8,5 % der kurzen Coverseite; 1,5 mm ist die Untergrenze, bis zu der das
-   Verzeichnis schrumpft), ein halbes Geviert von den Kanten; passt die Nummer in ein winziges Cover nicht (flächentreu, Wert 1), wird
-   sie kleiner, bis 0,8 mm - sie ragt nie über das Cover hinaus. Seit das Plakat der Bilderschau alle gezeigten Titel hängt (kachelZahl,
-   15.10.2026), geschieht das auf kleinen Formaten oft; wie oft und wie klein, sagt nrKlein (im Studio unter dem Format). */
+   Nummer auf ihrem Glas (nummerPlatz). Nummeriert wird wie im Werkverzeichnis des Schaums: Areal für Areal in der Reihenfolge der
+   Legende, darin in Lesereihenfolge (Zeilen von 0,7 mittleren Bildkanten Höhe, in der Zeile von links nach rechts); jedes Cover hat
+   seine Nummer, die Liste unten nennt sie alle. NUMMERN AUSBLENDBAR WIE IN DEN TREEMAPS (Caspar_D, 15.10.2026: „Mach wie in den Treemaps
+   die Nummer ausblendbar"): ohne Verzeichnis keine Nummern und keine Liste (mitVerzeichnis). Seit das Plakat der Bilderschau alle
+   gezeigten Titel hängt (kachelZahl, 15.10.2026), werden die Nummern auf kleinen Formaten oft kleiner als 1,5 mm; wie oft und wie
+   klein, wie viele an der Kante stehen oder keine freie Stelle fanden und wie viele Cover das Buch noch nicht kennt, sagt nrStand
+   (im Studio unter dem Format). */
 async function bilderEbene(g, kv, lauf){
   const res = aktuell.res, W = res.width, H = res.height, k = Math.min(kv.w / W, kv.h / H);     /* mm je Wandpunkt */
   const zeile = new Map(aktuell.j.zeilen.map(z => [z.id, z])), farbeAmSchirm = aktuell.farbe || (() => null), farbe = (n) => farbeAmSchirm(n) || '#8a8d94';
-  const ids = res.bilder.map(b => b.id), mess = new Map(), offen = ids.slice(); let n = 0;
+  const mitNummern = !!g.verz, ids = mitNummern ? res.bilder.map(b => b.id) : [], mess = new Map(), offen = ids.slice(); let n = 0;
+  if (mitNummern && typeof schaumGesichterLaden === 'function') await schaumGesichterLaden();   /* Schrift und Gesichter (ohne Buch: {}) */
   await Promise.all(Array.from({ length: 4 }, async () => { while (offen.length){ const id = offen.shift(); mess.set(id, await messbild(artworkBild(id)));
     if (lauf === bauLauf && (++n % 20 === 0 || n === ids.length)) standSetzen(`Die Ecken der Cover werden vermessen … ${n} von ${ids.length}`); } }));
   if (lauf !== bauLauf) return null;
   /* Nummern: Areal für Areal (Reihenfolge der Legende), darin Zeile für Zeile */
-  const seiten = res.bilder.map(b => Math.sqrt(b.w * b.h)).sort((a, b) => a - b), band = 0.7 * (seiten[seiten.length >> 1] || 1);
-  const leg = legendenEintraege(true).map(e => e.name), summe = new Map();
-  for (const b of res.bilder) summe.set(b.gruppe, (summe.get(b.gruppe) || 0) + (+(zeile.get(b.id) || {}).w || 0));
-  const rang = (a) => { const i = leg.indexOf(a); return i < 0 ? leg.length : i; };
   const verzeichnis = [], nummer = new Map(); let nr = 0;
-  for (const a of [...summe.keys()].sort((p, q) => rang(p) - rang(q) || summe.get(q) - summe.get(p))){
-    const liste = res.bilder.filter(b => b.gruppe === a).sort((p, q) => Math.floor((p.y + p.h / 2) / band) - Math.floor((q.y + q.h / 2) / band) || (p.x + p.w / 2) - (q.x + q.w / 2));
-    verzeichnis.push({ name: a, farbe: farbe(a), weitere: 0, eintraege: liste.map(b => { nummer.set(b.id, ++nr); return { nr, titel: String((zeile.get(b.id) || {}).titel || '').trim() }; }) });
+  if (mitNummern){
+    const seiten = res.bilder.map(b => Math.sqrt(b.w * b.h)).sort((a, b) => a - b), band = 0.7 * (seiten[seiten.length >> 1] || 1);
+    const leg = legendenEintraege(true).map(e => e.name), summe = new Map();
+    for (const b of res.bilder) summe.set(b.gruppe, (summe.get(b.gruppe) || 0) + (+(zeile.get(b.id) || {}).w || 0));
+    const rang = (a) => { const i = leg.indexOf(a); return i < 0 ? leg.length : i; };
+    for (const a of [...summe.keys()].sort((p, q) => rang(p) - rang(q) || summe.get(q) - summe.get(p))){
+      const liste = res.bilder.filter(b => b.gruppe === a).sort((p, q) => Math.floor((p.y + p.h / 2) / band) - Math.floor((q.y + q.h / 2) / band) || (p.x + p.w / 2) - (q.x + q.w / 2));
+      verzeichnis.push({ name: a, farbe: farbe(a), weitere: 0, eintraege: liste.map(b => { nummer.set(b.id, ++nr); return { nr, titel: String((zeile.get(b.id) || {}).titel || '').trim() }; }) });
+    }
   }
   const gr = farbWert(grund()) || [12, 13, 16];
   const misch = (f) => '#' + (farbWert(f) || [138, 141, 148]).map((v, i) => Math.round(v * 0.38 + gr[i] * 0.62).toString(16).padStart(2, '0')).join('');
   const pxJeMm = ((el('ps-blatt') || {}).clientWidth || 800) / g.PW * (window.devicePixelRatio || 1), hoch = ziffernHoehe(), f2 = (v) => v.toFixed(2);
   let out = '';
-  const nrKlein = { n: 0, von: res.bilder.length, min: Infinity };   /* Nummern unter 1,5 mm und die kleinste */
-  for (const b of res.bilder){
-    const r = b.rahmen || 0, u = artworkBild(b.id), stufe = schaumStufe(Math.max(b.w, b.h) * k * pxJeMm);
+  const nrStand = mitNummern ? { klein: 0, von: res.bilder.length, kleinste: Infinity, kante: 0, min: 0, ohneBuch: 0 } : null;
+  for (const [i, b] of res.bilder.entries()){
+    const r = b.rahmen || 0, u = artworkBild(b.id), href = esc2(schaumBildHref(u, schaumStufe(Math.max(b.w, b.h) * k * pxJeMm)));
     if (r > 0) out += `<rect x="${f2(b.x - r)}" y="${f2(b.y - r)}" width="${f2(b.w + 2 * r)}" height="${f2(b.h + 2 * r)}" fill="${misch(farbe(b.gruppe))}"/>`;
-    out += `<image href="${esc2(schaumBildHref(u, stufe))}" data-voll="${esc2(u)}" data-id="${esc2(b.id)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none"/>`;
-    /* die Nummer: Größe, Feld je Ecke (Anteile des Covers), Wahl nach dem Kontrast. Sie steht in dieser Ebene (Wandpunkte,
-       font-size fs/k) und wird bei fs/k gesetzt, darum dort gemessen (15.10.2026, A3 hoch, fs/k 6,7 bis 9,5: Leinwand gegen SVG
-       −0,2 bis +0,2 %, bei fs in mm +0,7 bis +3,0 %). Nullen sind 1 bis 2 % breiter als die gesetzten Tabellenziffern - eine
-       Obergrenze für jede Nummer; em ebenso, bei 2 px, der breitesten Stufe. */
-    const t = String(nummer.get(b.id)), bw = b.w * k, bh = b.h * k, em = messen('0'.repeat(t.length), 600, 2);
-    let fs = Math.min(3.5, Math.max(1.5, 0.085 * Math.min(bw, bh)));
-    fs = Math.max(0.8, Math.min(fs, bw / (em + 1), bh / (hoch + 1)));
-    if (fs < 1.5){ nrKlein.n++; nrKlein.min = Math.min(nrKlein.min, fs); }
-    const tw = messen('0'.repeat(t.length), 600, fs / k) * fs, ch = hoch * fs, halo = 0.25 * fs, m = mess.get(b.id);
-    /* je Ecke zwei Abstände von den Kanten: ein halbes Geviert, und - nur wenn dort keine Ecke 4,5 : 1 erreicht (WCAG für Text) - anderthalb.
-       Viele Cover tragen einen eigenen Rahmen (Holzschnitte: dunkle Linie, helle Bordüre); ein halbes Geviert setzt die Ziffern genau
-       auf die Linie, ein Stück weiter innen stehen sie auf der ruhigen Bordüre - immer noch in der Ecke. */
-    const versuch = (pad, nurWennPlatz) => { if (nurWennPlatz && (tw + pad + 0.5 * fs > bw || ch + pad + 0.5 * fs > bh)) return null;
-      const fx0 = Math.max(0, (pad - halo) / bw), fx1 = Math.min(1, (pad + tw + halo) / bw), fy0 = Math.max(0, (pad - halo) / bh), fy1 = Math.min(1, (pad + ch + halo) / bh);
-      let beste = null;
-      for (const e of ECKEN){                                  /* ur, ul, or, ol - bei Gleichstand gewinnt die erste */
-        const rechts = e[1] === 'r', unten = e[0] === 'u';
-        const v = m ? feldKontrast(m, rechts ? 1 - fx1 : fx0, rechts ? 1 - fx0 : fx1, unten ? 1 - fy1 : fy0, unten ? 1 - fy0 : fy1)
-          : { k: 0, farbe: hellerGrund() ? '#000000' : '#ffffff' };     /* Bild nicht zu laden: es fehlt auch im Plakat, die Nummer steht auf dem Grund */
-        if (!beste || v.k > beste.k) beste = { ...v, e, pad };
-      }
-      return beste; };
-    let wahl = versuch(0.5 * fs, false);
-    if (wahl.k < 4.5){ const tiefer = versuch(1.5 * fs, true); if (tiefer && tiefer.k > wahl.k) wahl = tiefer; }
-    const rechts = wahl.e[1] === 'r', unten = wahl.e[0] === 'u', pad = wahl.pad;
-    const tx = rechts ? b.x + b.w - pad / k : b.x + pad / k, ty = unten ? b.y + b.h - pad / k : b.y + (pad + ch) / k;
-    out += `<text class="ps-nr" x="${f2(tx)}" y="${f2(ty)}" font-size="${(fs / k).toFixed(3)}" font-weight="600" fill="${wahl.farbe}" text-anchor="${rechts ? 'end' : 'start'}"`
-      + ` data-ecke="${wahl.e}" data-k="${wahl.k.toFixed(1)}" style="font-variant-numeric:tabular-nums">${t}</text>`;
+    out += `<image href="${href}" data-voll="${esc2(u)}" data-id="${esc2(b.id)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none"/>`;
+    if (!mitNummern) continue;
+    const fo = typeof schaumFokus === 'function' ? schaumFokus(b.id) : null; if (!fo) nrStand.ohneBuch++;
+    const t = String(nummer.get(b.id)), p = nummerPlatz(t, b.w * k, b.h * k, k, mess.get(b.id), fo ? (fo.schrift || []).concat(fo.gesichter || []) : []);
+    if (p.f < 1.5){ nrStand.klein++; nrStand.kleinste = Math.min(nrStand.kleinste, p.f); }
+    if (p.ecke === 'kante') nrStand.kante++; if (p.ecke === 'min') nrStand.min++;
+    /* das Schild in Wandpunkten; darunter das Cover weichgezeichnet (Filter nur über dem Schild), darauf Schwarz in der Deckkraft a */
+    const sx = b.x + p.R[0] * b.w, sy = b.y + p.R[1] * b.h, sw = (p.R[2] - p.R[0]) * b.w, sh = (p.R[3] - p.R[1]) * b.h, form = `x="${f2(sx)}" y="${f2(sy)}" width="${f2(sw)}" height="${f2(sh)}"`;
+    out += `<clipPath id="ps-nrs${i}"><rect ${form} rx="${f2(0.3 * sh)}"/></clipPath>`
+      + `<filter id="ps-nrg${i}" filterUnits="userSpaceOnUse" ${form} color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${(0.25 * p.f / k).toFixed(3)}" edgeMode="duplicate"/></filter>`
+      + `<image href="${href}" data-voll="${esc2(u)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none" filter="url(#ps-nrg${i})" clip-path="url(#ps-nrs${i})"/>`
+      + `<rect class="ps-rauch" ${form} rx="${f2(0.3 * sh)}" fill="#000" opacity="${p.a.toFixed(3)}"/>`
+      + `<text class="ps-nr" x="${f2(sx + sw / 2)}" y="${f2(sy + sh / 2 + hoch * p.f / 2 / k)}" font-size="${(p.f / k).toFixed(3)}" font-weight="600" fill="${NR_ZIFFER}" text-anchor="middle"`
+      + ` data-id="${esc2(b.id)}" data-ecke="${p.ecke}" data-stufe="${p.stufe}" data-feld="${p.R.map(v => v.toFixed(4)).join(',')}" data-k="${p.k.toFixed(1)}" data-a="${p.a.toFixed(3)}"`
+      + ` style="font-variant-numeric:tabular-nums">${t}</text>`;
   }
   standSetzen('');
   return { svg: `<svg class="ps-schaum" x="${f2(kv.x)}" y="${f2(kv.y)}" width="${f2(kv.w)}" height="${f2(kv.h)}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${out}</svg>`,
-           verzeichnis: g.verz ? verzeichnis : null, areale: (res.areale || []).map(a => ({ name: a.name, farbe: farbe(a.name), pts: a.poly })), nrKlein };
+           verzeichnis: g.verz ? verzeichnis : null, areale: (res.areale || []).map(a => ({ name: a.name, farbe: farbe(a.name), pts: a.poly })), nrStand };
 }
 async function bauen(g){
   if (!aktuell) return;
@@ -804,10 +856,10 @@ async function bauen(g){
   if (!la){ standSetzen('Bitte den Schaum einmal anzeigen lassen, dann das Plakat öffnen.'); return; }
   /* Erst die Bilder, dann das Plakat (Caspar_D, 07.10.2026: keine mindere Qualitaet) - meist schon bereit,
      denn der Schaum war vorher zu sehen; sonst „Bilder werden vorbereitet …" wie im Haus (bilderBereit). */
-  let skHinweis = '', refrains = [], svg, verzeichnis, areale, nrKlein = null;
+  let skHinweis = '', refrains = [], svg, verzeichnis, areale, nrStand = null;
   if (aktuell.art === 'bild'){
     const ebene = await bilderEbene(g, kv, lauf); if (!ebene || lauf !== bauLauf) return;
-    ({ svg, verzeichnis, areale, nrKlein } = ebene);
+    ({ svg, verzeichnis, areale, nrStand } = ebene);
   } else {
   if (E.skizze){
     /* Skizzenbuch: statt der Cover die Federzeichnungen (auf dem Server gerechnet); die Schrift muss vor dem Messen geladen sein */
@@ -901,11 +953,17 @@ async function bauen(g){
   el('ps-mass').textContent = g.tri ? `drei Rahmen je ${(g.tri.pw / 10).toLocaleString('de-DE')} × ${(g.tri.ph / 10).toLocaleString('de-DE')} cm, Fuge ${(g.tri.fuge / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt` : fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
     : g.randKante && g.randKante.umschlag ? `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm + ${(g.randKante.umschlag / 10).toLocaleString('de-DE')} cm Umschlag = ${((g.w + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} × ${((g.h + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`
     : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
-  /* Bilderschau: wie viele Nummern auf den Covern kleiner als 1,5 mm sind (bilderEbene) - bleibt stehen wie das Maß, standSetzen leert
-     es nicht; bei Bildformaten in Punkten des PNG (1080 breit, wie in der Zeile darüber) */
-  { const h = el('ps-nrklein'), kl = nrKlein && nrKlein.n ? nrKlein : null, pt = fm.bild ? 1080 / g.w : 0;
+  /* Bilderschau: wie viele Nummern auf den Covern kleiner als 1,5 mm sind, an der Kante oder auf Schrift und Gesichtern stehen und wie viele
+     Cover das Gesichterbuch noch nicht kennt (bilderEbene, nummerPlatz) - bleibt stehen wie das Maß, standSetzen leert es nicht; bei
+     Bildformaten in Punkten des PNG (1080 breit, wie in der Zeile darüber). Einen Lauf des Buchs stößt das Studio nicht an. */
+  { const h = el('ps-nrklein'), st = nrStand, pt = fm.bild ? 1080 / g.w : 0, teile = [];
     const zahl = (v) => (pt ? v * pt : v).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + (pt ? ' Punkte' : ' mm');
-    h.hidden = !kl; h.textContent = kl ? `Nummern auf den Covern: ${kl.n} von ${kl.von} kleiner als ${zahl(1.5)}, die kleinste ${zahl(kl.min)}.` : ''; }
+    if (st && st.klein) teile.push(`${st.klein} von ${st.von} kleiner als ${zahl(1.5)}, die kleinste ${zahl(st.kleinste)}`);
+    if (st && st.kante) teile.push(`${st.kante} an der Kante, weil keine Ecke frei war`);
+    if (st && st.min) teile.push(`${st.min} ohne freie Stelle – sie decken Schrift oder Gesicht so wenig wie möglich`);
+    const text = (teile.length ? `Nummern auf den Covern: ${teile.join('; ')}.` : '')
+      + (st && st.ohneBuch ? `${teile.length ? ' ' : ''}${st.ohneBuch} Cover sind noch nicht auf Schrift und Gesichter untersucht – ihre Nummern weichen dort nicht aus.` : '');
+    h.hidden = !text; h.textContent = text; }
 }
 /* Das Plakat steht im selben Dokument wie der Klangschaum dahinter, und beide tragen dieselben IDs
    (skz0 … Zuschnitt je Zelle, skkissen, hatch). url(#skz0) traefe dann den Zuschnitt der Zelle am
@@ -1268,6 +1326,8 @@ function felderSetzen(){
   el('ps-zeit-grund').hidden = raumJetzt !== 'groupies';
   { const a = el('ps-auflage'); if (document.activeElement !== a) a.value = E.auflage || ''; }
   el('ps-hinweis').hidden = raumJetzt !== 'groupies';
+  el('ps-verz-text').textContent = bilderschau() ? 'Jedes Cover bekommt eine Nummer, unten steht die Liste aller Titel. Aus: keine Nummern, keine Liste.'
+    : 'Jede Zelle bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.';
   /* WAS NICHT GILT, WIRD GRAU MIT GRUND (Hausregel 4; Caspar_D, 07.10.2026: „mach alle sachen, die nicht ins rahmenlose design
      passen ausgegraut"): bei Randlos alles, was am Rand haengt; sonst Ecke und Name, die es nur bei Randlos gibt. */
   const grau = (knoten, aus, grund) => { if (!knoten) return; knoten.classList.toggle('ps-grau', aus); knoten.title = aus ? grund : '';
@@ -1295,7 +1355,7 @@ function felderSetzen(){
     studio.querySelectorAll('[data-vorlage]').forEach(vb => { const v = vb.dataset.vorlage;
       const warum = v === 'skizze' && raumJetzt === 'groupies' ? 'Das Skizzenbuch zeichnet die Cover deiner Titel – im Groupieschaum gibt es sie nicht.'
         : v === 'skizze' && bilderschau() ? 'Das Skizzenbuch zeichnet den Klangschaum mit der Feder – die Bilderschau hängt die Cover selbst.'
-        : v === 'randlos' && bilderschau() ? 'Randlos hat kein Werkverzeichnis – in der Bilderschau trägt jedes Cover seine Nummer, die Titel stehen im Verzeichnis.' : '';
+        : v === 'randlos' && bilderschau() ? 'Randlos gibt es in der Bilderschau noch nicht – es hat kein Werkverzeichnis für die Nummern auf den Covern.' : '';
       vb.disabled = !!warum; vb.classList.toggle('ps-grau', !!warum); vb.title = warum; });
     studio.querySelectorAll('[data-format]').forEach(b => { const f = FORMATE.find(x => x.id === b.dataset.format) || {}, aus = sk && !!f.tri; b.disabled = aus; b.classList.toggle('ps-grau', aus); b.title = aus ? 'Das Skizzenbuch ist eine Seite.' : ''; }); }
   /* BILDERSCHAU: was nur den Schaum betrifft, grau mit Grund (Hausregel 4) - nach dem Skizzenbuch-Block, der die Feinheiten freigibt */
@@ -1303,7 +1363,6 @@ function felderSetzen(){
     const ohne = 'Gilt nicht in der Bilderschau – die Cover hängen so, wie sie am Schirm hängen.';
     for (const id of ['ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-kissen']) grau(zeile(id), true, ohne);
     grau(el('ps-titelwahl'), true, 'In der Bilderschau gibt es keine Bildunterschriften – jedes Cover trägt seine Nummer, die Titel stehen im Werkverzeichnis.');
-    grau(el('ps-verz'), true, 'In der Bilderschau immer dabei: jedes Cover trägt seine Nummer, das Verzeichnis nennt die Titel.');
     const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, true, 'In der Bilderschau schwarz oder weiß wie die Vorlagen – keine freie Farbe.'); el('ps-farbe').disabled = true;
   } else { grau(el('ps-titelwahl'), false, ''); const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, false, ''); el('ps-farbe').disabled = false; }
   { const v = E.randVorne ?? 15, u = +E.umschlag || 0, a = el('ps-randvorne'), b = el('ps-umschlag');
@@ -1417,8 +1476,10 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   el('ps-freiw').onchange = () => setze({ freiW: Math.max(10, Math.min(300, +el('ps-freiw').value || 80)) });
   el('ps-freih').onchange = () => setze({ freiH: Math.max(10, Math.min(300, +el('ps-freih').value || 120)) });
   /* Schalter als Pillen (Hausregel 18: „Pillen statt Checkboxen" - bis 1.0.58 standen hier sieben Checkboxen) */
-  for (const [id, schl] of [['ps-kissen', 'kissen'], ['ps-verz', 'verzeichnis'], ['ps-zeit', 'zeitleiste'], ['ps-edition', 'edition'], ['ps-areale', 'areale'], ['ps-feder', 'feder'], ['ps-legende', 'legende']])
+  for (const [id, schl] of [['ps-kissen', 'kissen'], ['ps-zeit', 'zeitleiste'], ['ps-edition', 'edition'], ['ps-areale', 'areale'], ['ps-feder', 'feder'], ['ps-legende', 'legende']])
     el(id).onclick = () => setze({ [schl]: !E[schl] });
+  /* Verzeichnis: in der Bilderschau ein eigener Schalter (bildNummern, Vorgabe an), sonst der der Vorlagen */
+  el('ps-verz').onclick = () => setze(bilderschau() ? { bildNummern: E.bildNummern === false } : { verzeichnis: !E.verzeichnis });
   el('ps-auflage').oninput = (ev) => setze({ auflage: ev.target.value }, false, undefined, true); el('ps-auflage').onchange = () => zeichnen();
   /* Ein Feld, das man angefasst hat, gehört einem - auch leer (vorher hieß leer „Vorschlag", und der stand nach einer Sekunde wieder
      auf dem Plakat). Bei Randlos bemisst der Text die Ecke: beim Tippen nur setzen, neu legen beim Verlassen des Feldes oder Enter. */
