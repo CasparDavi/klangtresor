@@ -9021,6 +9021,11 @@ Rand, PDF und PNG kommen vom Studio; neu ist nur die Bildebene `bilderEbene()`.
   Klangschaum Galerie 70×100 und Bleiglas A3 bitgleich, Groupieschaum 50×50 bitgleich; Randlos 70×100 quer gleich bis auf die
   Rauchglas-Deckung einzelner Zellen (`schaumRauch` misst die Vorschaubilder, und der Bildvorrat war beim zweiten Lauf voller; die
   Geometrie ist gleich, mit 3 % Toleranz 0 abweichende Bildpunkte).
+- **Prüfrunde (bestätigt, behoben):** gezoomte Bilderschau → Plakat-Legende ohne die farbige Zoomgruppe, nur graue Genre-Kästchen
+  (Rahmen und Verzeichnisköpfe trugen #2ec4b6). `auftrag()` gab der Bilderschau kein `ebenen` mit, `arealeDer` erkannte den Zoom
+  nicht und filterte nach den Genres. Jetzt `ebenen: zoom ? ['genre'] : ['gruppe']` wie im Klangschaum-Auftrag. Probe (Sandkasten 8805,
+  Galerie 70×100, Zoom „Metal · Elektronik — energisch"): vorher Legende [Elektronik, Metal, Rock] grau (Regler 30) bzw.
+  [Metal, Elektronik, Rock, dubstep] grau (Vorgabe), nachher = Panel mit Zoomgruppe farbig; ungezoomt unverändert; PDF mit sips angesehen.
 
 ### Wiedervorlage (Caspar_Ds Auge/Entscheidung)
 - Randlos für die Bilderschau: dort gibt es kein Verzeichnis – Cover ohne Nummer, oder Verzeichnis wo? (jetzt grau)

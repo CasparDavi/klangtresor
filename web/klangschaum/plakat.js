@@ -218,7 +218,13 @@ async function auftrag(verh){
     const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === d.wahl.gliederung) || glieder[0];
     const t = TRANSFORMATIONEN.find(x => x.id === d.wahl.trafo) || TRANSFORMATIONEN[1];
     const W = verh >= 1 ? Math.round(1400 / verh) : 1400, H = verh >= 1 ? 1400 : Math.round(1400 * verh);
-    return { j: { zeilen: d.zeilen, gruppen: d.gruppen, opt: { ...d.opt, kopf: 0, schild: 0 }, kopfBreite: d.kopfBreite, W, H, lage: 'bild|' + bilderStand() + '|' + verh, ohneRegler: d.ohneRegler },
+    /* ebenen wie im Auftrag des Klangschaums (gezoomt die Genres, sonst die Gruppen) - Caspar_D, 11.10.2026: „der Posterexport muß
+       schon wie beim Schaum funktionieren". arealeDer erkennt den Zoom daran und filtert die Legende dann nicht. Ohne ebenen hielt sie
+       gezoomt die Genres (z.gruppe) für die Areale und warf die Zoomgruppe hinaus: auf dem Plakat standen nur graue Kästchen (Grau heißt
+       im Haus unsicher), während Rahmen und Verzeichnisköpfe die Farbe der Zoomgruppe trugen (Fallensuche 15.10.2026). Hängen und
+       Begrenzen der Bilderschau lesen ebenen nicht; ungezoomt bleibt die Legende, wie sie war. */
+    return { j: { zeilen: d.zeilen, gruppen: d.gruppen, opt: { ...d.opt, kopf: 0, schild: 0 }, kopfBreite: d.kopfBreite, W, H, lage: 'bild|' + bilderStand() + '|' + verh, ohneRegler: d.ohneRegler,
+                  ebenen: d.wahl.zoom ? ['genre'] : ['gruppe'] },
              art: 'bild', m, gl, t, farbe: bg.farbe, gezoomt: !!d.wahl.zoom };
   }
   if (raumJetzt === 'groupies'){
