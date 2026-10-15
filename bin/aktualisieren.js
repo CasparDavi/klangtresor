@@ -220,9 +220,11 @@ async function githubRelease() {
 
 /* Die GitHub-API erlaubt ungefragt 60 Anfragen je Stunde und IP.
    Dreissig Minuten merken reicht: jede offene Seite fragt beim Oeffnen
-   und danach alle 12 h von selbst, dazu kommt der Knopf - Neuladen,
-   mehrere Tabs und ein zweiter Knopfdruck sollen dieselbe Auskunft
-   sehen, nicht das Kontingent verbrauchen. Gemerkt wird nur eine
+   und danach alle 12 h von selbst, dazu kommt der Knopf - Neuladen
+   und ein zweiter Knopfdruck sollen dieselbe Auskunft sehen, nicht das
+   Kontingent verbrauchen. Gebuendelt wird nicht: Tabs, die im selben
+   Augenblick oeffnen, fragen GitHub je einmal (gemessen 15.10.2026: drei
+   gleichzeitige Anfragen, drei Verbindungen). Gemerkt wird nur eine
    Antwort; nach einem Fehlschlag fragt die Seite in 2 h wieder. */
 let standVorrat = null, standVorratBis = 0;
 

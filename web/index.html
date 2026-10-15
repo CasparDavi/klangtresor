@@ -2337,8 +2337,8 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 /* Die Glocke links daneben: nur sichtbar, wenn GitHub eine neuere Programm-Fassung hat.
    Rand und Fuellung aus der Coverpalette (--akzent), nicht das feste Rosa des Morgenknopfs.
    Das Symbol in --text, nicht in --akzent: Akzent auf Akzent ist unsichtbar (Hausregel 13).
-   Nachgerechnet am 15.10.2026 ueber alle 330 Paletten des Katalogs, den Raben und die
-   Grundfarben: in --akzent lagen 17 (Ruhe) und 39 (Hover) unter 3:1, die schlechteste bei 2,47;
+   Nachgerechnet am 15.10.2026 ueber alle 330 Titel des Katalogs (310 mit eigener Palette, 20 auf den
+   Grundfarben), den Raben: in --akzent lagen 17 (Ruhe) und 39 (Hover) unter 3:1, die schlechteste bei 2,47;
    in --text keine, die schlechteste bei 7,2 (Hover), mit weissem Cover unter der Kopfzeile 5,0. */
 #fassungglocke{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;
   border:1px solid color-mix(in srgb, var(--akzent) 55%, transparent);
@@ -4076,7 +4076,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
          fassungErinnern() eine neuere Nummer sieht. Klick oeffnet das Ueber-Fenster.
          Der Tooltip sagt, was der Klick tut: er zeigt, wie man einspielt - einspielen
          tut nur das Skript im Ordner (Hausregel 22: Prinzip, nicht nur der Name). -->
-    <button id="fassungglocke" type="button" hidden onclick="fassungGlockeAuf()" title="Neue Programmfassung auf GitHub — Klick zeigt, wie man sie einspielt">
+    <button id="fassungglocke" type="button" hidden onclick="fassungGlockeAuf()" title="Neue Programm-Fassung auf GitHub — Klick zeigt, wie man sie einspielt">
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 22a2.2 2.2 0 0 0 2.2-2.2h-4.4A2.2 2.2 0 0 0 12 22zm7-6.2V11a7 7 0 1 0-14 0v4.8L3 18.2V20h18v-1.8l-2-2.4z"/>
       </svg>
@@ -29055,7 +29055,7 @@ function werAuf(){
 }
 function werZu(){ document.getElementById('wer').classList.remove('auf'); }
 /* GitHub-Release nachsehen: auf den Knopf im Fenster und von selbst
-   ueber fassungErinnern() (beim Oeffnen, dann alle 12 h). Der Server fragt
+   ueber fassungErinnern() (beim Oeffnen, dann alle 12 h, nach einem Fehlschlag in 2 h). Der Server fragt
    api.github.com (User-Agent mit Projektadresse) und haelt eine Antwort
    30 min vor, die Seite selbst fragt GitHub nie. Einspielen tut das Skript
    auf dem Rechner — im Container waere ein Overlay beim naechsten Restart weg. */
@@ -29148,7 +29148,7 @@ function fassungGlockeSetzen(d){
   if (!d || !d.github) return;
   if (!d.neuer){ g.hidden = true; return; }
   g.hidden = false;
-  g.title = 'Neue Programmfassung ' + d.github + ' auf GitHub — Klick zeigt, wie man sie einspielt';
+  g.title = 'Neue Programm-Fassung ' + d.github + ' auf GitHub — Klick zeigt, wie man sie einspielt';
 }
 function fassungGlockeAuf(){
   werAuf();
