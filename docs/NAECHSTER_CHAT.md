@@ -9229,14 +9229,20 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
   mit 1–3 Abrufen, √-Fläche → 5,6 mm breit, zu schmal für eine zwei-/dreistellige Nummer an der DIN-Schwelle (2,245 mm).
 
 ### Wiedervorlage (Caspar_Ds Auge/Entscheidung)
-- Randlos-Bilderschau: Cover halten 8 Wandpunkte Rand, reichen nicht ganz an die Kante – so lassen?
-- Steckbrief beim Überfahren einer Zelle/eines Covers wie beim Stern im Klangraum (bisher nur der laufende Titel).
+- ~~Randlos-Bilderschau: Cover halten 8 Wandpunkte Rand, reichen nicht ganz an die Kante – so lassen?~~ **erledigt 15.10.2026**
+  (Jörg: „der kleinste darf nicht den Interbildabstand unterschreiten“): das randnächste Cover hält genau einen Bilderabstand
+  zum sichtbaren Rand (Beschnitt abgezogen) und zur Ecke, weiter innen fällt es, wie es fällt (bilderschau.js beschnitt).
+- ~~Steckbrief beim Überfahren einer Zelle/eines Covers wie beim Stern im Klangraum (bisher nur der laufende Titel).~~
+  **erledigt 15.10.2026** (Jörg: „ja, mach es konsistent“): sofort beim Überfahren, bleibt stehen, nach dem Verlassen des
+  Schaums wieder der laufende Titel; nicht im Groupieschaum (schaumSteckbriefVon).
 - Klangraum: Sind alle Laden zu (schmale Leiste), ist die Ansichtswahl versteckt – ein Klick mehr als früher.
-- Dunkle Nummern haben keine Untergrenze: einzelne wirken fast schwarz (Papier Nr. 249). Untergrenze L?
+- ~~Dunkle Nummern haben keine Untergrenze: einzelne wirken fast schwarz (Papier Nr. 249). Untergrenze L?~~ **erledigt 15.10.2026**
+  (Jörg: „ist das das Kontrastproblem!“): NR_DUNKEL_L_MIN 0,30; reicht das nicht, helle Ziffer auf Glas.
 - Glas allein wegen der Obergrenze 7 : 1 (Galerie A3: 71 statt 63 Gläser) – Variante ohne liegt in scratchpad/_nummer-polish.
 - Zeigerstrich zu „Pop · Rock — Liebe“ läuft schräg ins Leere (Areal berührt den Rand nicht) – schon vorher so.
 - Fenster „KlangTresor“ bei Fensterhöhe unter ~820 px oben abgeschnitten.
 - Update-Paket: Docker ohne Node; Container „mysuno“ wird nicht erkannt; Zip-Update löscht keine veralteten Dateien.
 
 ### Backlog
-- Groupieschaum folgt dem Titelfilter (zählt nur Reaktionen auf gefilterte Titel) – Jörg: „3 b ins backlog“.
+- ~~Groupieschaum folgt dem Titelfilter (zählt nur Reaktionen auf gefilterte Titel) – Jörg: „3 b ins backlog“.~~
+  verworfen 15.10.2026 (Jörg: „neh, nich nötig“).
