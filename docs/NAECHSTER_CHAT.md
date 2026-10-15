@@ -8997,7 +8997,7 @@ PATH nie (in der VM Windows 10 nachgestellt: alt bricht ab, neu erreicht Node)**
 Neustart-Wache beobachtet aktualisieren.js; .gitignore werkzeug/ proben/. Verworfen u. a.: Zip-Weg löscht entfernte Dateien
 nicht (bleibt so, bekannt).
 
-## 99. 15./16.10.2026 Nacht: Bilderschau im Plakat-Studio + Quantil-Regler (NICHT ausgeliefert)
+## 99. 15./16.10.2026 Nacht: Bilderschau im Plakat-Studio + Quantil-Regler (ausgeliefert mit 1.0.78, Regler danach auf den Groupieschaum beschränkt – §100)
 
 ### Stand für Jörg (Klartext)
 
@@ -9184,3 +9184,45 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
   füllen, und die Areale aus dem Schaum sind für diese Menge zu groß.
   Hängt mit der Frage „Kachelzahl“ zusammen. Halbieren würde die Lücken eher vergrößern; gefragt ist, dass die Hängung bei
   einer Formatgrenze trotzdem dicht und rechteckig bleibt.
+
+## 100. 15.10.2026: 1.0.74 – 1.0.78 (Versionssprung, Glocke, Fenster, Update-Paket, Plakat-Nummern)
+
+### Stand für Jörg (Klartext)
+- **1.0.74** reiner Versionssprung für Tarjas Update-Test.
+- **1.0.75** Tarjas Pull Request 9 (Glocke links neben dem roten Knopf, wenn GitHub eine neuere Version hat), mit eigenen
+  Korrekturen: Ausfall von GitHub löscht die Glocke nicht mehr, Symbol in Textfarbe (Kontrast), Doku zum Nachsehen beim Öffnen,
+  roter Knopf auf dem Stick wirklich weg. Kommentar unter PR 9 gepostet (mit Jörgs Ja).
+- **1.0.76** Fenster „KlangTresor“: kein Knopf „Nach neuer Fassung sehen“ mehr, „Aktuelle Version“, „Zuletzt nachgesehen“,
+  Ordner als Pfad + Knopf „Ordner zeigen“, nur das Skript des eigenen Systems. Fürs Programm überall „Version“/„Update“,
+  „Fassung“ bleibt bei Liedern (Taufnotiz in HAUSREGELN).
+- **1.0.77** KlangTresor-Update.zip (flach: aktualisieren.js + drei Anlasser) für Installationen vor 1.0.73; feste Adresse
+  …/releases/latest/download/KlangTresor-Update.zip. Seitdem je Release ZWEI Dateien hochladen.
+- **1.0.78** Bilderschau im Plakat-Studio (§99) mit den Entscheidungen des Tages:
+  - Quantil-Regler nur noch im Groupieschaum (Jörg: Regler redundant, der Filter oben ist der Ort).
+  - Bilderschau-Plakat ohne Formatgrenze (700er-Grenze bleibt).
+  - Textbreite gemessen wie gesetzt (alle Plakate; Arealnamen stoßen nicht mehr).
+  - Nummer auf dem Cover: Akzentfarbe des Covers, Kontrast 4,5 … 7 : 1 (Untergrenze gegen den ungünstigsten Teil, Obergrenze
+    gegen das Mittel), dunkel auf hellem Grund, Glas nur wo nötig; so weit wie möglich weg von der Coverschrift, nie auf
+    Gesichtern; Mindestgröße nach DIN 1450 (Konsultationstext, x-Höhe 1,16 mm ≈ 2,25 mm Schrift auf dem Mac, Bildformate 12 px).
+  - Passt die Nummer nicht: kein Schild, Titel im Abschnitt „Zu klein für eine Nummer“ am Ende des Werkverzeichnisses
+    (gilt auch für Schaumzellen). Studio warnt vor Sinnfreiem, z. B. „Werkverzeichnis unter DIN 1450 (3,8 pt statt 6,5 pt)“.
+  - Verzeichnis/Nummern in der Bilderschau abschaltbar; Galerie überschreibt Randlos/Skizzenbuch des Klangschaums nicht mehr.
+
+### Als Nächstes (beschlossen, Pläne in scratchpad/runde2-phase2.md – nach Kompression hier die Kurzfassung)
+- **1.0.79 Panel „Räume und Schäume“:** Unterleiste oben weg; im Panel zwei beschriftete Pillenreihen „Räume“ (Klangraum,
+  Geschichten) und „Schäume“ (Klangschaum, Bilderschau, Groupieschaum); jede Ansicht in der Form des Klangraums
+  (Einstellungen/Legende einklappbar, Pillen); keine Checkboxen; Pille wird Dropdown, sobald sie nicht in eine Zeile passt
+  (gemessen, mit Hysterese) – Ergänzung zu Hausregel 19.
+- **1.0.80 Studio + Filter + Randlos:** Studio-Kopf „Plakat · <Art>“, alle Bilderschau-Optionen im Studio, geteilt mit der
+  Ansicht; Gruppenüberschriften und Bildunterschriften wählbar (Vorgabe aus); Klangschaum und Bilderschau folgen dem Filter
+  oben (Weggefiltertes fällt heraus, Voreinstellung „Öffentlich“ bleibt); Randlos für die Bilderschau (Nummern dort aus).
+
+### Wiedervorlage (Caspar_Ds Auge/Entscheidung)
+- Dunkle Nummern haben keine Untergrenze: einzelne wirken fast schwarz (Papier Nr. 249). Untergrenze L?
+- Glas allein wegen der Obergrenze 7 : 1 (Galerie A3: 71 statt 63 Gläser) – Variante ohne liegt in scratchpad/_nummer-polish.
+- Zeigerstrich zu „Pop · Rock — Liebe“ läuft schräg ins Leere (Areal berührt den Rand nicht) – schon vorher so.
+- Fenster „KlangTresor“ bei Fensterhöhe unter ~820 px oben abgeschnitten.
+- Update-Paket: Docker ohne Node; Container „mysuno“ wird nicht erkannt; Zip-Update löscht keine veralteten Dateien.
+
+### Backlog
+- Groupieschaum folgt dem Titelfilter (zählt nur Reaktionen auf gefilterte Titel) – Jörg: „3 b ins backlog“.
