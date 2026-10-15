@@ -336,7 +336,9 @@ function gitZustand() {
   /* nur VERFOLGTE Aenderungen zaehlen: werkzeug/ (von einrichten-* angelegt) und andere ungetrackte Ordner haelt git pull
      nicht auf - vorher brach jede eingerichtete Installation hier ab */
   const schmutz = git(['status', '--porcelain', '--untracked-files=no']);
-  git(['fetch', 'origin'], true);
+  /* ein gescheitertes fetch ist „Stand unbekannt", nicht „nichts zu holen" (Pruefung bei der Uebernahme) */
+  const geholt = spawnSync('git', ['fetch', 'origin'], { cwd: WURZEL, encoding: 'utf8' });
+  if (geholt.status !== 0) return { zweig, schmutz, lage: 'unerreichbar', grund: ((geholt.stderr || '').trim().split('\n')[0] || 'git fetch scheiterte') };
   let origin = null;
   try { origin = git(['rev-parse', 'origin/main']); } catch (e) { origin = null; }
   const kopf = git(['rev-parse', 'HEAD']);
@@ -395,7 +397,9 @@ async function main() {
     process.exit(1);
   }
   const mitDocker = dz.art === 'unseres' && !OHNE_DOCKER;
-  const laeuft = mitDocker && dz.status === 'running';
+  /* „laeuft" heisst: soll laufen - auch im Neustart-Kreislauf oder pausiert. Nur ein angehaltener (exited/created)
+     Container bleibt nach dem Neubau angehalten (Pruefung bei der Uebernahme: 'restarting' war danach aus). */
+  const laeuft = mitDocker && ['running', 'restarting', 'paused'].includes(dz.status);
   sag('  Ordner:   ' + WURZEL);
   sag('  Hier:     ' + (stand.hier || '—'));
   sag('  GitHub:   ' + (stand.github ? stand.github + (stand.tag && stand.tag !== stand.github ? '  (' + stand.tag + ')' : '') : (stand.grund || 'keine Antwort')));
@@ -442,13 +446,20 @@ async function main() {
     if (g.schmutz && !TROTZDEM) {
       sag('  Im Ordner liegen ungesicherte Aenderungen. Die fasse ich nicht an.');
       sag('  Erst festlegen oder weglegen, dann noch einmal — oder --trotzdem');
-      sag('  (dann bleibt der Schmutz, und git pull kann scheitern).');
+      sag('  (dann lege ich sie fuer den Zug beiseite und danach wieder auf; widerspricht');
+      sag('  eine davon dem Neuen, bleibt sie im git stash liegen).');
       sag('');
       process.exit(1);
     }
     if (g.zweig !== 'main' && g.zweig !== 'master' && !TROTZDEM) {
       sag('  Du bist auf dem Zweig „' + g.zweig + '“. Aktualisieren zieht origin/main.');
       sag('  Wechsle auf main, oder rufe mit --trotzdem auf.');
+      sag('');
+      process.exit(1);
+    }
+    if (g.lage === 'unerreichbar') {
+      sag('  origin ist nicht erreichbar (' + g.grund + ').');
+      sag('  Ob es etwas Neues gibt, laesst sich so nicht sagen – noch einmal, wenn das Netz da ist.');
       sag('');
       process.exit(1);
     }
@@ -463,8 +474,11 @@ async function main() {
       geholt = false;
     }
     if (geholt) {
-      sag('  → git pull --rebase origin main');
-      const r = spawnSync('git', ['pull', '--rebase', 'origin', 'main'], { cwd: WURZEL, stdio: 'inherit' });
+      /* --trotzdem bei verfolgten Aenderungen: ohne --autostash verweigert git den Rebase immer (Pruefung bei der Uebernahme) -
+         die Aenderungen werden beiseitegelegt und danach wieder aufgelegt */
+      const zug = ['pull', '--rebase', ...(g.schmutz ? ['--autostash'] : []), 'origin', 'main'];
+      sag('  → git ' + zug.join(' '));
+      const r = spawnSync('git', zug, { cwd: WURZEL, stdio: 'inherit' });
       if (r.status !== 0) {
         sag('');
         /* EIN HALBER REBASE IST KEIN „WIE VORHER" (Pruefung bei der Uebernahme): mit --trotzdem kann der Rebase an einem
@@ -504,9 +518,19 @@ async function main() {
   if (mitDocker) {
     composeBauen(laeuft);
     sag('');
-    sag(laeuft ? '  Fertig. Die Seite einmal hart neu laden (Bilder und Skripte sonst aus dem Vorrat).'
-               : '  Fertig. Der Container ist neu gebaut und angehalten, wie vorher. Starten: docker start klangtresor');
-    sag('  Adresse:  http://localhost:8788');
+    if (laeuft) {
+      sag('  Fertig. Die Seite einmal hart neu laden (Bilder und Skripte sonst aus dem Vorrat).');
+      sag('  Adresse:  http://localhost:8788');
+    } else {
+      sag('  Der Container ist neu gebaut und angehalten, wie vorher. Starten: docker start klangtresor');
+      /* Ein alter, angehaltener Container kann neben einer inzwischen direkt laufenden Installation stehen
+         (Pruefung bei der Uebernahme) - dann braucht auch der Ordner seine Pakete und seinen Neustart. */
+      if (fs.existsSync(path.join(WURZEL, 'node_modules'))) {
+        try { npmCiWennNoetig(lockVorher); } catch (e) { sag('  ' + e.message); sag('  Die Pakete musst du von Hand setzen: npm ci'); }
+        sag('  Laeuft dein KlangTresor ohne Container: den Server einmal neu starten (starten-linux.sh /');
+        sag('  starten-macos.command / starten-windows.cmd) und die Seite hart neu laden.');
+      }
+    }
   } else {
     try { npmCiWennNoetig(lockVorher); } catch (e) {
       sag('  ' + e.message);

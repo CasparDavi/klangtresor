@@ -8983,3 +8983,16 @@ jedem Bild zuletzt → Klick auf eine Marke verfehlte sie und setzte einen neuen
 EINHEIT vorher und legt sie danach zurück. Nachgestellt im Sandkasten (Kachel-Clip nach dem Öffnen gestartet): vorher Klick bei
 (186,180) → gezeichnet bei (137,212), Klick darauf → neuer Punkt; nachher gezeichnet bei (185,180), alle Marken greifbar, Ziehen
 verschiebt. Betraf genauso die Marken des Lichtraums und den Ort des Titels. Prüfstand nicht betroffen (malt nicht über clipTick).
+
+## 98. 15.10.2026: 1.0.73 – Pull Request 8 von Tarja übernommen (Programm aktualisieren) + Korrekturen
+Tarjas `bin/aktualisieren.js` + Anlasser `aktualisieren-*` + Knopf „Nach neuer Fassung sehen" (GET /api/fassung). Zwei Prüfrunden
+(Workflow, je Fund zwei Gegenprüfer): Runde 1 15 bestätigt, Runde 2 5 bestätigt – alle behoben, je mit eigenem Test:
+/api/fassung ohne synchrones docker inspect (Server stand bis 8 s; Gegenprobe 6,6 s / 1 Tick) und auf dem Stick gesperrt (405, Knopf
+weg); Docker am Ordner erkannt (compose working_dir / Mount library), Dienst aus → Abbruch mit --ohne-docker, veralteter Container
+wird nachgebaut, angehaltener bleibt angehalten, 'restarting'/'paused' zählen als laufend; Git: untracked hält nicht auf,
+--trotzdem nutzt --autostash, Rebase-Konflikt wird zurückgerollt, gescheitertes fetch = „nicht erreichbar"; npm neben dem
+laufenden Node; Downloads mit Zeitgrenze vor dem Verbinden und Abbruchprüfung; Abbruch ohne library/ (Entpackordner);
+Anlasser überleben ihr eigenes Ersetzen; **Windows-Anlasser: nackte „)" im echo schloss den if-Block – Update lief bei Node im
+PATH nie (in der VM Windows 10 nachgestellt: alt bricht ab, neu erreicht Node)**; Oberfläche „deine Fassung ist neuer";
+Neustart-Wache beobachtet aktualisieren.js; .gitignore werkzeug/ proben/. Verworfen u. a.: Zip-Weg löscht entfernte Dateien
+nicht (bleibt so, bekannt).
