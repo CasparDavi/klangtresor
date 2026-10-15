@@ -802,8 +802,8 @@ const lageKontrast = (y) => { const s = y <= 0.15 ? 1 : Math.pow(0.15 / y, 1 / 2
    kräftiger als 7 : 1 da (bis 15.10.2026, Gegenprüfung zu c5066cc: gemalt gegen das Mittel bis 10 : 1, 56 von 262 über 7). Farbton heißt
    OKLCH: die Helligkeit L wandert, der Ton H bleibt, die Buntheit C auch, soweit der Bildschirm sie in dieser Helligkeit darstellen kann
    (sonst weniger, wie ausOklch in bin/farben.js - okZuHex schnitte die Kanäle ab, das verschöbe den Ton); L bleibt so nah am Akzent, wie
-   das Band es erlaubt. Hell wird höchstens bis L 0,92, so weit hellt auch bin/farben.js einen Akzent gegen seinen Grund auf; dunkel ohne
-   Grenze, nahe L 0 ist die Ziffer fast schwarz. Bis 15.10.2026 stand die Ziffer immer heller als ihr Grund, und auf hellen Covern kam
+   das Band es erlaubt. Hell wird höchstens bis L 0,92, so weit hellt auch bin/farben.js einen Akzent gegen seinen Grund auf; dunkel
+   höchstens bis L 0,30 (NR_DUNKEL_L_MIN; bis 15.10.2026 ohne Grenze, nahe L 0 war die Ziffer fast schwarz). Bis 15.10.2026 stand die Ziffer immer heller als ihr Grund, und auf hellen Covern kam
    darum immer Glas darunter; vereinbart war „zu stark → abdunkeln, je nach Grund" (Caspar_D: „gut, gefällt mir das Plakat, du darfst die
    letzten Polierungen noch machen"). Jetzt: je Cover die Richtung, die das Band ohne Glas erreicht, bei beiden die mit dem kleineren
    Schritt vom Akzent (dann hell). Erreicht keine das Band, kommt Glas unter eine helle Ziffer (unter eine dunkle nähme es den Kontrast),
@@ -819,6 +819,11 @@ const lageKontrast = (y) => { const s = y <= 0.15 ? 1 : Math.pow(0.15 / y, 1 / 2
    Ziffern) Median 0,98 bis 0,99, 5 % unter 0,90 bis 0,95 - mal NR_SICHER_DUNKEL 1,08. Damit lagen gemalt gegen den ungünstigsten Teil 11,
    12 und 11 Ziffern unter 4,5 (vorher 14, 15, 13), gegen das Mittel 17, 25 und 23 über 7 (vorher 56, 59, 52). */
 const NR_KONTRAST_MIN = 4.5, NR_KONTRAST_MAX = 7, NR_HELL_MAX = 0.92, NR_SICHER = 1.02, NR_SICHER_HELL = 1.03, NR_SICHER_DUNKEL = 1.08;
+/* DIE DUNKLE ZIFFER HAT EINE UNTERGRENZE (Caspar_D, 15.10.2026, zu fast schwarzen Nummern auf manchen hellen Covern: „ist das das
+   Kontrastproblem!"): bis dahin hatte die dunkle Richtung keine - Papier A3 Nr. 249 stand #020000, gemessen (Filter „Öffentlich") L 0,16
+   bis 0,29 bei 5, 7 und 3 Ziffern (Galerie A3, Papier A3, Galerie 70 × 100 quer). Dunkel wird höchstens bis L 0,30, da ist der Ton noch
+   zu sehen; reicht das gegen die dunkelsten 10 % nicht, gibt es die dunkle Richtung nicht, und die Ziffer steht hell auf Glas. */
+const NR_DUNKEL_L_MIN = 0.30;
 /* OKLCH in linearem RGB (die Umkehrung von okFarbe im Haus); imTon nimmt die Buntheit in Schritten von 0,004 zurück, bis die Farbe darstellbar ist */
 function okLinear(L, C, H){
   const h = H * Math.PI / 180, a = C * Math.cos(h), b = C * Math.sin(h);
@@ -856,11 +861,12 @@ function nummerFarbe(basis, g){
     const r = MAX / MIN, sMin = Math.min(1, ((leuchte(hell) + 0.05) / MIN - 0.05) / g.hell, g.hell > r * g.mittel ? 0.05 * (r - 1) / (g.hell - r * g.mittel) : 1);
     wahl.push(sMin >= 1 ? ohne : setze(Math.ceil((1 - Math.pow(sMin, 1 / 2.2)) * 1000) / 1000));
   }
-  /* dunkel: L von unten (die dunkelste Farbe, die gegen das Mittel MAX hält) bis oben (die hellste, die gegen die dunkelsten 10 % MIND
-     erreicht); ohne Glas - Schwarz darunter nähme der dunklen Ziffer den Kontrast */
-  if (KD(bei(0), g.dunkel) >= MIND){
-    const oben = grenze(0, 1, (L) => KD(bei(L), g.dunkel) >= MIND);
-    const unten = KD(bei(0), g.mittel) <= MAX ? 0 : 1 - grenze(0, 1, (d) => KD(bei(1 - d), g.mittel) <= MAX);
+  /* dunkel: L von unten (die dunkelste Farbe, die gegen das Mittel MAX hält, nie unter NR_DUNKEL_L_MIN) bis oben (die hellste, die gegen
+     die dunkelsten 10 % MIND erreicht); ohne Glas - Schwarz darunter nähme der dunklen Ziffer den Kontrast. Erreicht schon L 0,30 MIND
+     nicht, fällt die dunkle Richtung weg (bis 15.10.2026 genügte L 0) */
+  if (KD(bei(NR_DUNKEL_L_MIN), g.dunkel) >= MIND){
+    const oben = grenze(NR_DUNKEL_L_MIN, 1, (L) => KD(bei(L), g.dunkel) >= MIND);
+    const unten = KD(bei(NR_DUNKEL_L_MIN), g.mittel) <= MAX ? NR_DUNKEL_L_MIN : 1 - grenze(0, 1 - NR_DUNKEL_L_MIN, (d) => KD(bei(1 - d), g.mittel) <= MAX);
     const f = bei(Math.min(oben, Math.max(unten, o.L)));
     wahl.push({ farbe: f, a: 0, k: KD(f, g.dunkel), km: KD(f, g.mittel), hell: false });
   }
