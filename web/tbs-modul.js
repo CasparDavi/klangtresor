@@ -11690,8 +11690,17 @@ function zeichneFrame(t,roh){
        dem Lauf um denselben Faden und dieselbe GPU. rahmen() steht aus demselben Grund still (29346). */
     if(exportLaeuft) return;
     gemerkt=bundel();
+    /* DIE GEOMETRIE DER BUEHNE GEHT NICHT MIT DEN KACHELN (Caspar_D, 15.10.2026: „ich kann darin keine Zielpunkte anklicken und
+       verschieben, es werden immer neue gesetzt"). GEO und EINHEIT setzt jedes zeichneFrame, und setzen()/bundel() tauschen sie
+       nicht mit - nach diesem Tick stand in GEO die Geometrie der zuletzt gemalten Kachel (ihre kleine Leinwand, ihre fahrende
+       Kamera). Gelesen wird GEO aber auch ausserhalb des Malwegs: von den Zeigern der Buehne (ortVon, markeBei, lrMarkeBei, Ort
+       des Titels). Startete die Kachel nach dem Studio - etwa mit „Titel abspielen" -, malte sie in jedem Bild ZULETZT, und ein
+       Klick auf eine Marke rechnete mit der Kachel: er verfehlte sie und setzte einen neuen Punkt, an einem falschen Ort
+       (nachgestellt im Sandkasten: Klick bei (186,180) gesetzt, bei (137,212) gezeichnet, ein Klick darauf setzte den naechsten).
+       Darum hier gemerkt und zurueckgelegt - fuer die Buehne bleibt, was sie selbst zuletzt gemalt hat. */
+    const geoBuehne=GEO, einheitBuehne=EINHEIT;
     MALT_KACHEL=true;
-    try{ for(const m of clips){ if(!m.bereit||!m.DATA) continue; setzen(m); zeichneFrame(clipZeit(m)); } } finally{ MALT_KACHEL=false; }
+    try{ for(const m of clips){ if(!m.bereit||!m.DATA) continue; setzen(m); zeichneFrame(clipZeit(m)); } } finally{ MALT_KACHEL=false; GEO=geoBuehne; EINHEIT=einheitBuehne; }
     setzen(gemerkt); gemerkt=null; }
   /* Nach Sichern/Loesen: Vorrat vergessen und laufende Maler dieses Titels
      abwerfen - die App haengt sie ueber markieren() frisch wieder ein. */
