@@ -1654,8 +1654,10 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
     try { return JSON.parse(fs.readFileSync(path.join(WURZEL, 'package.json'), 'utf8')).version || null; }
     catch (e) { return null; }
   };
-  /* Neue PROGRAMM-Fassung, nicht die Songdaten. Fragt GitHub erst hier,
-     wenn die Oberflaeche den Knopf drueckt — nicht beim /api/index.
+  /* Neue PROGRAMM-Fassung, nicht die Songdaten. Die Seite fragt hier von selbst beim Oeffnen und
+     danach alle 12 h (nach einem Fehlschlag nach 2 h), dazu auf den Knopf; /api/index fragt nie.
+     GitHub selbst fragt standHolen(), eine Antwort haelt es 30 min vor. Antwortet GitHub nicht,
+     kommt das mit 200 und github:null - die Seite erkennt den Fehlschlag am Inhalt, nicht am Status.
      Die ZWEITE Stelle, die nach draussen greift (die erste: /api/profil-pruefen) - darum eingefroren
      gesperrt wie jene: der Stick soll „autonom isoliert laufen koennen" (Caspar_D, 11.09.2026), und
      einspielen koennte er ohnehin nicht (die Skripte aktualisieren-* liegen dort nicht). Bei der
