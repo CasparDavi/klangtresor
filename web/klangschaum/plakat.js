@@ -8,7 +8,7 @@
    Das Bild selbst baut das Haus (schaumSvgBauen mit druck): dieselben Zellen, Farben und Bilder wie am
    Schirm, im Plakat als Kacheln mit Luecken. Die Vorschau nimmt die Bilder aus dem Vorrat, das PDF die
    Originale (data-voll). Masse auf der Seite in Millimetern; 3 mm Beschnitt rundum. */
-import { blockLage, blockReserve, ECKEN } from './eckblock.js';
+import { blockAufSehnen, blockLage, blockRechteck, blockReserve, ECKEN } from './eckblock.js';
 import { blattSchmuck, blattGrund, dAuftrag, anzeigeName } from './skizze-blatt.js';
 import { ohneKlammern } from './skizze-hand.js';
 import { blattDatenHolen, refrainAus } from './skizze-daten.js';
@@ -277,6 +277,24 @@ function avatarDa(){ if (avatarStand != null) return avatarStand; const i = docu
    Groesse: verkleinert eckeSetzen den Block (s < 1, der Text wurde nach dem Legen laenger, etwa beim Tippen im Titelfeld), setzt es
    die Schrift bei fs·s, und die laeuft breiter als bei fs gemessen (70 × 100 quer, s = 0,32: Titel 13 % = 17 mm in den Schaum,
    Name 4 %, Zeilen 2 %; vorher ebenso). Beim Verlassen des Feldes legt zeichnen neu, dann ist s = 1 und die Ecke auf 0,1 % genau. */
+/* Ausgewogener Umbruch: t in so wenige Zeilen wie moeglich, keine breiter als ziel (wenn es geht), bei gleicher Zahl die mit der
+   schmalsten breitesten Zeile. Erst an „ · " (die Trennpunkte der Unterzeile), dann was noch zu breit ist zwischen den Woertern. */
+function umbrechen(t, breite, ziel){
+  if (!(ziel > 0) || breite(t) <= ziel) return [t];
+  const teilen = (stuecke, fuge) => {            /* kleinste Zeilenzahl mit breitester Zeile <= ziel, sonst jedes Stueck eine Zeile */
+    const n = stuecke.length, b = (i, j) => breite(stuecke.slice(i, j).join(fuge));
+    for (let z = 2; z <= n; z++){
+      /* f[i][k]: kleinste breiteste Zeile fuer die ersten i Stuecke in k Zeilen (n ist klein: Trennpunkte bzw. Woerter einer Zeile) */
+      const f = Array.from({ length: n + 1 }, () => new Array(z + 1).fill(Infinity)), w = Array.from({ length: n + 1 }, () => new Array(z + 1).fill(0));
+      f[0][0] = 0;
+      for (let i = 1; i <= n; i++) for (let k = 1; k <= Math.min(z, i); k++) for (let j = k - 1; j < i; j++){
+        const m = Math.max(f[j][k - 1], b(j, i)); if (m < f[i][k]){ f[i][k] = m; w[i][k] = j; } }
+      if (f[n][z] <= ziel || z === n){ const zeilen = []; for (let i = n, k = z; k > 0; k--){ const j = w[i][k]; zeilen.unshift(stuecke.slice(j, i).join(fuge)); i = j; } return zeilen; }
+    }
+    return [stuecke.join(fuge)];
+  };
+  return teilen(t.split(' \u00b7 '), ' \u00b7 ').flatMap(z => breite(z) <= ziel ? [z] : teilen(z.split(' '), ' '));
+}
 function eckTeile(g){
   const T = g.T, U = g.U, L = g.L;
   const breite = (t, fw, fs) => messen(t, fw, fs) * fs;
@@ -284,25 +302,35 @@ function eckTeile(g){
   const text = [];
   if (E.schildName) text.push(zeile(E.schildName, U * 1.25, 500, 'name'));
   if (E.kopfTitel) text.push(zeile(E.kopfTitel, T, 600, 'titel'));
-  for (const t of String(E.kopfUnter || '').split('/').map(x => x.trim()).filter(Boolean)) text.push(zeile(t, U, 400, 'unter'));
+  const unter = String(E.kopfUnter || '').split('/').map(x => x.trim()).filter(Boolean);
   /* Edition: nur die Auflage und der Strich zum Signieren - Datum und Name stehen schon darueber */
+  let sig = null;
   if (E.edition){ const t = E.auflage || '1/1', fs = U * 0.85, tw = breite(t, 400, fs), linie = 0.07 * g.kurz;
-    text.push({ typ: 'signatur', t, fs, tw, linie, w: tw + fs * 0.8 + linie, h: U * 2.6 }); }
+    sig = { typ: 'signatur', t, fs, tw, linie, w: tw + fs * 0.8 + linie, h: U * 2.6 }; }
   const leg = E.legende ? legendenEintraege().map(e => ({ typ: 'legende', t: e.name, farbe: e.farbe, fs: L, w: breite(e.name, 400, L) + L * 1.2, h: L * 1.55 })) : [];
   const av = avatarDa() ? [{ typ: 'kreis', d: 0.12 * g.kurz }] : [];
+  /* Die Zeilen darunter so breit wie der uebrige Block (Caspar_D, 15.10.2026: „die untere Schriftzeile ist doppelt so breit wie der
+     Rest, darueber ist alles leer"): eine laengere wird ausgewogen umbrochen - zuerst an den Trennpunkten „ · ", reicht das nicht,
+     zwischen den Woertern; Schriftgroesse und Wortlaut bleiben, nur der Trennpunkt am Umbruch faellt weg. Massstab ist das
+     breiteste uebrige Teil (Name, Titel, Signatur, Legende, Avatar); die Ecke sitzt als Rechteck knapp darum (eckblock.js). */
+  const rest = Math.max(0, ...text.map(t => t.w), sig ? sig.w : 0, ...leg.map(t => t.w), ...av.map(t => t.d));
+  for (const t of unter) for (const z of umbrechen(t, (x) => breite(x, 400, U), rest)) text.push(zeile(z, U, 400, 'unter'));
+  if (sig) text.push(sig);
   const gruppen = (eckeJetzt()[0] === 'u' ? [av, leg, text] : [text, leg, av]).filter(x => x.length);
   return gruppen.flatMap((x, i) => i ? [{ typ: 'luecke', h: U * 1.1 }, ...x] : x);
 }
 /* Fuer den Auftrag (Worker) und fuers Setzen: Block, Rahmen (Schnitt + Abstand) und Luft in Schaum-Einheiten (y nach oben), im
-   Triptychon die Grenze der aeusseren Tafel. runden: Breiten fuer die Suche auf 3 % der Breite aufgerundet - sonst legte jeder
-   Buchstabe im Titelfeld den Schaum neu; gesetzt wird ungerundet. */
+   Triptychon die Grenze der aeusseren Tafel. runden: Breiten fuer die Suche auf 1 % der Breite aufgerundet - sonst legte jeder
+   Buchstabe im Titelfeld den Schaum neu; gesetzt wird ungerundet. Bis 1.0.81 auf 3 %: seit die Ecke ein Rechteck um den Block ist
+   (eckblock.js, 15.10.2026), macht die Rundung die Ecke selbst breiter - auf A3 bis 9 mm bei einem Block von 55 mm; neu gelegt wird
+   beim Tippen ohnehin erst beim Verlassen des Feldes (nurSetzen). */
 function schildVorgabe(g, W, H, runden = true){
   const kv = g.karte, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2, oy = kv.y + (kv.h - H * k) / 2;
   /* Abstand von der Vorderseite (bei Umschlag die Falz), mit Rand vorne von dessen Innenkante - Avatar und Text nie auf dem Rand */
   const vo = g.vorne || { x: BESCHNITT, y: BESCHNITT, w: g.w, h: g.h }, randV = g.randKante ? g.randKante.randV : 0;
   const ecke = eckeJetzt(), abstand = (randV ? 0.03 : 0.04) * g.kurz + randV, xu = (x) => (x - ox) / k, yu = (y) => H - (y - oy) / k;
   const rahmen = { x0: xu(vo.x + abstand), x1: xu(vo.x + vo.w - abstand), y0: yu(vo.y + vo.h - abstand), y1: yu(vo.y + abstand) };
-  const teile = eckTeile(g), q = 0.03 * W;
+  const teile = eckTeile(g), q = 0.01 * W;
   const block = teile.map(t => t.typ === 'kreis' ? { typ: 'kreis', d: t.d / k } : t.typ === 'luecke' ? { typ: 'luecke', h: t.h / k }
     : { typ: t.typ, w: runden ? Math.ceil(t.w / k / q) * q : t.w / k, h: t.h / k });
   let xMin = 0, xMax = W;
@@ -316,7 +344,8 @@ function schildVorgabe(g, W, H, runden = true){
     ['x0', 'x1', 'y0', 'y1'].map(z => Math.round(rahmen[z])).join(','), Math.round(xMin), Math.round(xMax), Math.round(luft * 10)].join(':');
   return { ecke, block, rahmen, luft, xMin, xMax, schluessel, teile, k, ox, oy };
 }
-/* Setzen: dieselbe Lage, die der Worker geprueft hat (blockLage), auf dem Grund der Seite. Passt der Block nicht mehr (Text nach
+/* Setzen: dieselbe Lage, die der Worker geprueft hat (blockLage, seit 15.10.2026 jedes Teil mittig auf der Sehne der Zelle und die
+   breiteste Zeile an der Wand: blockAufSehnen), auf dem Grund der Seite. Passt der Block nicht mehr (Text nach
    dem Legen verlaengert, grosser Schaum anders gelegt), wird er so weit verkleinert, dass er passt - der naechste Lauf legt neu. */
 function eckeSetzen(g, fg, leise){
   const res = aktuell.res, H = res.height;
@@ -329,7 +358,7 @@ function eckeSetzen(g, fg, leise){
   const s = Math.min(1, r), rechts = v.ecke[1] === 'r', anker = rechts ? 'end' : 'start';
   const X = (x) => ox + x * k, Y = (y) => oy + (H - y) * k, f2 = (n) => n.toFixed(2), hell = hellerGrund();
   let out = '';
-  blockLage(v.block, v.ecke, v.rahmen, s).forEach((t, i) => {
+  blockAufSehnen(knoten.outline, v.block, v.ecke, v.rahmen, v.luft, s).forEach((t, i) => {
     const q = v.teile[i], fs = (q.fs || 0) * s, x = rechts ? X(t.x1) : X(t.x0), basis = Y(t.y0) - fs * 0.3;
     if (q.typ === 'kreis'){
       const rr = (t.x1 - t.x0) / 2 * k, cx = X((t.x0 + t.x1) / 2), cy = Y((t.y0 + t.y1) / 2);
@@ -341,9 +370,12 @@ function eckeSetzen(g, fg, leise){
         + `<image href="/avatar" data-voll="/avatar" x="${f2(cx - rr)}" y="${f2(cy - rr)}" width="${f2(2 * rr)}" height="${f2(2 * rr)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#ps-eckav)"${hell ? ' filter="url(#ps-anthrazit)"' : ''}/>`
         + (hell ? '' : `<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(rr)}" fill="none" stroke="${fg}" stroke-opacity="0.45" stroke-width="${f2(g.kurz / 1400)}"/>`);
     } else if (q.typ === 'legende'){
-      const pu = fs * 0.34, dx = rechts ? x - pu : x + pu, tx = rechts ? x - 2 * pu - fs * 0.45 : x + 2 * pu + fs * 0.45;
+      /* die Legende ist ein Block: Farbpunkt links, Eintrag linksbündig daneben, in jeder Ecke (Caspar_D, 15.10.2026: „die Legende
+         selbst wahrscheinlich als Block zentrieren, weil die Farben exakt untereinander müssen"; bis 1.0.81 in rechten Ecken
+         rechtsbündig mit dem Punkt rechts) */
+      const pu = fs * 0.34, lx = X(t.x0), dx = lx + pu, tx = lx + 2 * pu + fs * 0.45;
       out += `<circle cx="${f2(dx)}" cy="${f2(basis - fs * 0.32)}" r="${f2(pu)}" fill="${q.farbe}"/>`
-        + `<text x="${f2(tx)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" fill-opacity="0.8" text-anchor="${anker}">${esc2(q.t)}</text>`;
+        + `<text x="${f2(tx)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" fill-opacity="0.8">${esc2(q.t)}</text>`;
     } else if (q.typ === 'signatur'){
       const tw = q.tw * s, l = q.linie * s, gap = fs * 0.8, l0 = rechts ? x - tw - gap - l : x + tw + gap;
       out += `<text x="${f2(x)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${leise}" text-anchor="${anker}">${esc2(q.t)}</text>`
@@ -735,8 +767,7 @@ function bilderBeschnitt(g, W, H){
    Ecke - dort hängt kein Cover. umriss: dasselbe Rechteck samt Luft der Ecke in Schaum-Einheiten (y nach oben) für blockReserve beim
    Setzen, eine Wandpunkt-Luft größer, damit der ungerundete Block sicher hineinpasst. Nummern gibt es dabei keine (mitVerzeichnis). */
 function bilderEcke(v, W, H){
-  const t = blockLage(v.block, v.ecke, v.rahmen, 1).filter(q => q.typ !== 'luecke' && q.w > 0 && q.h > 0), d = v.luft + 1;
-  const bx0 = Math.min(...t.map(q => q.x0)), bx1 = Math.max(...t.map(q => q.x1)), by0 = Math.min(...t.map(q => q.y0)), by1 = Math.max(...t.map(q => q.y1));
+  const { x0: bx0, x1: bx1, y0: by0, y1: by1 } = blockRechteck(v.block, v.ecke, v.rahmen, 1), d = v.luft + 1;
   /* umriss mit der Luft der Ecke (blockReserve prüft daran den Block); gesperrt nur der Block plus ein Wandpunkt zum Runden - die Luft
      bis zum nächsten Cover hält die Hängung selbst, ein Bilderabstand wie zwischen zwei Covern (Caspar_D, 15.10.2026: „der kleinste
      darf nicht den Interbildabstand unterschreiten"; bis 1.0.80 kamen Luft der Ecke und Luft der Hängung zusammen: 10,6 mm bei 3,1 mm

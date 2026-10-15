@@ -50,11 +50,17 @@ export function schildSaat(rows, tree, layout, { name, ecke = "ur", block, rahme
   let anteil = klemme((bw + mx + luft) * (bh + my + luft) * 1.3 / (W * H));
   const geschaetzt = anteil, ZIEL = 1.08;
   let best = null, laeufe = 0;
+  let ersterInDerEcke = 0, ersterPassend = 0;                  /* der wievielte Lauf zuerst eine Ecke in der Ecke bzw. passend lieferte */
   const pruefe = (oben, a) => { laeufe++; const o = umrissVon({ ...basis, ...oben }, a);
     if (!o || !inDerEcke(o, ecke, W, H, xMin, xMax)) return null;
-    return { oben, a, reserve: blockReserve(o, block, ecke, rahmen, luft) }; };
-  const eckPunkt = () => { const fx = (0.06 + 0.12 * rnd()) * (xMax - xMin), fy = (0.04 + 0.1 * rnd()) * H;
-    return [rechtsVon(ecke) ? xMax - fx : xMin + fx, untenVon(ecke) ? fy : H - fy]; };
+    if (!ersterInDerEcke) ersterInDerEcke = laeufe;
+    const reserve = blockReserve(o, block, ecke, rahmen, luft); if (reserve >= 1 && !ersterPassend) ersterPassend = laeufe;
+    return { oben, a, reserve }; };
+  /* Der Startpunkt der Ecke steht fest: die Mitte des Rechtecks, das der Block samt Luft in der Ecke braucht (Caspar_D, 15.10.2026:
+     „du kannst ja auch initial schon die Koordinaten der Zelle vor der Zerlegung auf die Ecke triggern"). Bis 1.0.81 zufällig in
+     6 … 18 % der Breite und 4 … 14 % der Höhe; gesucht wird jetzt nur noch über die Startlagen der übrigen Areale. */
+  const eckMitte = [rechtsVon(ecke) ? rahmen.x1 - (bw + luft) / 2 : rahmen.x0 + (bw + luft) / 2, untenVon(ecke) ? rahmen.y0 + (bh + luft) / 2 : rahmen.y1 - (bh + luft) / 2];
+  const eckPunkt = () => [...eckMitte];
   const zufallsLage = () => { const oben = {}; for (const n of namen) oben[n] = n === name ? eckPunkt() : [(0.06 + 0.88 * rnd()) * W, (0.06 + 0.88 * rnd()) * H]; return oben; };
   /* eine Runde beim Anteil a bis zur Zeit bis: der Bisherige zuerst (beim neuen Anteil), dann der Auftrag selbst (Klangraum,
      nur die Ecke in ihre Ecke gesetzt - liegt sie damit schon gut, bleibt der Schaum dem am Schirm am nächsten), dann Zufall */
@@ -85,7 +91,7 @@ export function schildSaat(rows, tree, layout, { name, ecke = "ur", block, rahme
      Plakat setzt den Block dann verkleinert; liegt gar keine Ecke in der Ecke, bekommt der volle Lauf wenigstens einen Startpunkt
      für sie (ohne ihn verwarf die Engine alle Startpunkte der obersten Ebene, die Ecke landete mitten im Plakat). */
   const wahl = gut || naechst;
-  if (!wahl) return { seeds: null, eckStart: { [name]: eckPunkt() }, anteil, geschaetzt, fehlschlag: true, laeufe, ms: Date.now() - t0 };
+  if (!wahl) return { seeds: null, eckStart: { [name]: eckPunkt() }, anteil, geschaetzt, fehlschlag: true, laeufe, ersterInDerEcke, ersterPassend, ms: Date.now() - t0 };
   best = wahl; anteil = wahl.a;
   /* Startpunkte für den vollen Lauf: oberste Ebene = genau die STARTpunkte des gewählten Laufs (dann wiederholt die oberste
      Ebene ihn; mit den Mitten seiner Endlage als Start entspannte der Schaum im Querformat in eine andere Lage: Format 1,14 statt
@@ -98,5 +104,5 @@ export function schildSaat(rows, tree, layout, { name, ecke = "ur", block, rahme
   }
   Object.assign(seeds, best.oben);
   for (const n of namen) if (!seeds[n] && basis[n]) seeds[n] = basis[n];
-  return { seeds, anteil, geschaetzt, reserve: best.reserve, fehlschlag: !gut, rows: mitAnteil(anteil), laeufe, ms: Date.now() - t0 };
+  return { seeds, anteil, geschaetzt, reserve: best.reserve, fehlschlag: !gut, rows: mitAnteil(anteil), laeufe, ersterInDerEcke, ersterPassend, ms: Date.now() - t0 };
 }

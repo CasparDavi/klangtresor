@@ -30,7 +30,7 @@ self.onmessage = async e => {
     const res = await grossLegen(rows, tree, { ...layout, onProgress: (done, total, node) => self.postMessage({ type: "progress", done, total, name: node.name }) },
       { helfer, anzahl, melde: (m) => self.postMessage({ type: "progress", ...m }) });
     const summary = summarize(res, tree.levels.length);
-    if (schildInfo) res.eckSuche = summary.schild = { anteil: schildInfo.anteil, geschaetzt: schildInfo.geschaetzt, reserve: schildInfo.reserve, fehlschlag: !!schildInfo.fehlschlag, laeufe: schildInfo.laeufe, ms: schildInfo.ms };
+    if (schildInfo) res.eckSuche = summary.schild = { anteil: schildInfo.anteil, geschaetzt: schildInfo.geschaetzt, reserve: schildInfo.reserve, fehlschlag: !!schildInfo.fehlschlag, laeufe: schildInfo.laeufe, ersterInDerEcke: schildInfo.ersterInDerEcke, ersterPassend: schildInfo.ersterPassend, ms: schildInfo.ms };
     self.postMessage({ type: "done", res, summary });
   } catch (err) {
     self.postMessage({ type: "error", message: String(err && err.stack || err) });
