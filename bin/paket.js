@@ -2,7 +2,11 @@
 /**
  * Packt das Weitergabe-ZIP — und prüft vorher, daß nichts Privates hinein kann.
  *
- *   node bin/paket.js              → ../KlangTresor-<datum>.zip
+ *   node bin/paket.js              → ../KlangTresor.zip und ../KlangTresor-Update.zip
+ *
+ * Beide gehoeren an jede Release:
+ *   gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip …
+ * Fehlt das zweite, liefert seine feste Adresse 404.
  *
  * Das ZIP entsteht aus `git archive HEAD`. Damit kommt nur hinein, was
  * git kennt - library/ und alles andere aus .gitignore sind von
@@ -14,6 +18,7 @@
  * Paket als ein falsches.
  */
 const fs   = require('node:fs');
+const os   = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
@@ -74,3 +79,65 @@ if (treffer.length) {
 const mb = (fs.statSync(ziel).size / 1048576).toFixed(2);
 console.log(`\n  ${path.basename(ziel)} — ${liste.length} Dateien, ${mb} MB`);
 console.log('  Geprüft: kein Schlüssel, kein Cookie, keine library/ im Paket.\n');
+
+/* DAS UPDATE-PAKET FUER VERSIONEN OHNE UPDATE-SKRIPT. Caspar_D, 15.10.2026: „wenn jemand die scripte noch nicht hat,
+   dann funktioniert das update nicht – kannst du die Scripte separat downloadable machen, damit leute mit nicht
+   updatenfähigen Klangtresor-Versionen auch das script nutzen können, sie müssen es natürlich in den
+   Klangtresor/MySuno Ordner kopieren“. Bis 1.0.72 lag weder bin/aktualisieren.js noch ein Anlasser bei.
+
+   KlangTresor-Update.zip, feste Adresse .../releases/latest/download/KlangTresor-Update.zip, traegt genau vier
+   Dateien, FLACH: aktualisieren.js und die drei Anlasser. Ohne bin/, weil der Finder beim Kopieren einen vorhandenen
+   Ordner bin/ ersetzt, statt ihn zusammenzufuehren - das alte Programm waere weg. bin/aktualisieren.js laeuft darum
+   auch im Hauptordner und raeumt sich dort nach dem ersten Lauf ohne Fehler selbst weg.
+
+   Gebaut aus git archive wie das Hauptpaket: so kommen die Rechte mit (.command/.sh/.js ausfuehrbar) und die .cmd
+   mit CRLF (.gitattributes). Derselbe Waechter, nur strenger: statt einer Verbotsliste die feste Liste genau dieser
+   vier Namen - was sonst darin laege, gehoert nicht hinein. */
+const UPDATE = { 'bin/aktualisieren.js': 'aktualisieren.js',
+                 'aktualisieren-macos.command': 'aktualisieren-macos.command',
+                 'aktualisieren-windows.cmd': 'aktualisieren-windows.cmd',
+                 'aktualisieren-linux.sh': 'aktualisieren-linux.sh' };
+const zielUpdate = path.join(WURZEL, '..', `${PREFIX}-Update.zip`);
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'klangtresor-paket-'));
+try {
+  const tar = path.join(tmp, 'teile.tar');
+  const t = spawnSync('git', ['archive', '--format=tar', '-o', tar, 'HEAD', '--'].concat(Object.keys(UPDATE)),
+                      { cwd: WURZEL, encoding: 'utf8' });
+  if (t.status !== 0) { console.error('git archive:', t.stderr); process.exit(1); }
+  const flach = path.join(tmp, 'flach');
+  fs.mkdirSync(flach);
+  if (spawnSync('tar', ['-x', '-f', tar, '-C', tmp]).status !== 0) { console.error('tar -x scheiterte'); process.exit(1); }
+  for (const [von, nach] of Object.entries(UPDATE)) fs.renameSync(path.join(tmp, von), path.join(flach, nach));
+  fs.rmSync(zielUpdate, { force: true });
+  const z = spawnSync('zip', ['-q', '-X', zielUpdate].concat(Object.values(UPDATE)), { cwd: flach, encoding: 'utf8' });
+  if (z.status !== 0) { console.error('zip:', z.stderr); process.exit(1); }
+} finally {
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
+
+/* Hineinsehen statt glauben: genau die vier Namen, keiner in einem Ordner, keiner auf der Verbotsliste; die Anlasser
+   fuer Mac und Linux und die .js ausfuehrbar; die .cmd mit CRLF und ohne einzelnes LF. */
+const zeilen = spawnSync('zipinfo', [zielUpdate], { encoding: 'utf8' }).stdout.split('\n')
+  .filter(z => /^[-dl][rwxsStT-]{9}\s/.test(z));
+const eintraege = zeilen.map(z => ({ rechte: z.slice(0, 10), name: z.trim().split(/\s+/).slice(8).join(' ') }));
+const fehler = [];
+const soll = Object.values(UPDATE).slice().sort();
+const ist = eintraege.map(e => e.name).sort();
+if (JSON.stringify(soll) !== JSON.stringify(ist)) fehler.push('Inhalt ist ' + ist.join(', ') + ' - soll ' + soll.join(', '));
+for (const e of eintraege) {
+  if (VERBOTEN.some(m => m.test(e.name))) fehler.push(e.name + ' steht auf der Verbotsliste');
+  if (/\.(command|sh|js)$/.test(e.name) && e.rechte[3] !== 'x') fehler.push(e.name + ' ist nicht ausfuehrbar (' + e.rechte + ')');
+}
+const cmd = spawnSync('unzip', ['-p', zielUpdate, 'aktualisieren-windows.cmd']).stdout || Buffer.alloc(0);
+const lfAllein = (cmd.toString('latin1').match(/(?<!\r)\n/g) || []).length;
+if (!cmd.length || lfAllein) fehler.push('aktualisieren-windows.cmd: ' + (cmd.length ? lfAllein + '× einzelnes LF statt CRLF' : 'leer'));
+if (fehler.length) {
+  fs.rmSync(zielUpdate, { force: true });
+  console.error('\n  ABGEBROCHEN — das Update-Paket waere falsch:\n');
+  for (const f of fehler) console.error('    ' + f);
+  console.error('\n  KlangTresor-Update.zip wurde gelöscht.\n');
+  process.exit(2);
+}
+console.log(`  ${path.basename(zielUpdate)} — ${eintraege.length} Dateien, flach, ${fs.statSync(zielUpdate).size} Bytes`);
+console.log('  Geprüft: genau die vier Dateien, Mac/Linux ausführbar, .cmd mit CRLF.\n');
+console.log('  Release: gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip …\n');

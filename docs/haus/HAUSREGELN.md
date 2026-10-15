@@ -160,6 +160,15 @@ heißt seit 15.09.2026 „Effektclip als Schleife". Davor hieß sie bis zum Aben
 Name kam mit dem Akkordeon im Pult. Er beschreibt, was am Ende herauskommt: ein Clip, den Suno in Endlosschleife
 über das Lied spielt. Im Code steht der Name nur in `LOOP_STUFE`.
 
+**„Version" und „Update" — das Programm (15.10.2026).** Was GitHub an neuer Software bereithält, hieß im Fenster
+„KlangTresor", im Tooltip der Glocke und in der Doku „Programm-Fassung", der Knopf „Nach neuer Fassung sehen".
+Caspar_D: *„mir gefällt der text nicht"*, und sein Vorschlag sprach von *„Aktuelle Version 1.0.74"* und *„Zum
+Einspielen des Updates"*. Seitdem heißt es fürs Programm **Version**, für den Vorgang **Update**; **Fassung**
+bleibt den Liedern (Tonfassung, eigene Fassung, Zwillinge). Ein Wort, ein Ding. Den Knopf gibt es nicht mehr — das
+Fenster sieht beim Aufgehen selbst nach. Im Code bleiben die alten Namen (`/api/fassung`, `fassungMerken`,
+`#fassungglocke`, der Browserschlüssel `klangtresor-fassung`): die sieht niemand, und der Schlüssel muss
+gemerkte Stände aus 1.0.75 weiter finden.
+
 ## Architektur
 
 26. **Register sind Stationen der Kette** — was drauf setzt, bekommt

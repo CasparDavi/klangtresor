@@ -1,10 +1,12 @@
 #!/bin/bash
 # KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE
-# Neue Fassung einspielen — macOS. Doppelklick oeffnet ein Terminal.
+# Update einspielen — macOS. Doppelklick oeffnet ein Terminal.
 #
 # Holt den aktuellen Stand von GitHub (Git-Klon: origin/main, sonst das
 # Release-Zip) und spielt ihn ein. library/ bleibt. Bei Docker wird das
-# Image neu gebaut. Die eigentliche Arbeit steht in bin/aktualisieren.js.
+# Image neu gebaut. Die eigentliche Arbeit steht in bin/aktualisieren.js -
+# oder, bei Versionen bis 1.0.72, die es noch nicht haben, in der Kopie
+# aktualisieren.js aus KlangTresor-Update.zip hier im Hauptordner.
 
 cd "$(dirname "$0")" || exit 1
 NODE=node
@@ -20,14 +22,23 @@ if ! command -v "$NODE" >/dev/null 2>&1; then
   read -r -p "  [Eingabetaste zum Schliessen] " _
   exit 1
 fi
-if [ ! -f bin/aktualisieren.js ]; then
+# Erst bin/aktualisieren.js (ab 1.0.73 da), sonst die Kopie aus KlangTresor-Update.zip
+# hier daneben - die raeumt sich nach dem ersten Lauf ohne Fehler selbst weg.
+SKRIPT=bin/aktualisieren.js
+[ -f "$SKRIPT" ] || SKRIPT=aktualisieren.js
+if [ ! -f "$SKRIPT" ]; then
   echo
-  echo "  Hier liegt kein KlangTresor. Diese Datei gehoert in den Ordner"
-  echo "  mit bin/ und server/ darin."
+  if [ -f server/server.js ]; then
+    echo "  aktualisieren.js fehlt. Sie liegt im selben Zip wie diese Datei"
+    echo "  (KlangTresor-Update.zip) - kopiere sie mit hierher."
+  else
+    echo "  Hier liegt kein KlangTresor. Diese Datei gehoert in den Ordner"
+    echo "  mit library/ und server/ darin."
+  fi
   echo
   read -r -p "  [Eingabetaste zum Schliessen] " _
   exit 1
 fi
 # In EINEM Block: die Shell liest ihn ganz, bevor Node startet. Das Update ersetzt diese Datei
 # waehrend sie laeuft - danach darf die Shell nichts mehr aus ihr nachlesen muessen.
-{ "$NODE" bin/aktualisieren.js "$@"; echo; read -r -p "  [Eingabetaste zum Schliessen] " _; exit; }
+{ "$NODE" "$SKRIPT" "$@"; echo; read -r -p "  [Eingabetaste zum Schliessen] " _; exit; }

@@ -6,7 +6,7 @@
 
    Caspar_D hat uns (Tarja, 14.10.2026) die Aufgabe gegeben, fuer
    Updatemoeglichkeiten zu sorgen. Der rote Knopf holt Suno-Daten, nicht
-   den Code. Die neue Fassung liegt auf GitHub
+   den Code. Die neue Version liegt auf GitHub
    (github.com/CasparDavi/klangtresor), als Release-Zip und als main.
 
    EINE WAHRHEIT, wie bin/einrichten.js: die drei Anlasser
@@ -28,9 +28,25 @@
    den Docker-Socket, und ein Overlay im laufenden Image waere beim
    naechsten Restart weg. Deshalb Abbruch, sobald /.dockerenv da ist.
 
+   VERSIONEN OHNE DIESE DATEI. Caspar_D, 15.10.2026: „wenn jemand die
+   scripte noch nicht hat, dann funktioniert das update nicht – kannst du
+   die Scripte separat downloadable machen, damit leute mit nicht
+   updatenfähigen Klangtresor-Versionen auch das script nutzen können, sie
+   müssen es natürlich in den Klangtresor/MySuno Ordner kopieren“. Bis
+   1.0.72 gab es weder diese Datei noch die Anlasser. Darum haengt an jeder
+   Release neben KlangTresor.zip das KlangTresor-Update.zip (bin/paket.js
+   baut es): diese Datei als aktualisieren.js und die drei Anlasser, FLACH,
+   ohne bin/ - der Finder ersetzt beim Kopieren einen vorhandenen Ordner
+   bin/, statt ihn zusammenzufuehren. Darum laeuft die Datei auch direkt im
+   Hauptordner (WURZEL unten), und darum raeumt sie sich dort nach einem
+   Lauf ohne Fehler selbst weg, sobald bin/aktualisieren.js da ist - sonst
+   liefe kuenftig ein veraltetes Skript. Am Namen des Ordners haengt
+   nichts: KlangTresor, MySuno oder sonstwie.
+
    Aufruf — im Projektordner (dort liegen bin/ und library/, nicht docker/):
      ./aktualisieren-linux.sh
      node bin/aktualisieren.js              nachsehen und einspielen
+     node aktualisieren.js                  dasselbe, die Kopie aus KlangTresor-Update.zip im Hauptordner
      node bin/aktualisieren.js --nur-stand  nur nachsehen, nichts schreiben
      npm run aktualisieren -- --nur-stand   dasselbe, aus jedem Unterordner
      node bin/aktualisieren.js --trotzdem   Zip nochmal, auch bei gleicher Nummer
@@ -40,10 +56,13 @@
 
    Stand fuer die Oberflaeche: standHolen() (GET /api/fassung). Die Seite
    fragt von selbst beim Oeffnen und danach alle 12 h (nach einem
-   Fehlschlag nach 2 h), dazu auf den Knopf im Fenster „KlangTresor“; die
-   Glocke oben zeigt eine neue Fassung an. Eine Antwort von GitHub haelt
-   standHolen() 30 min vor. Der eingefrorene Stick fragt nie (server.js
-   sperrt /api/fassung dort).
+   Fehlschlag nach 2 h), dazu jedes Mal, wenn das Fenster „KlangTresor“
+   aufgeht; die Glocke oben zeigt eine neue Version an. Einen Knopf zum
+   Nachsehen gibt es seit dem 15.10.2026 nicht mehr (Caspar_D: „aber er
+   hat doch schon eine gefunden, warum steht dieser Text hier“). Eine
+   Antwort von GitHub haelt standHolen() 30 min vor und nennt mit gefragtAm,
+   wann sie wirklich geholt wurde. Der eingefrorene Stick fragt nie
+   (server.js sperrt /api/fassung dort).
    ============================================================= */
 'use strict';
 const fs = require('node:fs');
@@ -54,8 +73,13 @@ const https = require('node:https');
 const { spawnSync } = require('node:child_process');
 const { pipeline } = require('node:stream');
 
-const WURZEL = path.resolve(__dirname, '..');
-const UA = 'KlangTresor/1.0 (persoenliches Musikarchiv; github.com/CasparDavi/klangtresor)';
+/* WO DAS PROGRAMM LIEGT (Weg A, 15.10.2026): liegt diese Datei in bin/, ist es der Ordner darueber; sonst ihr eigener -
+   die Kopie aus KlangTresor-Update.zip liegt im Hauptordner, neben library/. */
+const WURZEL = path.basename(__dirname).toLowerCase() === 'bin' ? path.resolve(__dirname, '..') : path.resolve(__dirname);
+/* Was KlangTresor-Update.zip in den Ordner bringt, so wie Git die Pfade kennt (bin/aktualisieren.js nur, wenn jemand
+   die Kopie dorthin legt; aktualisieren.js im Hauptordner kennt Git nie und haelt darum auch keinen Zug auf). */
+const PAKET = ['aktualisieren-linux.sh', 'aktualisieren-macos.command', 'aktualisieren-windows.cmd', 'bin/aktualisieren.js'];
+const UA ='KlangTresor/1.0 (persoenliches Musikarchiv; github.com/CasparDavi/klangtresor)';
 const ZIP_NAME = 'KlangTresor.zip';
 const BLEIBT = new Set(['library', 'werkzeug', 'node_modules', '.git', 'proben']);
 const NUR_STAND = process.argv.includes('--nur-stand');
@@ -122,11 +146,14 @@ function gleicherOrdner(a, b) {
   const n = (p) => path.resolve(p).replace(/[\\/]+$/, '');
   return process.platform === 'win32' ? n(a).toLowerCase() === n(b).toLowerCase() : n(a) === n(b);
 }
+function dockerFragen(name) {
+  return dockerLauf(['inspect', '-f',
+    '{{.State.Status}}|{{index .Config.Labels "com.docker.compose.project.working_dir"}}|{{range .Mounts}}{{if eq .Destination "/app/library"}}{{.Source}}{{end}}{{end}}',
+    name]);
+}
 /** { art: 'keins' | 'unseres' | 'fremd' | 'unerreichbar', status } */
 function dockerZustand() {
-  const r = dockerLauf(['inspect', '-f',
-    '{{.State.Status}}|{{index .Config.Labels "com.docker.compose.project.working_dir"}}|{{range .Mounts}}{{if eq .Destination "/app/library"}}{{.Source}}{{end}}{{end}}',
-    'klangtresor']);
+  const r = dockerFragen('klangtresor');
   if (r.error && r.error.code === 'ENOENT') return { art: 'keins' };            /* kein docker auf diesem Rechner */
   if (r.status === 0) {
     const [status, ordner, quelle] = (r.stdout || '').trim().split('|');
@@ -138,11 +165,22 @@ function dockerZustand() {
   if (info.status !== 0 && fs.existsSync(path.join(WURZEL, 'docker', 'docker-compose.yml'))) return { art: 'unerreichbar' };
   return { art: 'keins' };
 }
-/* Welche Fassung im laufenden Container steckt - der Container wird aus dem Ordner gebaut, also kann er hinter dem
+/* Welche Version im laufenden Container steckt - der Container wird aus dem Ordner gebaut, also kann er hinter dem
    Ordner zurueckliegen (ein gescheiterter oder ausgelassener Neubau). null, wenn man nicht fragen kann. */
 function containerFassung() {
   const r = dockerLauf(['exec', 'klangtresor', 'node', '-p', "require('/app/package.json').version"]);
   return r.status === 0 ? (r.stdout || '').trim() || null : null;
+}
+/* DER CONTAINER AUS DER MYSUNO-ZEIT hiess „mysuno“, seine docker-compose.yml lag im Hauptordner (./library). Den baut
+   dieses Skript nicht um: es fragt nur lesend, ob es ihn gibt und ob er zu DIESEM Ordner gehoert, und sagt dann, was
+   zu tun ist. Sonst liefe er nach dem Update unbemerkt mit dem alten Programm weiter. Status oder null. */
+function alterContainer() {
+  const r = dockerFragen('mysuno');
+  if (r.error || r.status !== 0) return null;
+  const [status, ordner, quelle] = (r.stdout || '').trim().split('|');
+  const unser = gleicherOrdner(ordner, WURZEL) || gleicherOrdner(ordner, path.join(WURZEL, 'docker'))
+    || gleicherOrdner(quelle, path.join(WURZEL, 'library'));
+  return unser ? (status || 'da') : null;
 }
 function cudaGenutzt() {
   const r = dockerLauf(['inspect', '-f', '{{range .Config.Env}}{{println .}}{{end}}', 'klangtresor']);
@@ -220,13 +258,13 @@ async function githubRelease() {
 
 /* Die GitHub-API erlaubt ungefragt 60 Anfragen je Stunde und IP.
    Dreissig Minuten merken reicht: jede offene Seite fragt beim Oeffnen
-   und danach alle 12 h von selbst, dazu kommt der Knopf - Neuladen
-   und ein zweiter Knopfdruck sollen dieselbe Auskunft sehen, nicht das
-   Kontingent verbrauchen. Gebuendelt wird nicht: Tabs, die im selben
+   und danach alle 12 h von selbst, dazu jedes Aufgehen des Fensters
+   „KlangTresor“ - Neuladen und ein zweites Aufgehen sollen dieselbe
+   Auskunft sehen, nicht das Kontingent verbrauchen. Gebuendelt wird nicht: Tabs, die im selben
    Augenblick oeffnen, fragen GitHub je einmal (gemessen 15.10.2026: drei
    gleichzeitige Anfragen, drei Verbindungen). Gemerkt wird nur eine
    Antwort; nach einem Fehlschlag fragt die Seite in 2 h wieder. */
-let standVorrat = null, standVorratBis = 0;
+let standVorrat = null, standVorratBis = 0, standVorratAm = 0;
 
 /** Stand fuer CLI und GET /api/fassung. Fragt GitHub, schreibt nichts.
     mitDocker: false fuer den Server (Caspar_D, 15.10.2026, bei der Uebernahme): dockerZustand() laeuft synchron
@@ -243,6 +281,7 @@ async function standHolen({ mitDocker = true } = {}) {
       github = await githubRelease();
       standVorrat = github;
       standVorratBis = jetzt + 30 * 60 * 1000;
+      standVorratAm = jetzt;
     } catch (e) { grund = e.message || String(e); }
   }
   const ghV = github && github.version;
@@ -255,14 +294,18 @@ async function standHolen({ mitDocker = true } = {}) {
     seite: github && github.seite,
     zip: github && github.zip,
     neuer: !!(ghV && hier && vergleich(ghV, hier) > 0),
-    /* lage: 1 = GitHub ist neuer, 0 = gleich, -1 = hier ist neuer (die Oberflaeche sagte sonst „dieselbe Fassung"
-       zu 1.0.72 gegen 1.0.71), null = eine Nummer fehlt */
+    /* lage: 1 = GitHub ist neuer, 0 = gleich, -1 = hier ist neuer (ohne -1 nennte die Oberflaeche 1.0.72 gegen
+       1.0.71 „die neueste Version“), null = eine Nummer fehlt */
     lage: ghV && hier ? Math.sign(vergleich(ghV, hier)) : null,
     git: gitDa,
     docker: mitDocker ? dockerZustand() : null,
     container: imContainer(),
     grund,
     geprueftAm: new Date().toISOString(),
+    /* WANN GITHUB WIRKLICH GEFRAGT WURDE (Caspar_D, 15.10.2026: „Zuletzt nachgesehen: heute, 13:05“). geprueftAm ist
+       der Augenblick dieser Antwort; kommt sie aus dem Vorrat, ist die Auskunft bis zu 30 min alt - das Fenster
+       nennt darum diese Zeit. Ohne Nummer von GitHub: der eben gescheiterte Versuch. */
+    gefragtAm: new Date(github ? standVorratAm : jetzt).toISOString(),
   };
 }
 
@@ -270,7 +313,7 @@ function auspacken(zip, ziel) {
   fs.mkdirSync(ziel, { recursive: true });
   const w = process.platform === 'win32'
     ? ['powershell', ['-NoProfile', '-Command',
-        `$ProgressPreference='SilentlyContinue'; Expand-Archive -LiteralPath ${JSON.stringify(zip)} -DestinationPath ${JSON.stringify(ziel)} -Force`]]
+        "$ProgressPreference='SilentlyContinue'; Expand-Archive -LiteralPath " + JSON.stringify(zip) + ' -DestinationPath ' + JSON.stringify(ziel) + ' -Force']]
     : process.platform === 'darwin'
       ? ['ditto', ['-x', '-k', zip, ziel]]
       : ['unzip', ['-q', '-o', zip, '-d', ziel]];
@@ -297,7 +340,7 @@ function zipUeberlegen(quelle) {
 }
 
 /* npm NEBEN DEM LAUFENDEN NODE (wie npmAufruf in einrichten.js): kommt Node aus werkzeug/, steht npm nicht im PATH -
-   das blosse `npm` scheiterte dort, und ein geaenderter package-lock wurde nie nachgezogen. */
+   das blosse npm scheiterte dort, und ein geaenderter package-lock wurde nie nachgezogen. */
 function npmAufruf() {
   const nd = path.dirname(process.execPath);
   for (const k of [path.join(nd, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
@@ -313,7 +356,7 @@ function npmCiWennNoetig(vorherHash) {
   if (vorherHash && vorherHash.equals(nachher)) return false;
   const n = npmAufruf();
   sag('  Pakete neu setzen (package-lock hat sich geaendert) …');
-  const r = spawnSync(n.befehl, [...n.vorn, 'ci', '--omit=dev'], { cwd: WURZEL, stdio: 'inherit', shell: n.schale });
+  const r = spawnSync(n.befehl, n.vorn.concat(['ci', '--omit=dev']), { cwd: WURZEL, stdio: 'inherit', shell: n.schale });
   if (r.status !== 0) throw new Error('npm ci ist gescheitert.');
   return true;
 }
@@ -326,11 +369,11 @@ function composeBauen(laeuft) {
   }
   /* War der Container angehalten, bleibt er es: neu gebaut und angelegt, aber nicht gestartet (--no-start). */
   const hoch = laeuft ? ['up', '-d', '--build'] : ['up', '--no-start', '--build'];
-  let cmd = 'docker', args = ['compose', ...dateien, ...hoch];
+  let cmd = 'docker', args = ['compose'].concat(dateien, hoch);
   const probe = spawnSync('docker', ['compose', 'version'], { encoding: 'utf8' });
   if (probe.status !== 0) {
     cmd = 'docker-compose';
-    args = [...dateien, ...hoch];
+    args = dateien.concat(hoch);
   }
   sag('  Container neu bauen — das dauert ein paar Minuten.' + (laeuft ? '' : ' Er war angehalten und bleibt es.'));
   const r = spawnSync(cmd, args, { cwd: WURZEL, stdio: 'inherit' });
@@ -339,34 +382,141 @@ function composeBauen(laeuft) {
 
 function sag(t) { console.log(t); }
 
+/* Die Anlasser fuer dieses System - die Meldungen nennen den, den man hier wirklich startet. */
+function anlasser(art) {
+  if (process.platform === 'win32') return art + '-windows.cmd';
+  if (process.platform === 'darwin') return art + '-macos.command';
+  return art + '-linux.sh';
+}
+/* Ein Befehl zum Abtippen, mit dem Wechsel in diesen Ordner davor (im Terminal bzw. in der Eingabeaufforderung). */
+function befehlHier(zeile) {
+  const win = process.platform === 'win32';
+  sag('    cd ' + (win ? '/d ' : '') + '"' + WURZEL + '"');
+  sag('    ' + (win ? '' : './') + zeile);
+}
+
+/* WORAN EIN KLANGTRESOR ZU ERKENNEN IST (Weg A, 15.10.2026): an server/server.js, nicht an package.json - die fehlt
+   in der MySuno-Zeit (18.08.2026), und bis zum 23.08. stand keine Nummer darin. Der Kopf der Datei sagt am 18.08.
+   wie in 1.0.76 „Suno-Archiv · Server“; daran wird geprueft, damit eine Kopie nicht in einen fremden Ordner
+   einspielt, der zufaellig auch ein server/server.js hat. */
+function istKlangTresor(ordner) {
+  try {
+    const fd = fs.openSync(path.join(ordner, 'server', 'server.js'), 'r');
+    const b = Buffer.alloc(4096);
+    const n = fs.readSync(fd, b, 0, b.length, 0);
+    fs.closeSync(fd);
+    return /Suno-Archiv|KlangTresor|MySuno/.test(b.toString('utf8', 0, n));
+  } catch (e) { return false; }
+}
+
+/* git status mit Pfaden. Ungekuerzt, nicht ueber git(): dessen trim() schnitte der ersten Zeile das fuehrende
+   Leerzeichen der Form „XY pfad“ ab. Nur VERFOLGTE Aenderungen zaehlen: werkzeug/ (von einrichten-* angelegt) und
+   andere ungetrackte Ordner haelt git pull nicht auf - vorher brach jede eingerichtete Installation hier ab. */
+function gitSchmutz() {
+  const r = spawnSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: WURZEL, encoding: 'utf8' });
+  if (r.status !== 0) throw new Error(((r.stderr || '').trim().split('\n')[0]) || 'git status scheiterte');
+  return (r.stdout || '').replace(/\s+$/, '');
+}
+function schmutzPfade(schmutz) {
+  return String(schmutz || '').split('\n').filter(Boolean).map(z => {
+    let p = z.slice(3);
+    const pfeil = p.indexOf(' -> ');
+    if (pfeil >= 0) p = p.slice(pfeil + 4);
+    return p;
+  });
+}
+
+/* SICHERN, BEVOR ETWAS UEBERSCHRIEBEN WIRD: verfolgte, nicht festgelegte Aenderungen kommen als Eintrag in den git
+   stash. Der Arbeitsbaum bleibt dabei, wie er ist - stash create legt nur das Objekt an, stash store traegt es ein.
+   Zurueck holt man es mit git stash apply. Geht das Sichern nicht, wird nichts ueberschrieben. */
+function gitSichern(schmutz, warum) {
+  if (!schmutz) return false;
+  const h = git(['stash', 'create'], true);
+  if (!h) throw new Error('Die ungesicherten Aenderungen liessen sich nicht im git stash sichern. Ich lasse alles, wie es ist.');
+  git(['stash', 'store', '-m', 'KlangTresor-Update ' + new Date().toISOString().slice(0, 10) + ': ' + warum, h]);
+  return true;
+}
+
+/* DIE HINEINKOPIERTEN UPDATE-DATEIEN IM GIT-KLON (Weg A, 15.10.2026). Bis 1.0.72 kennt Git die Anlasser nicht: als
+   unversionierte Dateien hielten sie den Zug auf („wuerden ueberschrieben“, geprobt an einem Klon auf v1.0.72), obwohl
+   origin/main dieselben bringt. Sie kommen beiseite - im Speicher, und bei einem Fehlschlag zurueck, damit man es noch
+   einmal starten kann. Was nicht aus dem Paket stammt, haelt den Zug weiter an: das sind Dateien des Nutzers. */
+function paketBeiseite() {
+  const bekannt = new Set(git(['ls-files', '--'].concat(PAKET), true).split('\n').filter(Boolean));
+  const dort = new Set(git(['ls-tree', '-r', '--name-only', 'origin/main', '--'].concat(PAKET), true).split('\n').filter(Boolean));
+  const weg = [];
+  for (const n of PAKET) {
+    const p = path.join(WURZEL, n);
+    if (bekannt.has(n) || !dort.has(n) || !fs.existsSync(p)) continue;
+    weg.push({ name: n, pfad: p, inhalt: fs.readFileSync(p), modus: fs.statSync(p).mode & 0o777 });
+  }
+  for (const w of weg) fs.unlinkSync(w.pfad);
+  return weg;
+}
+function paketZurueck(weg) {
+  for (const w of weg) {
+    try { if (!fs.existsSync(w.pfad)) { fs.writeFileSync(w.pfad, w.inhalt); fs.chmodSync(w.pfad, w.modus); } } catch (e) {}
+  }
+}
+
+/* git laeuft hier? (Ein Mac ohne Entwicklerwerkzeuge hat /usr/bin/git nur als Platzhalter, der mit Fehler endet.) */
+function gitDa() {
+  const r = spawnSync('git', ['--version'], { encoding: 'utf8' });
+  return !r.error && r.status === 0;
+}
+/* lage: 'gleich' | 'dahinter' | 'davor' | 'auseinander' | 'unverwandt' | 'unbekannt'
+         | 'unerreichbar' | 'ohne-origin' | 'ohne-git' */
 function gitZustand() {
-  const zweig = git(['rev-parse', '--abbrev-ref', 'HEAD']);
-  /* nur VERFOLGTE Aenderungen zaehlen: werkzeug/ (von einrichten-* angelegt) und andere ungetrackte Ordner haelt git pull
-     nicht auf - vorher brach jede eingerichtete Installation hier ab */
-  const schmutz = git(['status', '--porcelain', '--untracked-files=no']);
+  if (!gitDa()) return { lage: 'ohne-git' };
+  const zweig = git(['rev-parse', '--abbrev-ref', 'HEAD'], true);
+  const schmutz = gitSchmutz();
+  const quelle = git(['remote', 'get-url', 'origin'], true);
+  const unserOrigin = /github\.com[:/]CasparDavi\/klangtresor(\.git)?\/?$/i.test(quelle);
+  if (!quelle) return { zweig, schmutz, quelle, unserOrigin, lage: 'ohne-origin' };
   /* ein gescheitertes fetch ist „Stand unbekannt", nicht „nichts zu holen" (Pruefung bei der Uebernahme) */
   const geholt = spawnSync('git', ['fetch', 'origin'], { cwd: WURZEL, encoding: 'utf8' });
-  if (geholt.status !== 0) return { zweig, schmutz, lage: 'unerreichbar', grund: ((geholt.stderr || '').trim().split('\n')[0] || 'git fetch scheiterte') };
-  let origin = null;
-  try { origin = git(['rev-parse', 'origin/main']); } catch (e) { origin = null; }
-  const kopf = git(['rev-parse', 'HEAD']);
+  if (geholt.status !== 0) return { zweig, schmutz, quelle, unserOrigin, lage: 'unerreichbar', grund: ((geholt.stderr || '').trim().split('\n')[0] || 'git fetch scheiterte') };
+  const origin = git(['rev-parse', '--verify', '-q', 'origin/main'], true) || null;
+  const kopf = git(['rev-parse', '--verify', '-q', 'HEAD'], true) || null;
   let lage = 'unbekannt';
   if (origin) {
     if (kopf === origin) lage = 'gleich';
     else {
-      const basis = git(['merge-base', 'HEAD', 'origin/main']);
-      if (basis === kopf) lage = 'dahinter';
+      /* UNVERWANDTE GESCHICHTE (Weg A, 15.10.2026): ein Klon aus der MySuno-Zeit traegt eine Geschichte, die mit der
+         auf GitHub keinen Vorfahren teilt (das heutige Repo beginnt am 24.08.2026 neu). merge-base antwortet dann leer
+         mit Exit 1 - vorher brach das Skript hier mit „git merge-base 1“ ab, auch mit --trotzdem. */
+      const basis = kopf ? git(['merge-base', kopf, origin], true) : '';
+      if (!basis) lage = 'unverwandt';
+      else if (basis === kopf) lage = 'dahinter';
       else if (basis === origin) lage = 'davor';
       else lage = 'auseinander';
     }
   }
-  return { zweig, schmutz, lage, kopf, origin };
+  return { zweig, schmutz, quelle, unserOrigin, lage, kopf, origin };
+}
+
+/* SELBST WEGRAEUMEN (Weg A, 15.10.2026): die Kopie aus KlangTresor-Update.zip im Hauptordner geht, sobald
+   bin/aktualisieren.js da ist - sonst laege dort spaeter ein veraltetes Skript. Nur nach einem Lauf ohne Fehler (auch
+   „nichts zu holen“ und mit Docker), nie bei --nur-stand: das schreibt nichts. Unter Windows geht das Loeschen der
+   laufenden Datei, Node haelt sie nicht offen. */
+function kopieWegraeumen() {
+  const eigen = path.join(WURZEL, 'bin', 'aktualisieren.js');
+  if (gleicherOrdner(__filename, eigen) || !fs.existsSync(eigen)) return;
+  try {
+    fs.unlinkSync(__filename);
+    sag('  Die Kopie ' + path.basename(__filename) + ' im Hauptordner habe ich weggeraeumt –');
+    sag('  ab jetzt spielt bin/aktualisieren.js das Update ein.');
+  } catch (e) {
+    sag('  Die Kopie ' + __filename + ' liess sich nicht wegraeumen (' + (e.code || e.message) + ').');
+    sag('  Bitte von Hand loeschen - ab jetzt gilt bin/aktualisieren.js.');
+  }
+  sag('');
 }
 
 async function main() {
   sag('');
-  sag('  KlangTresor — neue Fassung einspielen');
-  sag('  =====================================');
+  sag('  KlangTresor — Update einspielen');
+  sag('  ===============================');
   sag('');
 
   if (imContainer()) {
@@ -377,9 +527,18 @@ async function main() {
     sag('');
     process.exit(1);
   }
-  if (!fs.existsSync(path.join(WURZEL, 'package.json')) || !fs.existsSync(path.join(WURZEL, 'server', 'server.js'))) {
-    sag('  Hier liegt kein KlangTresor. Die Datei gehoert in den Ordner');
-    sag('  mit server/ und web/, nicht daneben.');
+  if (!istKlangTresor(WURZEL)) {
+    const darueber = path.dirname(WURZEL);
+    if (WURZEL === path.resolve(__dirname) && istKlangTresor(darueber)) {
+      sag('  Diese Datei liegt eine Ebene zu tief, in ' + path.basename(WURZEL) + '/.');
+      sag('  Kopiere aktualisieren.js und ' + anlasser('aktualisieren') + ' in den Ordner darueber,');
+      sag('  dort, wo library/ liegt, und starte es dort:');
+      sag('    ' + darueber);
+    } else {
+      sag('  Hier liegt kein KlangTresor:  ' + WURZEL);
+      sag('  Kopiere aktualisieren.js und ' + anlasser('aktualisieren') + ' in deinen');
+      sag('  KlangTresor- bzw. MySuno-Ordner (dort, wo library/ liegt) und starte es dort.');
+    }
     sag('');
     process.exit(1);
   }
@@ -395,6 +554,9 @@ async function main() {
   }
 
   const stand = await standHolen();
+  /* OHNE NUMMER (MySuno-Zeit: package.json fehlt oder traegt keine version) gilt als aelter als jede Release - vorher
+     hiess das „Hier: —“ und „Release und lokale Nummer sind gleich. Nichts zu holen.“ */
+  const neuer = stand.neuer || (!stand.hier && !!stand.github);
   const dz = stand.docker || { art: 'keins' };
   if (dz.art === 'unerreichbar' && !OHNE_DOCKER && !NUR_STAND) {
     sag('  Docker antwortet nicht. Ob dein KlangTresor im Container laeuft, laesst');
@@ -408,25 +570,86 @@ async function main() {
   /* „laeuft" heisst: soll laufen - auch im Neustart-Kreislauf oder pausiert. Nur ein angehaltener (exited/created)
      Container bleibt nach dem Neubau angehalten (Pruefung bei der Uebernahme: 'restarting' war danach aus). */
   const laeuft = mitDocker && ['running', 'restarting', 'paused'].includes(dz.status);
+  const mysuno = OHNE_DOCKER ? null : alterContainer();
+
+  /* DER WEG. Git, wenn .git da ist - ausser die Geschichte hier ist mit der auf GitHub nicht verwandt (Weg A,
+     15.10.2026): dann gibt es keinen Git-Zug (git pull --rebase blieb am ersten alten Commit mit 24 Konflikten stehen,
+     git pull ohne rebase verweigert unverwandte Geschichten). Zeigt origin auf github.com/CasparDavi/klangtresor, kommt
+     das Release-Zip, angesagt, und ungesicherte Aenderungen liegen vorher im git stash. Zeigt origin woandershin oder
+     fehlt, ueberschreibe ich keinen Git-Ordner still mit Zip-Dateien: dann ein Hinweis mit --zip. */
+  let weg = stand.git && !ZWINGE_ZIP ? 'git' : 'zip';
+  let g = null, unverwandt = false;
+  if (weg === 'git' && !NUR_STAND) {
+    g = gitZustand();
+    if (g.lage === 'unverwandt' && g.unserOrigin) { weg = 'zip'; unverwandt = true; }
+  }
+
   sag('  Ordner:   ' + WURZEL);
-  sag('  Hier:     ' + (stand.hier || '—'));
+  sag('  Hier:     ' + (stand.hier || 'ohne Nummer'));
   sag('  GitHub:   ' + (stand.github ? stand.github + (stand.tag && stand.tag !== stand.github ? '  (' + stand.tag + ')' : '') : (stand.grund || 'keine Antwort')));
-  sag('  Weg:      ' + (stand.git && !ZWINGE_ZIP ? 'Git' : 'Release-Zip') + (mitDocker ? ' + Docker' + (laeuft ? '' : ' (Container angehalten)') : ''));
+  const gitGehtNicht = !!g && (g.lage === 'ohne-git' || g.lage === 'ohne-origin' || (g.lage === 'unverwandt' && !g.unserOrigin));
+  sag('  Weg:      ' + (gitGehtNicht ? 'Git geht hier nicht' : weg === 'git' ? 'Git' : 'Release-Zip') + (mitDocker ? ' + Docker' + (laeuft ? '' : ' (Container angehalten)') : ''));
+  if (unverwandt) {
+    sag('  Hinweis:  die Git-Geschichte hier stammt nicht von github.com/CasparDavi/klangtresor');
+    sag('            (etwa ein Klon aus der MySuno-Zeit) - ein Git-Zug geht so nicht. Darum das');
+    sag('            Release-Zip; .git/ und library/ bleiben, wie sie sind.');
+  }
   if (dz.art === 'fremd') sag('  Hinweis:  der Container „klangtresor" gehoert zu einem anderen Ordner – er bleibt unberuehrt.');
   if (dz.art === 'unerreichbar' && !OHNE_DOCKER) sag('  Hinweis:  Docker antwortet nicht – einspielen ginge so nicht (Docker starten oder --ohne-docker).');
+  if (mysuno) sag('  Hinweis:  der Container „mysuno“ aus der MySuno-Zeit gehoert zu diesem Ordner (' + mysuno + ').');
   sag('');
 
-  if (NUR_STAND) {
-    if (stand.lage === 1) sag('  Auf GitHub liegt eine neuere Fassung.');
-    else if (!stand.github) sag('  Nachsehen ist gescheitert: ' + stand.grund);
-    else if (stand.lage === -1) sag('  Deine Fassung ist neuer als die auf GitHub.');
-    else sag('  Das ist dieselbe Fassung.');
+  /* Der Container aus der MySuno-Zeit: was zu tun ist, damit er nicht alt weiterlaeuft. */
+  const mysunoSchritte = () => {
+    if (!mysuno) return;
+    sag('  Der Container „mysuno“ laeuft mit dem alten Programm weiter - ihn baut');
+    sag('  dieses Skript nicht um. Einmal:');
+    sag('    docker stop mysuno');
+    befehlHier(anlasser('einrichten-docker'));
+    sag('  Das baut den Container „klangtresor“ aus der neuen Version. library/ bleibt,');
+    sag('  wo sie ist; den alten Container kannst du danach wegwerfen (docker rm mysuno).');
     sag('');
+  };
+  /* Nach einem Lauf ohne Fehler, an jedem Ausgang: Hinweise und die Kopie im Hauptordner. */
+  const schluss = () => { mysunoSchritte(); kopieWegraeumen(); };
+
+  if (NUR_STAND) {
+    if (neuer) sag('  Auf GitHub liegt eine neuere Version.');
+    else if (!stand.github) sag('  Nachsehen ist gescheitert: ' + stand.grund);
+    else if (stand.lage === -1) sag('  Deine Version ist neuer als die neueste auf GitHub.');
+    else sag('  Das ist die neueste Version.');
+    sag('');
+    mysunoSchritte();
     return;
   }
 
-  if (!stand.github && !stand.git) {
-    sag('  Ohne GitHub-Antwort und ohne Git kann ich nichts holen.');
+  if (g && g.lage === 'ohne-git') {
+    sag('  Hier liegt ein Git-Ordner (.git/), aber git laeuft auf diesem Rechner nicht.');
+    sag('  Entweder git einrichten und noch einmal - oder das Release-Zip ueber das');
+    sag('  Programm legen. library/ und .git/ bleiben; was in Git noch nicht festgelegt');
+    sag('  ist, kann ich ohne git aber nicht sichern. Im Terminal:');
+    befehlHier(anlasser('aktualisieren') + ' --zip');
+    sag('');
+    process.exit(1);
+  }
+  if (gitGehtNicht) {
+    if (g.lage === 'ohne-origin') {
+      sag('  Dieser Git-Ordner hat kein origin – woher die neue Version kommen soll,');
+      sag('  sagt Git hier nicht.');
+    } else {
+      sag('  Die Git-Geschichte hier hat mit origin/main nichts gemein, und origin zeigt');
+      sag('  nicht auf github.com/CasparDavi/klangtresor (origin: ' + g.quelle + ').');
+    }
+    sag('  Einen Git-Ordner ueberschreibe ich nicht still mit Zip-Dateien. Das Release-Zip');
+    sag('  ueber das Programm legen - library/ und .git/ bleiben, ungesicherte Aenderungen');
+    sag('  lege ich vorher in den git stash. Im Terminal:');
+    befehlHier(anlasser('aktualisieren') + ' --zip');
+    sag('');
+    process.exit(1);
+  }
+
+  if (!stand.github && weg === 'zip') {
+    sag('  Ohne GitHub-Antwort kann ich kein Release-Zip holen.');
     sag('  ' + (stand.grund || ''));
     sag('');
     process.exit(1);
@@ -443,15 +666,19 @@ async function main() {
   const nichtsZuHolen = (satz) => {
     const alt = mitDocker ? containerAlt() : null;
     if (alt) { sag('  Die Programmdateien sind aktuell, der Container laeuft aber noch mit ' + alt + ' – er wird neu gebaut.'); return false; }
-    sag('  ' + satz); sag(''); return true;
+    sag('  ' + satz); sag(''); schluss(); return true;
   };
 
   const lockVorher = (() => { try { return fs.readFileSync(path.join(WURZEL, 'package-lock.json')); } catch (e) { return null; } })();
   let geholt = true;
 
-  if (stand.git && !ZWINGE_ZIP) {
-    const g = gitZustand();
-    if (g.schmutz && !TROTZDEM) {
+  if (weg === 'git') {
+    /* Hineinkopierte Update-Dateien zaehlen nicht als Aenderung des Nutzers (Weg A): ab 1.0.73 kennt Git die Anlasser,
+       eine kopierte andere Fassung hielt den Zug mit „ungesicherte Aenderungen“ an (geprobt an v1.0.74). Sie gehen
+       vor dem Zug auf den Git-Stand zurueck, ihr Inhalt vorher in den git stash; der Zug bringt die neuen. */
+    const geaendert = schmutzPfade(g.schmutz);
+    const paketGeaendert = geaendert.filter(p => PAKET.indexOf(p) >= 0);
+    if (geaendert.length > paketGeaendert.length && !TROTZDEM) {
       sag('  Im Ordner liegen ungesicherte Aenderungen. Die fasse ich nicht an.');
       sag('  Erst festlegen oder weglegen, dann noch einmal — oder --trotzdem');
       sag('  (dann lege ich sie fuer den Zug beiseite und danach wieder auf; widerspricht');
@@ -477,14 +704,25 @@ async function main() {
       sag('');
       process.exit(1);
     }
-    if ((g.lage === 'gleich' || g.lage === 'davor') && !stand.neuer && !TROTZDEM) {
-      if (nichtsZuHolen(g.lage === 'gleich' ? 'origin/main ist schon da. Nichts zu holen.' : 'Deine Fassung liegt vor origin/main. Nichts zu holen.')) return;
+    if ((g.lage === 'gleich' || g.lage === 'davor') && !neuer && !TROTZDEM) {
+      if (nichtsZuHolen(g.lage === 'gleich' ? 'origin/main ist schon da. Nichts zu holen.' : 'Deine Version liegt vor origin/main. Nichts zu holen.')) return;
       geholt = false;
     }
     if (geholt) {
+      if (paketGeaendert.length) {
+        gitSichern(g.schmutz, 'hineinkopierte Update-Dateien vor dem Zug');
+        git(['checkout', 'HEAD', '--'].concat(paketGeaendert));
+        sag('  Hineinkopiert und anders als in Git: ' + paketGeaendert.join(', '));
+        sag('  Sie gehen auf den Git-Stand zurueck (ihr Inhalt liegt im git stash), der Zug bringt die neuen.');
+      }
+      const beiseite = paketBeiseite();
+      if (beiseite.length) {
+        sag('  Hineinkopiert, Git kennt sie hier noch nicht: ' + beiseite.map(w => w.name).join(', '));
+        sag('  Der Zug bringt sie mit.');
+      }
       /* --trotzdem bei verfolgten Aenderungen: ohne --autostash verweigert git den Rebase immer (Pruefung bei der Uebernahme) -
          die Aenderungen werden beiseitegelegt und danach wieder aufgelegt */
-      const zug = ['pull', '--rebase', ...(g.schmutz ? ['--autostash'] : []), 'origin', 'main'];
+      const zug = ['pull', '--rebase'].concat(gitSchmutz() ? ['--autostash'] : [], ['origin', 'main']);
       sag('  → git ' + zug.join(' '));
       const r = spawnSync('git', zug, { cwd: WURZEL, stdio: 'inherit' });
       if (r.status !== 0) {
@@ -498,15 +736,21 @@ async function main() {
             ? '  git pull ist an einem Konflikt gescheitert. Den Rebase habe ich abgebrochen – der Arbeitsbaum ist wieder, wie er war.'
             : '  git pull ist an einem Konflikt gescheitert, und der Rebase liess sich nicht abbrechen. Bitte: git rebase --abort');
         } else sag('  git pull ist gescheitert. Der Arbeitsbaum bleibt, wie er war.');
+        paketZurueck(beiseite);
         process.exit(1);
       }
     }
   } else {
-    if (!stand.neuer && !TROTZDEM) {
+    if (!neuer && !TROTZDEM) {
       if (nichtsZuHolen('Release und lokale Nummer sind gleich' + (stand.lage === -1 ? ' (oder deine ist neuer)' : '') + '. Nichts zu holen. (Erneut einspielen: --trotzdem)')) return;
       geholt = false;
     }
     if (geholt) {
+      /* Ueber einen Git-Ordner (--zip oder unverwandte Geschichte): erst sichern, was Git noch nicht festgehalten hat -
+         Festgelegtes steht ohnehin in .git/, und .git/ fasst das Zip nicht an. */
+      if (stand.git && gitDa() && gitSichern(gitSchmutz(), 'Stand vor dem Release-Zip')) {
+        sag('  Ungesicherte Aenderungen liegen jetzt im git stash (ansehen: git stash show -p).');
+      }
       const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'klangtresor-update-'));
       const zip = path.join(tmp, ZIP_NAME);
       const entpackt = path.join(tmp, 'aus');
@@ -550,6 +794,7 @@ async function main() {
     sag('  Danach die Seite hart neu laden.');
   }
   sag('');
+  schluss();
 }
 
 module.exports = { standHolen, paketVersion, vergleich };

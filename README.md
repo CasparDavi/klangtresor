@@ -195,18 +195,20 @@ Dienstes sofort Schluß.
 
 ---
 
-## Neue Fassung einspielen
+## Update einspielen
 
-Der rote Knopf holt Songdaten, nicht den Code. Die Programm-Fassung liegt
-auf [GitHub](https://github.com/CasparDavi/klangtresor). Ob dort eine
+Der rote Knopf holt Songdaten, nicht den Code. Neue Versionen des Programms
+liegen auf [GitHub](https://github.com/CasparDavi/klangtresor). Ob dort eine
 neue liegt, sieht KlangTresor von selbst nach: beim Öffnen der Seite und,
 solange sie offen ist, alle 12 Stunden (nach einem Fehlschlag nach 2
-Stunden) fragt die Seite den eigenen Server. Der fragt GitHub und hält
-die Antwort eine halbe Stunde vor. Liegt dort eine höhere Nummer, steht
-links neben dem roten Knopf eine Glocke; ein Klick öffnet das Fenster
-„KlangTresor“ (Wer das gebaut hat) mit dem Hinweis. Dort fragt **Nach
-neuer Fassung sehen** auch von Hand. Die eingefrorene Kopie auf dem
-Stick fragt nie.
+Stunden) fragt die Seite den eigenen Server — und jedes Mal, wenn das Fenster
+„KlangTresor“ (Klick auf den Namen oben) aufgeht. Der Server fragt GitHub und
+hält die Antwort eine halbe Stunde vor. Liegt dort eine höhere Nummer, steht
+links neben dem roten Knopf eine Glocke; ein Klick öffnet das Fenster mit dem
+Hinweis: welche Version bereitliegt, in welchem Ordner KlangTresor läuft und
+welches Skript das Update einspielt. **Ordner zeigen** öffnet diesen Ordner im
+Dateifenster (nur am Rechner, auf dem KlangTresor läuft, nicht im Container). Die eingefrorene
+Kopie auf dem Stick fragt nie.
 
 Zum Einspielen im **Projektordner** (dort liegen `bin/` und `library/`,
 eine Ebene über `docker/`):
@@ -224,7 +226,10 @@ npm run aktualisieren -- --nur-stand
 ```
 
 - **Git-Klon:** `git pull --rebase origin main` (bricht ab bei Schmutz
-  oder anderem Zweig als `main`).
+  oder anderem Zweig als `main`). Hineinkopierte Dateien aus dem
+  Update-Paket halten den Zug nicht auf. Ist die Geschichte mit der auf
+  GitHub nicht verwandt (ein Klon aus der MySuno-Zeit), kommt das
+  Release-Zip; ungesicherte Änderungen liegen vorher im `git stash`.
 - **Zip-Installation:** holt `KlangTresor.zip` der jüngsten Release und
   legt die Programmdaten darüber.
 - **Docker:** danach `compose up --build`. `library/` ist Volume und
@@ -237,10 +242,52 @@ npm run aktualisieren -- --nur-stand
 
 ---
 
+## Ältere Versionen ohne Update-Skript
+
+Bis Version 1.0.72 – und aus der Zeit, als das Programm *MySuno* hieß –
+liegt im Ordner noch kein Update-Skript. Dafür hängt an jeder Release das
+Update-Paket, immer in der jüngsten Version:
+
+```
+https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Update.zip
+```
+
+Kopiere `aktualisieren.js` und das Skript für dein System in deinen
+KlangTresor- bzw. MySuno-Ordner (dort, wo `library/` liegt) und doppelklicke
+das Skript:
+
+| System | kopieren | starten |
+|---|---|---|
+| Windows | `aktualisieren.js`, `aktualisieren-windows.cmd` | Doppelklick auf `aktualisieren-windows.cmd` |
+| macOS | `aktualisieren.js`, `aktualisieren-macos.command` | `aktualisieren-macos.command` doppelklicken |
+| Linux | `aktualisieren.js`, `aktualisieren-linux.sh` | `./aktualisieren-linux.sh` |
+
+Das Paket ist flach, ohne Unterordner: der Finder ersetzt beim Kopieren
+einen vorhandenen Ordner `bin/`, statt ihn zusammenzuführen. Das Update
+läuft dann wie gewohnt – `library/` bleibt –, danach liegen alle
+`aktualisieren-*` im Ordner, und die Kopie `aktualisieren.js` räumt sich
+selbst weg. Ab Version 1.0.73 ist das Paket nicht nötig.
+
+Beim ersten Start meckert das System, das Paket ist nicht signiert:
+Windows sagt „Der Herausgeber konnte nicht verifiziert werden“ –
+**Ausführen**. macOS sagt „nicht verifizierter Entwickler“ – beim ersten
+Mal Rechtsklick → **Öffnen**; ab macOS 15 gibt es das dort nicht mehr,
+dann Systemeinstellungen → Datenschutz & Sicherheit → **Dennoch öffnen**.
+Linux: fehlt das Ausführungsrecht, `chmod +x aktualisieren-linux.sh`.
+
+Wer KlangTresor nur im Container betreibt, ohne Node auf dem Rechner,
+braucht das Paket nicht: den Inhalt des neuen `KlangTresor.zip` in den
+Ordner kopieren (Dateien ersetzen, nie den ganzen Ordner – `library/`
+liegt darin) und `einrichten-docker-*` noch einmal. Läuft dort noch der
+Container `mysuno` aus der MySuno-Zeit, vorher `docker stop mysuno`.
+
+---
+
 ## Wer schon eine Installation hat
 
-Das Programm hieß bis zum 24.08.2026 *MySuno*. Ein `git pull` genügt,
-es geht nichts verloren:
+Das Programm hieß bis zum 24.08.2026 *MySuno*. Das Update spielt man ein
+wie unter [Ältere Versionen ohne Update-Skript](#ältere-versionen-ohne-update-skript)
+beschrieben, es geht nichts verloren:
 
 - **Einstellungen bleiben.** Equalizer, Lautstärke, Darstellungsart,
   Kartenansicht — alle 52 Speicherschlüssel im Browser heißen weiter wie
@@ -302,7 +349,7 @@ einrichten-windows.cmd         Einrichten unter Windows (Doppelklick)
 einrichten-macos.command       Einrichten auf dem Mac (Doppelklick)
 einrichten-linux.sh            Einrichten unter Linux
 einrichten-docker-*            dasselbe, ohne Installation - alles im Container
-aktualisieren-*                neue Programm-Fassung von GitHub (Git oder Zip)
+aktualisieren-*                Update auf die neue Version von GitHub (Git oder Zip)
 starten-windows.cmd / -macos.command / -linux.sh   nur starten, nicht einrichten
 docker/    Dockerfile, docker-compose.yml, Einstiegsskript des Containers
 bin/       Sammeln, Aufbereiten, Messen, Farben, Wiederherstellen
