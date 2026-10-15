@@ -8973,3 +8973,13 @@ die Lasche trägt den gewählten Namen; der Groupieschaum bleibt allein.
 - **Dropdowns:** eigener Pfeil 12 px vom Rand (`select:not([multiple])`, !important wegen background-Kurzform).
 - Wiedervorlage: Streamgraph-Glättung in Prophane (dort 40 Durchgänge, spannt die Namenslinie gerade) – nur auf Wort ändern;
   Brushing Band ↔ Cover; 9-pt-Namen grenzwertig.
+
+## 97. 15.10.2026: 1.0.72 – Zielpunkte der Ken Burns Fahrt wieder greifbar
+Caspar_D: „ich kann darin keine Zielpunkte anklicken und verschieben, es werden immer neue gesetzt". Ursache: `clipTick` (Kacheln,
+die live einen Effektclip malen) rief je Kachel `setzen(m); zeichneFrame(…)`; `setzen`/`bundel` tauschen GEO und EINHEIT nicht mit,
+also stand danach in GEO die Geometrie der zuletzt gemalten Kachel. Die Zeiger der Bühne (ortVon, markeBei, lrMarkeBei, Titel-Ort)
+lesen GEO außerhalb des Malwegs. Startete die Kachel nach dem Studio (z. B. „Titel abspielen" → markieren → clipAn), malte sie in
+jedem Bild zuletzt → Klick auf eine Marke verfehlte sie und setzte einen neuen Punkt am falschen Ort. Abhilfe: clipTick merkt GEO und
+EINHEIT vorher und legt sie danach zurück. Nachgestellt im Sandkasten (Kachel-Clip nach dem Öffnen gestartet): vorher Klick bei
+(186,180) → gezeichnet bei (137,212), Klick darauf → neuer Punkt; nachher gezeichnet bei (185,180), alle Marken greifbar, Ziehen
+verschiebt. Betraf genauso die Marken des Lichtraums und den Ort des Titels. Prüfstand nicht betroffen (malt nicht über clipTick).
