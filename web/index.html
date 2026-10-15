@@ -29187,7 +29187,7 @@ function fassungStandZeigen(d){
     zeile('', 'Das ist die neueste Version.');
     const wann = fassungZeitpunkt(d.gefragtAm);
     zeile('vleise', (wann ? 'Zuletzt nachgesehen: ' + wann + '. ' : '')
-      + 'KlangTresor sieht beim Öffnen und alle 12 Stunden selbst nach – und jedes Mal, wenn du dieses Fenster öffnest.');
+      + 'KlangTresor sieht beim Öffnen und alle 12 Stunden selbst nach.');
   } else {
     /* lage null: die eigene Nummer fehlt (package.json nicht lesbar) - vergleichen laesst sich nichts */
     zeile('', 'Auf GitHub ist ' + d.github + ' die neueste Version.');
