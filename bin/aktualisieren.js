@@ -35,6 +35,8 @@
      npm run aktualisieren -- --nur-stand   dasselbe, aus jedem Unterordner
      node bin/aktualisieren.js --trotzdem   Zip nochmal, auch bei gleicher Nummer
      node bin/aktualisieren.js --zip        Release-Zip, auch wenn .git da ist
+     node bin/aktualisieren.js --ohne-docker  Docker nicht fragen (KlangTresor laeuft ohne Container)
+   --trotzdem gilt auch, wenn neben dem Programm kein library/ liegt (frischer Klon).
 
    Stand fuer die Oberflaeche: standHolen() (GET /api/fassung). Die
    Nachfrage an GitHub geht erst, wenn jemand den Knopf drueckt — nicht
@@ -47,6 +49,7 @@ const path = require('node:path');
 const http = require('node:http');
 const https = require('node:https');
 const { spawnSync } = require('node:child_process');
+const { pipeline } = require('node:stream');
 
 const WURZEL = path.resolve(__dirname, '..');
 const UA = 'KlangTresor/1.0 (persoenliches Musikarchiv; github.com/CasparDavi/klangtresor)';
@@ -55,6 +58,7 @@ const BLEIBT = new Set(['library', 'werkzeug', 'node_modules', '.git', 'proben']
 const NUR_STAND = process.argv.includes('--nur-stand');
 const TROTZDEM = process.argv.includes('--trotzdem');
 const ZWINGE_ZIP = process.argv.includes('--zip');
+const OHNE_DOCKER = process.argv.includes('--ohne-docker');
 
 const QUELLEN = (() => {
   const aus = {
@@ -101,68 +105,96 @@ function git(args, okAuchFehler) {
   }
   return (r.stdout || '').trim();
 }
-function dockerInspect(fmt) {
-  const r = spawnSync('docker', ['inspect', '-f', fmt, 'klangtresor'], { encoding: 'utf8', timeout: 8000 });
-  if (r.status !== 0) return null;
-  return (r.stdout || '').trim();
+/* DOCKER WIRD AM ORDNER ERKANNT, NICHT AM NAMEN (Pruefung bei der Uebernahme, 15.10.2026). Ein Container „klangtresor"
+   kann zu einer anderen Installation gehoeren; umgebaut wird nur, wenn er zu DIESEM Ordner gehoert - das sagt compose
+   im Label working_dir (der Ordner docker/ auf dem Rechner, so wie die Kommandozeile ihn kennt), sonst die Quelle des
+   eingehaengten /app/library. Und: ein gestoppter Docker-Dienst ist nicht „kein Docker". Antwortet der Dienst nicht,
+   laesst sich nicht klaeren, ob hier ein Container laeuft - dann wird nicht einfach als Ordner-Installation
+   weitergemacht (der Container bliebe alt, und der naechste Lauf saehe „nichts zu holen"). */
+function dockerLauf(args, ms) {
+  return spawnSync('docker', args, { encoding: 'utf8', timeout: ms || 8000 });
 }
-function dockerDa() {
-  return dockerInspect('{{.State.Status}}') != null;
+function gleicherOrdner(a, b) {
+  if (!a || !b) return false;
+  const n = (p) => path.resolve(p).replace(/[\\/]+$/, '');
+  return process.platform === 'win32' ? n(a).toLowerCase() === n(b).toLowerCase() : n(a) === n(b);
+}
+/** { art: 'keins' | 'unseres' | 'fremd' | 'unerreichbar', status } */
+function dockerZustand() {
+  const r = dockerLauf(['inspect', '-f',
+    '{{.State.Status}}|{{index .Config.Labels "com.docker.compose.project.working_dir"}}|{{range .Mounts}}{{if eq .Destination "/app/library"}}{{.Source}}{{end}}{{end}}',
+    'klangtresor']);
+  if (r.error && r.error.code === 'ENOENT') return { art: 'keins' };            /* kein docker auf diesem Rechner */
+  if (r.status === 0) {
+    const [status, ordner, quelle] = (r.stdout || '').trim().split('|');
+    const unser = gleicherOrdner(ordner, path.join(WURZEL, 'docker')) || gleicherOrdner(quelle, path.join(WURZEL, 'library'));
+    return { art: unser ? 'unseres' : 'fremd', status: status || null };
+  }
+  /* inspect scheiterte: kein Container dieses Namens - oder der Dienst antwortet nicht */
+  const info = dockerLauf(['info', '--format', '{{.ServerVersion}}']);
+  if (info.status !== 0 && fs.existsSync(path.join(WURZEL, 'docker', 'docker-compose.yml'))) return { art: 'unerreichbar' };
+  return { art: 'keins' };
+}
+/* Welche Fassung im laufenden Container steckt - der Container wird aus dem Ordner gebaut, also kann er hinter dem
+   Ordner zurueckliegen (ein gescheiterter oder ausgelassener Neubau). null, wenn man nicht fragen kann. */
+function containerFassung() {
+  const r = dockerLauf(['exec', 'klangtresor', 'node', '-p', "require('/app/package.json').version"]);
+  return r.status === 0 ? (r.stdout || '').trim() || null : null;
 }
 function cudaGenutzt() {
-  const env = dockerInspect('{{range .Config.Env}}{{println .}}{{end}}') || '';
-  return env.split('\n').some(z => z === 'KLANG_CUDA=1');
+  const r = dockerLauf(['inspect', '-f', '{{range .Config.Env}}{{println .}}{{end}}', 'klangtresor']);
+  return r.status === 0 && (r.stdout || '').split('\n').some(z => z === 'KLANG_CUDA=1');
 }
 
+/* ZEITGRENZEN UND ABBRUECHE (Pruefung bei der Uebernahme): die Grenze gilt schon VOR dem Verbinden (Option timeout -
+   req.setTimeout griff erst am offenen Socket, ein haengender Verbindungsaufbau lief bis zu zwei Minuten), und ein
+   Strom, der mittendrin endet, ist ein Fehler und kein Erfolg (vorher endete ein abgebrochener Download stumm mit
+   Exit 0, und der Server blieb auf /api/fassung ohne Antwort). Beim Download zaehlt zusaetzlich Content-Length. */
+function anfrage(url, kopf, timeoutMs, antwort, bruch) {
+  const los = (u, tiefe) => {
+    if (tiefe > 5) return bruch(new Error('zu viele Umleitungen'));
+    const nimm = u.startsWith('https') ? https : http;
+    const req = nimm.get(u, { headers: kopf, timeout: timeoutMs }, (a) => {
+      if (a.statusCode >= 300 && a.statusCode < 400 && a.headers.location) {
+        a.resume();
+        return los(new URL(a.headers.location, u).href, tiefe + 1);
+      }
+      if (a.statusCode !== 200) {
+        a.resume();
+        return bruch(new Error((u.includes('api.github.com') ? 'GitHub antwortet HTTP ' : 'Download HTTP ') + a.statusCode));
+      }
+      antwort(a);
+    });
+    req.on('timeout', () => req.destroy(new Error(u.includes('api.github.com') ? 'keine Antwort von GitHub' : 'Download steht still')));
+    req.on('error', bruch);
+  };
+  los(url, 0);
+}
 function holenText(url, timeoutMs) {
   return new Promise((fertig, bruch) => {
-    const los = (u, tiefe) => {
-      if (tiefe > 5) return bruch(new Error('zu viele Umleitungen'));
-      const nimm = u.startsWith('https') ? https : http;
-      const req = nimm.get(u, { headers: { 'User-Agent': UA, Accept: 'application/json' } }, (a) => {
-        if (a.statusCode >= 300 && a.statusCode < 400 && a.headers.location) {
-          a.resume();
-          return los(new URL(a.headers.location, u).href, tiefe + 1);
-        }
-        if (a.statusCode !== 200) {
-          a.resume();
-          return bruch(new Error('GitHub antwortet HTTP ' + a.statusCode));
-        }
-        const stuecke = [];
-        a.on('data', t => stuecke.push(t));
-        a.on('end', () => fertig(Buffer.concat(stuecke).toString('utf8')));
-      });
-      req.on('error', bruch);
-      req.setTimeout(timeoutMs || 12000, () => { req.destroy(new Error('keine Antwort von GitHub')); });
-    };
-    los(url, 0);
+    anfrage(url, { 'User-Agent': UA, Accept: 'application/json' }, timeoutMs || 12000, (a) => {
+      const stuecke = [];
+      a.on('data', t => stuecke.push(t));
+      a.on('aborted', () => bruch(new Error('GitHub brach die Antwort ab')));
+      a.on('error', bruch);
+      a.on('end', () => { if (a.complete) fertig(Buffer.concat(stuecke).toString('utf8')); else bruch(new Error('GitHub brach die Antwort ab')); });
+    }, bruch);
   });
 }
 
 function holenDatei(url, ziel) {
   return new Promise((fertig, bruch) => {
     fs.mkdirSync(path.dirname(ziel), { recursive: true });
-    const los = (u, tiefe) => {
-      if (tiefe > 5) return bruch(new Error('zu viele Umleitungen'));
-      const nimm = u.startsWith('https') ? https : http;
-      const req = nimm.get(u, { headers: { 'User-Agent': UA } }, (a) => {
-        if (a.statusCode >= 300 && a.statusCode < 400 && a.headers.location) {
-          a.resume();
-          return los(new URL(a.headers.location, u).href, tiefe + 1);
-        }
-        if (a.statusCode !== 200) {
-          a.resume();
-          return bruch(new Error('Download HTTP ' + a.statusCode));
-        }
-        const datei = fs.createWriteStream(ziel);
-        a.pipe(datei);
-        datei.on('finish', () => { datei.close(); fertig(ziel); });
-        datei.on('error', bruch);
+    anfrage(url, { 'User-Agent': UA }, 30000, (a) => {
+      const soll = Number(a.headers['content-length']) || 0;
+      let ist = 0;
+      a.on('data', t => { ist += t.length; });
+      pipeline(a, fs.createWriteStream(ziel), (fehler) => {
+        if (fehler) return bruch(new Error('Download abgebrochen: ' + (fehler.message || fehler)));
+        if (!a.complete || (soll && ist !== soll)) return bruch(new Error('Download unvollstaendig (' + ist + ' von ' + (soll || '?') + ' Bytes)'));
+        fertig(ziel);
       });
-      req.on('error', bruch);
-      req.setTimeout(30000, () => { req.destroy(new Error('Download steht still')); });
-    };
-    los(url, 0);
+    }, bruch);
   });
 }
 
@@ -188,8 +220,11 @@ async function githubRelease() {
    dieselbe Auskunft sehen, nicht das Kontingent verbrauchen. */
 let standVorrat = null, standVorratBis = 0;
 
-/** Stand fuer CLI und GET /api/fassung. Fragt GitHub, schreibt nichts. */
-async function standHolen() {
+/** Stand fuer CLI und GET /api/fassung. Fragt GitHub, schreibt nichts.
+    mitDocker: false fuer den Server (Caspar_D, 15.10.2026, bei der Uebernahme): dockerZustand() laeuft synchron
+    (spawnSync, bis 8 s) - im Request-Handler stuende so lange der ganze Server still, auch die Musik. Die Seite
+    braucht docker nicht (sie zeigt nur container, und das ist ein Dateitest); das Skript auf dem Rechner fragt weiter. */
+async function standHolen({ mitDocker = true } = {}) {
   const hier = paketVersion();
   const gitDa = istGit();
   const jetzt = Date.now();
@@ -212,8 +247,11 @@ async function standHolen() {
     seite: github && github.seite,
     zip: github && github.zip,
     neuer: !!(ghV && hier && vergleich(ghV, hier) > 0),
+    /* lage: 1 = GitHub ist neuer, 0 = gleich, -1 = hier ist neuer (die Oberflaeche sagte sonst „dieselbe Fassung"
+       zu 1.0.72 gegen 1.0.71), null = eine Nummer fehlt */
+    lage: ghV && hier ? Math.sign(vergleich(ghV, hier)) : null,
     git: gitDa,
-    docker: dockerDa(),
+    docker: mitDocker ? dockerZustand() : null,
     container: imContainer(),
     grund,
     geprueftAm: new Date().toISOString(),
@@ -250,31 +288,43 @@ function zipUeberlegen(quelle) {
   return n;
 }
 
+/* npm NEBEN DEM LAUFENDEN NODE (wie npmAufruf in einrichten.js): kommt Node aus werkzeug/, steht npm nicht im PATH -
+   das blosse `npm` scheiterte dort, und ein geaenderter package-lock wurde nie nachgezogen. */
+function npmAufruf() {
+  const nd = path.dirname(process.execPath);
+  for (const k of [path.join(nd, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+                   path.join(nd, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js')]) {
+    if (fs.existsSync(k)) return { befehl: process.execPath, vorn: ['--no-warnings', k], schale: false };
+  }
+  return { befehl: process.platform === 'win32' ? 'npm.cmd' : 'npm', vorn: [], schale: process.platform === 'win32' };
+}
 function npmCiWennNoetig(vorherHash) {
   const lock = path.join(WURZEL, 'package-lock.json');
   let nachher = null;
   try { nachher = fs.readFileSync(lock); } catch (e) { return false; }
   if (vorherHash && vorherHash.equals(nachher)) return false;
-  const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+  const n = npmAufruf();
   sag('  Pakete neu setzen (package-lock hat sich geaendert) …');
-  const r = spawnSync(npm, ['ci', '--omit=dev'], { cwd: WURZEL, stdio: 'inherit', shell: process.platform === 'win32' });
+  const r = spawnSync(n.befehl, [...n.vorn, 'ci', '--omit=dev'], { cwd: WURZEL, stdio: 'inherit', shell: n.schale });
   if (r.status !== 0) throw new Error('npm ci ist gescheitert.');
   return true;
 }
 
-function composeBauen() {
+function composeBauen(laeuft) {
   const dateien = ['-f', 'docker/docker-compose.yml'];
   if (cudaGenutzt() && fs.existsSync(path.join(WURZEL, 'docker', 'docker-compose.cuda.yml'))) {
     dateien.push('-f', 'docker/docker-compose.cuda.yml');
     sag('  NVIDIA-Overlay bleibt dabei (KLANG_CUDA).');
   }
-  let cmd = 'docker', args = ['compose', ...dateien, 'up', '-d', '--build'];
+  /* War der Container angehalten, bleibt er es: neu gebaut und angelegt, aber nicht gestartet (--no-start). */
+  const hoch = laeuft ? ['up', '-d', '--build'] : ['up', '--no-start', '--build'];
+  let cmd = 'docker', args = ['compose', ...dateien, ...hoch];
   const probe = spawnSync('docker', ['compose', 'version'], { encoding: 'utf8' });
   if (probe.status !== 0) {
     cmd = 'docker-compose';
-    args = [...dateien, 'up', '-d', '--build'];
+    args = [...dateien, ...hoch];
   }
-  sag('  Container neu bauen — das dauert ein paar Minuten.');
+  sag('  Container neu bauen — das dauert ein paar Minuten.' + (laeuft ? '' : ' Er war angehalten und bleibt es.'));
   const r = spawnSync(cmd, args, { cwd: WURZEL, stdio: 'inherit' });
   if (r.status !== 0) throw new Error('Docker-Build ist gescheitert.');
 }
@@ -283,7 +333,9 @@ function sag(t) { console.log(t); }
 
 function gitZustand() {
   const zweig = git(['rev-parse', '--abbrev-ref', 'HEAD']);
-  const schmutz = git(['status', '--porcelain']);
+  /* nur VERFOLGTE Aenderungen zaehlen: werkzeug/ (von einrichten-* angelegt) und andere ungetrackte Ordner haelt git pull
+     nicht auf - vorher brach jede eingerichtete Installation hier ab */
+  const schmutz = git(['status', '--porcelain', '--untracked-files=no']);
   git(['fetch', 'origin'], true);
   let origin = null;
   try { origin = git(['rev-parse', 'origin/main']); } catch (e) { origin = null; }
@@ -321,18 +373,42 @@ async function main() {
     sag('');
     process.exit(1);
   }
+  /* DER RICHTIGE ORDNER (Pruefung bei der Uebernahme): wer ein neues Zip auspackt und darin aktualisieren-* startet,
+     spielt in den Entpackordner ein statt in seine Installation - dort liegt kein library/. */
+  if (!NUR_STAND && !fs.existsSync(path.join(WURZEL, 'library')) && !TROTZDEM) {
+    sag('  Neben diesem Programm liegt kein library/ – das ist wohl nicht deine');
+    sag('  Installation, sondern ein frisch ausgepacktes Zip. Starte das Skript im');
+    sag('  Ordner, in dem dein KlangTresor laeuft (dort liegt library/).');
+    sag('  Wirklich hier einspielen: --trotzdem');
+    sag('');
+    process.exit(1);
+  }
 
   const stand = await standHolen();
+  const dz = stand.docker || { art: 'keins' };
+  if (dz.art === 'unerreichbar' && !OHNE_DOCKER && !NUR_STAND) {
+    sag('  Docker antwortet nicht. Ob dein KlangTresor im Container laeuft, laesst');
+    sag('  sich so nicht klaeren – und ohne Neubau bliebe ein Container alt.');
+    sag('  Starte Docker (Docker Desktop) und rufe noch einmal auf.');
+    sag('  Laeuft dein KlangTresor ohne Docker: --ohne-docker');
+    sag('');
+    process.exit(1);
+  }
+  const mitDocker = dz.art === 'unseres' && !OHNE_DOCKER;
+  const laeuft = mitDocker && dz.status === 'running';
   sag('  Ordner:   ' + WURZEL);
   sag('  Hier:     ' + (stand.hier || '—'));
   sag('  GitHub:   ' + (stand.github ? stand.github + (stand.tag && stand.tag !== stand.github ? '  (' + stand.tag + ')' : '') : (stand.grund || 'keine Antwort')));
-  sag('  Weg:      ' + (stand.git && !ZWINGE_ZIP ? 'Git' : 'Release-Zip') + (stand.docker ? ' + Docker' : ''));
+  sag('  Weg:      ' + (stand.git && !ZWINGE_ZIP ? 'Git' : 'Release-Zip') + (mitDocker ? ' + Docker' + (laeuft ? '' : ' (Container angehalten)') : ''));
+  if (dz.art === 'fremd') sag('  Hinweis:  der Container „klangtresor" gehoert zu einem anderen Ordner – er bleibt unberuehrt.');
+  if (dz.art === 'unerreichbar' && !OHNE_DOCKER) sag('  Hinweis:  Docker antwortet nicht – einspielen ginge so nicht (Docker starten oder --ohne-docker).');
   sag('');
 
   if (NUR_STAND) {
-    if (stand.neuer) sag('  Auf GitHub liegt eine neuere Fassung.');
+    if (stand.lage === 1) sag('  Auf GitHub liegt eine neuere Fassung.');
     else if (!stand.github) sag('  Nachsehen ist gescheitert: ' + stand.grund);
-    else sag('  Das ist dieselbe Fassung (oder du liegst davor).');
+    else if (stand.lage === -1) sag('  Deine Fassung ist neuer als die auf GitHub.');
+    else sag('  Das ist dieselbe Fassung.');
     sag('');
     return;
   }
@@ -344,7 +420,22 @@ async function main() {
     process.exit(1);
   }
 
+  /* DER CONTAINER KANN HINTER DEM ORDNER LIEGEN (Pruefung bei der Uebernahme): ist ein Neubau gescheitert oder
+     ausgelassen worden, sagt der Ordner „nichts zu holen", der Container laeuft aber alt weiter. Darum fragt der
+     Docker-Weg den laufenden Container nach seiner Nummer und baut nach, wenn sie nicht stimmt. */
+  const containerAlt = () => {                     /* die Nummer im laufenden Container, wenn sie nicht stimmt; sonst null */
+    if (!laeuft) return null;
+    const c = containerFassung();
+    return c && stand.hier && c !== stand.hier ? c : null;
+  };
+  const nichtsZuHolen = (satz) => {
+    const alt = mitDocker ? containerAlt() : null;
+    if (alt) { sag('  Die Programmdateien sind aktuell, der Container laeuft aber noch mit ' + alt + ' – er wird neu gebaut.'); return false; }
+    sag('  ' + satz); sag(''); return true;
+  };
+
   const lockVorher = (() => { try { return fs.readFileSync(path.join(WURZEL, 'package-lock.json')); } catch (e) { return null; } })();
+  let geholt = true;
 
   if (stand.git && !ZWINGE_ZIP) {
     const g = gitZustand();
@@ -367,49 +458,54 @@ async function main() {
       sag('');
       process.exit(1);
     }
-    if (g.lage === 'gleich' && !stand.neuer && !TROTZDEM) {
-      sag('  origin/main ist schon da. Nichts zu holen.');
-      sag('');
-      return;
+    if ((g.lage === 'gleich' || g.lage === 'davor') && !stand.neuer && !TROTZDEM) {
+      if (nichtsZuHolen(g.lage === 'gleich' ? 'origin/main ist schon da. Nichts zu holen.' : 'Deine Fassung liegt vor origin/main. Nichts zu holen.')) return;
+      geholt = false;
     }
-    if (g.lage === 'davor' && !stand.neuer && !TROTZDEM) {
-      sag('  Deine Fassung liegt vor origin/main. Nichts zu holen.');
-      sag('');
-      return;
-    }
-    sag('  → git pull --rebase origin main');
-    const r = spawnSync('git', ['pull', '--rebase', 'origin', 'main'], { cwd: WURZEL, stdio: 'inherit' });
-    if (r.status !== 0) {
-      sag('');
-      sag('  git pull ist gescheitert. Der Arbeitsbaum bleibt, wie er war.');
-      process.exit(1);
+    if (geholt) {
+      sag('  → git pull --rebase origin main');
+      const r = spawnSync('git', ['pull', '--rebase', 'origin', 'main'], { cwd: WURZEL, stdio: 'inherit' });
+      if (r.status !== 0) {
+        sag('');
+        /* EIN HALBER REBASE IST KEIN „WIE VORHER" (Pruefung bei der Uebernahme): mit --trotzdem kann der Rebase an einem
+           Konflikt stehen bleiben - dann wird er zurueckgerollt, und erst danach stimmt der Satz. */
+        const gitDir = path.join(WURZEL, '.git');
+        if (fs.existsSync(path.join(gitDir, 'rebase-merge')) || fs.existsSync(path.join(gitDir, 'rebase-apply'))) {
+          const ab = spawnSync('git', ['rebase', '--abort'], { cwd: WURZEL, encoding: 'utf8' });
+          sag(ab.status === 0
+            ? '  git pull ist an einem Konflikt gescheitert. Den Rebase habe ich abgebrochen – der Arbeitsbaum ist wieder, wie er war.'
+            : '  git pull ist an einem Konflikt gescheitert, und der Rebase liess sich nicht abbrechen. Bitte: git rebase --abort');
+        } else sag('  git pull ist gescheitert. Der Arbeitsbaum bleibt, wie er war.');
+        process.exit(1);
+      }
     }
   } else {
     if (!stand.neuer && !TROTZDEM) {
-      sag('  Release und lokale Nummer sind gleich. Nichts zu holen.');
-      sag('  (Erneut einspielen: --trotzdem)');
-      sag('');
-      return;
+      if (nichtsZuHolen('Release und lokale Nummer sind gleich' + (stand.lage === -1 ? ' (oder deine ist neuer)' : '') + '. Nichts zu holen. (Erneut einspielen: --trotzdem)')) return;
+      geholt = false;
     }
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'klangtresor-update-'));
-    const zip = path.join(tmp, ZIP_NAME);
-    const entpackt = path.join(tmp, 'aus');
-    try {
-      sag('  → hole ' + ZIP_NAME);
-      await holenDatei(stand.zip || QUELLEN.zip, zip);
-      sag('  → packe ueber die Programmdaten (library/ bleibt)');
-      auspacken(zip, entpackt);
-      const n = zipUeberlegen(entpackt);
-      sag('  ' + n + ' Eintraege erneuert.');
-    } finally {
-      try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (e) {}
+    if (geholt) {
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'klangtresor-update-'));
+      const zip = path.join(tmp, ZIP_NAME);
+      const entpackt = path.join(tmp, 'aus');
+      try {
+        sag('  → hole ' + ZIP_NAME);
+        await holenDatei(stand.zip || QUELLEN.zip, zip);
+        sag('  → packe ueber die Programmdaten (library/ bleibt)');
+        auspacken(zip, entpackt);
+        const n = zipUeberlegen(entpackt);
+        sag('  ' + n + ' Eintraege erneuert.');
+      } finally {
+        try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (e) {}
+      }
     }
   }
 
-  if (stand.docker) {
-    composeBauen();
+  if (mitDocker) {
+    composeBauen(laeuft);
     sag('');
-    sag('  Fertig. Die Seite einmal hart neu laden (Bilder und Skripte sonst aus dem Vorrat).');
+    sag(laeuft ? '  Fertig. Die Seite einmal hart neu laden (Bilder und Skripte sonst aus dem Vorrat).'
+               : '  Fertig. Der Container ist neu gebaut und angehalten, wie vorher. Starten: docker start klangtresor');
     sag('  Adresse:  http://localhost:8788');
   } else {
     try { npmCiWennNoetig(lockVorher); } catch (e) {

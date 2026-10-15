@@ -217,7 +217,7 @@ darüber). Nur nachsehen, nichts schreiben:
 npm run aktualisieren -- --nur-stand
 ```
 
-- **Git-Klon:** `git pull --rebase origin/main` (bricht ab bei Schmutz
+- **Git-Klon:** `git pull --rebase origin main` (bricht ab bei Schmutz
   oder anderem Zweig als `main`).
 - **Zip-Installation:** holt `KlangTresor.zip` der jüngsten Release und
   legt die Programmdaten darüber.

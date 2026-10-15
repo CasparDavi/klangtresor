@@ -39,6 +39,6 @@ if not exist "bin\aktualisieren.js" (
   exit /b 1
 )
 
-"%NODE%" bin\aktualisieren.js %*
-echo.
-pause
+rem In EINER Zeile: cmd liest eine Batchdatei waehrend des Laufs Zeile fuer Zeile nach - und das
+rem Update ersetzt diese Datei, waehrend sie laeuft. Eine Zeile wird ganz gelesen, bevor sie startet.
+"%NODE%" bin\aktualisieren.js %* & echo. & pause & exit /b

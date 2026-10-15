@@ -28,6 +28,6 @@ if [ ! -f bin/aktualisieren.js ]; then
   read -r -p "  [Eingabetaste zum Schliessen] " _
   exit 1
 fi
-"$NODE" bin/aktualisieren.js "$@"
-echo
-read -r -p "  [Eingabetaste zum Schliessen] " _
+# In EINEM Block: die Shell liest ihn ganz, bevor Node startet. Das Update ersetzt diese Datei
+# waehrend sie laeuft - danach darf die Shell nichts mehr aus ihr nachlesen muessen.
+{ "$NODE" bin/aktualisieren.js "$@"; echo; read -r -p "  [Eingabetaste zum Schliessen] " _; exit; }

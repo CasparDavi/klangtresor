@@ -35,7 +35,7 @@ dir die Zeile für dein System und deinen Weg:
 | **macOS** | `einrichten-macos.command` doppelklicken | `einrichten-docker-macos.command` doppelklicken |
 | **Linux** | `./einrichten-linux.sh` | `./einrichten-docker-linux.sh` |
 
-Mehr liegt dort nicht: sechs Einrichtungsdateien, dazu `starten-*` für später.
+Mehr liegt dort nicht: sechs Einrichtungsdateien, dazu `starten-*` für später und `aktualisieren-*` für neue Fassungen.
 Jede hat drei Stufen, jede fängt die nächste auf — erst holt das Skript des
 Systems Node.js (falls es fehlt), dann übernimmt `bin/einrichten.js` und
 öffnet die Einrichtung **als Seite im Browser**: Schrittliste,

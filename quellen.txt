@@ -59,6 +59,8 @@ ffmpeg-startseite = https://www.gyan.dev/ffmpeg/builds/
 # Das Aktualisieren (bin/aktualisieren.js, GET /api/fassung) fragt hier
 # nach der juengsten GitHub-Release. Nur auf Knopf bzw. Skript, nicht
 # beim Seitenaufbau. Das Zip ist dasselbe, das START-HIER.md nennt.
+# Im Docker-Container und auf dem eingefrorenen Stick liegt diese Datei
+# nicht - dort gelten dieselben Adressen, fest in bin/aktualisieren.js.
 
 klangtresor-fassung = https://api.github.com/repos/CasparDavi/klangtresor/releases/latest
 klangtresor-zip = https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip

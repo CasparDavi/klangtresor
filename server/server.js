@@ -1656,10 +1656,14 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
   };
   /* Neue PROGRAMM-Fassung, nicht die Songdaten. Fragt GitHub erst hier,
      wenn die Oberflaeche den Knopf drueckt — nicht beim /api/index.
-     Eingefroren: nachsehen darf man, einspielen laeuft ohnehin nur auf
-     dem Rechner (bin/aktualisieren.js), nicht auf dem Stick. */
+     Die ZWEITE Stelle, die nach draussen greift (die erste: /api/profil-pruefen) - darum eingefroren
+     gesperrt wie jene: der Stick soll „autonom isoliert laufen koennen" (Caspar_D, 11.09.2026), und
+     einspielen koennte er ohnehin nicht (die Skripte aktualisieren-* liegen dort nicht). Bei der
+     Uebernahme (15.10.2026) stand hier noch „eingefroren: nachsehen darf man". */
   if (p === '/api/fassung') {
-    fassungStand().then(d => jsonAntwort(res, d)).catch(e => jsonAntwort(res, {
+    if (EINGEFROREN) return jsonAntwort(res,
+      { fehler: 'Archiv eingefroren - es greift nicht ins Netz', eingefroren: true }, 405);
+    fassungStand({ mitDocker: false }).then(d => jsonAntwort(res, d)).catch(e => jsonAntwort(res, {
       hier: paketVersion(), github: null, neuer: false,
       grund: (e && e.message) || String(e), geprueftAm: new Date().toISOString(),
     }, 502));
@@ -1717,13 +1721,14 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
      ohne Anmeldung: Anzeigename, Avatar, Songzahl zur Bestaetigung
      („Das bist du?"). */
   if (p === '/api/profil-pruefen') {
-    /* DIE EINZIGE STELLE IM SERVER, DIE NACH DRAUSSEN GREIFT - und darum eingefroren gesperrt.
+    /* EINE DER ZWEI STELLEN IM SERVER, DIE NACH DRAUSSEN GREIFEN (die andere: /api/fassung, seit 1.0.73) -
+       und darum eingefroren gesperrt.
        Die allgemeine Sperre oben faengt nur Nicht-GETs; diese Route ist ein GET und rutschte
        hindurch. Auf einem Rechner ohne Netz haette sie nach Suno gegriffen (Caspar_D, 11.09.2026:
        "Ziel ist, ja - es soll autonom isoliert laufen koennen"). Sonst holt der eingefrorene
        KlangTresor nichts: die Seite laedt keine fremden Schriften, Bilder oder Skripte, alle
-       Medien liegen daneben, es gibt keinen Dienstarbeiter. Wer hier eine zweite Aussenverbindung
-       einbaut, muss sie hier genauso sperren. */
+       Medien liegen daneben, es gibt keinen Dienstarbeiter. Wer eine weitere Aussenverbindung
+       einbaut, muss sie genauso sperren. */
     if (EINGEFROREN) return jsonAntwort(res,
       { fehler: 'Archiv eingefroren - es greift nicht ins Netz' }, 405);
     const handle = String(u.searchParams.get('handle') || '').trim().replace(/^@/, '');
@@ -4465,7 +4470,8 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
    Speicher. Fehlte bis 20.08.2026: Eine Aenderung in katalog.js griff
    erst nach einem Neustart von Hand. */
 const BEOBACHTET = [__filename, path.join(__dirname, '..', 'bin', 'katalog.js'),
-                    path.join(__dirname, '..', 'bin', 'behaelter.js')];   /* seit 09.09.2026 mit geladen */
+                    path.join(__dirname, '..', 'bin', 'behaelter.js'),     /* seit 09.09.2026 mit geladen */
+                    path.join(__dirname, '..', 'bin', 'aktualisieren.js')]; /* seit 1.0.72 (standHolen fuer /api/fassung) */
 const standVon = (f) => { try { return fs.statSync(f).mtimeMs; } catch (e) { return 0; } };
 let eigeneStand = BEOBACHTET.map(standVon).join('|');
 /* Eingefroren gibt es keine Wache: Auf dem Stick steht keine Schleife

@@ -29013,6 +29013,11 @@ function buehneTakt(){
 function werAuf(){
   const w = document.getElementById('werversion');
   if (w) w.textContent = paketVersion ? 'Version ' + paketVersion : '—';
+  /* Auf dem eingefrorenen Stick greift nichts ins Netz, und einspielen ginge dort ohnehin nicht (die Skripte
+     aktualisieren-* liegen nicht darauf) - der Knopf faellt weg, an seiner Stelle ein Satz. */
+  { const k = document.getElementById('werfassungknopf'), s = document.getElementById('werfassungstand');
+    if (k && s && archivEingefroren()){ k.hidden = true; s.hidden = false;
+      s.textContent = 'Eingefrorene Kopie: neue Fassungen kommen mit einem neuen Export vom Rechner, auf dem KlangTresor läuft.'; } }
   document.getElementById('wer').classList.add('auf');
 }
 function werZu(){ document.getElementById('wer').classList.remove('auf'); }
@@ -29031,7 +29036,9 @@ async function fassungPruefen(){
     const wo = d.container
       ? ' Diese Seite läuft im Container: einspielen im Projektordner auf dem Rechner (aktualisieren-linux.sh oder das Geschwisterskript).'
       : '';
-    if (!d.github) {
+    if (d.eingefroren) {
+      s.textContent = 'Eingefrorene Kopie: sie greift nicht ins Netz.';
+    } else if (!d.github) {
       s.textContent = 'GitHub hat nicht geantwortet' + (d.grund ? ' (' + d.grund + ')' : '') + '.' + wo;
     } else if (d.neuer) {
       const am = d.am ? new Date(d.am).toLocaleDateString('de-DE') : '';
@@ -29045,6 +29052,9 @@ async function fassungPruefen(){
         a.href = d.seite; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Release';
         s.appendChild(a);
       }
+    } else if (d.lage === -1) {
+      /* deine ist neuer als das jüngste Release (ein Git-Stand vor dem nächsten Release) - nicht „dieselbe" */
+      s.textContent = 'Du hast ' + (d.hier || '—') + ', auf GitHub liegt noch ' + d.github + ' — deine Fassung ist neuer.' + wo;
     } else {
       s.textContent = 'Du hast ' + (d.hier || '—') + ', auf GitHub liegt ' + d.github + ' — das ist dieselbe Fassung.' + wo;
     }

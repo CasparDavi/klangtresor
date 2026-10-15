@@ -43,6 +43,9 @@ web/farbvergleich.html
 
 # Pakete (npm install holt sie neu; nur onnxruntime-node fuer bin/klang.js)
 node_modules/
+# Von einrichten-* angelegt (mitgebrachtes Node/ffmpeg) und Proben - gehoeren keinem Klon; bin/aktualisieren.js laesst sie stehen (BLEIBT)
+werkzeug/
+proben/
 
 # Die alte Historie, beiseitegelegt beim Neuanfang am 24.08.2026.
 # Sie liegt zusaetzlich als Bundle in ../SunoArchive-privat/.
