@@ -1,7 +1,7 @@
 @echo off
 rem KlangTresor - Copyright (c) 2026 Caspar_D - MIT, siehe LICENSE
 rem
-rem Neue Fassung einspielen - Windows. Doppelklick, Fenster bleibt.
+rem Update einspielen - Windows. Doppelklick, Fenster bleibt.
 rem
 rem Holt den aktuellen Stand von GitHub (Git-Klon: origin/main, sonst
 rem das Release-Zip) und spielt ihn ein. library/ bleibt. Bei Docker

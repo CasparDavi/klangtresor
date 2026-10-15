@@ -141,7 +141,7 @@ function dockerZustand() {
   if (info.status !== 0 && fs.existsSync(path.join(WURZEL, 'docker', 'docker-compose.yml'))) return { art: 'unerreichbar' };
   return { art: 'keins' };
 }
-/* Welche Fassung im laufenden Container steckt - der Container wird aus dem Ordner gebaut, also kann er hinter dem
+/* Welche Version im laufenden Container steckt - der Container wird aus dem Ordner gebaut, also kann er hinter dem
    Ordner zurueckliegen (ein gescheiterter oder ausgelassener Neubau). null, wenn man nicht fragen kann. */
 function containerFassung() {
   const r = dockerLauf(['exec', 'klangtresor', 'node', '-p', "require('/app/package.json').version"]);
@@ -223,9 +223,9 @@ async function githubRelease() {
 
 /* Die GitHub-API erlaubt ungefragt 60 Anfragen je Stunde und IP.
    Dreissig Minuten merken reicht: jede offene Seite fragt beim Oeffnen
-   und danach alle 12 h von selbst, dazu kommt der Knopf - Neuladen
-   und ein zweiter Knopfdruck sollen dieselbe Auskunft sehen, nicht das
-   Kontingent verbrauchen. Gebuendelt wird nicht: Tabs, die im selben
+   und danach alle 12 h von selbst, dazu jedes Aufgehen des Fensters
+   „KlangTresor“ - Neuladen und ein zweites Aufgehen sollen dieselbe
+   Auskunft sehen, nicht das Kontingent verbrauchen. Gebuendelt wird nicht: Tabs, die im selben
    Augenblick oeffnen, fragen GitHub je einmal (gemessen 15.10.2026: drei
    gleichzeitige Anfragen, drei Verbindungen). Gemerkt wird nur eine
    Antwort; nach einem Fehlschlag fragt die Seite in 2 h wieder. */
@@ -259,8 +259,8 @@ async function standHolen({ mitDocker = true } = {}) {
     seite: github && github.seite,
     zip: github && github.zip,
     neuer: !!(ghV && hier && vergleich(ghV, hier) > 0),
-    /* lage: 1 = GitHub ist neuer, 0 = gleich, -1 = hier ist neuer (die Oberflaeche sagte sonst „dieselbe Fassung"
-       zu 1.0.72 gegen 1.0.71), null = eine Nummer fehlt */
+    /* lage: 1 = GitHub ist neuer, 0 = gleich, -1 = hier ist neuer (ohne -1 nennte die Oberflaeche 1.0.72 gegen
+       1.0.71 „die neueste Version“), null = eine Nummer fehlt */
     lage: ghV && hier ? Math.sign(vergleich(ghV, hier)) : null,
     git: gitDa,
     docker: mitDocker ? dockerZustand() : null,

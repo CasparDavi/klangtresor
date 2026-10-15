@@ -1,6 +1,6 @@
 #!/bin/bash
 # KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE
-# Neue Fassung einspielen — macOS. Doppelklick oeffnet ein Terminal.
+# Update einspielen — macOS. Doppelklick oeffnet ein Terminal.
 #
 # Holt den aktuellen Stand von GitHub (Git-Klon: origin/main, sonst das
 # Release-Zip) und spielt ihn ein. library/ bleibt. Bei Docker wird das

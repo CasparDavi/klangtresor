@@ -29083,8 +29083,19 @@ async function fassungNachsehen(){
      oder eine Antwort ohne JSON laesst d leer. */
   try { d = await (await fetch('/api/fassung')).json(); } catch (e) { d = null; }
   if (nr !== fassungFrage) return;
+  fassungHierNachziehen(d);
   if (d){ fassungMerken(d); fassungGlockeSetzen(d); }
   fassungStandZeigen(d);
+}
+/* DIE KOPFZEILE AUS DER FRISCHEN ANTWORT (Gegenpruefung, 15.10.2026). paketVersion kam einmal beim Laden aus
+   /api/index. Wer ein Update einspielt, ohne die Seite neu zu laden, sah sonst „Aktuelle Version 1.0.74“ ueber
+   „Das ist die neueste Version.“ - der Server liest package.json bei jeder Frage neu, d.hier ist also das, was
+   jetzt im Ordner liegt. Auch bei einem GitHub-Fehlschlag: die eigene Nummer kommt trotzdem mit. */
+function fassungHierNachziehen(d){
+  if (!d || !d.hier || d.hier === paketVersion) return;
+  paketVersion = d.hier;
+  const w = document.getElementById('werversion');
+  if (w) w.textContent = 'Aktuelle Version ' + paketVersion;
 }
 /* „heute, 13:05“ / „gestern, 08:12“ / „12.10.2026, 21:40“ - nach der Uhr dieses Browsers. */
 function fassungZeitpunkt(iso){
@@ -29183,22 +29194,24 @@ function fassungStandZeigen(d){
   }
 }
 /* Die Pille „Ordner zeigen“: der Server oeffnet seinen Programmordner im Dateifenster (POST /api/ordner-zeigen,
-   ohne Eingabe). Geht das nicht, steht der Pfad ja schon da - das sagt der leise Satz darunter. */
+   ohne Eingabe). Geht das nicht, steht der Pfad ja schon da - das sagt der leise Satz darunter, und nur der.
+   Den grund des Servers („open endete mit 1“, „spawn explorer ENOENT“) stand im ersten Bau (6eb33f9) in Klammern dabei;
+   das sind Entwicklerwoerter (Gegenpruefung, 15.10.2026). Er steht weiter in der Antwort von /api/ordner-zeigen,
+   fuer die Fehlersuche; dass die Pille nur am Rechner geht, auf dem KlangTresor laeuft, sagt ihr Tooltip. */
 async function fassungOrdnerZeigen(k){
   const taten = k.parentElement;
   const alt = taten && taten.parentElement && taten.parentElement.querySelector('.vordnerfehler');
   if (alt) alt.remove();
-  let ok = false, grund = '';
+  let ok = false;
   try {
     const r = await fetch('/api/ordner-zeigen', { method: 'POST' });
     const d = await r.json().catch(() => ({}));
     ok = r.ok && d.ok;
-    grund = d.grund || '';
   } catch (e) {}
   if (ok || !taten || !taten.isConnected) return;
   const f = document.createElement('div');
   f.className = 'vleise vordnerfehler';
-  f.textContent = 'Der Ordner ließ sich nicht öffnen' + (grund ? ' (' + grund + ')' : '') + ' – der Pfad steht oben.';
+  f.textContent = 'Der Ordner ließ sich nicht öffnen – der Pfad steht oben.';
   taten.after(f);
 }
 /* ERINNERUNG AN EINE NEUE PROGRAMM-VERSION. Der rote Knopf bleibt beim
@@ -29264,6 +29277,7 @@ async function fassungErinnern(){
   try {
     const r = await fetch('/api/fassung');
     const d = r.ok ? await r.json() : null;
+    fassungHierNachziehen(d);
     if (d && d.github){ fassungMerken(d); fassungGlockeSetzen(d); pause = FASSUNG_PAUSE; }
   } catch (e) {}
   clearTimeout(fassungWecker);

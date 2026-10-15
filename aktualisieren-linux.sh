@@ -1,6 +1,6 @@
 #!/bin/bash
 # KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE
-# Neue Fassung einspielen — Linux.
+# Update einspielen — Linux.
 #
 #   ./aktualisieren-linux.sh
 #

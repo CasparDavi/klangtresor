@@ -70,7 +70,9 @@ er sich eine halbe Stunde; die eingefrorene Kopie auf dem Stick fragt nie.
 Gibt es eine neue, steht links neben dem roten Knopf eine Glocke; ein Klick
 öffnet das Fenster mit dem Hinweis: welche Version bereitliegt, in welchem
 Ordner KlangTresor läuft und welches Skript das Update einspielt.
-**Ordner zeigen** öffnet diesen Ordner im Dateifenster deines Rechners.
+**Ordner zeigen** öffnet diesen Ordner im Dateifenster — nur am Rechner,
+auf dem KlangTresor läuft. Im Container gibt es das nicht: dort sagt das
+Fenster, dass du auf dem Rechner in den Projektordner gehst.
 
 Zum Einspielen, im selben Ordner wie die Einrichtung (dort liegen `bin/`
 und `library/`, nicht der Unterordner `docker/`):

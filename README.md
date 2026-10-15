@@ -207,7 +207,7 @@ hält die Antwort eine halbe Stunde vor. Liegt dort eine höhere Nummer, steht
 links neben dem roten Knopf eine Glocke; ein Klick öffnet das Fenster mit dem
 Hinweis: welche Version bereitliegt, in welchem Ordner KlangTresor läuft und
 welches Skript das Update einspielt. **Ordner zeigen** öffnet diesen Ordner im
-Dateifenster (nur am Rechner, auf dem KlangTresor läuft). Die eingefrorene
+Dateifenster (nur am Rechner, auf dem KlangTresor läuft, nicht im Container). Die eingefrorene
 Kopie auf dem Stick fragt nie.
 
 Zum Einspielen im **Projektordner** (dort liegen `bin/` und `library/`,

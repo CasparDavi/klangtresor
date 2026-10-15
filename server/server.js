@@ -1690,7 +1690,11 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
      Dieselben Grenzen wie der Ordnerdialog (/api/ordner/dialog): nur vom selben Rechner - ein Fenster auf
      dem Server-Bildschirm nuetzt dem Handy im WLAN nichts, und ein Fremder im Netz soll dort keine Fenster
      aufmachen. Im Container gibt es keinen Bildschirm (409). Eingefroren faengt die allgemeine Sperre
-     oben (405 fuer alles ausser GET/HEAD) - auf dem Stick liegen die Skripte aktualisieren-* ohnehin nicht. */
+     oben (405 fuer alles ausser GET/HEAD) - auf dem Stick liegen die Skripte aktualisieren-* ohnehin nicht.
+     Dazu nur von der eigenen Seite (eigeneSeite, Gegenpruefung 15.10.2026): ein schlichter POST braucht keinen
+     Preflight, und vom selben Rechner kommt auch eine fremde Webseite im Browser - die sollte sonst Finder-
+     Fenster aufmachen koennen. Ein Browser schickt bei POST immer seinen Origin mit; ohne Kopf (curl) geht es
+     durch wie bei den uebrigen Wegen. */
   if (p === '/api/ordner-zeigen') {
     if (req.method !== 'POST') return jsonAntwort(res, { ok: false, grund: 'nur POST' }, 405);
     if (IM_CONTAINER) return jsonAntwort(res, { ok: false,
@@ -1698,6 +1702,7 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
     const von = String(req.socket.remoteAddress || '');
     if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(von))
       return jsonAntwort(res, { ok: false, grund: 'nur auf dem Rechner, auf dem KlangTresor läuft' }, 403);
+    if (!eigeneSeite(req)) return jsonAntwort(res, { ok: false, grund: 'Nur von der eigenen Seite.' }, 403);
     const befehl = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'explorer' : 'xdg-open';
     let fertig = false;
     const antwort = (ok, grund) => { if (fertig) return; fertig = true;
