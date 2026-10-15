@@ -143,7 +143,10 @@ h1{
 #karterechts{display:flex;flex-direction:column;gap:16px;min-height:0;height:100%;overflow:auto}
 /* Der Klangschaum steht in denselben zwei Spalten wie der Himmel; je Raum ist eine Seite zu. */
 #karterechts[hidden],#schaumfeld[hidden],#schaumrechts[hidden]{display:none}
-#schaumfeld{position:relative;background:#121417;border:1px solid #2a2a2e;border-radius:6px;height:100%;min-height:240px;overflow:hidden}
+/* Schwarz wie die Karte des Klangraums (Caspar_D, 15.10.2026: „mir gefällt die graue hinterlegung bei den Schäumen nicht, dadurch
+   sieht alles so flau aus, der Kontrast wird künstlich unknackig gemacht"); bis 1.0.79 #121417, der Grund von render.js. Derselbe
+   Grund im SVG (schaumSvgBauen), in den Fugen des Morphs und im Rahmen der Bilderschau (38 % Gruppenfarbe in den Grund gemischt). */
+#schaumfeld{position:relative;background:#000;border:1px solid #2a2a2e;border-radius:6px;height:100%;min-height:240px;overflow:hidden}
 #schaumbild{position:absolute;inset:0}
 #schaumbild svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 #schaumbild svg.schaumwaber{pointer-events:none}
@@ -155,7 +158,7 @@ h1{
 .bilderwand{position:absolute;left:0;top:0;transform-origin:0 0}
 .bilderwand .bw{position:absolute;cursor:pointer}
 .bilderwand .bw img{display:block;width:100%;height:100%;
-  box-shadow:0 0 0 var(--bwr,0px) color-mix(in srgb,var(--bwf) 38%,#121417),0 2px 8px rgba(0,0,0,.55)}
+  box-shadow:0 0 0 var(--bwr,0px) color-mix(in srgb,var(--bwf) 38%,#000),0 2px 8px rgba(0,0,0,.55)}
 .bilderwand .bw:hover img{box-shadow:0 0 0 max(var(--bwr,0px),2px) var(--bwf),0 2px 10px rgba(0,0,0,.6)}
 .bilderwand .bw.laeuft img{box-shadow:0 0 0 max(var(--bwr,0px),2.5px) color-mix(in srgb,var(--bwf) 60%,#fff),0 0 18px color-mix(in srgb,var(--bwf) 45%,transparent)}
 .bilderwand .bwschild{position:absolute;left:0;font-size:10.5px;line-height:13px;color:#a9acb3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
@@ -9388,6 +9391,9 @@ async function groupieZeichnen(){
 /* Fugen- bzw. Lueckenbreiten je Tiefe (Gefaesswand aussen -> Zelle innen), fuer Klang- und
    Groupieschaum gleich - dieselben Werte wie die Vorgabe in klangschaum/render.js. */
 const SCHAUM_STRICHE = [3.2, 2.0, 1.2, 0.7, 0.35];
+/* Der Grund des Schaums am Schirm: Schwarz wie die Klangraum-Karte (#kartefeld), seit 15.10.2026 statt des Graus von render.js (#121417).
+   Nur am Schirm - das Plakat setzt seinen eigenen Grund (plakat.js nimmt das Rechteck von render.js heraus). */
+const SCHAUM_SCHIRMGRUND = '#000';
 function schaumKissen(svg, res, kacheln){
   if (!kacheln.length || !res.leaves.some(k => k.outline && k.outline.length > 2)) return svg;
   svg = svg.replace('<defs>', '<defs>' + schaumKissenFilter(res));
@@ -10239,6 +10245,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     gutters: druck ? SCHAUM_STRICHE.map(g => g * druck.fugen) : SCHAUM_STRICHE,
     ...(druck || personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [4, 22], labelLeading: schaumZeilenabstand(), labelDrop: 0.12, labelInk: schaumNamenTinte(schaumPxJeEinheit(res)), labelUnten: k => mitBild.has(k), labelName: zellName }),
     colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt) });
+  if (!druck) svg = svg.replace('<rect width="100%" height="100%" fill="#121417"/>', `<rect width="100%" height="100%" fill="${SCHAUM_SCHIRMGRUND}"/>`);
   const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
   /* WERKVERZEICHNIS (Plakat, Stufe 2; Caspar_D hat es angekreuzt): jede Zelle traegt eine Nummer, am Rand steht
      die nummerierte Liste - so ist jeder Titel auffindbar, auch der kleinste. Gezaehlt wird Areal fuer Areal (in
@@ -10614,7 +10621,7 @@ async function schaumMorph(bild, alt, neu, lauf){
   gefaesse.sort((a, b) => b.tiefe - a.tiefe);
   for (const g of [...zellen, ...gefaesse]){
     const p = document.createElementNS(NS, 'path');
-    p.setAttribute('fill', g.blatt ? '#555' : 'none'); p.setAttribute('stroke', '#121417'); p.setAttribute('stroke-width', sw(g.tiefe)); p.setAttribute('stroke-linejoin', 'round');
+    p.setAttribute('fill', g.blatt ? '#555' : 'none'); p.setAttribute('stroke', SCHAUM_SCHIRMGRUND); p.setAttribute('stroke-width', sw(g.tiefe)); p.setAttribute('stroke-linejoin', 'round');
     m.appendChild(p); el.set(g.key, p);
   }
   const H = plan.H;
@@ -10759,6 +10766,8 @@ const schaumWeich = (cb, cs) => cs <= 0.5 ? cb - (1 - 2 * cs) * cb * (1 - cb)
    die Kontrastwahl am Schirm und, seit 1.0.56, fuer die gebogenen Titel im Plakat. gueltig() sagt nach dem Lesen des Bildes, ob
    der Auftrag noch gilt (ein neuer Schaum macht ihn hinfaellig). */
 const SCHAUM_GRUND = [0x12 / 255, 0x14 / 255, 0x17 / 255];          /* der Grund des Feldes, wo ein Cover fehlt */
+/* Bleibt beim Grau von render.js, obwohl der Schirm seit 15.10.2026 schwarz ist (SCHAUM_SCHIRMGRUND): es gilt auch fürs Plakat, und
+   nur, wenn ein Bild nicht lesbar ist - Leuchtdichte 0,0067 gegen 0, für Schwarz oder Weiß der Schrift ohne Belang. */
 async function schaumTextGrund(svg, t, zellen, gueltig = () => true){
   const bb = t.getBBox(), cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
   const z = zellen.find(({ p, b }) => cx >= b.x && cx <= b.x + b.width && cy >= b.y && cy <= b.y + b.height && p.isPointInFill(new DOMPoint(cx, cy)));
