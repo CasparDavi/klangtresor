@@ -16,6 +16,7 @@
    Höchstens ein Anstoß je Stand: sind seit dem letzten Anstoß dieselben Avatare offen geblieben und ein Bildnislauf zu Ende gegangen
    (ffmpeg fehlt, Platte voll, onnxruntime lädt nicht), wird nicht bei jeder Reglerbewegung neu angestoßen. Fehlt das Modell und hat
    ein Lauf es schon vergeblich zu holen versucht, auch nicht - der Morgenlauf holt es (feder.js --nur-modell). */
+const sagN = (k, v) => (typeof window !== 'undefined' && window.t ? window.t(k, v) : k);   /* Meldungen in der Sprache der Oberfläche */
 
 /* So heißen die Kopien von bin/avatare.js; dieselbe Form prüfen feder.js (AVATARNAME) und server.js (/avatar/, art=bildnis). */
 const AVATARNAME = /^[0-9a-f]{40}\.(jpg|png|webp|gif)$/;
@@ -60,25 +61,25 @@ export async function bildnisseBereit(avatarUrls, { melde = null, abgebrochen = 
 
   const letzte = (d.lauf && d.lauf.letzte) || {};
   if (d.modell === false && ['bildnis', 'feder'].some(a => letzte[a] && letzte[a].fehler === 'modelle')) {
-    sage('Das Modell für die Federzeichnungen ließ sich nicht laden – die Bildnisse zeigen vorerst die Fotos.');
+    sage(sagN('skizze.bildnis.modell'));
     return ergebnis(d);
   }
   const schluessel = offen.slice().sort().join(',');
   /* schon einmal bis zur GEDULD gewartet und der Server rechnet (oder wartet) noch: nicht wieder eine Minute hängen - gleich die Fotos
      (vorher hing jeder Neubau 62 s, solange ein Cover-Federlauf den Bildnislauf warten ließ; Fallensuche 1.0.62) */
   if (anstoss && anstoss.schluessel === schluessel && anstoss.abgelaufen && d.lauf && d.lauf.laeuft) {
-    sage('Die Bildnisse werden noch gezeichnet – vorerst die Fotos; beim nächsten Öffnen sind sie da.');
+    sage(sagN('skizze.bildnis.noch'));
     return ergebnis(d);
   }
   if (anstoss && anstoss.schluessel === schluessel && letzte.bildnis && letzte.bildnis.fertigAm > anstoss.zeit) {
-    sage('Die Bildnisse ließen sich nicht zeichnen – vorerst die Fotos; ein Neustart von KlangTresor versucht es wieder.');
+    sage(sagN('skizze.bildnis.fehler'));
     return ergebnis(d);
   }
   anstoss = { schluessel, zeit: Date.now() };
   let antwort = null;
   try { antwort = await fetch('/api/bilder/vorbereiten?art=bildnis&avatare=' + encodeURIComponent(offen.join(',')), { method: 'POST' }); } catch (e) {}
   if (!antwort || !antwort.ok) {
-    if (antwort && (antwort.status === 405 || antwort.status === 403)) sage('Dieses Archiv ist nur zum Ansehen – die Bildnisse entstehen im laufenden KlangTresor, hier stehen die Fotos.');
+    if (antwort && (antwort.status === 405 || antwort.status === 403)) sage(sagN('skizze.bildnis.archiv'));
     return ergebnis(d);
   }
   let warten = offen;
@@ -87,19 +88,19 @@ export async function bildnisseBereit(avatarUrls, { melde = null, abgebrochen = 
   /* Warten wie federBereit: bis alles gilt, oder der gesehene Bildnislauf endete (ein nachgereichter schließt im selben Augenblick an),
      oder nach 15 s noch gar kein Lauf begann, oder GEDULD um ist. Ein Aussetzer beim Fragen behält den letzten Stand. */
   const t0 = Date.now(); let gesehen = false;
-  if (warten.length) sage('Die Bildnisse werden vorbereitet …');
+  if (warten.length) sage(sagN('skizze.bildnis.vorbereiten'));
   while (warten.some(f => !gilt(d, f))) {
     await schlaf(TAKT); if (abgebrochen()) return ergebnis(d);
     const neu = await json('/api/feder'); if (neu && neu.avatare) d = neu;
     const l = d.lauf || {}, laeuft = !!(l.laeuft && l.art === 'bildnis'); if (laeuft && l.schritt !== 'wartet') gesehen = true;   /* gesehen = er rechnet wirklich */
-    if (laeuft && l.von) sage(`Die Bildnisse werden mit der Feder gezeichnet … ${l.n || 0} von ${l.von}`);
+    if (laeuft && l.von) sage(sagN('skizze.bildnis.laeuft', { n: l.n || 0, von: l.von }));
     if ((gesehen && !laeuft) || (!gesehen && !l.laeuft && Date.now() - t0 > 15000)) break;
     /* der Bildnislauf wartet hinter einem anderen Lauf (Cover, Gesichter): nach 15 s mit den Fotos weiter, statt bis GEDULD */
     const hinten = !gesehen && l.laeuft && (l.art !== 'bildnis' || l.schritt === 'wartet') && Date.now() - t0 > 15000;
-    if (hinten || Date.now() - t0 > GEDULD) { anstoss.abgelaufen = true; sage('Die Bildnisse brauchen länger – vorerst die Fotos; beim nächsten Öffnen sind sie da.'); return ergebnis(d); }
+    if (hinten || Date.now() - t0 > GEDULD) { anstoss.abgelaufen = true; sage(sagN('skizze.bildnis.laenger')); return ergebnis(d); }
   }
   const rest = warten.filter(f => !gilt(d, f)).length;
   /* fertig: die eigene Fortschrittszeile wegnehmen - „1 von 2" bliebe sonst stehen, obwohl alles da ist */
-  sage(!rest ? '' : rest === 1 ? 'Ein Bildnis ließ sich nicht zeichnen – dort steht das Foto.' : `${rest} Bildnisse ließen sich nicht zeichnen – dort stehen die Fotos.`);
+  sage(!rest ? '' : sagN('skizze.bildnis.rest', { n: rest }));
   return ergebnis(d);
 }

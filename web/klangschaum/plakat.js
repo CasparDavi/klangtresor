@@ -16,40 +16,50 @@ import { blattDatenHolen, refrainAus } from './skizze-daten.js';
 import { bildnisseBereit } from './skizze-bildnisse.js';
 import { TRANSFORMATIONEN, eckeFuellen } from './bilderschau.js';
 
+/* SPRACHE (16.10.2026, Caspar_D: „Sprache, in der KlangTresor grade läuft, bestimmt, wie die Poster gedruckt werden"): Bedienung und
+   alles Gedruckte über web/ui-sprache.js, kein eigener Schalter. sag: der Text zum Schlüssel; anz: ein Gruppen- oder Arealname, wie die
+   Oberfläche ihn zeigt (index.html gruppenAnzeige - die Namen selbst bleiben Schlüssel für Farben und Lage); ort: die Schreibweise von
+   Zahlen und Daten (Englisch britisch: „16 October 2026"). Gemessen wird, was gesetzt wird (messen) - die Breiten folgen der Sprache. */
+const sag = (k, v) => window.t(k, v);
+const englisch = () => typeof window.sprache === 'function' && window.sprache() === 'en';
+const ort = () => englisch() ? 'en-GB' : 'de-DE';
+const anz = (n) => typeof gruppenAnzeige === 'function' ? gruppenAnzeige(n) : n;
+/* Maß und Gliederung mitten in der Unterzeile: im Englischen klein („area by plays · grouped by kind of reaction"), im Deutschen wie benannt */
+const imSatz = (w) => englisch() && w ? w[0].toLowerCase() + w.slice(1) : w;
 const FORMATE = [
   { id: 'A3', name: 'A3', w: 297, h: 420 }, { id: 'A2', name: 'A2', w: 420, h: 594 },
   { id: 'A1', name: 'A1', w: 594, h: 841 }, { id: 'A0', name: 'A0', w: 841, h: 1189 },
   { id: '50x70', name: '50 × 70', w: 500, h: 700 }, { id: '70x100', name: '70 × 100', w: 700, h: 1000 },
   { id: '100x140', name: '100 × 140', w: 1000, h: 1400 },
   { id: 'q50', name: '50 × 50', w: 500, h: 500 }, { id: 'q70', name: '70 × 70', w: 700, h: 700 },
-  { id: 'frei', name: 'frei' },
+  { id: 'frei', get name(){ return sag('plakat.format.frei'); } },
   /* Triptychon (angekreuzt): drei Rahmen nebeneinander, dazwischen eine Wandfuge von 6 % der Rahmenbreite. Der Schaum
      liegt ueber die ganze Breite, die Fugen schneiden durch ihn; das PDF hat drei Seiten, je Rahmen eine. */
   { id: 'tri50', name: '3 × 50 × 70', tri: true, pw: 500, ph: 700 }, { id: 'tri70', name: '3 × 70 × 100', tri: true, pw: 700, ph: 1000 },
   /* Bilder fuer soziale Medien (angekreuzt; „gerade der Groupieschaum als Danke an meine Groupies zum Posten"): kein
      Druck, sondern ein PNG mit 1080 Punkten Breite. Die Masse sind Seiteneinheiten wie beim Druck, nur das Verhaeltnis
      zaehlt; ohne Beschnitt. */
-  { id: 'b45', name: 'Bild 4:5', w: 216, h: 270, bild: true }, { id: 'b11', name: 'Bild 1:1', w: 216, h: 216, bild: true },
+  { id: 'b45', get name(){ return sag('plakat.format.bild', { v: '4:5' }); }, w: 216, h: 270, bild: true }, { id: 'b11', get name(){ return sag('plakat.format.bild', { v: '1:1' }); }, w: 216, h: 216, bild: true },
   { id: 'b916', name: 'Story 9:16', w: 216, h: 384, bild: true },
 ];
 /* Die Vorlagen (Caspar_D hat alle vier angekreuzt). Jede setzt alle Feinheiten; danach ist alles einzeln
    verstellbar. „Bleiglas": breite dunkle Fugen wie Bleiruten, starkes Licht, keine Glasbaender - die Titel
    stehen im Werkverzeichnis. */
 const VORLAGEN = [
-  { id: 'galerie', name: 'Galerie', zeile: 'schwarzer Grund · Rauchglas · Federstrich',
+  { id: 'galerie', get name(){ return sag('plakat.vorlage.galerie'); }, get zeile(){ return sag('plakat.vorlage.galerie.zeile'); },
     e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: true, edition: true, zeitleiste: false, schild: false, skizze: false } },
-  { id: 'papier', name: 'Papier', zeile: 'warmes Weiß · Milchglas · leiser Schatten',
+  { id: 'papier', get name(){ return sag('plakat.vorlage.papier'); }, get zeile(){ return sag('plakat.vorlage.papier.zeile'); },
     e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08, verzeichnis: false, areale: true, edition: true, zeitleiste: true, schild: false, skizze: false } },
-  { id: 'bleiglas', name: 'Bleiglas', zeile: 'breite dunkle Fugen · starkes Licht',
+  { id: 'bleiglas', get name(){ return sag('plakat.vorlage.bleiglas'); }, get zeile(){ return sag('plakat.vorlage.bleiglas.zeile'); },
     e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05, verzeichnis: true, areale: false, edition: false, zeitleiste: false, schild: false, skizze: false } },
-  { id: 'mosaik', name: 'Mosaik', zeile: 'helle Fugen · Kacheln wackeln · Schatten',
+  { id: 'mosaik', get name(){ return sag('plakat.vorlage.mosaik'); }, get zeile(){ return sag('plakat.vorlage.mosaik.zeile'); },
     e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: false, edition: false, zeitleiste: true, schild: false, skizze: false } },
 ];
 /* RANDLOS (1.0.57; Caspar_D: „ich hätte gern noch eine Randlose Variante mit einer fehlenden Ecke im gleichen Format wie das
    Biold, wo Titel, Legende, Avatar und Name drin stehen"): der Schaum reicht bis an den Beschnitt, kein Passepartout, kein
    Museumsschild, keine Arealnamen am Rand. Seit 1.0.58 eine eigene Zelle, seit dem 15.10.2026 als Schaum aus grauen Kissen (eckZellen), in der Bilderschau mit grauen Covern behängt (eckeFuellen); darin Avatar, Legende und Text, bündig
    zur gewählten Ecke (eckeSetzen; Größe und Form sucht schild.js). */
-VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Avatar und Titel in der Ecke',
+VORLAGEN.push({ id: 'randlos', get name(){ return sag('plakat.vorlage.randlos'); }, get zeile(){ return sag('plakat.vorlage.randlos.zeile'); },
   e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true, skizze: false, randVorne: 15, umschlag: 0 } });
 /* SKIZZENBUCH (1.0.61; Caspar_D: „ich hab eher an ein neues Layout a la Leonardo da Vinci oder sowas gedacht" – „im Ansatz sieht das
    super aus" – „ja, wir nehmen das bessere modell"): eine Seite aus einem Skizzenbuch - der Schaum in einem angeschnittenen Kreis,
@@ -57,7 +67,7 @@ VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · A
    (skizze-blatt.js: Kopf, Siegel, Tabula, Steckbrief, Instrumentenstudien, Würdigung, Legende, Randnotizen, Refrains, Diagramme,
    Zeitleiste als Bogen). Pergament als Grund. Das Skizzenbuch ist eine Seite: aus einem Triptychon wird seine Tafel (SKIZZE_TAFEL). */
 const SKIZZE_TAFEL = { tri50: '50x70', tri70: '70x100' };
-VORLAGEN.push({ id: 'skizze', name: 'Skizzenbuch', zeile: 'Federzeichnung auf Pergament, à la Leonardo',
+VORLAGEN.push({ id: 'skizze', get name(){ return sag('plakat.vorlage.skizze'); }, get zeile(){ return sag('plakat.vorlage.skizze.zeile'); },
   e: { grund: '#eee2c6', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: false, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: true, schild: false, skizze: true, refrains: 'herzen' } });
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
 const SPEICHER = 'mysuno-plakat';
@@ -216,12 +226,12 @@ const idsPruefsumme = (zeilen) => { let h = 5381; for (const r of zeilen) for (c
    zu den Einstellungen passt: hängt sie nach einem Wechsel noch neu, zeigte das Plakat sonst die alte Wand unter dem neuen Namen. */
 function bilderAmSchirm(){
   const bg = typeof bilderGezeigt !== 'undefined' ? bilderGezeigt : null, d = bg && bg.r && bg.r.daten;
-  if (!d || !d.wahl) return { fehlt: 'Bitte die Bilderschau einmal anzeigen lassen, dann das Plakat öffnen.' };
+  if (!d || !d.wahl) return { fehlt: sag('plakat.stand.bilder_zeigen') };
   const w = d.wahl, jetzt = { mass: schaumMass, trafo: bilderWahl.trafo, gliederung: schaumGliederung, zoom: schaumZoom || '', haengung: bilderWahl.haengung,
     rahmen: !!bilderWahl.rahmen, kopf: !!bilderWahl.kopf, unter: !!bilderWahl.unter, verf: typeof karteVerf !== 'undefined' ? karteVerf : '', filter: typeof titelFilterSchluessel === 'function' ? titelFilterSchluessel() : '' };
   /* hängt sie noch neu, wartet das Studio auf das Ereignis „bilderschau-gehaengt" (index.html bilderEinsetzen) und zeichnet dann von selbst
      neu (wandWartet) - bis 1.0.79 stand hier „das Plakat bitte gleich noch einmal öffnen", und die Meldung blieb stehen */
-  if (Object.keys(jetzt).some(k => String(w[k]) !== String(jetzt[k]))) return { fehlt: 'Die Bilderschau wird am Schirm neu gehängt – das Plakat folgt gleich.', neu: true };
+  if (Object.keys(jetzt).some(k => String(w[k]) !== String(jetzt[k]))) return { fehlt: sag('plakat.stand.bilder_neu'), neu: true };
   return { bg, d };
 }
 const bilderStempel = new WeakMap();
@@ -527,7 +537,7 @@ async function eckRestSchaum(svg, druck){
     return { u, a: Math.abs(shoelace(k.outline)), fuell: fuell.get(i) || null }; }).filter(Boolean);
   return eckRest(teile, +druck.ton || 0, +druck.deck || 0);
 }
-const eckHinweis = (t) => `Die Ecke bleibt dunkler als das übrige Bild (Leuchtdichte ${t.ecke.m.toLocaleString('de-DE', { maximumFractionDigits: 3 })} statt ${t.ziel.toLocaleString('de-DE', { maximumFractionDigits: 3 })}): unter der Schrift nur so hell, dass sie ${ECK_LESBAR} : 1 Kontrast behält.`;
+const eckHinweis = (t) => sag('plakat.stand.ecke_dunkel', { ist: t.ecke.m.toLocaleString(ort(), { maximumFractionDigits: 3 }), soll: t.ziel.toLocaleString(ort(), { maximumFractionDigits: 3 }), k: ECK_LESBAR });
 /* ABSTAND ZUR ZELLGRENZE (Caspar_D, 15.10.2026: „und da jetzt eine Zelle mit Grenzen da ist, muß ein Abstand zu den Zellgrenzen da
    sein, der größer als ein Wortabstand ist"): jedes Teil des Blocks hält zur Grenze der Eckzelle mindestens ECK_WORTLUFT_EM der
    größten Schrift im Block (Wortabstand der Systemschrift etwa 0,25–0,3 em), gemessen ab der sichtbaren Kante (halbe Fuge);
@@ -596,7 +606,7 @@ function eckeSetzen(g, fg, leise, rest){
   fg = leise = ECK_SCHRIFT;
   /* passt der Block nicht (mehr), wird er genau so weit verkleinert, dass er passt; unter 0,3 wird er nicht gesetzt, ein Hinweis
      sagt warum - vorher stand er mit mindestens 0,5 über den Zellen (Fallensuche 1.0.58) */
-  if (r < 0.3){ standSetzen('Avatar und Text passen nicht in die Ecke – Titel oder Zeilen kürzen, Legende ausschalten oder eine andere Ecke wählen.'); return out; }
+  if (r < 0.3){ standSetzen(sag('plakat.stand.ecke_voll')); return out; }
   const rechts = v.ecke[1] === 'r', anker = rechts ? 'end' : 'start';
   blockLage(v.block, v.ecke, v.rahmen, s).forEach((t, i) => {
     const q = v.teile[i], fs = (q.fs || 0) * s, x = rechts ? X(t.x1) : X(t.x0), basis = Y(t.y0) - fs * 0.3;
@@ -633,8 +643,9 @@ function eckeSetzen(g, fg, leise, rest){
    „sollte man bei der Ecke nicht ein wenig mit weiss einen Rahmen andeuten, sehr geringe Deckung natürlich, sonst wirkt das wie ein
    schwarzes Loch"); die Deckung ist der vierte Wert der Farbe. Gemalt wird in einem Worker (rand-worker.js, Malweisen in rand.js), in der Vorschau
    grob, fürs PDF fein (8 Punkte je mm, rund 200 dpi). Die vier Streifen liegen unter dem Schaum. */
-const WEISEN_HELL = [['nass', 'Nass in Nass'], ['flecken', 'Flecken und Blüten'], ['alles', 'Alles zusammen']];
-const WEISEN_DUNKEL = [['pastell', 'Pastellkreide'], ['verwischt', 'Kreide verwischt'], ['trocken', 'Gouache, trockener Pinsel']];
+const WEISEN_HELL = ['nass', 'flecken', 'alles'].map(w => [w]);
+const WEISEN_DUNKEL = ['pastell', 'verwischt', 'trocken'].map(w => [w]);
+const weiseName = (w) => sag('plakat.weise.' + w);
 const weiseHell = () => WEISEN_HELL.some(w => w[0] === E.weiseHell) ? E.weiseHell : 'nass';
 const weiseDunkel = () => WEISEN_DUNKEL.some(w => w[0] === E.weiseDunkel) ? E.weiseDunkel : 'pastell';
 const textHash = (t) => { let h = 2166136261; for (let i = 0; i < t.length; i++){ h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
@@ -718,7 +729,7 @@ let federAnstoss = null;
 async function federBereit(zeilen, melde, abgebrochen = () => false){
   const holen = async () => { try { const r = await fetch('/api/feder', { cache: 'no-store' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
   const karte = (d) => new Map(Object.entries((d && d.bilder) || {}).filter(([, b]) => b && !b.unlesbar).map(([id, b]) => [id, { url: '/media/' + id + '/feder.png?f=' + (Date.parse(b.gerechnet) || 1), tinte: +b.tinte || 0 }]));
-  let d = await holen(); if (!d) return { karte: new Map(), hinweis: 'Die Federzeichnungen gibt es erst mit dem neuen Server – bitte KlangTresor neu starten.' };
+  let d = await holen(); if (!d) return { karte: new Map(), hinweis: sag('plakat.feder.server') };
   /* Maßgeblich ist der Stand des SERVERS (d.offen nach den Regeln von feder.js: fehlend, veraltet, neues Cover, neue Schriftmaske,
      neues Modell; Titel ohne Bild zählen nicht) - die Seite zählte vorher selbst nur fehlende Einträge: Veraltetes blieb für immer,
      Titel ohne Bild stießen bei jedem Neubau einen Lauf an (Fallensuche 1.0.61). Ein vergeblicher Versuch ist nur ein Federlauf, der
@@ -727,23 +738,23 @@ async function federBereit(zeilen, melde, abgebrochen = () => false){
   /* höchstens ein Anstoß je Stand: ist seit dem letzten Anstoß ein Federlauf zu Ende gegangen und dieselbe Zahl blieb offen (ffmpeg
      fehlt, Platte voll, onnxruntime lädt nicht), nicht bei jeder Reglerbewegung neu anstoßen (zweite Fallensuche 1.0.61) */
   const v0 = d.lauf && d.lauf.letzte && d.lauf.letzte.feder, steckt = federAnstoss && federAnstoss.offen === d.offen && v0 && v0.fertigAm > federAnstoss.zeit;
-  let hinweis = steckt ? `${d.offen} Federzeichnungen ließen sich nicht rechnen – ein Neustart von KlangTresor oder der nächste Morgenlauf versucht es wieder.` : '';
+  let hinweis = steckt ? sag('plakat.feder.steckt', { n: d.offen }) : '';
   if (d.offen > 0 && !vergeblich() && !steckt){
     federAnstoss = { offen: d.offen, zeit: Date.now() };
     let antwort = null; try { antwort = await fetch('/api/bilder/vorbereiten?art=feder', { method: 'POST' }); } catch (e) {}
-    if (antwort && (antwort.status === 405 || antwort.status === 403)) return { karte: karte(d), hinweis: 'Dieses Archiv ist nur zum Ansehen – neue Federzeichnungen entstehen im laufenden KlangTresor; was fehlt, ist schraffiert.' };
+    if (antwort && (antwort.status === 405 || antwort.status === 403)) return { karte: karte(d), hinweis: sag('plakat.feder.archiv') };
     const t0 = Date.now(); let gesehen = false;
     for (;;){
       await new Promise(ok => setTimeout(ok, 2000)); if (abgebrochen()) return { karte: karte(d), hinweis: '' };
       const neu = await holen(); if (!neu){ if (Date.now() - t0 > 30 * 60000) break; continue; }   /* kurzer Aussetzer: den letzten Stand behalten */
       d = neu; const l = d.lauf || {}, federLaeuft = l.laeuft && l.art === 'feder'; if (federLaeuft) gesehen = true;
-      if (melde) melde(federLaeuft && l.schritt === 'feder' && l.von ? `Die Cover werden mit der Feder gezeichnet … ${l.n} von ${l.von}` : 'Die Federzeichnungen werden vorbereitet …');
+      if (melde) melde(federLaeuft && l.schritt === 'feder' && l.von ? sag('plakat.feder.laeuft', { n: l.n, von: l.von }) : sag('plakat.feder.vorbereiten'));
       if (!(d.offen > 0) || (gesehen && !federLaeuft) || (!gesehen && !l.laeuft && Date.now() - t0 > 15000)) break;
-      if (Date.now() - t0 > 30 * 60000){ hinweis = `Die Federzeichnungen laufen noch (${l.n || 0} von ${l.von || '?'}) – fehlende sind schraffiert; beim nächsten Öffnen geht es weiter.`; break; }
+      if (Date.now() - t0 > 30 * 60000){ hinweis = sag('plakat.feder.noch', { n: l.n || 0, von: l.von || '?' }); break; }
     }
   }
-  if (!hinweis && d.offen > 0) hinweis = d.modell === false ? 'Das Modell für die Federzeichnungen ließ sich nicht laden (kein Netz?) – der nächste Morgenlauf holt es; bis dahin sind die Kacheln schraffiert.'
-    : `${d.offen} Federzeichnungen fehlen noch – sie sind schraffiert; beim nächsten Öffnen geht es weiter.`;
+  if (!hinweis && d.offen > 0) hinweis = d.modell === false ? sag('plakat.feder.modell')
+    : sag('plakat.feder.fehlen', { n: d.offen });
   return { karte: karte(d), hinweis };
 }
 /* Refrain (refrainAus, skizze-daten.js): der erste [Chorus]/[Refrain]/[Hook]-Abschnitt der Original-Lyrics, höchstens vier Zeilen */
@@ -793,8 +804,8 @@ const skizzeKreide = () => '#' + [1, 3, 5].map(j => { const v = parseInt(skizzeP
 
 /* Genitiv eines Namens ohne Deppenapostroph (Caspar_D: „uhä, ein Deppenapostroph … natürlich ohne Apostroph"): „Caspar_Ds";
    endet der Name auf s, ß, x, z oder ce, nur der Apostroph („Klaus’") - so die Rechtschreibung. */
-const genitiv = (n) => /(s|ß|x|z|ce)$/i.test(n) ? n + '\u2019' : n + 's';
-const artName = () => raumJetzt === 'groupies' ? 'Groupieschaum' : bilderschau() ? 'Bilderschau' : 'Klangschaum';   /* Dateiname */
+const genitiv = (n) => englisch() ? n + '\u2019s' : /(s|ß|x|z|ce)$/i.test(n) ? n + '\u2019' : n + 's';   /* englisch immer ’s: „Caspar_D’s Picture Wall" */
+const artName = () => plakatArt().replace(/\s+/g, '-');   /* Dateiname */
 const dauerText = (sek) => { const t = Math.round(sek), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, x = t % 60;
   return `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}`; };
 
@@ -867,18 +878,18 @@ function zeichnen(sofort, warteMs, nurSetzen){
       if (E.skizze) a.j = dAuftrag(a.j, g.kreis.schnitt);
       let res;
       if (a.art === 'bild'){
-        standSetzen('Die Galerie wird fürs Plakat aufgehängt …');                 /* Caspar_Ds Wortlaut für die Bilderschau, 11.10.2026 */
+        standSetzen(sag('plakat.stand.aufhaengen'));                 /* Caspar_Ds Wortlaut für die Bilderschau, 11.10.2026 */
         try { res = await bilderLageHolen(a.j, bilderSperren(g, a.j.W, a.j.H).concat(ecke ? [ecke.sperre] : [])); }
-        catch (e){ if (lauf !== legeLauf) return; standSetzen('Die Bilder passen nicht auf das Plakat.'); console.log('Plakat, Bilderschau:', e); return; }
+        catch (e){ if (lauf !== legeLauf) return; standSetzen(sag('plakat.stand.passt_nicht')); console.log('Plakat, Bilderschau:', e); return; }
         /* die Areale als Knoten wie beim Schaum (y nach oben), davor die Ecke als Schild-Knoten: eckeSetzen prüft daran den Block, der Rand
            nimmt daraus seine Farben (randFarben) - gemerkte Hängungen bleiben unverändert */
         res = { ...res, nodes: (ecke ? [{ depth: 0, name: SCHILD_NAME, outline: ecke.umriss }] : [])
           .concat((res.areale || []).map(ar => ({ depth: 0, name: ar.name, outline: ar.poly.map(q => [q[0], res.H - q[1]]) }))),
           platzhalter: ecke ? eckeFuellen(res, ecke.sperre, a.j.opt.beschnitt) : [] };
       } else {
-        standSetzen('Der Schaum wird für das Plakat gelegt …');
-        try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }, true); }
-        catch (e){ if (lauf !== legeLauf) return; standSetzen('Der Schaum ließ sich nicht legen.'); console.log('Plakat:', e); return; }
+        standSetzen(sag('plakat.stand.legen'));
+        try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(sag('plakat.stand.legen_s', { s })); }, true); }
+        catch (e){ if (lauf !== legeLauf) return; standSetzen(sag('plakat.stand.legen_fehler')); console.log('Plakat:', e); return; }
       }
       if (lauf !== legeLauf) return;
       aktuell = { verh, kachelN, hausS, raum: raumJetzt, schild: !!E.schild, skizze: !!E.skizze, eckS: v ? v.schluessel : '', ecke: v ? v.ecke : null, fugS, res, ...a };
@@ -889,40 +900,40 @@ function zeichnen(sofort, warteMs, nurSetzen){
   }, sofort ? 0 : (warteMs || 120));
 }
 /* Die Art des Plakats, wie die Ansicht heißt (Studio-Kopf „Plakat · <Art>", Titelvorschlag; Randlos der Bilderschau: „Bilderschau") */
-const plakatArt = () => raumJetzt === 'groupies' ? 'Groupieschaum' : bilderschau() ? 'Bilderschau' : 'Klangschaum';
+const plakatArt = () => sag(raumJetzt === 'groupies' ? 'plakat.art.groupies' : bilderschau() ? 'plakat.art.bilder' : 'plakat.art.klang');
 const profil = () => (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
 function kopfTitelVorschlag(){
   const schaum = plakatArt(), p = profil();
   /* Skizzenbuch: erst den Namen schrifttauglich machen (Zierrat weg, sonst Handle), dann das Genitiv-s - vorher „Tarja s Klangschaum" */
   if (E.skizze){ const n = anzeigeName({ name: p.display_name, handle: p.handle }); return n ? genitiv(n) + ' ' + schaum : schaum; }
   /* Bilderschau: „<Name im Genitiv> Bilderschau" (Caspar_D, 11.10.2026: „Caspar_Ds Bilderschau") */
-  if (bilderschau() && !E.schild){ const n = p.display_name || p.handle || ''; return n ? genitiv(n) + ' Bilderschau' : 'Bilderschau'; }
-  return E.schild ? schaum : (p.display_name || p.handle || 'Mein Archiv') + ' · ' + schaum;    /* Randlos: der Name steht in eigener Zeile darueber */
+  if (bilderschau() && !E.schild){ const n = p.display_name || p.handle || ''; return n ? genitiv(n) + ' ' + schaum : schaum; }
+  return E.schild ? schaum : (p.display_name || p.handle || sag('plakat.mein_archiv')) + ' · ' + schaum;    /* Randlos: der Name steht in eigener Zeile darueber */
 }
 function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.handle || ''; return n ? genitiv(n) : ''; }
 /* Randlos: „<Datum> / nnn Titel · Laufzeit" - die Laufzeit ist die Summe der Titellaengen (im Haus heisst „Hoerzeit" Plays mal
    Laenge, das Flaechenmass „Hörzeit (Schätzung)"); „/" bricht in der Ecke die Zeile um. */
 const titelAuswahlJetzt = (a) => a && a.art !== 'person' && typeof titelAuswahl === 'function' ? titelAuswahl() : null;
 const titelZusatz = (a) => { const au = titelAuswahlJetzt(a); return au ? au.zusatz : ''; };
-const titelZahl = (n, a) => { const au = titelAuswahlJetzt(a); return au && !a.gezoomt && !(a.j.ebenen && a.j.ebenen[0] === 'genre') && n === au.n ? au.text : `${n} Titel` + (au ? au.zusatz : ''); };
+const titelZahl = (n, a) => { const au = titelAuswahlJetzt(a); return au && !a.gezoomt && !(a.j.ebenen && a.j.ebenen[0] === 'genre') && n === au.n ? au.text : sag('zahl.titel', { n }) + (au ? au.zusatz : ''); };
 function kopfUnterVorschlag(a = aktuell){
   if (!a) return '';
-  const zl = a.j.zeilen.filter(z => z.id !== SCHILD_ID), n = zl.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }), person = a.art === 'person';   /* ohne die Ecke von Randlos */
+  const zl = a.j.zeilen.filter(z => z.id !== SCHILD_ID), n = zl.length, monat = new Date().toLocaleDateString(ort(), { month: 'long', year: 'numeric' }), person = a.art === 'person';   /* ohne die Ecke von Randlos */
   /* begrenzt (kachelZahl, im Groupieschaum auch schon am Schirm vom Regler „zeigt N von M"): „die 360 stärksten nach Herzen von 1.523
      Titeln" - genannt wird die Zahl ohne beide Grenzen */
   const ganz = Math.max(a.j.gesamt || 0, a.j.ohneRegler || 0);
-  const menge = ganz > n ? `die ${n} stärksten nach ${a.m.name} von ${ganz.toLocaleString('de-DE')} ${person ? 'Personen' : 'Titeln'}` : '';
+  const menge = ganz > n ? sag(person ? 'plakat.menge.personen' : 'plakat.menge.titel', { n, mass: imSatz(a.m.name), ganz: ganz.toLocaleString(ort()) }) : '';
   if (E.schild || E.skizze){
-    const datum = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
-    if (person) return `${datum} / ${menge || `${n} ${n === 1 ? 'Person' : 'Personen'}`}`;
+    const datum = new Date().toLocaleDateString(ort(), { day: 'numeric', month: 'long', year: 'numeric' });
+    if (person) return `${datum} / ${menge || sag('plakat.personen', { n })}`;
     const sek = zl.reduce((t, z) => t + (((typeof song === 'function' && song(z.id)) || {}).dauer || 0), 0);
-    return `${datum} / ${menge ? menge + titelZusatz(a) : titelZahl(n, a)}` + (sek > 0 ? ` · ${dauerText(sek)} Laufzeit` : '');
+    return `${datum} / ${menge ? menge + titelZusatz(a) : titelZahl(n, a)}` + (sek > 0 ? sag('plakat.laufzeit', { dauer: dauerText(sek) }) : '');
   }
   /* Bilderschau: die Transformation gehört zur Fläche, in der Schreibweise des Panels („Fläche ∝ √Abrufe"). Titel: die Auswahl des
      Filters oben wie in der Legende („257 von 330 Titeln · gefiltert: Öffentlich"), solange das Plakat genau sie zeigt; sonst die Zahl
      auf dem Plakat mit dem Filterteil */
-  return [menge ? menge + titelZusatz(a) : person ? `${n} ${n === 1 ? 'Person' : 'Personen'}` : titelZahl(n, a), a.art === 'bild' && a.t ? a.t.kurz.replace('Wert', a.m.name) : 'Fläche nach ' + a.m.name,
-          'gegliedert nach ' + a.gl.name.replace(/:.*$/, ''), monat].join(' · ');
+  return [menge ? menge + titelZusatz(a) : person ? sag('plakat.personen', { n }) : titelZahl(n, a), a.art === 'bild' && a.t ? a.t.kurzMit(imSatz(a.m.name)) : sag('plakat.flaeche_nach', { mass: imSatz(a.m.name) }),
+          sag('plakat.gegliedert', { glied: imSatz(a.gl.name.replace(/:.*$/, '')) }), monat].join(' · ');
 }
 
 /* Die Legende des Schaums, wie sie im Panel steht: Farbe und Name je Areal. */
@@ -931,10 +942,12 @@ let legendeAreale = null;
 const arealeDer = (j) => { const eb = j.ebenen && j.ebenen[0]; if (eb === 'genre') return null;   /* gezoomt: nicht filtern (Zoomgruppe, „ohne Angabe") */
   return new Set(j.zeilen.filter(z => z.id !== SCHILD_ID).map(z => (eb && z[eb]) || z.gruppe)); };
 function legendenEintraege(alle = false){   /* alle: ungefiltert - für die Bemessung des Verzeichnisses, die nicht am vorigen Lauf hängen darf */
+  /* name: wie die Legende ihn zeigt (in der Sprache der Oberfläche), schl: der Arealname der Daten (data-areal) - danach wird gefiltert
+     und sortiert; ohne data-areal (gezoomte Untergruppen) ist es der gezeigte Name wie bisher */
   return [...document.querySelectorAll('#schaumlegende .zeile')].map(z => {
-    const i = z.querySelector('i'), b = z.querySelector('b');
-    return i && b ? { farbe: i.style.background || '#888', name: b.textContent.trim() } : null;
-  }).filter(Boolean).filter((e, _, liste) => alle || !legendeAreale || legendeAreale.has(e.name) || !liste.some(x => legendeAreale.has(x.name)));   /* passt kein Name, bleibt alles */
+    const i = z.querySelector('i'), b = z.querySelector('b'), name = b ? b.textContent.trim() : '';
+    return i && b ? { farbe: i.style.background || '#888', name, schl: z.dataset.areal != null ? z.dataset.areal : name } : null;
+  }).filter(Boolean).filter((e, _, liste) => alle || !legendeAreale || legendeAreale.has(e.schl) || !liste.some(x => legendeAreale.has(x.schl)));   /* passt kein Name, bleibt alles */
 }
 /* Breite in em, gemessen bei der Schriftgroesse, mit der das SVG setzt: der Zahl in font-size, in den Einheiten seiner viewBox
    (Seite: mm; Bildebene der Bilderschau: Wandpunkte) als px - nicht die Groesse im Druck. Die Systemschrift des Mac wird klein
@@ -979,7 +992,7 @@ function bilderLageHolen(j, sperren){
     const ende = (fehler) => { w.terminate(); if (bilderHaengt && bilderHaengt.w === w) bilderHaengt = null; if (fehler){ bilderLagen.delete(schl); nein(fehler); } };
     bilderHaengt = { w, abbrechen: () => ende(new Error('überholt')) };
     w.onmessage = (ev) => { const r = ev.data && ev.data.res;
-      if (!r){ ende(new Error((ev.data && ev.data.fehler) || 'Die Bilder passen nicht auf die Wand.')); return; }
+      if (!r){ ende(new Error((ev.data && ev.data.fehler) || sag('bilder.passt_nicht'))); return; }
       ende(null); r.width = r.W; r.height = r.H; ok(r); };
     w.onerror = (ev) => ende(new Error(ev.message || 'Worker'));
     w.postMessage({ gruppen: j.gruppen, W, H, seeds: Object.keys(seeds).length === j.gruppen.length ? seeds : null, opt, kopfBreite: j.kopfBreite });
@@ -1295,7 +1308,7 @@ async function bilderEbene(g, kv, lauf){
   const verzeichnis = [], nummer = new Map(); let nr = 0;
   if (mitNummern){
     const seiten = res.bilder.map(b => Math.sqrt(b.w * b.h)).sort((a, b) => a - b), band = 0.7 * (seiten[seiten.length >> 1] || 1);
-    const leg = legendenEintraege(true).map(e => e.name), summe = new Map();
+    const leg = legendenEintraege(true).map(e => e.schl), summe = new Map();
     for (const b of res.bilder) summe.set(b.gruppe, (summe.get(b.gruppe) || 0) + (+(zeile.get(b.id) || {}).w || 0));
     const rang = (a) => { const i = leg.indexOf(a); return i < 0 ? leg.length : i; };
     for (const a of [...summe.keys()].sort((p, q) => rang(p) - rang(q) || summe.get(q) - summe.get(p))){
@@ -1310,7 +1323,7 @@ async function bilderEbene(g, kv, lauf){
   const ids = [...nummer.keys()], mess = new Map(), offen = ids.slice(); let n = 0;
   if (ids.length && typeof schaumGesichterLaden === 'function') await schaumGesichterLaden();   /* Schrift und Gesichter (ohne Buch: {}) */
   await Promise.all(Array.from({ length: 4 }, async () => { while (offen.length){ const id = offen.shift(); mess.set(id, await messbild(artworkBild(id)));
-    if (lauf === bauLauf && (++n % 20 === 0 || n === ids.length)) standSetzen(`Die Ecken der Cover werden vermessen … ${n} von ${ids.length}`); } }));
+    if (lauf === bauLauf && (++n % 20 === 0 || n === ids.length)) standSetzen(sag('plakat.stand.ecken', { n, von: ids.length })); } }));
   if (lauf !== bauLauf) return null;
   const gr = farbWert(grund()) || [12, 13, 16];
   const misch = (f) => '#' + (farbWert(f) || [138, 141, 148]).map((v, i) => Math.round(v * 0.38 + gr[i] * 0.62).toString(16).padStart(2, '0')).join('');
@@ -1373,8 +1386,8 @@ async function bilderEbene(g, kv, lauf){
     let a = 0, b = t.length; while (a < b){ const m = (a + b + 1) >> 1; if (messen(t.slice(0, m).trimEnd() + '…', 400, fs) * fs <= breite) a = m; else b = m - 1; }
     return a ? t.slice(0, a).trimEnd() + '…' : ''; };
   for (const a of res.schilder || []){ const n = res.bilder.filter(b => b.gruppe === a.name).length;
-    out += `<text class="ps-bwkopf" x="${f2(a.x)}" y="${f2(a.y + 13)}" font-size="12.5" font-weight="600" fill="${farbe(a.name)}">${esc2(a.name)}`
-      + `<tspan font-size="11" font-weight="400" fill="${leiseF}"> ${n} Titel</tspan></text>`; }
+    out += `<text class="ps-bwkopf" x="${f2(a.x)}" y="${f2(a.y + 13)}" font-size="12.5" font-weight="600" fill="${farbe(a.name)}">${esc2(anz(a.name))}`
+      + `<tspan font-size="11" font-weight="400" fill="${leiseF}"> ${esc2(sag('zahl.titel', { n }))}</tspan></text>`; }
   for (const b of res.bilder){ if (!(b.schild > 0)) continue;
     const fs = 10.5 * b.schild / 15, t = kuerzen(String((zeile.get(b.id) || {}).titel || '').trim(), fs, b.w); if (!t) continue;
     out += `<text class="ps-bwschild" x="${f2(b.x)}" y="${f2(b.y + b.h + (b.rahmen || 0) + 2 + fs)}" font-size="${fs.toFixed(2)}" fill="${leiseF}">${esc2(t)}</text>`; }
@@ -1399,7 +1412,7 @@ async function bauen(g){
   /* Bilderschau: Farben und Zoom von der Wand am Schirm (der Klangschaum-Auftrag gehört zum Schaum) */
   const la = aktuell.art === 'bild' ? { farbeVon: aktuell.farbe, gezoomt: aktuell.gezoomt }
     : schaumLetzterAuftrag && schaumLetzterAuftrag.art === aktuell.art ? schaumLetzterAuftrag : null;
-  if (!la){ standSetzen('Bitte den Schaum einmal anzeigen lassen, dann das Plakat öffnen.'); return; }
+  if (!la){ standSetzen(sag('plakat.stand.schaum_zeigen')); return; }
   /* Erst die Bilder, dann das Plakat (Caspar_D, 07.10.2026: keine mindere Qualitaet) - meist schon bereit,
      denn der Schaum war vorher zu sehen; sonst „Bilder werden vorbereitet …" wie im Haus (bilderBereit). */
   let skHinweis = '', refrains = [], svg, verzeichnis, areale, nrStand = null;
@@ -1429,7 +1442,7 @@ async function bauen(g){
   } else {
   const bereit = await bilderBereit(aktuell.art, aktuell.j.zeilen, t => { if (lauf === bauLauf) standSetzen(t); });
   if (lauf !== bauLauf) return;
-  if (bereit === 'morgenlauf'){ standSetzen('Schaum kommt mit dem nächsten Morgenlauf.'); return; }
+  if (bereit === 'morgenlauf'){ standSetzen(sag('plakat.stand.morgenlauf')); return; }
   }
   standSetzen(skHinweis);
   ({ svg, verzeichnis, areale } = await schaumSvgBauen(aktuell.res, { zeilen: aktuell.j.zeilen, ebenen: aktuell.j.ebenen, farbeVon: la.farbeVon, gezoomt: la.gezoomt, art: aktuell.art, druck }));
@@ -1478,11 +1491,11 @@ async function bauen(g){
       if (eckLetzt.gekappt) standSetzen(eckHinweis(eckLetzt)); }
   }
   if (E.skizze && g.skizze && aktuell.skizze){
-    const leg = la.gezoomt && areale ? areale.map(a => ({ name: a.name, farbe: a.farbe })) : legendenEintraege();
+    const leg = la.gezoomt && areale ? areale.map(a => ({ name: anz(a.name), schl: a.name, farbe: a.farbe })) : legendenEintraege();
     const eb = aktuell.j.ebenen[0], zahl = new Map(); for (const z of aktuell.j.zeilen){ const a = z[eb] || z.gruppe; zahl.set(a, (zahl.get(a) || 0) + 1); }
     const ctx = blattKontext(g, { legende: leg, refrains, feder: druck.skizze.feder, res: aktuell.res, zeilen: aktuell.j.zeilen, ebene: eb, arealFarbe: (a) => randArealFarben.get(a),
       avatar: avatarDa(), edition: E.edition ? editionText() : '', song: typeof song === 'function' ? song : null, bildnisse: blattBildnisse,
-      arealZahlen: leg.map(e => ({ ...e, n: zahl.get(e.name) || 0 })).filter(e => e.n) });
+      arealZahlen: leg.map(e => ({ ...e, n: zahl.get(e.schl) || 0 })).filter(e => e.n) });
     kopf += blattSchmuck(ctx) + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="url(#ps-altrand)" pointer-events="none"/>`;
     /* für Formatproben von außen (headless, alle Formate durchgehen): wie voll das beschreibbare Blatt ist (Anteil belegter Rasterzellen) -
        am Vorschau-Element, nicht im Bild */
@@ -1505,9 +1518,10 @@ async function bauen(g){
   if (aktuell.art !== 'bild' && E.titel === 'rauch' && schaum && typeof schaumRauch === 'function') schaumRauch(schaum);
   if (aktuell.art !== 'bild' && E.titel === 'kante' && schaum && typeof schaumKantenKontrast === 'function') schaumKantenKontrast(schaum, schaumFarbeAnteil / 100);   /* schwarz oder weiss nach dem Grund */
   const fm = FORMATE.find(x => x.id === E.format) || {};
-  el('ps-mass').textContent = g.tri ? `drei Rahmen je ${(g.tri.pw / 10).toLocaleString('de-DE')} × ${(g.tri.ph / 10).toLocaleString('de-DE')} cm, Fuge ${(g.tri.fuge / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt` : fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
-    : g.randKante && g.randKante.umschlag ? `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm + ${(g.randKante.umschlag / 10).toLocaleString('de-DE')} cm Umschlag = ${((g.w + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} × ${((g.h + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`
-    : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
+  const cmz = (v) => (v / 10).toLocaleString(ort());
+  el('ps-mass').textContent = g.tri ? sag('plakat.mass.tri', { w: cmz(g.tri.pw), h: cmz(g.tri.ph), fuge: cmz(g.tri.fuge) }) : fm.bild ? sag('plakat.mass.bild', { h: Math.round(1080 * g.h / g.w) })
+    : g.randKante && g.randKante.umschlag ? sag('plakat.mass.umschlag', { w: cmz(g.w), h: cmz(g.h), u: cmz(g.randKante.umschlag), gw: cmz(g.w + 2 * g.randKante.umschlag), gh: cmz(g.h + 2 * g.randKante.umschlag) })
+    : sag('plakat.mass.normal', { w: cmz(g.w), h: cmz(g.h) });
   /* WAS BEI DIESER EINSTELLUNG NICHT GEHT (Caspar_D, 15.10.2026: „warum zeigen wir was, was eigentlich nicht geht, wenigstens eine
      Warnung vor Dingen die sinnfrei sind, wäre schön"): eine Zeile unter dem Format, gesperrt wird nichts. Sie nennt, wie viele Cover
      bzw. Zellen zu klein für ihre Nummer sind (sie stehen am Ende des Verzeichnisses), und ob das Verzeichnis selbst unter der Schwelle
@@ -1525,17 +1539,16 @@ async function bauen(g){
      sie stehen", Gegenprüfung). */
   { const h = el('ps-nrklein'), st = nrStand, pt = fm.bild ? 1080 / g.w : 0, sinnfrei = [], teile = [];
     const K = (verzeichnis || []).reduce((n, q) => n + (q.zuKlein || []).length, 0), personen = aktuell.art === 'person';
-    if (g.verz && K) sinnfrei.push(aktuell.art === 'bild' ? (K === 1 ? '1 Cover zu klein für seine Nummer – es steht am Ende des Verzeichnisses' : `${K} Cover zu klein für ihre Nummer – sie stehen am Ende des Verzeichnisses`)
-      : K === 1 ? '1 Zelle zu klein für ihre Nummer – sie steht am Ende des Verzeichnisses' : `${K} Zellen zu klein für ihre Nummer – sie stehen am Ende des Verzeichnisses`);
-    const verzName = personen ? 'Verzeichnis der Personen' : 'Werkverzeichnis', verzMin = nrSchwelle(g, 400);
+    if (g.verz && K) sinnfrei.push(sag(aktuell.art === 'bild' ? 'plakat.warn.cover_klein' : 'plakat.warn.zellen_klein', { n: K }));
+    const verzName = sag(personen ? 'plakat.verz.name.personen' : 'plakat.verz.name.titel'), verzMin = nrSchwelle(g, 400);
     const zehntelPt = (mm) => mm * 72 / 25.4 * 10, soll = Math.ceil(zehntelPt(verzMin) - 1e-6), ist = (z) => Math.round(z) < soll ? Math.round(z) : Math.floor(z + 1e-6);
-    const punkt = (z) => (z / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' pt';
-    if (verzL != null && verzL < verzMin - 1e-9) sinnfrei.push(pt ? `${verzName} nicht lesbar (Schrift ${(Math.floor(verzL * pt * 100 + 1e-6) / 100).toLocaleString('de-DE', { maximumFractionDigits: 2 })} Bildpunkte)`
-      : `${verzName} unter DIN 1450 (${punkt(ist(zehntelPt(verzL)))} statt ${punkt(soll)})`);
-    if (st && st.kante) teile.push(`${st.kante} an der Kante, weil keine Ecke frei war`);
-    if (st && st.min) teile.push(`${st.min} ohne freie Stelle – sie decken Schrift oder Gesicht so wenig wie möglich`);
-    const text = [sinnfrei.length ? sinnfrei.join('; ') + '.' : '', teile.length ? `Nummern auf den Covern: ${teile.join('; ')}.` : '',
-      st && st.ohneBuch ? `${st.ohneBuch} Cover sind noch nicht auf Schrift und Gesichter untersucht – ihre Nummern weichen dort nicht aus.` : ''].filter(Boolean).join(' ');
+    const punkt = (z) => (z / 10).toLocaleString(ort(), { maximumFractionDigits: 1 }) + ' pt';
+    if (verzL != null && verzL < verzMin - 1e-9) sinnfrei.push(pt ? sag('plakat.warn.unlesbar', { verz: verzName, px: (Math.floor(verzL * pt * 100 + 1e-6) / 100).toLocaleString(ort(), { maximumFractionDigits: 2 }) })
+      : sag('plakat.warn.din', { verz: verzName, ist: punkt(ist(zehntelPt(verzL))), soll: punkt(soll) }));
+    if (st && st.kante) teile.push(sag('plakat.warn.kante', { n: st.kante }));
+    if (st && st.min) teile.push(sag('plakat.warn.min', { n: st.min }));
+    const text = [sinnfrei.length ? sinnfrei.join('; ') + '.' : '', teile.length ? sag('plakat.warn.nummern', { was: teile.join('; ') }) : '',
+      st && st.ohneBuch ? sag('plakat.warn.ohne_buch', { n: st.ohneBuch }) : ''].filter(Boolean).join(' ');
     h.hidden = !text; h.textContent = text; }
 }
 /* Das Plakat steht im selben Dokument wie der Klangschaum dahinter, und beide tragen dieselben IDs
@@ -1584,7 +1597,7 @@ function arealeSetzen(areale, g, kv, res, feder){
     }
     if (!seite){ let bd = Infinity;
       for (const p of P) for (const [sd, dd] of [['oben', p[1] - R.y0], ['links', p[0] - R.x0], ['rechts', R.x1 - p[0]]]) if (dd < bd){ bd = dd; seite = sd; anker = sd === 'oben' ? p[0] : p[1]; ziel = p; } }
-    marken.push({ seite, anker, ziel, text: a.name, lang: (messen(a.name, 600, fs) + 0.02 * a.name.length) * fs, farbe: a.farbe });
+    const text = anz(a.name); marken.push({ seite, anker, ziel, text, lang: (messen(text, 600, fs) + 0.02 * text.length) * fs, farbe: a.farbe });
   }
   for (const sd of ['oben', 'links', 'rechts']){
     const ms = marken.filter(m => m.seite === sd).sort((p, q) => p.anker - q.anker); if (!ms.length) continue;
@@ -1648,7 +1661,7 @@ function zeitleisteSetzen(zeilen, farbeVon, x0, x1, y0, hoehe, fg, leise, kurz, 
   const a = new Date(t0), monate = (t1 - t0) < 2 * 365.25 * 864e5, marken = [];
   for (let d = new Date(a.getFullYear(), monate ? a.getMonth() + 1 : 0, 1); d.getTime() <= t1; d = new Date(d.getFullYear() + (monate ? 0 : 1), monate ? d.getMonth() + 1 : 0, 1))
     if (d.getTime() > t0) marken.push(d);
-  for (const d of marken){ const x = X(d.getTime()), wort = String(monate ? d.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }) : d.getFullYear());
+  for (const d of marken){ const x = X(d.getTime()), wort = String(monate ? d.toLocaleDateString(ort(), { month: 'short', year: '2-digit' }) : d.getFullYear());
     const [sa, sb] = strecke(x), halb = messen(wort, 400, ls) * ls / 2, tx = Math.min(sb - halb, Math.max(sa + halb, x));   /* die Marke bleibt in ihrer Strecke */
     out += `<line x1="${f2(x)}" y1="${f2(y0 + strichH)}" x2="${f2(x)}" y2="${f2(y0 + strichH + ls * 0.5)}" stroke="${leise}" stroke-width="${f2(kurz / 3000)}"/>`
       + `<text x="${f2(tx)}" y="${f2(y0 + strichH + ls * 1.55)}" font-size="${f2(ls)}" fill="${leise}" text-anchor="middle">${wort}</text>`; }
@@ -1658,7 +1671,7 @@ function zeitleisteSetzen(zeilen, farbeVon, x0, x1, y0, hoehe, fg, leise, kurz, 
    Signieren von Hand. Der Name kommt aus dem Profil; die Auflage ist ein Feld (Vorgabe 1/1). */
 function editionText(){
   const p = profil();
-  return [E.auflage || '1/1', new Date().toLocaleDateString('de-DE'), E.skizze ? anzeigeName({ name: p.display_name, handle: p.handle }) : (p.display_name || p.handle || '')].filter(Boolean).join(' · ');
+  return [E.auflage || '1/1', new Date().toLocaleDateString(ort()), E.skizze ? anzeigeName({ name: p.display_name, handle: p.handle }) : (p.display_name || p.handle || '')].filter(Boolean).join(' · ');
 }
 function editionSetzen(g, rechts, y, fg, leise){
   const text = editionText();
@@ -1672,13 +1685,13 @@ function verzeichnisSetzen(gruppen, g, x0, y0, fg, leise){
   const n = nNr + K, zeilen = [];
   for (const q of gruppen){
     if (!q.eintraege.length && !q.weitere) continue;                 /* alle Titel des Areals zu klein: es steht nur unten */
-    zeilen.push({ kopf: q.name, farbe: q.farbe });
+    zeilen.push({ kopf: anz(q.name), farbe: q.farbe });
     for (const e of q.eintraege) zeilen.push(e);
-    if (q.weitere) zeilen.push({ rest: `und ${q.weitere.toLocaleString('de-DE')} weitere` });
+    if (q.weitere) zeilen.push({ rest: sag('plakat.verz.weitere', { n: q.weitere.toLocaleString(ort()) }) });
   }
-  const abschnitt = `Zu klein für eine Nummer (${K.toLocaleString('de-DE')})`;
+  const abschnitt = sag('plakat.verz.zu_klein', { k: K.toLocaleString(ort()) });
   if (K){ zeilen.push({ abschnitt });
-    for (const q of zk){ zeilen.push({ kopf: q.name, farbe: q.farbe }); for (const t of q.zuKlein) zeilen.push({ ohneNr: t }); } }
+    for (const q of zk){ zeilen.push({ kopf: anz(q.name), farbe: q.farbe }); for (const t of q.zuKlein) zeilen.push({ ohneNr: t }); } }
   const koepfe = zeilen.filter(z => z.kopf !== undefined).length;
   /* mit den echten Arealen in den reservierten Platz, notfalls bis 1 mm Schrift */
   const fug = wandFugen(g), strecken = fug.length ? freieStrecken(x0, x0 + g.w - 2 * g.rand, fug).map(([a, b]) => [a - x0, b - a]) : null;
@@ -1692,7 +1705,7 @@ function verzeichnisSetzen(gruppen, g, x0, y0, fg, leise){
       teile = best.t; }
     const i = zeilen.findIndex(z => z.abschnitt !== undefined); zeilen.splice(i, 1, ...teile.map((t, j) => ({ abschnitt: t, erst: j === 0, n: teile.length }))); }
   let out = `<text x="${x0.toFixed(2)}" y="${(y0 + L * 1.2).toFixed(2)}" font-size="${(L * 1.1).toFixed(2)}" font-weight="600" letter-spacing="${(L * 0.06).toFixed(2)}" fill="${leise}">`
-    + `${personen ? 'VERZEICHNIS DER PERSONEN' : 'WERKVERZEICHNIS'} · ${n.toLocaleString('de-DE')} ${personen ? 'Personen' : 'Titel'}</text>`;
+    + `${esc2(sag(personen ? 'plakat.verz.kopf.personen' : 'plakat.verz.kopf.titel', { n, z: n.toLocaleString(ort()) }))}</text>`;
   const oben = y0 + 2.4 * L;
   let s = 0, r = 0;
   zeilen.forEach((z) => {
@@ -1781,7 +1794,7 @@ async function druckBilder(s, kopie, g){
       }
       if (b.close) b.close();
     } catch (e) {}
-    standSetzen(`Bilder für den Druck: ${++n} von ${gesamt}`);
+    standSetzen(sag('plakat.stand.druckbilder', { n: ++n, von: gesamt }));
   };
   await Promise.all(Array.from({ length: 3 }, async () => { while (liste.length) await eins(liste.shift()); }));
   /* Das Original bekommt seinen eigenen Platz (data-p, schaumBildPlatz im Haus): in der Vorschau steht die Kachel,
@@ -1810,7 +1823,7 @@ async function bildSichern(){
   /* der Rand fürs Bild eigens gemalt, in der Auflösung des Bildes (vorher die grobe Vorschau, hochgezogen - Fallensuche 1.0.60) */
   const randZiel = kopie.querySelector('g.ps-randbild');
   if (randZiel && g.randKante && aktuell && schaumLetzterAuftrag){
-    standSetzen('Der Rand wird gemalt …');
+    standSetzen(sag('plakat.stand.rand'));
     try { const st = await randRechnen(randFuer(sg, g, Math.min(10, Math.ceil(k * 1.5 * 2) / 2)));
       const daten = await Promise.all(st.map(x => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => ok(null); r.readAsDataURL(x.blob); })));
       randZiel.innerHTML = randBilder(st, daten); } catch (e){ console.log('Plakat, Rand:', e); }
@@ -1826,12 +1839,12 @@ async function bildSichern(){
     cache.set(schl, aus); return aus;
   };
   for (let i = 0; i < bilder.length; i++){
-    standSetzen(`Das Bild wird gerechnet … ${++n} von ${bilder.length}`);
+    standSetzen(sag('plakat.stand.bild_rechnen', { n: ++n, von: bilder.length }));
     const r = lagenVorher[i] || null, px = Math.min(1024, Math.max(32, Math.ceil(r ? Math.max(r.width, r.height) * proPunkt * 1.5 : 256)));
     const u = bilder[i].getAttribute('href'), d = u ? await daten(u, Math.ceil(px / 32) * 32) : null;
     if (d) bilder[i].setAttribute('href', d); else bilder[i].remove();
   }
-  standSetzen('Das Bild wird gemalt …');
+  standSetzen(sag('plakat.stand.bild_malen'));
   if (kopie.querySelector('[font-family*="Pinyon"]')){
     try { const b = await (await fetch('/fonts/pinyon-script-400.ttf')).blob(), d = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
       const st = document.createElementNS('http://www.w3.org/2000/svg', 'style'); st.textContent = `@font-face{font-family:'Pinyon Script';src:url(${d}) format('truetype')}`; kopie.insertBefore(st, kopie.firstChild); } catch (e) {}
@@ -1844,8 +1857,8 @@ async function bildSichern(){
     const a = document.createElement('a'); a.href = URL.createObjectURL(png);
     a.download = artName() + '-' + g.name.replace(/[^\w-]+/g, '') + '.png';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 20000);
-    standSetzen(`Gesichert: ${a.download} (${(png.size / 1048576).toFixed(1)} MB)`);
-  } catch (e) { standSetzen('Das Bild ließ sich nicht malen.'); console.log('Plakat:', e); }
+    standSetzen(sag('plakat.stand.gesichert', { datei: a.download, mb: (png.size / 1048576).toFixed(1) }));
+  } catch (e) { standSetzen(sag('plakat.stand.bild_fehler')); console.log('Plakat:', e); }
   finally { URL.revokeObjectURL(url); }
 }
 
@@ -1861,16 +1874,16 @@ async function pdf(){
   const sr = s.getBoundingClientRect(), proEinheit = sr.width / g.PW, lagen = [...s.querySelectorAll('image')].map(i => i.getBoundingClientRect());
   /* erst messen (druckBilder liest die Lage der Bilder in der angezeigten Seite), dann warten: ändert man während des Randmalens
      etwas im Panel, ersetzt bauen die Seite - vorher kamen dann die vollen Originale ins PDF (Fallensuche 1.0.60) */
-  standSetzen('Die Bilder werden für den Druck gerechnet …');
+  standSetzen(sag('plakat.stand.druck_rechnen'));
   await druckBilder(s, kopie, g);
   /* der Rand fürs PDF fein gemalt (8 Punkte je mm) - die Vorschau trägt nur die grobe Fassung */
   const randZiel = kopie.querySelector('g.ps-randbild');
   if (randZiel && g.randKante && aktuell && schaumLetzterAuftrag){
-    standSetzen('Der Rand wird für den Druck gemalt …');
-    try { const st = await randRechnen(randFuer(sg, g, 8), f => standSetzen(`Der Rand wird für den Druck gemalt … ${Math.round(f * 100)} %`));
+    standSetzen(sag('plakat.stand.rand_druck'));
+    try { const st = await randRechnen(randFuer(sg, g, 8), f => standSetzen(sag('plakat.stand.rand_druck_p', { p: Math.round(f * 100) })));
       druckRandAdressen.forEach(u => URL.revokeObjectURL(u)); druckRandAdressen = st.map(x => URL.createObjectURL(x.blob));
       randZiel.innerHTML = randBilder(st, druckRandAdressen); }
-    catch (e){ console.log('Plakat, Rand:', e); standSetzen('Der Rand ließ sich nicht fein malen – im PDF steht die Vorschau-Fassung.'); await new Promise(ok => setTimeout(ok, 2500)); }
+    catch (e){ console.log('Plakat, Rand:', e); standSetzen(sag('plakat.stand.rand_grob')); await new Promise(ok => setTimeout(ok, 2500)); }
   }
   kopie.removeAttribute('style');
   kopie.querySelectorAll('.ps-trifuge').forEach(n => n.remove());
@@ -1894,10 +1907,10 @@ async function pdf(){
   const w = rahmen.contentWindow, bilder = [...new Set([...rahmen.contentDocument.querySelectorAll('image')].map(n => n.getAttribute('href')).filter(Boolean))];
   let fertig = 0;
   await Promise.race([
-    Promise.all(bilder.map(u => new Promise(ok => { const i = new w.Image(); i.onload = i.onerror = () => { fertig++; standSetzen(`Druckbilder geladen: ${fertig} von ${bilder.length}`); ok(); }; i.src = u; }))),
+    Promise.all(bilder.map(u => new Promise(ok => { const i = new w.Image(); i.onload = i.onerror = () => { fertig++; standSetzen(sag('plakat.stand.druck_geladen', { n: fertig, von: bilder.length })); ok(); }; i.src = u; }))),
     new Promise(ok => setTimeout(ok, 90000)),
   ]);
-  standSetzen('Im Druckfenster „Als PDF sichern“ wählen.');
+  standSetzen(sag('plakat.stand.druckfenster'));
   w.focus(); w.print();
   } finally { knopf.disabled = false; }
 }
@@ -1906,11 +1919,11 @@ function felderSetzen(){
   if (!studio) return;
   /* Kopf „Plakat · <Art>" und darunter, was aus der Ansicht kommt: ihre Wahlen (schaumKurzTeile, index.html) und - Klangschaum und
      Bilderschau - die Auswahl des Filters oben („257 von 330 Titeln · gefiltert: Öffentlich") */
-  el('ps-kopf').textContent = 'Plakat · ' + plakatArt();
+  el('ps-kopf').textContent = sag('plakat.kopf', { art: plakatArt() });
   { const teile = (typeof schaumKurzTeile !== 'undefined' ? schaumKurzTeile : []).filter(Boolean);
     const titel = raumJetzt !== 'groupies' && typeof titelAuswahl === 'function' ? titelAuswahl() : null;
-    const zeile = titel ? [...teile.filter(t => !/^[\d.]+ von [\d.]+$/.test(t)), schaumZoom ? '„' + schaumZoom + '“' : null, titel.text] : teile;
-    el('ps-ausansicht').textContent = 'Aus der Ansicht: ' + zeile.filter(Boolean).join(' · '); }
+    const zeile = titel ? [...teile.filter(t => !/^[\d.,]+ (von|of) [\d.,]+$/.test(t)), schaumZoom ? sag('plakat.zoom', { name: anz(schaumZoom) }) : null, titel.text] : teile;
+    el('ps-ausansicht').textContent = sag('plakat.aus_ansicht', { was: zeile.filter(Boolean).join(' · ') }); }
   bilderteilSetzen();
   studio.querySelectorAll('[data-vorlage]').forEach(b => b.classList.toggle('an', b.dataset.vorlage === E.vorlage));
   studio.querySelectorAll('[data-format]').forEach(b => b.classList.toggle('an', b.dataset.format === E.format));
@@ -1929,67 +1942,66 @@ function felderSetzen(){
   { const a = el('ps-auflage'); if (document.activeElement !== a) a.value = E.auflage || ''; }
   el('ps-hinweis').hidden = raumJetzt !== 'groupies';
   /* „jede" nur, wo sie hineinpasst (15.10.2026, nummerStart, nummerSchild): die übrigen stehen ohne Nummer am Ende der Liste */
-  el('ps-verz-text').textContent = bilderschau() ? 'Jedes Cover, auf das sie passt, bekommt eine Nummer, unten steht die Liste aller Titel. Aus: keine Nummern, keine Liste.'
-    : 'Jede Zelle, in die sie passt, bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.';
+  el('ps-verz-text').textContent = sag(bilderschau() ? 'plakat.verz.text.bilder' : 'plakat.verz.text');
   /* WAS NICHT GILT, WIRD GRAU MIT GRUND (Hausregel 4; Caspar_D, 07.10.2026: „mach alle sachen, die nicht ins rahmenlose design
      passen ausgegraut"): bei Randlos alles, was am Rand haengt; sonst Ecke und Name, die es nur bei Randlos gibt. */
   const grau = (knoten, aus, grund) => { if (!knoten) return; knoten.classList.toggle('ps-grau', aus); knoten.title = aus ? grund : '';
     (knoten.matches('input,button,select') ? [knoten] : knoten.querySelectorAll('input,button,select')).forEach(f => { f.disabled = aus; }); };
   const zeile = (id) => { const f = el(id); return f && (f.closest('label') || f); };
-  const ohneRand = 'Gilt nicht bei Randlos – ohne Rand gibt es kein Passepartout.';
+  const ohneRand = sag('plakat.grau.ohne_rand');
   for (const id of ['ps-rand', 'ps-feder', 'ps-federmm', 'ps-verz', 'ps-areale']) grau(zeile(id), !!E.schild, ohneRand);
   grau(el('ps-verz-text'), !!E.schild, ohneRand);
-  grau(zeile('ps-zeit'), !!E.schild || raumJetzt === 'groupies', E.schild ? ohneRand : 'Im Groupieschaum gibt es kein Datum je Person.');
+  grau(zeile('ps-zeit'), !!E.schild || raumJetzt === 'groupies', E.schild ? ohneRand : sag('plakat.grau.kein_datum'));
   el('ps-randlos-grund').hidden = !E.schild;
   studio.querySelectorAll('[data-ecke]').forEach(b => b.classList.toggle('an', b.dataset.ecke === eckeJetzt()));
-  grau(el('ps-ecken'), !E.schild, 'Nur bei Randlos: dort stehen Avatar und Titel in einer Ecke.');
-  grau(el('ps-schildname'), !E.schild, 'Nur bei Randlos: der Name steht in der Ecke über dem Titel.');
-  el('ps-kopfunter').placeholder = E.schild ? 'Zeilen – „/“ bricht um' : E.skizze ? 'Zeile in Spiegelschrift' : 'Untertitel';
+  grau(el('ps-ecken'), !E.schild, sag('plakat.grau.ecken'));
+  grau(el('ps-schildname'), !E.schild, sag('plakat.grau.name'));
+  el('ps-kopfunter').placeholder = sag(E.schild ? 'plakat.feld.zeilen' : E.skizze ? 'plakat.feld.spiegel' : 'plakat.feld.untertitel');
   /* Skizzenbuch: was es dort nicht gibt, grau mit Grund; die Vorlage selbst im Groupieschaum (es zeichnet die Cover deiner Titel) */
-  { const sk = !!E.skizze, ohne = 'Gilt nicht im Skizzenbuch – dort ist alles Feder auf Pergament.';
+  { const sk = !!E.skizze, ohne = sag('plakat.grau.skizze');
     if (sk){ for (const id of ['ps-rand', 'ps-feder', 'ps-federmm', 'ps-verz', 'ps-areale', 'ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-kissen']) grau(zeile(id), true, ohne);
-      grau(el('ps-verz-text'), true, ohne); grau(zeile('ps-zeit'), raumJetzt === 'groupies', 'Im Groupieschaum gibt es kein Datum je Person.');
-      const sw = studio.querySelector('[data-grund="schwarz"]'); if (sw){ sw.disabled = true; sw.classList.add('ps-grau'); sw.title = 'Feder braucht hellen Grund.'; } }
+      grau(el('ps-verz-text'), true, ohne); grau(zeile('ps-zeit'), raumJetzt === 'groupies', sag('plakat.grau.kein_datum'));
+      const sw = studio.querySelector('[data-grund="schwarz"]'); if (sw){ sw.disabled = true; sw.classList.add('ps-grau'); sw.title = sag('plakat.grau.feder_hell'); } }
     else { for (const id of ['ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-kissen']) grau(zeile(id), false, '');
       const sw = studio.querySelector('[data-grund="schwarz"]'); if (sw){ sw.disabled = false; sw.classList.remove('ps-grau'); sw.title = ''; } }
-    grau(el('ps-skizzeteil'), !sk, 'Nur im Skizzenbuch.');
+    grau(el('ps-skizzeteil'), !sk, sag('plakat.grau.nur_skizze'));
     studio.querySelectorAll('[data-refrains]').forEach(b => b.classList.toggle('an', b.dataset.refrains === (E.refrains || 'herzen')));
     /* die Vorlagen, die es hier nicht gibt: das Skizzenbuch im Groupieschaum und in der Bilderschau. Randlos gibt es in der Bilderschau seit
        1.0.80 (Caspar_D, 15.10.2026, 2a: „freigeben; dort sind die Nummern automatisch aus") - ohne Verzeichnis, Ecke wie im Klangschaum */
     studio.querySelectorAll('[data-vorlage]').forEach(vb => { const v = vb.dataset.vorlage;
-      const warum = v === 'skizze' && raumJetzt === 'groupies' ? 'Das Skizzenbuch zeichnet die Cover deiner Titel – im Groupieschaum gibt es sie nicht.'
-        : v === 'skizze' && bilderschau() ? 'Das Skizzenbuch zeichnet den Klangschaum mit der Feder – die Bilderschau hängt die Cover selbst.' : '';
+      const warum = v === 'skizze' && raumJetzt === 'groupies' ? sag('plakat.grau.skizze_groupies')
+        : v === 'skizze' && bilderschau() ? sag('plakat.grau.skizze_bilder') : '';
       vb.disabled = !!warum; vb.classList.toggle('ps-grau', !!warum); vb.title = warum; });
-    studio.querySelectorAll('[data-format]').forEach(b => { const f = FORMATE.find(x => x.id === b.dataset.format) || {}, aus = sk && !!f.tri; b.disabled = aus; b.classList.toggle('ps-grau', aus); b.title = aus ? 'Das Skizzenbuch ist eine Seite.' : ''; }); }
+    studio.querySelectorAll('[data-format]').forEach(b => { const f = FORMATE.find(x => x.id === b.dataset.format) || {}, aus = sk && !!f.tri; b.disabled = aus; b.classList.toggle('ps-grau', aus); b.title = aus ? sag('plakat.grau.eine_seite') : ''; }); }
   /* BILDERSCHAU: was nur den Schaum betrifft, grau mit Grund (Hausregel 4) - nach dem Skizzenbuch-Block, der die Feinheiten freigibt */
   if (bilderschau()){
-    const ohne = 'Gilt nicht in der Bilderschau – die Cover hängen so, wie sie am Schirm hängen.';
+    const ohne = sag('plakat.grau.bilder');
     for (const id of ['ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-kissen']) grau(zeile(id), true, ohne);
-    grau(el('ps-titelwahl'), true, 'In der Bilderschau stehen die Titel nicht in Zellen – Bildunterschriften wählt der Abschnitt Bilderschau, die Nummern das Verzeichnis.');
-    const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, true, 'In der Bilderschau schwarz oder weiß wie die Vorlagen – keine freie Farbe.'); el('ps-farbe').disabled = true;
+    grau(el('ps-titelwahl'), true, sag('plakat.grau.titelwahl'));
+    const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, true, sag('plakat.grau.farbe')); el('ps-farbe').disabled = true;
   } else { grau(el('ps-titelwahl'), false, ''); const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, false, ''); el('ps-farbe').disabled = false; }
   { const v = E.randVorne ?? 15, u = +E.umschlag || 0, a = el('ps-randvorne'), b = el('ps-umschlag');
     if (document.activeElement !== a) a.value = v; if (document.activeElement !== b) b.value = u;
-    el('ps-randvorne-w').textContent = (v / 10).toLocaleString('de-DE'); el('ps-umschlag-w').textContent = (u / 10).toLocaleString('de-DE'); }
+    el('ps-randvorne-w').textContent = (v / 10).toLocaleString(ort()); el('ps-umschlag-w').textContent = (u / 10).toLocaleString(ort()); }
   studio.querySelectorAll('[data-weise-hell]').forEach(b => b.classList.toggle('an', b.dataset.weiseHell === weiseHell()));
   studio.querySelectorAll('[data-weise-dunkel]').forEach(b => b.classList.toggle('an', b.dataset.weiseDunkel === weiseDunkel()));
-  { const fm = FORMATE.find(x => x.id === E.format) || {}, grund = !E.schild ? 'Nur bei Randlos.' : fm.tri ? 'Im Triptychon noch nicht – jede Tafel bräuchte ihren eigenen Rand.' : '';
+  { const fm = FORMATE.find(x => x.id === E.format) || {}, grund = !E.schild ? sag('plakat.grau.nur_randlos') : fm.tri ? sag('plakat.grau.tri') : '';
     grau(el('ps-randteil'), !!grund, grund);
-    if (!grund){ grau(zeile('ps-umschlag'), !!fm.bild, 'Nur für den Druck – ein Bild hat keine Kante zum Umschlagen.');
-      grau(el('ps-weisen-hell'), !hellerGrund(), 'Aquarell braucht hellen Grund.'); grau(el('ps-weisen-dunkel'), hellerGrund(), 'Kreide und Gouache sind für dunklen Grund.'); } }
+    if (!grund){ grau(zeile('ps-umschlag'), !!fm.bild, sag('plakat.grau.umschlag'));
+      grau(el('ps-weisen-hell'), !hellerGrund(), sag('plakat.grau.aquarell')); grau(el('ps-weisen-dunkel'), hellerGrund(), sag('plakat.grau.kreide')); } }
 }
 /* Der Abschnitt Bilderschau: die Wahlen mit den Werten der Ansicht; in Klangschaum und Groupieschaum grau mit Grund (Hausregel 4) */
 function bilderteilSetzen(){
   const T = TRANSFORMATIONEN, masse = schaumMasse(), glieder = schaumGliederungen();
-  wahlSetzen(el('ps-bmass'), 'ps-bmass', masse.map(x => ({ id: x.id, name: x.name, title: x.was })), schaumMass, { titel: 'Wonach sich die Fläche jedes Bildes richtet' });
-  wahlSetzen(el('ps-btrafo'), 'ps-btrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), bilderWahl.trafo, { titel: 'Wie aus dem Wert die Fläche des Bildes wird' });
-  wahlSetzen(el('ps-bgliederung'), 'ps-bgliederung', glieder.map(x => ({ id: x.id, name: x.name })), schaumGliederung, { titel: 'Wonach die Bilder in Areale geteilt werden' });
-  wahlSetzen(el('ps-bhaengung'), 'ps-bhaengung', BILDER_HAENGUNGEN, bilderWahl.haengung, { titel: 'Wie die Bilder in ihren Arealen hängen' });
+  wahlSetzen(el('ps-bmass'), 'ps-bmass', masse.map(x => ({ id: x.id, name: x.name, title: x.was })), schaumMass, { titel: sag('plakat.wahl.flaeche') });
+  wahlSetzen(el('ps-btrafo'), 'ps-btrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), bilderWahl.trafo, { titel: sag('bilder.wahl.trafo') });
+  wahlSetzen(el('ps-bgliederung'), 'ps-bgliederung', glieder.map(x => ({ id: x.id, name: x.name })), schaumGliederung, { titel: sag('plakat.wahl.glied') });
+  wahlSetzen(el('ps-bhaengung'), 'ps-bhaengung', BILDER_HAENGUNGEN, bilderWahl.haengung, { titel: sag('bilder.wahl.haengung') });
   for (const [id, k] of [['ps-brahmen', 'rahmen'], ['ps-bkopf', 'kopf'], ['ps-bunter', 'unter']]){ const b = el(id); b.classList.toggle('an', !!bilderWahl[k]); b.setAttribute('aria-pressed', bilderWahl[k] ? 'true' : 'false'); }
   const aus = !bilderschau(), t = el('ps-bilderteil');
-  t.classList.toggle('ps-grau', aus); t.title = aus ? 'Nur in der Bilderschau.' : '';
+  t.classList.toggle('ps-grau', aus); t.title = aus ? sag('plakat.grau.nur_bilder') : '';
   t.querySelectorAll('input,button,select').forEach(f => { f.disabled = aus; });
-  el('ps-bilder-text').textContent = aus ? 'Nur in der Bilderschau.' : 'Dieselben Einstellungen wie in der Ansicht: was hier gewählt wird, gilt auch dort.';
+  el('ps-bilder-text').textContent = sag(aus ? 'plakat.grau.nur_bilder' : 'plakat.bilder.text');
 }
 const grundArt = () => { const gr = grund().toLowerCase(); return gr === '#0c0d10' || gr === '#08090b' ? 'schwarz' : gr === '#f3efe6' || gr === '#ffffff' || gr === '#ece7dc' ? 'weiss' : 'farbe'; };
 function setze(teil, neuLegen, warteMs, nurSetzen){ Object.assign(E, teil);
@@ -2039,56 +2051,56 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   const regler = (id, name, min, max, schritt) => `<label class="ps-zeile">${name}<input type="range" id="${id}" min="${min}" max="${max}" step="${schritt}"><span class="wert" id="${id}-w"></span></label>`;
   studio.innerHTML = `<div id="ps-buehne"><div id="ps-blatt"></div><div id="ps-stand"></div></div>
 <aside id="ps-panel">
-  <h2 id="ps-kopf">Plakat</h2>
+  <h2 id="ps-kopf">${sag('plakat.titel')}</h2>
   <p class="ps-leise" id="ps-ausansicht"></p>
-  <h3>Vorlage</h3><div class="ps-vorlagen">${VORLAGEN.map(v => `<button type="button" data-vorlage="${v.id}"><b>${v.name}</b><small>${v.zeile}</small></button>`).join('')}</div>
-  <p class="ps-leise" id="ps-randlos-grund" hidden>Ohne Rand gibt es kein Passepartout: Rand, Federstrich, Verzeichnis, Areale am Rand und Zeitleiste sind ausgegraut.</p>
-  <h3>Bilderschau</h3>
+  <h3>${sag('plakat.h.vorlage')}</h3><div class="ps-vorlagen">${VORLAGEN.map(v => `<button type="button" data-vorlage="${v.id}"><b>${v.name}</b><small>${v.zeile}</small></button>`).join('')}</div>
+  <p class="ps-leise" id="ps-randlos-grund" hidden>${sag('plakat.randlos_grund')}</p>
+  <h3>${sag('plakat.art.bilder')}</h3>
   <div id="ps-bilderteil">
-    <div class="ps-wzeile"><span>Fläche nach</span><span id="ps-bmass"></span></div>
-    <div class="ps-wzeile"><span>Skalen&shy;transformation</span><span id="ps-btrafo"></span></div>
-    <div class="ps-wzeile"><span>Gegliedert nach</span><span id="ps-bgliederung"></span></div>
-    <div class="ps-wzeile"><span>Hängung</span><span id="ps-bhaengung"></span></div>
-    <div class="ps-pillen" style="margin-top:7px"><button type="button" class="ps-schalt" id="ps-brahmen">Rahmen</button><button type="button" class="ps-schalt" id="ps-bkopf">Überschriften der Gruppen</button><button type="button" class="ps-schalt" id="ps-bunter">Bildunterschriften</button></div>
-    <p class="ps-leise" id="ps-bilder-text">Dieselben Einstellungen wie in der Ansicht: was hier gewählt wird, gilt auch dort.</p>
+    <div class="ps-wzeile"><span>${sag('schaum.flaeche_nach')}</span><span id="ps-bmass"></span></div>
+    <div class="ps-wzeile"><span>${sag('schaum.skala')}</span><span id="ps-btrafo"></span></div>
+    <div class="ps-wzeile"><span>${sag('schaum.gegliedert')}</span><span id="ps-bgliederung"></span></div>
+    <div class="ps-wzeile"><span>${sag('schaum.haengung')}</span><span id="ps-bhaengung"></span></div>
+    <div class="ps-pillen" style="margin-top:7px"><button type="button" class="ps-schalt" id="ps-brahmen">${sag('schaum.rahmen')}</button><button type="button" class="ps-schalt" id="ps-bkopf">${sag('plakat.bkopf')}</button><button type="button" class="ps-schalt" id="ps-bunter">${sag('schaum.unterschriften')}</button></div>
+    <p class="ps-leise" id="ps-bilder-text">${sag('plakat.bilder.text')}</p>
   </div>
-  <h3>Format</h3><div class="ps-pillen">${FORMATE.map(f => `<button type="button" data-format="${f.id}">${f.name}</button>`).join('')}</div>
-  <div id="ps-frei" hidden>Breite <input class="ps-eingabe" id="ps-freiw" type="number" min="10" max="300"> cm · Höhe <input class="ps-eingabe" id="ps-freih" type="number" min="10" max="300"> cm</div>
-  <div class="ps-pillen" style="margin-top:7px"><button type="button" data-lage="hoch">Hoch</button><button type="button" data-lage="quer">Quer</button></div>
+  <h3>${sag('plakat.h.format')}</h3><div class="ps-pillen">${FORMATE.map(f => `<button type="button" data-format="${f.id}">${f.name}</button>`).join('')}</div>
+  <div id="ps-frei" hidden>${sag('plakat.breite')} <input class="ps-eingabe" id="ps-freiw" type="number" min="10" max="300"> cm · ${sag('plakat.hoehe')} <input class="ps-eingabe" id="ps-freih" type="number" min="10" max="300"> cm</div>
+  <div class="ps-pillen" style="margin-top:7px"><button type="button" data-lage="hoch">${sag('plakat.hoch')}</button><button type="button" data-lage="quer">${sag('plakat.quer')}</button></div>
   <p class="ps-leise" id="ps-mass"></p>
   <p class="ps-leise" id="ps-nrklein" hidden></p>
-  <h3>Grund</h3><div class="ps-pillen"><button type="button" data-grund="schwarz">Schwarz</button><button type="button" data-grund="weiss">Weiß</button><button type="button" data-grund="farbe">Farbe <input type="color" id="ps-farbe" style="width:22px;height:16px;border:0;padding:0;background:none;vertical-align:middle"></button></div>
-  <h3>Titel in der Zelle</h3><div class="ps-pillen" id="ps-titelwahl"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="kante">an der Kante</button><button type="button" data-titel="ohne">ohne</button></div>
-  <div class="ps-pillen" style="margin-top:9px"><button type="button" class="ps-schalt" id="ps-verz">Verzeichnis</button><button type="button" class="ps-schalt" id="ps-areale">Areale am Rand</button></div>
-  <p class="ps-leise" id="ps-verz-text" style="margin-top:0">Jede Zelle, in die sie passt, bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.</p>
-  <details class="ps-fein" open><summary>Feinheiten</summary>
-    ${regler('ps-rand', 'Rand', 2, 15, 1)}${regler('ps-fugen', 'Fugen', 3, 40, 1)}${regler('ps-wackeln', 'Wackeln', 0, 100, 1)}${regler('ps-schatten', 'Schatten', 0, 100, 1)}${regler('ps-vignette', 'Vignette', 0, 100, 1)}
-    <div class="ps-pillen" style="margin:6px 0"><button type="button" class="ps-schalt" id="ps-kissen">Kissen</button><button type="button" class="ps-schalt" id="ps-feder">Federstrich</button></div>
-    ${regler('ps-federmm', 'Strichstärke', 0.1, 1, 0.05)}
+  <h3>${sag('plakat.h.grund')}</h3><div class="ps-pillen"><button type="button" data-grund="schwarz">${sag('plakat.schwarz')}</button><button type="button" data-grund="weiss">${sag('plakat.weiss')}</button><button type="button" data-grund="farbe">${sag('plakat.farbe')} <input type="color" id="ps-farbe" style="width:22px;height:16px;border:0;padding:0;background:none;vertical-align:middle"></button></div>
+  <h3>${sag('plakat.h.titel')}</h3><div class="ps-pillen" id="ps-titelwahl"><button type="button" data-titel="rauch">${sag('plakat.titel.rauch')}</button><button type="button" data-titel="milch">${sag('plakat.titel.milch')}</button><button type="button" data-titel="kante">${sag('plakat.titel.kante')}</button><button type="button" data-titel="${sag('plakat.titel.ohne')}">${sag('plakat.titel.ohne')}</button></div>
+  <div class="ps-pillen" style="margin-top:9px"><button type="button" class="ps-schalt" id="ps-verz">${sag('plakat.verz')}</button><button type="button" class="ps-schalt" id="ps-areale">${sag('plakat.areale')}</button></div>
+  <p class="ps-leise" id="ps-verz-text" style="margin-top:0">${sag('plakat.verz.text')}</p>
+  <details class="ps-fein" open><summary>${sag('plakat.h.fein')}</summary>
+    ${regler('ps-rand', sag('plakat.rand'), 2, 15, 1)}${regler('ps-fugen', sag('plakat.fugen'), 3, 40, 1)}${regler('ps-wackeln', sag('plakat.wackeln'), 0, 100, 1)}${regler('ps-schatten', sag('plakat.schatten'), 0, 100, 1)}${regler('ps-vignette', sag('plakat.vignette'), 0, 100, 1)}
+    <div class="ps-pillen" style="margin:6px 0"><button type="button" class="ps-schalt" id="ps-kissen">${sag('plakat.kissen')}</button><button type="button" class="ps-schalt" id="ps-feder">${sag('plakat.feder')}</button></div>
+    ${regler('ps-federmm', sag('plakat.strich'), 0.1, 1, 0.05)}
   </details>
-  <h3>Skizzenbuch</h3>
-  <div id="ps-skizzeteil"><div class="ps-pillen" id="ps-refrains">${[['herzen', 'Refrains: meiste Herzen'], ['neueste', 'neueste'], ['keine', 'keine']].map(([w, n]) => `<button type="button" data-refrains="${w}">${n}</button>`).join('')}</div>
-    <p class="ps-leise">Die Refrains stehen als Randnotizen; genommen wird der erste markierte Refrain der Lyrics.</p></div>
-  <h3>Rand</h3>
+  <h3>${sag('plakat.vorlage.skizze')}</h3>
+  <div id="ps-skizzeteil"><div class="ps-pillen" id="ps-refrains">${[['herzen', sag('plakat.refrains.herzen')], ['neueste', sag('plakat.refrains.neueste')], ['keine', sag('plakat.refrains.keine')]].map(([w, n]) => `<button type="button" data-refrains="${w}">${n}</button>`).join('')}</div>
+    <p class="ps-leise">${sag('plakat.refrains.text')}</p></div>
+  <h3>${sag('plakat.rand')}</h3>
   <div id="ps-randteil">
-    ${regler('ps-randvorne', 'Rand vorne (cm)', 0, 60, 5)}${regler('ps-umschlag', 'Umschlag (cm)', 0, 100, 5)}
-    <div class="ps-pillen" id="ps-weisen-hell" style="margin:6px 0 4px">${WEISEN_HELL.map(([w, n]) => `<button type="button" data-weise-hell="${w}">${n}</button>`).join('')}</div>
-    <div class="ps-pillen" id="ps-weisen-dunkel" style="margin:0 0 4px">${WEISEN_DUNKEL.map(([w, n]) => `<button type="button" data-weise-dunkel="${w}">${n}</button>`).join('')}</div>
-    <p class="ps-leise" style="margin-top:2px">Der Rand nimmt die Farben der Areale an der Kante auf. Umschlag: Tiefe des Keilrahmens plus etwas zum Festtackern – das Druckformat wächst um ihn, vorne bleibt das gewählte Format.</p>
+    ${regler('ps-randvorne', sag('plakat.rand_vorne'), 0, 60, 5)}${regler('ps-umschlag', sag('plakat.umschlag'), 0, 100, 5)}
+    <div class="ps-pillen" id="ps-weisen-hell" style="margin:6px 0 4px">${WEISEN_HELL.map(([w]) => `<button type="button" data-weise-hell="${w}">${weiseName(w)}</button>`).join('')}</div>
+    <div class="ps-pillen" id="ps-weisen-dunkel" style="margin:0 0 4px">${WEISEN_DUNKEL.map(([w]) => `<button type="button" data-weise-dunkel="${w}">${weiseName(w)}</button>`).join('')}</div>
+    <p class="ps-leise" style="margin-top:2px">${sag('plakat.rand.text')}</p>
   </div>
-  <h3>Schild</h3>
-  <div class="ps-pillen" id="ps-ecken" style="margin-bottom:5px">${[['ol', '↖ oben links'], ['or', '↗ oben rechts'], ['ul', '↙ unten links'], ['ur', '↘ unten rechts']].map(([e, n]) => `<button type="button" data-ecke="${e}">${n}</button>`).join('')}</div>
-  <input class="ps-eingabe" id="ps-schildname" placeholder="Name">
-  <input class="ps-eingabe" id="ps-kopftitel" placeholder="Titel">
-  <input class="ps-eingabe" id="ps-kopfunter" placeholder="Untertitel">
-  <div class="ps-pillen" style="margin:2px 0 4px"><button type="button" id="ps-vorschlag">Vorschlag wiederherstellen</button></div>
-  <div class="ps-pillen" style="margin:6px 0 3px"><button type="button" class="ps-schalt" id="ps-legende">Legende</button><button type="button" class="ps-schalt" id="ps-zeit">Zeitleiste</button><button type="button" class="ps-schalt" id="ps-edition">Edition und Signatur</button></div>
-  <p class="ps-leise" id="ps-zeit-grund" style="margin-top:0" hidden>Im Groupieschaum gibt es kein Datum je Person – die Zeitleiste gilt für den Klangschaum.</p>
-  <input class="ps-eingabe" id="ps-auflage" placeholder="Auflage, z. B. 1/1 oder 3/10">
-  <h3>An der Wand</h3><div id="ps-wand"></div><p class="ps-leise">Mensch 1,75 m zum Vergleich.</p>
-  <p class="ps-leise" id="ps-hinweis" hidden>Nur für den privaten Gebrauch. Vervielfältigung und Weitergabe an Dritte sind nicht erlaubt – die Avatare gehören ihren Leuten.</p>
-  <div class="ps-knoepfe"><button type="button" id="ps-pdf">Als PDF sichern …</button><button type="button" id="ps-png" hidden>Als Bild sichern</button><button type="button" id="ps-zu">Schließen</button></div>
-  <p class="ps-leise">Das Druckfenster öffnet sich; dort „Als PDF sichern“ wählen. Format und Ränder setzt das Plakat selbst.</p>
+  <h3>${sag('plakat.h.schild')}</h3>
+  <div class="ps-pillen" id="ps-ecken" style="margin-bottom:5px">${[['ol', sag('plakat.ecke.ol')], ['or', sag('plakat.ecke.or')], ['ul', sag('plakat.ecke.ul')], ['ur', sag('plakat.ecke.ur')]].map(([e, n]) => `<button type="button" data-ecke="${e}">${n}</button>`).join('')}</div>
+  <input class="ps-eingabe" id="ps-schildname" placeholder="${sag('plakat.feld.name')}">
+  <input class="ps-eingabe" id="ps-kopftitel" placeholder="${sag('plakat.feld.titel')}">
+  <input class="ps-eingabe" id="ps-kopfunter" placeholder="${sag('plakat.feld.untertitel')}">
+  <div class="ps-pillen" style="margin:2px 0 4px"><button type="button" id="ps-vorschlag">${sag('plakat.vorschlag')}</button></div>
+  <div class="ps-pillen" style="margin:6px 0 3px"><button type="button" class="ps-schalt" id="ps-legende">${sag('schaum.legende')}</button><button type="button" class="ps-schalt" id="ps-zeit">${sag('plakat.zeitleiste')}</button><button type="button" class="ps-schalt" id="ps-edition">${sag('plakat.edition')}</button></div>
+  <p class="ps-leise" id="ps-zeit-grund" style="margin-top:0" hidden>${sag('plakat.zeit_grund')}</p>
+  <input class="ps-eingabe" id="ps-auflage" placeholder="${sag('plakat.feld.auflage')}">
+  <h3>${sag('plakat.h.wand')}</h3><div id="ps-wand"></div><p class="ps-leise">${sag('plakat.wand.mensch')}</p>
+  <p class="ps-leise" id="ps-hinweis" hidden>${sag('plakat.hinweis')}</p>
+  <div class="ps-knoepfe"><button type="button" id="ps-pdf">${sag('plakat.pdf')}</button><button type="button" id="ps-png" hidden>${sag('plakat.png')}</button><button type="button" id="ps-zu">${sag('plakat.zu')}</button></div>
+  <p class="ps-leise">${sag('plakat.druck_text')}</p>
 </aside>`;
   document.body.appendChild(studio);
   /* Bedienung */
@@ -2124,7 +2136,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   studio.querySelectorAll('[data-ecke]').forEach(b => b.onclick = () => setze({ ecke: b.dataset.ecke }));
   studio.querySelectorAll('[data-refrains]').forEach(b => b.onclick = () => setze({ refrains: b.dataset.refrains }));
   /* Rand: Zahl beim Ziehen, neu gelegt beim Loslassen (der Schaum rückt nach innen) */
-  const cm = (id, schl) => { const r = el(id); r.oninput = () => { el(id + '-w').textContent = (r.value / 10).toLocaleString('de-DE'); }; r.onchange = () => setze({ [schl]: +r.value }); };
+  const cm = (id, schl) => { const r = el(id); r.oninput = () => { el(id + '-w').textContent = (r.value / 10).toLocaleString(ort()); }; r.onchange = () => setze({ [schl]: +r.value }); };
   cm('ps-randvorne', 'randVorne'); cm('ps-umschlag', 'umschlag');
   studio.querySelectorAll('[data-weise-hell]').forEach(b => b.onclick = () => setze({ weiseHell: b.dataset.weiseHell }));
   studio.querySelectorAll('[data-weise-dunkel]').forEach(b => b.onclick = () => setze({ weiseDunkel: b.dataset.weiseDunkel }));
@@ -2137,17 +2149,25 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   wahlTun['ps-bgliederung'] = ansicht(v => schaumGliederungWaehlen(v));
   wahlTun['ps-bhaengung'] = ansicht(v => bilderschauWahl('haengung', v));
   for (const [id, k] of [['ps-brahmen', 'rahmen'], ['ps-bkopf', 'kopf'], ['ps-bunter', 'unter']]) el(id).onclick = () => ansicht(() => bilderschauWahl(k, !bilderWahl[k]))();
-  document.addEventListener('bilderschau-gehaengt', () => { if (!wandWartet || !studio || studio.hidden || !bilderschau()) return;
-    wandWartet = false; felderSetzen(); zeichnen(true); });
   el('ps-pdf').onclick = () => pdf();
   el('ps-png').onclick = () => bildSichern();
   el('ps-zu').onclick = schliessen;
+  studio.dataset.sprache = englisch() ? 'en' : 'de';
+  if (lauscher) return;           /* nach einem Sprachwechsel baut oeffnen das Studio neu - die Lauscher am Dokument bleiben einmal */
+  lauscher = true;
+  document.addEventListener('bilderschau-gehaengt', () => { if (!wandWartet || !studio || studio.hidden || !bilderschau()) return;
+    wandWartet = false; felderSetzen(); zeichnen(true); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && studio && !studio.hidden) schliessen(); });
   window.addEventListener('resize', () => { if (studio && !studio.hidden) einpassen(); });
 }
+let lauscher = false;
 function schliessen(){ if (studio) studio.hidden = true; document.documentElement.style.overflow = ''; }
 
 export function oeffnen(){
+  /* Sprachwechsel seit dem letzten Öffnen: das Studio neu bauen (Bedienung) und neu legen (Vorschläge für Titel und Zeilen, Gedrucktes) */
+  if (studio && studio.dataset.sprache !== (englisch() ? 'en' : 'de')){
+    studio.remove(); studio = null; const css = el('ps-stil'); if (css) css.remove(); aktuell = null;
+    for (const k of ['kopfTitel', 'kopfUnter', 'schildName']) if (!E[k + 'Eigen']) E[k] = ''; }
   if (!studio) aufbauen();
   /* außerhalb der Bilderschau gilt wieder, was die Galerie dort nur überdeckt hat (leihe) - beim Skizzenbuch mit den Grenzen, die sonst
      der Klick auf die Vorlage und die gesperrten Knöpfe ziehen: eine Seite (aus einem Triptychon der Bilderschau wird seine Tafel) auf

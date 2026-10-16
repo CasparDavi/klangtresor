@@ -8,6 +8,8 @@
    (f = kurze Plakatseite / 500), auch in der Lupe, die den Ausschnitt noch einmal zeichnet statt ihn zu vergrößern.
    IDs: Präfix aus art + laufender Zähler je Aufruf, damit mehrere Studien und Lupen auf einer Seite gehen. */
 export const SEPIA = '#4a3423', SCHRIFT = "'Pinyon Script', cursive";
+/* die lesbare Zeile unter Leonardos Italienisch in der Sprache der Oberfläche (web/ui-sprache.js) */
+const sagS = (k) => (typeof window !== 'undefined' && window.t ? window.t(k) : k);
 export const STUDIE_MASS = {                                 /* eigene Einheiten samt Beschriftungen */
   gitarre: { w: 46, h: 114 }, cello: { w: 41, h: 123 },
   drums: { w: 134, h: 111 }, synthesizer: { w: 115, h: 57 }, bass: { w: 49.5, h: 128 }, klavier: { w: 50, h: 102 },
@@ -15,33 +17,33 @@ export const STUDIE_MASS = {                                 /* eigene Einheiten
 /* Lohnende Ausschnitte je Instrument (Mitte zx/zy, Halbmesser zr in eigenen Einheiten) für lupe() */
 export const DETAILS = {
   gitarre: [
-    { zx: 19.5, zy: 7, zr: 8, titel: 'il capo', unter: 'Kopf mit sechs Wirbeln' },
-    { zx: 22, zy: 81, zr: 10, titel: 'i magneti', unter: 'Tonabnehmer, Regler, Steg' },
-    { zx: 19, zy: 30, zr: 7, titel: 'i tasti', unter: 'Bünde nach der zwölften Wurzel aus zwei' },
+    { zx: 19.5, zy: 7, zr: 8, titel: 'il capo', get unter(){ return sagS('skizze.lupe.il_capo'); } },
+    { zx: 22, zy: 81, zr: 10, titel: 'i magneti', get unter(){ return sagS('skizze.lupe.i_magneti'); } },
+    { zx: 19, zy: 30, zr: 7, titel: 'i tasti', get unter(){ return sagS('skizze.lupe.i_tasti'); } },
   ],
   cello: [
-    { zx: 20, zy: 8, zr: 7.5, titel: 'la voluta', unter: 'Schnecke und Wirbel' },
-    { zx: 20, zy: 75, zr: 11, titel: 'il ponticello', unter: 'Steg und f-Löcher' },
+    { zx: 20, zy: 8, zr: 7.5, titel: 'la voluta', get unter(){ return sagS('skizze.lupe.la_voluta'); } },
+    { zx: 20, zy: 75, zr: 11, titel: 'il ponticello', get unter(){ return sagS('skizze.lupe.il_ponticello'); } },
   ],
   drums: [
-    { zx: 62, zy: 64, zr: 11, titel: 'l’uomo nel tamburo', unter: 'der Mensch im Resonanzfell' },
-    { zx: 100, zy: 59, zr: 11, titel: 'il tamburo rullante', unter: 'Snare mit Spannböcken und Stöcken' },
-    { zx: 120, zy: 44, zr: 11, titel: 'i piatti a pedale', unter: 'Hi-Hat mit Kupplung' },
+    { zx: 62, zy: 64, zr: 11, titel: 'l’uomo nel tamburo', get unter(){ return sagS('skizze.lupe.l_uomo_nel_tamburo'); } },
+    { zx: 100, zy: 59, zr: 11, titel: 'il tamburo rullante', get unter(){ return sagS('skizze.lupe.il_tamburo_rullante'); } },
+    { zx: 120, zy: 44, zr: 11, titel: 'i piatti a pedale', get unter(){ return sagS('skizze.lupe.i_piatti_a_pedale'); } },
   ],
   synthesizer: [
-    { zx: 70, zy: 18, zr: 11, titel: 'il filtro', unter: 'Filter, Hüllkurve, Steckfeld' },
-    { zx: 9, zy: 31, zr: 8, titel: 'le ruote', unter: 'Tonhöhen- und Modulationsrad' },
-    { zx: 34, zy: 14, zr: 9, titel: 'gli oscillatori', unter: 'drei Schwingungserzeuger' },
+    { zx: 70, zy: 18, zr: 11, titel: 'il filtro', get unter(){ return sagS('skizze.lupe.il_filtro'); } },
+    { zx: 9, zy: 31, zr: 8, titel: 'le ruote', get unter(){ return sagS('skizze.lupe.le_ruote'); } },
+    { zx: 34, zy: 14, zr: 9, titel: 'gli oscillatori', get unter(){ return sagS('skizze.lupe.gli_oscillatori'); } },
   ],
   bass: [
-    { zx: 20.5, zy: 88.5, zr: 8, titel: 'il magnete diviso', unter: 'geteilter Tonabnehmer' },
-    { zx: 19, zy: 10, zr: 10, titel: 'le chiavi', unter: 'Kopf mit vier Mechaniken' },
-    { zx: 27, zy: 103, zr: 9, titel: 'il ponte', unter: 'Steg, Regler und Buchse' },
+    { zx: 20.5, zy: 88.5, zr: 8, titel: 'il magnete diviso', get unter(){ return sagS('skizze.lupe.il_magnete_diviso'); } },
+    { zx: 19, zy: 10, zr: 10, titel: 'le chiavi', get unter(){ return sagS('skizze.lupe.le_chiavi'); } },
+    { zx: 27, zy: 103, zr: 9, titel: 'il ponte', get unter(){ return sagS('skizze.lupe.il_ponte'); } },
   ],
   klavier: [
-    { zx: 38, zy: 10.5, zr: 12.5, titel: 'come batte il martello', unter: 'Mechanik im Schnitt' },
-    { zx: 24, zy: 75, zr: 8, titel: 'i martelli', unter: 'Hammerreihe, Waagebalken, Tasten' },
-    { zx: 22, zy: 64, zr: 7, titel: 'la piastra', unter: 'Gussrahmen, Stimmstifte, Dämpfer' },
+    { zx: 38, zy: 10.5, zr: 12.5, titel: 'come batte il martello', get unter(){ return sagS('skizze.lupe.come_batte_il_martello'); } },
+    { zx: 24, zy: 75, zr: 8, titel: 'i martelli', get unter(){ return sagS('skizze.lupe.i_martelli'); } },
+    { zx: 22, zy: 64, zr: 7, titel: 'la piastra', get unter(){ return sagS('skizze.lupe.la_piastra'); } },
   ],
 };
 
@@ -123,7 +125,7 @@ function gitarre(W, id){
     + [[27, 82], [29, 86], [30.5, 90]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="1.2" ${strich(0.2)}/>`).join('') + `<ellipse cx="33.5" cy="92.5" rx="1" ry="1.6" ${strich(0.2)}/><line x1="26.5" y1="75" x2="29" y2="77.5" ${strich(0.25)}/>`
     + Array.from({ length: 6 }, (_, i) => `<line x1="${n2(17.6 + 0.56 * i)}" y1="14" x2="${n2(16.2 + 1.15 * i)}" y2="87.5" ${strich(0.1, 0.6)}/>`).join('')
     + `<path d="M41,1 L41,99 M39.8,1 L42.2,1 M39.8,99 L42.2,99" ${strich(0.18, 0.6)}/>` + `<g transform="rotate(90 43.6 50)">${spiegel(43.6, 50, 3.2, 'strumento elettrico')}</g>`
-    + spiegel(19, 108, 3.4, 'una chitarra che canta senza aria') + W.txt(19, 113, 2.6, 'Gitarre ohne Luft, die doch singt', 0.6);
+    + spiegel(19, 108, 3.4, 'una chitarra che canta senza aria') + W.txt(19, 113, 2.6, sagS('skizze.studie.gitarre'), 0.6);
   return g;
 }
 function cello(W, id, widmung, widmungFs = 3){
@@ -238,7 +240,7 @@ function drums(W){
   // Maßkette am Boden, Hilfslinien von den Teilen herab
   const mk = [6, 22, BX - BR, BX, BX + BR, 99, 120];
   g += mk.map(x => L(x, BODEN + 1, x, 96, strichel(0.12, 0.35, 0.6, 0.8))).join('') + kette(mk, 95.2) + spiegel(31, 98.6, 2.4, 'braccia due e mezzo', 0.55)
-    + spiegel(66, 104, 3.4, 'tamburi più forti che le bombarde') + txt(66, 109.2, 2.6, 'Schlagwerk, lauter als jede Bombarde', 0.6);
+    + spiegel(66, 104, 3.4, 'tamburi più forti che le bombarde') + txt(66, 109.2, 2.6, sagS('skizze.studie.drums'), 0.6);
   return g;
 }
 
@@ -342,7 +344,7 @@ function synthesizer(W){
   const mk = [0, KX, KX + 7 * KB, KX + 14 * KB, KX + 21 * KB, 96, 102].map(x => P(x, 0, 0)[0]);
   g += mk.map(x => `<path d="M${n2(x)},${Y0 + 0.8} L${n2(x)},${Y0 + 4.2}" ${strichel(0.12, 0.35, 0.6, 0.8)}/>`).join('') + kette(mk, Y0 + 3.4)
     + spiegel(P(KX + 10.5 * KB, 0, 0)[0], Y0 + 6.6, 2, 'tre ottave', 0.55)
-    + spiegel(58, 50.6, 3.4, 'strumento a corrente') + txt(58, 55.4, 2.6, 'Orgel ohne Blasebalg – der Blitz spielt mit', 0.6);
+    + spiegel(58, 50.6, 3.4, 'strumento a corrente') + txt(58, 55.4, 2.6, sagS('skizze.studie.synthesizer'), 0.6);
   return g;
 }
 
@@ -400,7 +402,7 @@ function bass(W){
   g += `<path d="M26.6,${SATTEL} L43,${SATTEL} M24.6,${n2(bund(12))} L43,${n2(bund(12))} M40.2,${STEG} L43,${STEG}" ${strichel(0.12, 0.35, 0.6, 0.8)}/>`
     + kette([SATTEL, bund(12), STEG], 44.2, true) + txt(45.8, (SATTEL + bund(12)) / 2 + 0.8, 2.4, '½', 0.6, 'start') + txt(45.8, (bund(12) + STEG) / 2 + 0.8, 2.4, '½', 0.6, 'start')
     + `<g transform="rotate(90 47 94)">${spiegel(47, 94, 2.6, 'basso elettrico', 0.65)}</g>`
-    + spiegel(20, 121.4, 3.4, 'fa tremare le finestre di Milano') + txt(20, 126.4, 2.6, 'E-Bass, der Mailands Fenster zittern lässt', 0.6);
+    + spiegel(20, 121.4, 3.4, 'fa tremare le finestre di Milano') + txt(20, 126.4, 2.6, sagS('skizze.studie.bass'), 0.6);
   return g;
 }
 
@@ -481,7 +483,7 @@ function klavier(W){
   // Maßkette unter der Tastatur: jedes C, sieben Oktaven und eine kleine Terz
   const mk = [KX0, ...Array.from({ length: 8 }, (_, n) => KX0 + (2 + 7 * n) * KB), 44.5];
   g += kette(mk, 89.4) + spiegel(24.5, 92.2, 1.8, 'sette ottave e una terza', 0.55)
-    + spiegel(24.5, 96.4, 3.4, 'gravicembalo a martelli') + txt(24.5, 100.8, 2.4, 'Hammerklavier, offen – man sieht, wie es schlägt', 0.6);
+    + spiegel(24.5, 96.4, 3.4, 'gravicembalo a martelli') + txt(24.5, 100.8, 2.4, sagS('skizze.studie.klavier'), 0.6);
   return g;
 }
 

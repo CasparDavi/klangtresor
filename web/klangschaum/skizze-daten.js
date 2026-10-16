@@ -179,7 +179,7 @@ export async function blattDatenHolen({ songVonId, katalogInfo, melde = () => {}
   const best = [...eigen].sort((a, b) => (n0(b, 'likes') + n0(b, 'kommentare')) - (n0(a, 'likes') + n0(a, 'kommentare')) || n0(b, 'plays') - n0(a, 'plays'))[0];
   /* Drei Quellen zugleich, jede einmal je Katalogstand: die Klangvermessung (fehlt sie - 404, fremdes Archiv vor dem ersten
      Morgenlauf -, bleiben die Etiketten leer), die Gemeinschaft und der volle Steckbrief-Titel */
-  melde('Das Blatt liest Klangvermessung und Gemeinschaft …');
+  melde(typeof window !== 'undefined' && window.t ? window.t('skizze.daten.lesen') : 'Das Blatt liest Klangvermessung und Gemeinschaft …');
   await Promise.all([
     eigen.length && v.klang === undefined && jsonHolen('/api/klang').then(k => { if (k !== undefined) v.klang = (k && k.songs) || null; }),
     v.gemeinde === undefined && jsonHolen('/api/community').then(g => { if (g !== undefined) v.gemeinde = g; }),

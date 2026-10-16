@@ -36,6 +36,10 @@ function roemischStriche(n, x, y, h, farbe, deck = 0.88){
   const st = (d, w) => `<path d="${d}" fill="none" stroke="${farbe}" stroke-opacity="${deck}" stroke-width="${n2(w)}" stroke-linecap="round" stroke-linejoin="round"/>`;
   return st(dick, 0.12 * h) + st(fein, 0.05 * h);
 }
+/* SPRACHE wie plakat.js: was das Blatt schreibt, in der Sprache der Oberfläche (web/ui-sprache.js); Italienisch und Latein bleiben
+   Leonardos, die lesbaren Zeilen darunter folgen der Sprache. Die Stimmungen sind im Englischen die Etiketten des Modells. */
+const sagB = (k, v) => (typeof window !== 'undefined' && window.t ? window.t(k, v) : k);
+const englischB = () => typeof window !== 'undefined' && typeof window.sprache === 'function' && window.sprache() === 'en';
 const STIMMUNG_DE = { energetic: 'energiegeladen', love: 'Liebe', melodic: 'melodisch', epic: 'episch', happy: 'fröhlich', dark: 'dunkel', heavy: 'schwer',
   romantic: 'romantisch', sad: 'traurig', calm: 'ruhig', emotional: 'gefühlvoll', relaxing: 'entspannt', uplifting: 'erhebend', dramatic: 'dramatisch', inspiring: 'beflügelnd' };
 const INSTR_DE = { guitar: 'Gitarre', drums: 'Schlagwerk', synthesizer: 'Synthesizer', bass: 'Bass', electricguitar: 'E-Gitarre', piano: 'Klavier',
@@ -94,11 +98,10 @@ function ausgewogen(text, breiteEm, em){
   for (let i = 1; i < w.length - 1; i++) for (let j = i + 1; j < w.length; j++){ const l = [z(0, i), z(i, j), z(j)], m = Math.max(...l.map(em)); if (m < best.m) best = { l, m }; }
   return best.l;
 }
-const tausend = (n) => Math.round(n).toLocaleString('de-DE');
+const tausend = (n) => Math.round(n).toLocaleString(englischB() ? 'en-GB' : 'de-DE');
 const mmss = (s) => { const t = Math.round(s); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };   /* erst runden, dann teilen - sonst „5:60" */
 /* Zahlwörter für Überschriften, die zählen („die fünf meistgehörten"): kleine Bestände haben weniger als fünf */
-const ZW = ['', 'eine', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf'];
-const zahlwort = (n) => n <= 12 ? ZW[n] : String(n);
+const zahlwort = (n) => n <= 12 && n >= 1 ? sagB('skizze.zahlwoerter').split(',')[n - 1] : String(n);
 const STUFEN = [1, 0.92, 0.84, 0.76, 0.68, 0.6];
 const KERN = [1, 0.92, 0.84, 0.76, 0.68, 0.6, 0.53, 0.47];   /* Kernblöcke schrumpfen weiter, bevor sie wegfallen */
 
@@ -151,7 +154,7 @@ function notenraetsel(breite, f, SEP, SCHRIFT){
   silben.forEach((sb, i) => { const xx = 34 + i * 8.4, yy = tonY[sb];
     g += `<path d="M${n2(xx - 1.3)},${n2(yy)} L${n2(xx)},${n2(yy - 1)} L${n2(xx + 1.3)},${n2(yy)} L${n2(xx)},${n2(yy + 1)} Z" fill="${SEP}" fill-opacity="0.85"/>`
       + (yy >= 13 ? `<line x1="${n2(xx - 2)}" y1="14" x2="${n2(xx + 2)}" y2="14" ${st(0.18)}/>` : '') + tx(xx, 19, 2.6, sb, 0.65); });
-  g += tx(10, 11, 4.8, 'amore') + tx(97, 11, 4.8, 'rare') + tx(55, 25, 3, 'amore sol la mi fa remirare – nur die Liebe lässt mich erinnern', 0.6);
+  g += tx(10, 11, 4.8, 'amore') + tx(97, 11, 4.8, 'rare') + tx(55, 25, 3, sagB('skizze.raetsel'), 0.6);
   return `<g transform="scale(${k.toFixed(4)})">${g}</g>`;
 }
 
@@ -283,7 +286,7 @@ export function blattSchmuck(ctx){
     /* Titel bis 4 mm vor das Cover (tB); ist er einzeilig kleiner als 9 mm, zweizeilig (Unterkante über der Hüllkurve); der Zusatz steht
        daneben, wenn er passt, sonst als erste Kennzahl-Zeile (vorher lief ein langer Titel über das Cover und im Querformat vom Blatt) */
     const roh = titelText(S.titel), anf = (z) => z.map((l, i) => (i ? '' : '„') + l + (i === z.length - 1 ? '“' : ''));
-    const tt = roh ? anf([roh])[0] : '', tB = w - 2 * 20 * f - 16 * f, zusatz = 'der Titel mit dem größten Widerhall';
+    const tt = roh ? anf([roh])[0] : '', tB = w - 2 * 20 * f - 16 * f, zusatz = sagB('skizze.widerhall');
     let fsT = Math.min(15 * f, 0.97 * tB / Math.max(1, em(tt))), tz = [tt];
     if (roh && fsT < 9 * f){ const z2r = zweiZeilen(roh, em).find(z => z.length === 2), z2 = z2r && anf(z2r); if (z2){ const f2 = Math.min(9 * f, 0.97 * tB / Math.max(...z2.map(em))); if (f2 > fsT){ tz = z2; fsT = f2; } } }
     const kt = roh ? hand(tz, 6 * f, tz.length > 1 ? 6 * f + fsT * 0.8 : 17 * f, fsT, { klecks: 0.1, zeilenabstand: 1.05, breite: tB }) : { svg: '', breite: 0 };
@@ -306,17 +309,17 @@ export function blattSchmuck(ctx){
       if (takt) for (let q = 0; q <= S.takte; q += 4) sv += `<line x1="${n2(tx(q * takt))}" y1="${n2(ty)}" x2="${n2(tx(q * takt))}" y2="${n2(ty + (q % 16 === 0 ? 2.2 : 1.1) * f)}" ${strich(0.16, 0.7)}/>`;
       for (let m = 0; m * 60 <= dauer; m++) sv += txt(tx(m * 60), ty + 6 * f, 3.2 * f, `${m}:00`, { anker: 'middle', deck: 0.7 });
       /* das Gipfelzeichen als Pfad vor „die Gipfel" (Pinyon hat ▾ nicht - schriftTauglich strich es) */
-      const gipfelDa = !!(Wv && (S.gipfel || []).length), legende = [takt ? 'je Strich vier Takte' : '', gipfelDa ? 'die Gipfel' : ''].filter(Boolean).join(' · ');
+      const gipfelDa = !!(Wv && (S.gipfel || []).length), legende = [takt ? sagB('skizze.takt_strich') : '', gipfelDa ? sagB('skizze.gipfel') : ''].filter(Boolean).join(' · ');
       if (legende){ sv += txt(6 * f + wl, ty + 10.5 * f, 3 * f, legende, { anker: 'end', deck: 0.6 });
-        if (gipfelDa){ const xg = 6 * f + wl - em('die Gipfel') * 3 * f - 1.4 * f; sv += `<path d="M${n2(xg - 0.9 * f)},${n2(ty + 8.4 * f)} l${n2(1.8 * f)},0 l${n2(-0.9 * f)},${n2(1.8 * f)} Z" fill="${SEP}" fill-opacity="0.6"/>`; } } }
+        if (gipfelDa){ const xg = 6 * f + wl - em(sagB('skizze.gipfel')) * 3 * f - 1.4 * f; sv += `<path d="M${n2(xg - 0.9 * f)},${n2(ty + 8.4 * f)} l${n2(1.8 * f)},0 l${n2(-0.9 * f)},${n2(1.8 * f)} Z" fill="${SEP}" fill-opacity="0.6"/>`; } } }
     /* Kennzahlen und Refrain */
-    const d = new Date(S.erstellt), datum = d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
-    const zeilenK = [zusatzDaneben ? '' : zusatz, `${anzahl(S.likes || 0, 'Herz', 'Herzen')} · ${anzahl(S.kommentare || 0, 'Stimme', 'Stimmen')} · ${S.plays === 1 ? 'einmal' : tausend(S.plays || 0) + ' mal'} gehört`,
-      [dauer ? `${mmss(dauer)} lang` : '', S.bpm ? `${S.bpm} Schläge je Minute` : '', S.takte ? `${S.takte} Takte` : ''].filter(Boolean).join(' · '),
-      isNaN(d) ? '' : `geschrieben am ${datum}`, (S.genre || []).map(x => x[0]).join(' · '), (S.instrumente || []).map(x => INSTR_DE[x[0]] || x[0]).join(' · ')].filter(Boolean);
+    const d = new Date(S.erstellt), datum = d.toLocaleDateString(englischB() ? 'en-GB' : 'de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+    const zeilenK = [zusatzDaneben ? '' : zusatz, `${sagB('skizze.herzen', { n: S.likes || 0 })} · ${sagB('skizze.stimmen', { n: S.kommentare || 0 })} · ${sagB('skizze.gehoert', { n: S.plays || 0, z: tausend(S.plays || 0) })}`,
+      [dauer ? sagB('skizze.lang', { d: mmss(dauer) }) : '', S.bpm ? sagB('skizze.bpm', { n: S.bpm }) : '', S.takte ? sagB('skizze.takte', { n: S.takte }) : ''].filter(Boolean).join(' · '),
+      isNaN(d) ? '' : sagB('skizze.geschrieben', { datum }), (S.genre || []).map(x => x[0]).join(' · '), (S.instrumente || []).map(x => INSTR_DE[x[0]] ? sagB('skizze.instr.' + x[0]) : x[0]).join(' · ')].filter(Boolean);
     sv += hand(zeilenK, 6 * f, ty + 18 * f, 4.6 * f, { zeilenabstand: 1.3, klecks: 0 }).svg;
     if (E.refrains !== 'keine' && S.refrain && S.refrain.length){ const fr = Math.min(4.8 * f, 46 * f / Math.max(1, ...S.refrain.map(em)));
-      sv += txt(w - 6 * f, 62 * f, 3.4 * f, 'der Refrain', { anker: 'end', deck: 0.65 }) + hand(S.refrain, w - 52 * f, 68 * f, fr, { zeilenabstand: 1.25, deck: 0.9 }).svg; }
+      sv += txt(w - 6 * f, 62 * f, 3.4 * f, sagB('skizze.refrain'), { anker: 'end', deck: 0.65 }) + hand(S.refrain, w - 52 * f, 68 * f, fr, { zeilenabstand: 1.25, deck: 0.9 }).svg; }
     /* das Cover als Federzeichnung, rund gefasst */
     const cr = 20 * f, ccx = w - 6 * f - cr, ccy = 7 * f + cr;
     defs += `<clipPath id="ps-stcover"><circle cx="${n2(ccx)}" cy="${n2(ccy)}" r="${n2(cr)}"/></clipPath>`;
@@ -331,14 +334,14 @@ export function blattSchmuck(ctx){
   const tabula = () => {
     if (!(daten && daten.tabula && daten.tabula.length)) return;
     const T = daten.tabula, w = 112 * f, fs = 6.6 * f, zh = 11.5 * f, mx = Math.max(1, ...T.map(t => t.plays || 0));   /* lauter 0 Abrufe: leere Maßstriche statt NaN */
-    const k1 = hand(T.length === 1 ? 'Tabula · der meistgehörte Titel' : `Tabula · die ${zahlwort(T.length)} meistgehörten`, 0, fs * 1.2, fs * 1.05);
+    const k1 = hand(T.length === 1 ? sagB('skizze.tabula.eins') : sagB('skizze.tabula', { zw: zahlwort(T.length) }), 0, fs * 1.2, fs * 1.05);
     let sv = k1.svg;
-    T.forEach((t, j) => { const y = k1.hoehe + 3 * f + j * zh + fs, tt = titelText(t.titel) || '(ohne lesbaren Titel)', fsT = Math.min(fs, 64 * f / Math.max(1, em(tt)));
+    T.forEach((t, j) => { const y = k1.hoehe + 3 * f + j * zh + fs, tt = titelText(t.titel) || sagB('skizze.unlesbar'), fsT = Math.min(fs, 64 * f / Math.max(1, em(tt)));
       sv += roemischStriche(j + 1, 7 * f, y, fs * 0.62, SEP) + hand(tt, 9 * f, y, fsT, { klecks: 0 }).svg
         + txt(w, y, fs * 0.8, tausend(t.plays), { anker: 'end', deck: 0.8 })
         + `<path d="M${n2(9 * f)},${n2(y + 2.6 * f)} l${n2((w - 9 * f) * t.plays / mx)},${n2(-0.4 * f)}" ${strich(0.5, 0.55)}/>`
         + Array.from({ length: Math.round(12 * t.plays / mx) }, (_, q) => `<path d="M${n2(9 * f + q * (w - 9 * f) / 12)},${n2(y + 1.6 * f)} l${n2(1.6 * f)},${n2(2 * f)}" ${strich(0.25, 0.5)}/>`).join(''); });
-    sv += txt(w, k1.hoehe + 3 * f + T.length * zh + 1.5 * f, 3.4 * f, 'mal gehört', { anker: 'end', deck: 0.6 });
+    sv += txt(w, k1.hoehe + 3 * f + T.length * zh + 1.5 * f, 3.4 * f, sagB('skizze.mal_gehoert'), { anker: 'end', deck: 0.6 });
     lege({ name: 'tabula', w, h: k1.hoehe + 6 * f + T.length * zh, svg: sv }, art === 'hoch' ? ecke('ro') : art === 'quer' ? bei(spMitte, innen.y0 + 150 * f, spalte) : ecke('ro', 0, 75), gross(KERN));
   };
 
@@ -383,7 +386,7 @@ export function blattSchmuck(ctx){
   /* 7. Würdigung: die fünf, die die längsten Kommentare hinterließen - Bildnisse als Federzeichnung im Medaillon */
   const wuerdigung = () => {
     if (!(daten && daten.wuerdigung && daten.wuerdigung.length)) return;
-    const Wg = daten.wuerdigung, wer = Wg.length === 1 ? 'wer mir die längsten Worte schrieb' : `die ${zahlwort(Wg.length)} mit den längsten Worten an mich`, rr = 13 * f, sp = 30 * f, kopfFs = 5.4 * f, zh = 2 * rr + 12 * f;
+    const Wg = daten.wuerdigung, wer = Wg.length === 1 ? sagB('skizze.wuerdigung.eins') : sagB('skizze.wuerdigung', { zw: zahlwort(Wg.length) }), rr = 13 * f, sp = 30 * f, kopfFs = 5.4 * f, zh = 2 * rr + 12 * f;
     const name = anzeigeName;
     /* LANGE NAMEN zweizeilig statt winzig (Caspar_D: „was passiert bei langen Avatarnamen"): passt der Name einzeilig nur unter 3,4 mm,
        wird er geteilt - an Leerzeichen (zweiZeilen), sonst an Binnen-Großbuchstaben, Ziffern oder nach Bindestrichen („AdrenalineFueled /
@@ -412,9 +415,9 @@ export function blattSchmuck(ctx){
         sv += (href ? `<image href="${esc(href)}" data-voll="${esc(href)}" x="${n2(mx - rr)}" y="${n2(my - rr)}" width="${n2(2 * rr)}" height="${n2(2 * rr)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id})" filter="url(#${bn.feder ? 'ps-bt-bildnis' : 'ps-bt-foto'})"/>`
           : `<circle cx="${n2(mx)}" cy="${n2(my)}" r="${n2(rr)}" fill="url(#ps-bt-schraff)"/>` + txt(mx, my + rr * 0.35, rr, ((nm.match(/[\p{L}\d]/u) || ['?'])[0]).toUpperCase(), { anker: 'middle', deck: 0.75 }))
           + `<circle cx="${n2(mx)}" cy="${n2(my)}" r="${n2(rr)}" ${strich(0.3)}/>` + hand(ns.z, mx, my + rr + 5.4 * f, ns.fs, { anker: 'middle', klecks: 0, zeilenabstand: 1.05 }).svg
-          + txt(mx, my + rr + 9.6 * f + unterName, 3 * f, `${tausend(p.zeichen)} Zeichen`, { anker: 'middle', deck: 0.7 }); });
+          + txt(mx, my + rr + 9.6 * f + unterName, 3 * f, sagB('skizze.zeichen', { z: tausend(p.zeichen) }), { anker: 'middle', deck: 0.7 }); });
       /* der Hinweis in einer Zeile, in der Säule umbrochen */
-      const hinweis = 'Bildnisse nur für den privaten Gebrauch – mit Dank an ihre Urheber', yh = y0 + (reihen - 1) * zh2 + 2 * rr + 15 * f + mehr;
+      const hinweis = sagB('skizze.bildnisse_hinweis'), yh = y0 + (reihen - 1) * zh2 + 2 * rr + 15 * f + mehr;
       const kh = hand(hinweis, w / 2, yh, 2.6 * f, { anker: 'middle', breite: w, deck: 0.55, klecks: 0, zeilenabstand: 1.2 });
       sv += kh.svg;
       return { name: 'wuerdigung', w, h: yh + kh.hoehe, svg: sv };
@@ -428,12 +431,12 @@ export function blattSchmuck(ctx){
   const legendeSetzen = () => {
     if (!(E.legende && legende.length)) return;
     const n = legende.length, z = Math.min(n, 14), fs = 5.6 * f, zh = 7.6 * f, maxEm = Math.max(1, ...legende.slice(0, z).map(e => em(e.name)));
-    const k1 = hand(n === 1 ? 'Die eine Gegend:' : `Die ${zahlwort(n)} Gegenden:`, 0, fs * 1.1, fs * 1.2);
+    const k1 = hand(n === 1 ? sagB('skizze.gegend.eins') : sagB('skizze.gegenden', { zw: zahlwort(n) }), 0, fs * 1.1, fs * 1.2);
     let sv = k1.svg;
     legende.slice(0, z).forEach((e, j) => { const y = k1.hoehe + 2 * f + j * zh + fs * 0.8, ink = tinte(e.farbe);
       sv += `<path d="M0,${n2(y - fs * 0.3)} q${n2(9 * f)},${n2(-0.8 * f)} ${n2(18 * f)},0" stroke="${ink}" stroke-width="${n2(1.2 * f)}" fill="none" stroke-linecap="round"/>`
         + hand(e.name, 23 * f, y, fs, { farbe: ink, klecks: 0 }).svg; });
-    if (n > z) sv += txt(23 * f, k1.hoehe + 2 * f + z * zh + fs * 0.8, fs * 0.85, `und ${n - z} weitere`, { deck: 0.7 });
+    if (n > z) sv += txt(23 * f, k1.hoehe + 2 * f + z * zh + fs * 0.8, fs * 0.85, sagB('plakat.verz.weitere', { n: n - z }), { deck: 0.7 });
     lege({ name: 'legende', w: Math.max(k1.breite, 23 * f + maxEm * fs * 1.08), h: k1.hoehe + 4 * f + (z + (n > z ? 1 : 0)) * zh, svg: sv },
       art === 'hoch' ? bei(innen.x0 + 50 * f, innen.y1 - 30 * f) : art === 'quer' ? bei(kv.x + kv.w * 0.32, innen.y0 + 25 * f) : ecke('ro', -150, 0), gross(KERN));
   };
@@ -452,9 +455,11 @@ export function blattSchmuck(ctx){
       const areal = e.z[ebene] || e.z.gruppe || '', ink = tinte(arealFarbe(areal)), fs = 5.2 * f;
       const nt = titelText(e.z.titel || ''); if (!nt) continue;
       const zl = zweiZeilen(nt, em).find(z => Math.max(...z.map(em)) * fs < 52 * f) || [nt];
-      const t1 = hand(zl, 0, fs * 0.9, fs, { farbe: ink, zeilenabstand: 1.1 }), fs2 = Math.min(3.8 * f, 52 * f / Math.max(1, em(areal)));
-      const nb = { name: 'notiz', w: Math.max(t1.breite, em(areal) * fs2) + 2 * f, h: t1.hoehe + fs2 * 1.4, luft: 1.5 };
-      nb.svg = t1.svg + txt(0, t1.hoehe + fs2 * 0.6, fs2, areal, { deck: 0.75 });
+      /* der Arealname, wie die Oberfläche ihn zeigt (gruppenAnzeige im Haus); die Farbe hängt am Namen der Daten */
+      const arealText = typeof gruppenAnzeige === 'function' ? gruppenAnzeige(areal) : areal;
+      const t1 = hand(zl, 0, fs * 0.9, fs, { farbe: ink, zeilenabstand: 1.1 }), fs2 = Math.min(3.8 * f, 52 * f / Math.max(1, em(arealText)));
+      const nb = { name: 'notiz', w: Math.max(t1.breite, em(arealText) * fs2) + 2 * f, h: t1.hoehe + fs2 * 1.4, luft: 1.5 };
+      nb.svg = t1.svg + txt(0, t1.hoehe + fs2 * 0.6, fs2, arealText, { deck: 0.75 });
       const ax = cx + (r + ring + nb.w / 2 + 4 * f) * Math.cos(th), ay = cy + (r + ring + nb.h / 2 + 2 * f) * Math.sin(th);
       const p = lege(nb, { ax, ay, ...ganz, weit: 70 * f }, [1, 0.9]);
       if (!p) continue;
@@ -476,7 +481,7 @@ export function blattSchmuck(ctx){
   /* 10. Refrains der drei mit den meisten Herzen bzw. der drei neuesten (Wahl „Refrains"), ohne den Titel des Steckbriefs */
   const refrainsSetzen = () => {
     for (const rf of (refrains || []).filter(x => !(daten && daten.steckbrief && x.titel === ohneKl(daten.steckbrief.titel)))){
-      const fs = 5.6 * f, kopf = (titelText(rf.titel) ? `aus „${titelText(rf.titel)}“` : 'aus einem Lied') + (E.refrains === 'neueste' ? '' : ` · ${anzahl(rf.herzen, 'Herz', 'Herzen')}`), wmax = 92 * f, fsz = Math.min(fs, wmax / Math.max(1, ...rf.refrain.map(em)));
+      const fs = 5.6 * f, kopf = (titelText(rf.titel) ? sagB('skizze.aus', { titel: titelText(rf.titel) }) : sagB('skizze.aus_lied')) + (E.refrains === 'neueste' ? '' : ` · ${sagB('skizze.herzen', { n: rf.herzen })}`), wmax = 92 * f, fsz = Math.min(fs, wmax / Math.max(1, ...rf.refrain.map(em)));
       const k1 = hand(kopf, 0, fs * 0.8, fs * 0.7, { deck: 0.65, klecks: 0 }), k2 = hand(rf.refrain, 0, k1.hoehe + fsz, fsz, { deck: 0.88, zeilenabstand: 1.18 });
       lege({ name: 'refrain', w: Math.max(k1.breite, k2.breite) + 2 * f, h: k1.hoehe + k2.hoehe + 2 * f, svg: k1.svg + k2.svg }, bei((innen.x0 + innen.x1) / 2, innen.y0 + 60 * f), gross([1, 0.88, 0.76]));
     }
@@ -488,7 +493,7 @@ export function blattSchmuck(ctx){
     const kopfD = (t, w) => hand(t, 0, 5 * f, 4.6 * f, { breite: w, klecks: 0 }), D = [1.3, 1.2, 1.1, 1, 0.9, 0.8, 0.7];
     if (daten.titelKurve && daten.titelKurve.length > 2){
       const K = daten.titelKurve, w = 84 * f, h = 54 * f, x0 = 8 * f, y0 = 12 * f, x1 = w - 4 * f, y1 = h - 8 * f, mx = K[K.length - 1][1];
-      const px = (i) => x0 + (x1 - x0) * i / (K.length - 1), py = (v) => y1 - (y1 - y0) * v / mx, k1 = kopfD(`Crescita · ${mx} Titel in ${K.length} Monaten`, w);
+      const px = (i) => x0 + (x1 - x0) * i / (K.length - 1), py = (v) => y1 - (y1 - y0) * v / mx, k1 = kopfD(sagB('skizze.crescita', { n: mx, m: K.length }), w);
       let sv = k1.svg + `<path d="M${n2(x0)},${n2(y0 - 2 * f)} L${n2(x0)},${n2(y1)} L${n2(x1 + 2 * f)},${n2(y1)}" ${strich(0.3)}/>`;
       const pf = K.map((k, i) => `${n2(px(i))},${n2(py(k[1]))}`);
       defs += `<clipPath id="ps-crescita"><path d="M${n2(x0)},${n2(y1)} L${pf.join(' L')} L${n2(x1)},${n2(y1)} Z"/></clipPath>`;
@@ -499,11 +504,11 @@ export function blattSchmuck(ctx){
       lege({ name: 'crescita', w, h, svg: sv }, bei(innen.x0 + 40 * f, (innen.y0 + innen.y1) / 2), D);
     }
     if (daten.stimmung && daten.stimmung.length > 3){
-      const St = daten.stimmung, w = 70 * f, h = 72 * f, mcx = w / 2, mcy = 40 * f, rr = 20 * f, mx = St[0][1], k1 = kopfD('Rosa dei venti · die Stimmungen', w);
+      const St = daten.stimmung, w = 70 * f, h = 72 * f, mcx = w / 2, mcy = 40 * f, rr = 20 * f, mx = St[0][1], k1 = kopfD(sagB('skizze.rose'), w);
       let sv = k1.svg + `<circle cx="${n2(mcx)}" cy="${n2(mcy)}" r="${n2(rr)}" ${strich(0.2, 0.5)} stroke-dasharray="${n2(1 * f)} ${n2(1 * f)}"/><circle cx="${n2(mcx)}" cy="${n2(mcy)}" r="${n2(rr / 2)}" ${strich(0.16, 0.4)}/>`;
       const pts = St.map(([n, v], i) => { const a = -Math.PI / 2 + 2 * Math.PI * i / St.length, l = rr * v / mx;
         sv += `<line x1="${n2(mcx)}" y1="${n2(mcy)}" x2="${n2(mcx + rr * 1.06 * Math.cos(a))}" y2="${n2(mcy + rr * 1.06 * Math.sin(a))}" ${strich(0.16, 0.5)}/>`
-          + txt(mcx + (rr + 4 * f) * Math.cos(a), mcy + (rr + 4 * f) * Math.sin(a) + 1.2 * f, 3.4 * f, STIMMUNG_DE[n] || n, { anker: Math.abs(Math.cos(a)) < 0.3 ? 'middle' : Math.cos(a) > 0 ? 'start' : 'end', deck: 0.8 });
+          + txt(mcx + (rr + 4 * f) * Math.cos(a), mcy + (rr + 4 * f) * Math.sin(a) + 1.2 * f, 3.4 * f, STIMMUNG_DE[n] ? sagB('skizze.stimmung.' + n) : n, { anker: Math.abs(Math.cos(a)) < 0.3 ? 'middle' : Math.cos(a) > 0 ? 'start' : 'end', deck: 0.8 });
         return [mcx + l * Math.cos(a), mcy + l * Math.sin(a)]; });
       /* die Spitzen als Strahlen eines Sterns (je zwei Flanken zur halben Breite), wie eine Kompassrose */
       let stern = ''; pts.forEach(([x, y], i) => { const a = -Math.PI / 2 + 2 * Math.PI * (i + 0.5) / St.length, q = rr * 0.16;
@@ -512,12 +517,12 @@ export function blattSchmuck(ctx){
       lege({ name: 'rose', w, h, svg: sv }, bei(innen.x1 - w / 2, innen.y0 + 120 * f), D);
     }
     if (daten.stunden){
-      const Su = daten.stunden, w = 62 * f, h = 72 * f, mcx = w / 2, mcy = 40 * f, r0 = 9 * f, r1 = 23 * f, mx = Math.max(...Su), k1 = kopfD('Le ore · wann die Lieder entstehen', w);
+      const Su = daten.stunden, w = 62 * f, h = 72 * f, mcx = w / 2, mcy = 40 * f, r0 = 9 * f, r1 = 23 * f, mx = Math.max(...Su), k1 = kopfD(sagB('skizze.ore'), w);
       let sv = k1.svg + `<circle cx="${n2(mcx)}" cy="${n2(mcy)}" r="${n2(r0)}" ${strich(0.25)}/><circle cx="${n2(mcx)}" cy="${n2(mcy)}" r="${n2(r1)}" ${strich(0.18, 0.45)}/>`;
       Su.forEach((v, hh) => { const a0 = -Math.PI / 2 + 2 * Math.PI * hh / 24, a1 = a0 + 2 * Math.PI / 24 * 0.8, l = r0 + (r1 - r0) * v / mx;
         sv += `<path d="M${n2(mcx + r0 * Math.cos(a0))},${n2(mcy + r0 * Math.sin(a0))} L${n2(mcx + l * Math.cos(a0))},${n2(mcy + l * Math.sin(a0))} A${n2(l)},${n2(l)} 0 0 1 ${n2(mcx + l * Math.cos(a1))},${n2(mcy + l * Math.sin(a1))} L${n2(mcx + r0 * Math.cos(a1))},${n2(mcy + r0 * Math.sin(a1))}" ${strich(0.24, 0.85)}/>`;
         if (hh % 6 === 0) sv += txt(mcx + (r1 + 3.6 * f) * Math.cos(a0), mcy + (r1 + 3.6 * f) * Math.sin(a0) + 1.2 * f, 3.4 * f, String(hh), { anker: 'middle', deck: 0.8 }); });
-      const spitze = Su.indexOf(mx); sv += txt(mcx, mcy + 1.4 * f, 3.2 * f, `${spitze} Uhr`, { anker: 'middle', deck: 0.8 });
+      const spitze = Su.indexOf(mx); sv += txt(mcx, mcy + 1.4 * f, 3.2 * f, sagB('skizze.uhr', { h: spitze }), { anker: 'middle', deck: 0.8 });
       lege({ name: 'ore', w, h, svg: sv }, bei(innen.x0 + w / 2, innen.y0 + 130 * f), D);
     }
     if (ctx.arealZahlen && ctx.arealZahlen.length > 1){
@@ -526,7 +531,7 @@ export function blattSchmuck(ctx){
       const pos = []; let x = rad[0] + 2 * f, y = 0, dir = 1;
       A.forEach((a, i) => { if (i){ const d = rad[i - 1] + rad[i] + 0.6 * f, ang = dir * 0.42; x += d * Math.cos(ang); y += d * Math.sin(ang); dir = -dir; } pos.push([x, y]); });
       const minY = Math.min(...pos.map((p, i) => p[1] - rad[i])), maxY = Math.max(...pos.map((p, i) => p[1] + rad[i])), w = Math.max(...pos.map((p, i) => p[0] + rad[i])) + 4 * f;
-      const k1 = kopfD('Ingranaggi · die Gegenden greifen ineinander', Math.max(w, 70 * f)), oy = k1.hoehe + 3 * f - minY;
+      const k1 = kopfD(sagB('skizze.getriebe'), Math.max(w, 70 * f)), oy = k1.hoehe + 3 * f - minY;
       let sv = k1.svg;
       A.forEach((a, i) => { const [gx, gy0] = pos[i], gy = gy0 + oy, rr = rad[i], z = Math.max(8, Math.round(6 + 20 * a.n / mxn)), ink = tinte(a.farbe), ri = rr - 1.6 * f;
         let d = ''; for (let q = 0; q < z; q++){ const a0 = 2 * Math.PI * q / z + (i % 2 ? Math.PI / z : 0), da = 2 * Math.PI / z;
