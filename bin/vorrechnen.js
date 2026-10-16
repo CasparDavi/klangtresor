@@ -167,9 +167,15 @@ function alsPng(rgba, breite, hoehe, ziel){
    Ein Song.
 ------------------------------------------------------------------ */
 async function einenRechnen(kern, id, titel, nurBilder){
-  const wav = path.join(SONGS, id, 'audio.wav');
-  const mp3 = path.join(SONGS, id, 'audio.mp3');
-  const datei = fs.existsSync(wav) ? wav : mp3;
+  const wav   = path.join(SONGS, id, 'audio.wav');
+  const eigen = path.join(SONGS, id, 'eigen.wav');
+  const mp3   = path.join(SONGS, id, 'audio.mp3');
+  /* audio.wav zuerst (Caspar_D: immer WAV). Fehlt sie, gilt die eigene
+     Fassung — Studio-Exporte liegen oft nur als eigen.wav neben dem
+     Video, ohne Sunos audio.wav. MP3 nur, wenn auch die fehlt. */
+  const datei = fs.existsSync(wav) ? wav
+              : fs.existsSync(eigen) ? eigen
+              : mp3;
   if (!fs.existsSync(datei)) throw new Error('kein Ton');
 
   const { left, right, sr } = tonLesen(datei);
