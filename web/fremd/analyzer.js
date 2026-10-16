@@ -52,6 +52,17 @@
 /* Der Analyzer sitzt in der Bühne auf deren Grund, nicht auf eigenem. */
 .sunoanalyzer.eingebettet{padding:0;max-width:none;background:transparent}
 
+/* Keine Messquelle: die leeren Striche sähen aus wie ein Fehler.
+   Die Karten und Spuren bleiben im Baum, fallen aber weg, und oben
+   steht der Grund. */
+.sunoanalyzer #sa-ohne-messung,.sunoanalyzer #sa-rechnen{margin:0 0 14px;padding:12px 14px;
+  border:1px solid rgba(249,123,20,.45);background:rgba(249,123,20,.12);
+  color:#f4d4b0;font-size:13px;line-height:1.45;border-radius:8px}
+.sunoanalyzer #sa-rechnen{border-color:rgba(75,147,240,.4);background:rgba(75,147,240,.12);color:#c5d8f4}
+.sunoanalyzer.keine-messung #sa-karten,
+.sunoanalyzer.keine-messung #sa-befunde,
+.sunoanalyzer.keine-messung .section{display:none}
+
 /* Die Karten füllen die Zeilen selbst auf, statt in Vierergruppen zu
    stehen: EIN Raster, in das alle 28 Karten fließen. Möglich wird das
    durch display:contents an den alten Vierergruppen - ihre Kinder
@@ -609,7 +620,7 @@
       <div id="meta-sub"></div>
       <div id="tags" style="margin-top:4px"></div>
       <div id="lyrics-wrap" style="display:none;margin-top:8px">
-        <div style="font-size:11px;color:#555;margin-bottom:4px;cursor:pointer;user-select:none" onclick="var b=document.getElementById('lyrics-body');b.style.display=b.style.display==='none'?'block':'none';this.textContent=b.style.display==='none'?'▸ Lyrics / Prompt anzeigen':'▾ Lyrics / Prompt'">▾ Lyrics / Prompt</div>
+        <div style="font-size:11px;color:#555;margin-bottom:4px;cursor:pointer;user-select:none" data-i18n="sa.lyrics.offen" onclick="var b=document.getElementById('lyrics-body');b.style.display=b.style.display==='none'?'block':'none';this.textContent=b.style.display==='none'?t('sa.lyrics.zeigen'):t('sa.lyrics.offen')">▾ Lyrics / Prompt</div>
         <pre id="lyrics-body" style="font-size:11px;color:#888;line-height:1.7;white-space:pre-wrap;background:#0a0a0a;border-radius:6px;padding:10px;overflow-y:auto;margin:0"></pre>
       </div>
     </div>
@@ -641,21 +652,21 @@
      (laeuft), den Ruecksprung (sprung), das Umschalten (umschalten)
      und den Quellknoten (quelle). Er baut sich nichts davon selbst. -->
 <div class="row" id="sa-zoom" style="margin-bottom:10px">
-  <span style="font-size:12px;color:#555">Zoom</span>
+  <span style="font-size:12px;color:#555" data-i18n="sa.zoom">Zoom</span>
   <input type="range" id="zoom-slider" min="0" max="5" step="0.1" value="0" style="flex:1;accent-color:var(--bakzent,var(--akzent,#4b93f0))">
   <span id="zoom-label" style="font-size:12px;color:var(--bakzent,var(--akzent,#4b93f0));min-width:32px">1×</span>
-  <button onclick="__SA.resetZoom()" style="padding:4px 10px;font-size:11px">Reset</button>
+  <button onclick="__SA.resetZoom()" style="padding:4px 10px;font-size:11px" data-i18n="sa.reset">Reset</button>
 </div>
 
 <div id="sa-befunde">
   <div class="bf-kopf">
-    <span>Datenbasierte Vorschläge zur Verbesserung</span>
-    <span class="bf-leise">plattformabhängig</span>
+    <span data-i18n="sa.vorschlag">Datenbasierte Vorschläge zur Verbesserung</span>
+    <span class="bf-leise" data-i18n="sa.plattformab">plattformabhängig</span>
   </div>
   <!-- Registerlaschen; wird der Platz zu klein, tritt das Klappfeld
        daneben an ihre Stelle (siehe registerAnpassen). -->
   <div class="bf-register" id="sa-register"></div>
-  <select id="sa-ziel" class="bf-klapp" title="Plattform"></select>
+  <select id="sa-ziel" class="bf-klapp" title="Plattform" data-i18n-title="sa.plattform"></select>
   <div class="bf-plattform" id="sa-plattform"></div>
   <div id="sa-vergleich"></div>
   <!-- Gleiche Bauart wie die uebrigen Spuren: volle Breite, viewBox-Zoom,
@@ -679,7 +690,7 @@
     </div>
   </div>
   <div id="sa-urteil"></div>
-  <div class="chart-text">Oben werden die Abschnitte aus dem Lyricsprompt gezeigt, darunter die Hüllkurve des Songs (Lautheit), die Schläge (BPM) und die Blockdiagramme mit geprüften Befunden zu Abschnitten, in denen sich die Stereosignale auslöschen können und in denen der Pegel über dem Standard liegt. Sie dient der Orientierung vor dem detaillierten Blick auf die Einzelmessungen — der Spielkopf (senkrechte weiße Linie) läuft zugleich durch alle Bahnen, die den Track über den Zeitverlauf beschreiben, sodass jede Beobachtung sofort einer Stelle im Stück zugeordnet werden kann.</div>
+  <div class="chart-text" data-i18n="sa.chart.befunde">Oben werden die Abschnitte aus dem Lyricsprompt gezeigt, darunter die Hüllkurve des Songs (Lautheit), die Schläge (BPM) und die Blockdiagramme mit geprüften Befunden zu Abschnitten, in denen sich die Stereosignale auslöschen können und in denen der Pegel über dem Standard liegt. Sie dient der Orientierung vor dem detaillierten Blick auf die Einzelmessungen — der Spielkopf (senkrechte weiße Linie) läuft zugleich durch alle Bahnen, die den Track über den Zeitverlauf beschreiben, sodass jede Beobachtung sofort einer Stelle im Stück zugeordnet werden kann.</div>
 </div>
 
 <div id="sa-karten">
@@ -698,56 +709,56 @@
      weiterhin alles in einem Zug von oben nach unten.
      ================================================================== -->
 <div class="kartenblock">
-<div class="karten-kopf">Pegel und Lautheit</div>
+<div class="karten-kopf" data-i18n="sa.karten.pegel">Pegel und Lautheit</div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-lufs">—</div><div class="lbl">Wie laut insgesamt? <i>LUFS</i></div></div>
-  <div class="card"><div class="val" id="v-lra">—</div><div class="lbl">Atmet der Song? <i>Schwankung LU</i></div></div>
-  <div class="card"><div class="val" id="v-tp">—</div><div class="lbl">Wie nah an der Decke? <i>True Peak dBTP</i></div></div>
-  <div class="card"><div class="val" id="v-plr">—</div><div class="lbl">Wie viel Luft zur Spitze? <i>Reserve PLR</i></div></div>
-  <div class="card"><div class="val" id="v-psr">—</div><div class="lbl">Luft an der lautesten Stelle <i>Reserve PSR</i></div></div>
-  <div class="card"><div class="val" id="v-check">—</div><div class="lbl">Technisch sauber? <i>Anschläge · Gleichspannung · Phase</i></div></div>
-  <div class="card"><div class="val" id="v-clip">—</div><div class="lbl">Werte am Anschlag <i>Clipping</i></div></div>
-  <div class="card"><div class="val" id="v-dc">—</div><div class="lbl">Sitzt die Welle mittig? <i>Gleichspannung</i></div></div>
-  <div class="card"><div class="val" id="v-korr">—</div><div class="lbl">Stereo verträglich? <i>Phasenkorrelation</i></div></div>
-  <div class="card"><div class="val" id="v-ende">—</div><div class="lbl">Endet er weich? <i>Ende</i></div></div>
-  <div class="card"><div class="val" id="v-grenz">—</div><div class="lbl">Bis wohin reichen die Höhen? <i>Tiefpasskante</i></div></div>
+  <div class="card"><div class="val" id="v-lufs">—</div><div class="lbl"><span data-i18n="sa.lbl.lufs">Wie laut insgesamt?</span> <i>LUFS</i></div></div>
+  <div class="card"><div class="val" id="v-lra">—</div><div class="lbl"><span data-i18n="sa.lbl.lra">Atmet der Song?</span> <i data-i18n="sa.lbl.lra.i">Schwankung LU</i></div></div>
+  <div class="card"><div class="val" id="v-tp">—</div><div class="lbl"><span data-i18n="sa.lbl.tp">Wie nah an der Decke?</span> <i data-i18n="sa.lbl.tp.i">True Peak dBTP</i></div></div>
+  <div class="card"><div class="val" id="v-plr">—</div><div class="lbl"><span data-i18n="sa.lbl.plr">Wie viel Luft zur Spitze?</span> <i data-i18n="sa.lbl.plr.i">Reserve PLR</i></div></div>
+  <div class="card"><div class="val" id="v-psr">—</div><div class="lbl"><span data-i18n="sa.lbl.psr">Luft an der lautesten Stelle</span> <i data-i18n="sa.lbl.psr.i">Reserve PSR</i></div></div>
+  <div class="card"><div class="val" id="v-check">—</div><div class="lbl"><span data-i18n="sa.lbl.check">Technisch sauber?</span> <i data-i18n="sa.lbl.check.i">Anschläge · Gleichspannung · Phase</i></div></div>
+  <div class="card"><div class="val" id="v-clip">—</div><div class="lbl"><span data-i18n="sa.lbl.clip">Werte am Anschlag</span> <i data-i18n="sa.lbl.clip.i">Clipping</i></div></div>
+  <div class="card"><div class="val" id="v-dc">—</div><div class="lbl"><span data-i18n="sa.lbl.dc">Sitzt die Welle mittig?</span> <i data-i18n="sa.lbl.dc.i">Gleichspannung</i></div></div>
+  <div class="card"><div class="val" id="v-korr">—</div><div class="lbl"><span data-i18n="sa.lbl.korr">Stereo verträglich?</span> <i data-i18n="sa.lbl.korr.i">Phasenkorrelation</i></div></div>
+  <div class="card"><div class="val" id="v-ende">—</div><div class="lbl"><span data-i18n="sa.lbl.ende">Endet er weich?</span> <i data-i18n="sa.lbl.ende.i">Ende</i></div></div>
+  <div class="card"><div class="val" id="v-grenz">—</div><div class="lbl"><span data-i18n="sa.lbl.grenz">Bis wohin reichen die Höhen?</span> <i data-i18n="sa.lbl.grenz.i">Tiefpasskante</i></div></div>
 </div>
 </div>
 <div class="kartenblock">
-<div class="karten-kopf">Klang und Form</div>
+<div class="karten-kopf" data-i18n="sa.karten.klang">Klang und Form</div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-dur">—</div><div class="lbl">Dauer</div></div>
-  <div class="card"><div class="val" id="v-loud">—</div><div class="lbl">Wie kräftig im Schnitt? <i>dB</i></div><div class="gauge" id="g-loud"><div class="gauge-track"></div><div class="gauge-marker" id="gm-loud"></div></div></div>
-  <div class="card"><div class="val" id="v-dyn">—</div><div class="lbl">Laut-leise-Abstand <i>Dynamik dB</i></div><div class="gauge" id="g-dyn"><div class="gauge-track"></div><div class="gauge-marker" id="gm-dyn"></div></div></div>
+  <div class="card"><div class="val" id="v-dur">—</div><div class="lbl" data-i18n="sa.lbl.dauer">Dauer</div></div>
+  <div class="card"><div class="val" id="v-loud">—</div><div class="lbl"><span data-i18n="sa.lbl.loud">Wie kräftig im Schnitt?</span> <i>dB</i></div><div class="gauge" id="g-loud"><div class="gauge-track"></div><div class="gauge-marker" id="gm-loud"></div></div></div>
+  <div class="card"><div class="val" id="v-dyn">—</div><div class="lbl"><span data-i18n="sa.lbl.dyn">Laut-leise-Abstand</span> <i data-i18n="sa.lbl.dyn.i">Dynamik dB</i></div><div class="gauge" id="g-dyn"><div class="gauge-track"></div><div class="gauge-marker" id="gm-dyn"></div></div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-stereo">—</div><div class="lbl">Wie breit ist das Stereo? <i>Breite</i></div><div class="gauge" id="g-stereo"><div class="gauge-track"></div><div class="gauge-marker" id="gm-stereo"></div></div></div>
+  <div class="card"><div class="val" id="v-stereo">—</div><div class="lbl"><span data-i18n="sa.lbl.stereo">Wie breit ist das Stereo?</span> <i data-i18n="sa.lbl.stereo.i">Breite</i></div><div class="gauge" id="g-stereo"><div class="gauge-track"></div><div class="gauge-marker" id="gm-stereo"></div></div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-key">—</div><div class="lbl">Welche Tonart?</div></div>
+  <div class="card"><div class="val" id="v-key">—</div><div class="lbl" data-i18n="sa.lbl.key">Welche Tonart?</div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-entropy">—</div><div class="lbl">Dicht oder aufgeräumt? <i>Spektr. Entropie</i></div><div class="gauge" id="g-entropy"><div class="gauge-track"></div><div class="gauge-marker" id="gm-entropy"></div></div></div>
+  <div class="card"><div class="val" id="v-entropy">—</div><div class="lbl"><span data-i18n="sa.lbl.entropy">Dicht oder aufgeräumt?</span> <i data-i18n="sa.lbl.entropy.i">Spektr. Entropie</i></div><div class="gauge" id="g-entropy"><div class="gauge-track"></div><div class="gauge-marker" id="gm-entropy"></div></div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-symmetry">—</div><div class="lbl">Wohin entwickelt er sich? <i>Energie-Form</i></div></div>
-  <div class="card"><div class="val" id="v-vocal" style="font-size:13px">—</div><div class="lbl">Welche Stimmlage? <i>Stimme</i></div></div>
+  <div class="card"><div class="val" id="v-symmetry">—</div><div class="lbl"><span data-i18n="sa.lbl.symmetry">Wohin entwickelt er sich?</span> <i data-i18n="sa.lbl.symmetry.i">Energie-Form</i></div></div>
+  <div class="card"><div class="val" id="v-vocal" style="font-size:13px">—</div><div class="lbl"><span data-i18n="sa.lbl.vocal">Welche Stimmlage?</span> <i data-i18n="sa.lbl.vocal.i">Stimme</i></div></div>
 </div>
 </div>
 <div class="kartenblock">
-<div class="karten-kopf">Aus dem Katalog</div>
+<div class="karten-kopf" data-i18n="sa.karten.katalog">Aus dem Katalog</div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-plays">—</div><div class="lbl">Plays</div></div>
-  <div class="card"><div class="val" id="v-likes">—</div><div class="lbl">Likes</div></div>
-  <div class="card"><div class="val" id="v-comments">—</div><div class="lbl">Kommentare</div></div>
-  <div class="card"><div class="val" id="v-ratio">—</div><div class="lbl">Plays / Like</div></div>
-  <div class="card"><div class="val" id="v-age">—</div><div class="lbl">Alter</div></div>
-  <div class="card"><div class="val" id="v-ppd">—</div><div class="lbl">Plays / Tag</div></div>
-  <div class="card"><div class="val" id="v-model">—</div><div class="lbl">Modell</div></div>
+  <div class="card"><div class="val" id="v-plays">—</div><div class="lbl" data-i18n="sa.lbl.plays">Plays</div></div>
+  <div class="card"><div class="val" id="v-likes">—</div><div class="lbl" data-i18n="sa.lbl.likes">Likes</div></div>
+  <div class="card"><div class="val" id="v-comments">—</div><div class="lbl" data-i18n="sa.lbl.comments">Kommentare</div></div>
+  <div class="card"><div class="val" id="v-ratio">—</div><div class="lbl" data-i18n="sa.lbl.ratio">Plays / Like</div></div>
+  <div class="card"><div class="val" id="v-age">—</div><div class="lbl" data-i18n="sa.lbl.age">Alter</div></div>
+  <div class="card"><div class="val" id="v-ppd">—</div><div class="lbl" data-i18n="sa.lbl.ppd">Plays / Tag</div></div>
+  <div class="card"><div class="val" id="v-model">—</div><div class="lbl" data-i18n="sa.lbl.model">Modell</div></div>
 </div>
 </div>
 
-<div class="chart-text" id="karten-text">Wichtige globale Parameter, die den Track klassifizieren helfen.</div>
+<div class="chart-text" id="karten-text" data-i18n="sa.chart.karten">Wichtige globale Parameter, die den Track klassifizieren helfen.</div>
 </div>
 
 <div id="custom-player" style="user-select:none">
@@ -798,9 +809,9 @@
        Versteckt, solange die Buehne keinen zweiten Abgriff
        hereinreicht - ein Umschalter mit nur einer Stellung ist keiner. -->
   <div class="bf-register" id="sa-signal-wahl" data-wert="codiert" style="display:none">
-    <button type="button" data-s="codiert" class="an" title="Das Stück, wie es in der Sound-Datei liegt — vor jedem Eingriff">Signal aus der Sound-Datei</button>
-    <button type="button" data-s="ausgabe" title="Nach Equalizer, Kompressor, Breite, Hall und Echo — einzustellen über den Knopf EQ">Anpassung im Tonstudio [EQ]</button>
-    <button type="button" data-s="beide" title="Beides übereinander — was sich deckt, trägt die Hausfarbe des Kanals">Überlagert</button>
+    <button type="button" data-s="codiert" class="an" data-i18n="sa.signal.datei" data-i18n-title="sa.signal.datei.titel" title="Das Stück, wie es in der Sound-Datei liegt — vor jedem Eingriff">Signal aus der Sound-Datei</button>
+    <button type="button" data-s="ausgabe" data-i18n="sa.signal.eq" data-i18n-title="sa.signal.eq.titel" title="Nach Equalizer, Kompressor, Breite, Hall und Echo — einzustellen über den Knopf EQ">Anpassung im Tonstudio [EQ]</button>
+    <button type="button" data-s="beide" data-i18n="sa.signal.beide" data-i18n-title="sa.signal.beide.titel" title="Beides übereinander — was sich deckt, trägt die Hausfarbe des Kanals">Überlagert</button>
   </div>
   <div class="chart-outer"><canvas id="freq-canvas" style="height:150px;background:#0a0a0a"></canvas></div>
   <div class="sa-leg" id="sa-spektrum-legende" style="display:none"></div>
@@ -814,8 +825,8 @@
        - das ist genau der Unterschied, um den es geht. -->
   <div class="spur-wahl">
     <span class="spur-profil" id="sa-spektrum-wahl" data-wert="gespiegelt">
-      <button data-m="gespiegelt" class="an" title="Links oben, rechts unten — an einer gemeinsamen Achse gespiegelt"><svg viewBox="0 0 14 11" width="14" height="11"><path d="M0 5.5H14M2.5 5.5V2.5M2.5 5.5V8.5M6 5.5V1.5M6 5.5V9.5M9.5 5.5V3.2M9.5 5.5V7.8M12.5 5.5V4.3M12.5 5.5V6.7" fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>
-      <button data-m="summe" title="Beide Kanäle zusammen"><svg viewBox="0 0 14 11" width="14" height="11"><path d="M0 10H14M2 10V6.5M5 10V3M8 10V1.5M11 10V5M13.5 10V7.5" fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>
+      <button data-m="gespiegelt" class="an" data-i18n-title="sa.spektrum.spiegel.tipp" title="Links oben, rechts unten — an einer gemeinsamen Achse gespiegelt"><svg viewBox="0 0 14 11" width="14" height="11"><path d="M0 5.5H14M2.5 5.5V2.5M2.5 5.5V8.5M6 5.5V1.5M6 5.5V9.5M9.5 5.5V3.2M9.5 5.5V7.8M12.5 5.5V4.3M12.5 5.5V6.7" fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>
+      <button data-m="summe" data-i18n-title="sa.spektrum.summe.tipp" title="Beide Kanäle zusammen"><svg viewBox="0 0 14 11" width="14" height="11"><path d="M0 10H14M2 10V6.5M5 10V3M8 10V1.5M11 10V5M13.5 10V7.5" fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>
     </span>
   </div>
 </div>
@@ -870,7 +881,7 @@
        Studiospuren. Die Zahlen dahinter sind gemessen: unterhalb 300 Hz
        liegt die Korrelation zwischen Stimme und Schlagzeug bei 0,006,
        oberhalb 8 kHz bei 0,164. -->
-  <div id="stem-hinweis" class="chart-text">Getrennt mit <b>htdemucs_6s</b>, dem besten frei verfügbaren Modell
+  <div id="stem-hinweis" class="chart-text" data-i18n="sa.essay.stem" data-i18n-html>Getrennt mit <b>htdemucs_6s</b>, dem besten frei verfügbaren Modell
     für sechs Spuren — von echten Studiospuren aber weit entfernt: Zischlaute wandern hörbar
     ins Schlagzeug, Gitarre und Klavier sind die schwächsten Spuren. Für die Detektion von Tonart und
     Stimmlage ist die Qualität ausreichend, weil beide unterhalb 900 Hz gemessen werden. Für das
@@ -903,7 +914,7 @@
      abweichungSpurZeichnen() sprechen sie an, ebenso die Playheads
      und die Sichtbarkeitsschleife. -->
 <div class="section" id="spur-lautheit">
-  <div class="slbl"><span><span class="nam">Lautheitsverläufe</span> — <span class="erkl">derselbe Song in zwei Zeitfenstern und ihre Differenz</span></span></div>
+  <div class="slbl"><span><span class="nam" data-i18n="sa.laut.nam">Lautheitsverläufe</span> — <span class="erkl" data-i18n="sa.laut.erkl">derselbe Song in zwei Zeitfenstern und ihre Differenz</span></span></div>
   <div class="sa-spur" id="spur-momentan">
     <div class="slbl"><span class="spur-titel"></span></div>
     <div class="chart-outer" style="height:44px"><div id="momentanspur-canvas" class="spur-flaeche"></div><div class="playhead" id="ph-momentanspur"></div></div>
@@ -916,7 +927,7 @@
     <div class="slbl"><span class="spur-titel"></span></div>
     <div class="chart-outer" style="height:56px"><div id="abweichungspur-canvas" class="spur-flaeche" style="height:56px"></div><div class="playhead" id="ph-abweichungspur"></div></div>
   </div>
-  <div class="chart-text">Dieselbe Größe nach EBU R 128, dreimal betrachtet. <b>Oben</b> ein Fenster von 400 Millisekunden: es folgt dem Stück beinahe augenblicklich und so schnell wie das Gehör, macht also einzelne Einsätze und Pausen sichtbar; die durchgezogene Linie markiert die integrierte Lautheit des ganzen Stücks. <b>In der Mitte</b> dasselbe über drei Sekunden — Einzelereignisse sind weggeglättet, und es zeigt sich, wie laut ein Abschnitt empfunden wird. An dieser Größe orientieren sich die Zielwerte der Streamingdienste, die als gestrichelte Linie eingezeichnet sind. <b>Unten</b> die Differenz der beiden: Wo der Augenblick über seiner Umgebung liegt, ragt die Fläche nach oben, wo er darunter bleibt, nach unten. Damit wird sichtbar, was in den Kurven darüber nur im Vergleich zu erkennen wäre — Akzente und Einbrüche.</div>
+  <div class="chart-text" data-i18n="sa.essay.lautheit" data-i18n-html>Dieselbe Größe nach EBU R 128, dreimal betrachtet. <b>Oben</b> ein Fenster von 400 Millisekunden: es folgt dem Stück beinahe augenblicklich und so schnell wie das Gehör, macht also einzelne Einsätze und Pausen sichtbar; die durchgezogene Linie markiert die integrierte Lautheit des ganzen Stücks. <b>In der Mitte</b> dasselbe über drei Sekunden — Einzelereignisse sind weggeglättet, und es zeigt sich, wie laut ein Abschnitt empfunden wird. An dieser Größe orientieren sich die Zielwerte der Streamingdienste, die als gestrichelte Linie eingezeichnet sind. <b>Unten</b> die Differenz der beiden: Wo der Augenblick über seiner Umgebung liegt, ragt die Fläche nach oben, wo er darunter bleibt, nach unten. Damit wird sichtbar, was in den Kurven darüber nur im Vergleich zu erkennen wäre — Akzente und Einbrüche.</div>
 </div>
 
 
@@ -931,17 +942,17 @@
 <div class="section sa-spur" id="spur-stapel">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:120px"><div id="stapelspur-canvas" class="spur-flaeche" style="height:120px"></div><div class="playhead" id="ph-stapelspur"></div></div>
-  <div class="chart-text">Der Song wird in Ereignis-Bänder unterschiedlicher Dauer zerlegt und je Zeitpunkt auf hundert Prozent normiert. Gezeigt wird, ob <span style="color:#d8d81c">kurze</span> oder <span style="color:#687d98">lange</span> Ereignisse den Augenblick im Track dominieren: unten die langsamen Bewegungen, oben die kurzen Spitzen. Gerechnet wird in Energie und nicht in Dezibel, weil nur dort die Summe der Teile das Ganze ergibt.</div>
+  <div class="chart-text" data-i18n="sa.essay.stapel" data-i18n-html>Der Song wird in Ereignis-Bänder unterschiedlicher Dauer zerlegt und je Zeitpunkt auf hundert Prozent normiert. Gezeigt wird, ob <span style="color:#d8d81c">kurze</span> oder <span style="color:#687d98">lange</span> Ereignisse den Augenblick im Track dominieren: unten die langsamen Bewegungen, oben die kurzen Spitzen. Gerechnet wird in Energie und nicht in Dezibel, weil nur dort die Summe der Teile das Ganze ergibt.</div>
 </div>
 
-<div class="section"><div class="slbl"><span><span class="nam">Lautheitshistogramm</span> — <span class="erkl">wie laut ist wieviel Prozent des Liedes (1-dB-Fächer, ohne Stille)</span></span></div>
+<div class="section"><div class="slbl"><span><span class="nam" data-i18n="sa.hist.nam">Lautheitshistogramm</span> — <span class="erkl" data-i18n="sa.hist.erkl">wie laut ist wieviel Prozent des Liedes (1-dB-Fächer, ohne Stille)</span></span></div>
   <div class="chart-outer"><canvas id="lufshist-canvas" style="height:90px;background:#0a0a0a" class="chart-pending">berechne…</canvas></div>
-  <div class="chart-text">Lautheitsverteilung des Tracks in Fächern von einem Dezibel und ohne die Stille. Ein schmaler, hoher Berg steht für einen durchgehend gleich lauten Track, eine breite Verteilung für ein dynamisches Stück. Die Form verrät die Mastering-Entscheidung deutlicher als jeder Einzelwert.</div>
+  <div class="chart-text" data-i18n="sa.essay.hist">Lautheitsverteilung des Tracks in Fächern von einem Dezibel und ohne die Stille. Ein schmaler, hoher Berg steht für einen durchgehend gleich lauten Track, eine breite Verteilung für ein dynamisches Stück. Die Form verrät die Mastering-Entscheidung deutlicher als jeder Einzelwert.</div>
 </div>
 <div class="section sa-spur" id="spur-stereo">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:192px"><div id="stereospur-canvas" class="spur-flaeche" style="height:192px"></div><div class="playhead" id="ph-stereospur"></div><div id="sa-stereo-namen"></div></div>
-  <div class="chart-text">Die Verteilung der Frequenzbänder über das Stereobild — oben die Höhen und unten der Bass. Was nach oben ragt, liegt <span style="color:#f97b14">links</span>, was nach unten ragt, <span style="color:#4b93f0">rechts</span>; jedes Band ist auf sein eigenes 95. Perzentil normiert. Ein Bass, der nicht in der Mitte sitzt, fällt hier sofort auf.</div>
+  <div class="chart-text" data-i18n="sa.essay.stereo" data-i18n-html>Die Verteilung der Frequenzbänder über das Stereobild — oben die Höhen und unten der Bass. Was nach oben ragt, liegt <span style="color:#f97b14">links</span>, was nach unten ragt, <span style="color:#4b93f0">rechts</span>; jedes Band ist auf sein eigenes 95. Perzentil normiert. Ein Bass, der nicht in der Mitte sitzt, fällt hier sofort auf.</div>
 </div>
 
 <!-- DIE KORRELATIONSSPUR (25.08.2026, Review Block 6). korrVerlauf wird
@@ -953,12 +964,12 @@
 <div class="section sa-spur" id="spur-korr" style="display:none">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:56px"><div id="korrspur-canvas" class="spur-flaeche" style="height:56px"></div><div class="playhead" id="ph-korrspur"></div></div>
-  <div class="chart-text">Wie ähnlich linker und rechter Kanal klingen, über die Zeit: <b>+1</b> heißt beide spielen dasselbe (schmal, aber mono-fest), <b>0</b> heißt völlig unabhängig (breit), und <b>unter null</b> heißt gegenphasig — beim Zusammenrechnen auf Mono löscht sich dort etwas aus. Die gestrichelte Linie markiert die Schwelle, ab der die Befundbahn oben eine Auslöschung meldet.</div>
+  <div class="chart-text" data-i18n="sa.essay.korr" data-i18n-html>Wie ähnlich linker und rechter Kanal klingen, über die Zeit: <b>+1</b> heißt beide spielen dasselbe (schmal, aber mono-fest), <b>0</b> heißt völlig unabhängig (breit), und <b>unter null</b> heißt gegenphasig — beim Zusammenrechnen auf Mono löscht sich dort etwas aus. Die gestrichelte Linie markiert die Schwelle, ab der die Befundbahn oben eine Auslöschung meldet.</div>
 </div>
 
-<div class="section"><div class="slbl"><span><span class="nam">Klangveränderung (Spektrale Fluktuation)</span> — <span class="erkl">Helligkeit = Änderungsrate pro Frequenzband · Bass unten · Höhen oben</span></span></div>
+<div class="section"><div class="slbl"><span><span class="nam" data-i18n="sa.flux.nam">Klangveränderung (Spektrale Fluktuation)</span> — <span class="erkl" data-i18n="sa.flux.erkl">Helligkeit = Änderungsrate pro Frequenzband · Bass unten · Höhen oben</span></span></div>
   <div class="chart-outer"><canvas id="flux-canvas" style="height:160px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-flux"></div></div>
-  <div class="chart-text">Momentane Änderung des Spektrums, aufgelöst nach Frequenzbändern. Helle Stellen bedeuten Bewegung, dunkle Stillstand: Ein liegender Akkord erscheint dunkel, ein Trommelwirbel hell. Die Abbildung zeigt also nicht, was lange klingt oder still ist, sondern in welchem Frequenzband sich etwas stark ändert. Die acht Bänder sind am linken Rand beschriftet und reichen von 20–40 Hz ganz unten bis 2500–20000 Hz ganz oben; jedes ist auf sein eigenes 95. Perzentil normiert, sodass auch leise Bänder ihre Bewegung zeigen.</div>
+  <div class="chart-text" data-i18n="sa.essay.flux">Momentane Änderung des Spektrums, aufgelöst nach Frequenzbändern. Helle Stellen bedeuten Bewegung, dunkle Stillstand: Ein liegender Akkord erscheint dunkel, ein Trommelwirbel hell. Die Abbildung zeigt also nicht, was lange klingt oder still ist, sondern in welchem Frequenzband sich etwas stark ändert. Die acht Bänder sind am linken Rand beschriftet und reichen von 20–40 Hz ganz unten bis 2500–20000 Hz ganz oben; jedes ist auf sein eigenes 95. Perzentil normiert, sodass auch leise Bänder ihre Bewegung zeigen.</div>
 </div>
 
 
@@ -974,8 +985,8 @@
 <div class="section sa-spur" id="spur-noten">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="bf-register" id="noten-register">
-    <button type="button" data-lasche="takt" class="an">Signal zwischen Taktschlägen</button>
-    <button type="button" data-lasche="alles">Gesamtes Signal</button>
+    <button type="button" data-lasche="takt" class="an" data-i18n="sa.lasche.takt">Signal zwischen Taktschlägen</button>
+    <button type="button" data-lasche="alles" data-i18n="sa.lasche.alles">Gesamtes Signal</button>
   </div>
 
   <div id="spur-chroma-takt">
@@ -992,7 +1003,7 @@
          steht sie darunter, damit die Oberkante beider Bilder auf gleicher
          Höhe bleibt und beim Umschalten nichts hüpft. -->
     <div class="chart-outer" style="height:11px;margin-top:4px"><div id="taktrasterspur-canvas" class="spur-flaeche" style="height:11px"></div></div>
-    <div class="chart-text">Nicht je Rechenfenster gemittelt, sondern je Notenzone
+    <div class="chart-text" data-i18n="sa.essay.chroma.takt">Nicht je Rechenfenster gemittelt, sondern je Notenzone
     zwischen zwei Schlägen — der Anschlag am Zonenanfang bleibt ausgespart, weil dort der Ton noch
     nicht steht. Wo sich der Toninhalt innerhalb einer Zone ändert, wird sie halbiert und nötigenfalls
     geviertelt; bleibt er gleich, bleibt das lange Fenster, und das ist zugleich das genauere. Die
@@ -1008,7 +1019,7 @@
 
   <div id="spur-chroma" style="display:none">
     <div class="chart-outer" style="height:160px"><div id="chromaspur-canvas" class="spur-flaeche" style="height:160px"></div><div class="playhead" id="ph-chromaspur"></div></div>
-    <div class="chart-text">Die Signale aller Oktaven sind auf die zwölf Halbtöne konsolidiert, die Oktav-Lage geht dabei verloren. Man sieht, welche Töne über die Zeit klingen und wie stark. Die Zeilen tragen die Farben der Klaviatur, damit sich die Halbtöne zwischen ihren Nachbarn einordnen lassen; normiert wird auf das 95. Perzentil, sodass ein einzelner Ausreißer das Bild nicht verschiebt. <b>Und genau daran sieht man, warum oben anders gemessen wird:</b>
+    <div class="chart-text" data-i18n="sa.essay.chroma.alles" data-i18n-html>Die Signale aller Oktaven sind auf die zwölf Halbtöne konsolidiert, die Oktav-Lage geht dabei verloren. Man sieht, welche Töne über die Zeit klingen und wie stark. Die Zeilen tragen die Farben der Klaviatur, damit sich die Halbtöne zwischen ihren Nachbarn einordnen lassen; normiert wird auf das 95. Perzentil, sodass ein einzelner Ausreißer das Bild nicht verschiebt. <b>Und genau daran sieht man, warum oben anders gemessen wird:</b>
       Das lineare Rechenraster teilt die zwölf Tonklassen ungleich auf — bei 48 kHz fallen auf F# und A#
       je neun Rechenfächer, auf C und D nur je vier. Diese Reihen sammeln deshalb dauernd Energie ein,
       ob dort ein Ton steht oder nicht: Sie sind die hellsten und zugleich die ruhigsten des Bildes und
@@ -1036,7 +1047,7 @@
      Nebenbei kann so nichts huepfen: Beide Bilder haben dieselbe Hoehe
      und stehen an derselben Stelle. -->
 <div class="section" id="spur-spektro">
-  <div class="slbl"><span class="spur-titel"><span class="nam">Spektrogramm</span> — <span class="erkl">lokal Z-normiert · dunkel=Stille · hell=Signal</span></span></div>
+  <div class="slbl"><span class="spur-titel"><span class="nam" data-i18n="sa.spektro.nam">Spektrogramm</span> — <span class="erkl" data-i18n="sa.spektro.l">lokal Z-normiert · dunkel=Stille · hell=Signal</span></span></div>
   <div class="bf-register" id="spektro-register">
     <button type="button" data-spektro="l" class="an">FFT(L)</button>
     <button type="button" data-spektro="r">FFT(R)</button>
@@ -1049,10 +1060,10 @@
     <div class="chart-outer" id="spektro-feld-summe" style="position:absolute;left:0;right:0;top:0;margin:0;visibility:hidden"><canvas id="summespectro-canvas" style="height:180px;background:#0a0a0a"></canvas><div class="playhead" id="ph-summespectro"></div></div>
     <div class="chart-outer" id="spektro-feld-pan" style="position:absolute;left:0;right:0;top:0;margin:0;visibility:hidden"><canvas id="stereospectro-canvas" style="height:180px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-stereospectro"></div></div>
   </div>
-  <div id="spektro-text-l"><div class="chart-text">Die Frequenzen über die Zeit: waagerecht die Zeit, senkrecht die Frequenz, die Farbrampe (<span style="color:#78787d">schwarz</span> – <span style="color:#9a9aa2">grau</span> – <span style="color:#e6e6e6">weiß</span> – <span style="color:#f9531c">orangerot</span>) codiert die Signalstärke. Normiert wird lokal, damit auch leise Passagen ihre Struktur zeigen — die Helligkeit ist deshalb kein absolutes Maß und zwischen zwei Songs nicht vergleichbar. Ein Band am oberen Rand markiert Stellen, an denen das Signal abgeschnitten ist. Die elf waagerechten Linien bilden ein Notensystem: unten die fünf Linien des Bassschlüssels (G2 bis A3), oben die des Violinschlüssels (E4 bis F5) und dazwischen, dünner gezeichnet, die Hilfslinie C4 für das eingestrichene C. An ihnen lässt sich ablesen, in welcher Lage ein Klang liegt.</div></div>
-  <div id="spektro-text-r" style="display:none"><div class="chart-text">Dasselbe Bild für den <b>rechten</b> Kanal. Nebeneinander gelesen zeigen die beiden, wie die Mischung aufgeteilt ist: Was nur in einem der Bilder steht, liegt hart auf einer Seite; was in beiden gleich aussieht, steht in der Mitte. Jedes Band ist auf sein <i>eigenes</i> Rauschen gestreckt — auch hier, mit den Perzentilen des rechten Kanals, denn die des linken würden das Bild systematisch zu hell oder zu dunkel zeichnen, je nachdem wohin gemischt wurde.</div></div>
-  <div id="spektro-text-summe" style="display:none"><div class="chart-text">Beide Kanäle zusammen — und zwar die <b>Beträge</b> addiert, nicht die Signale. Der Unterschied ist wesentlich: Zwei gegenphasige Anteile löschen sich beim Mischen aus und wären in einem echten L+R verschwunden, obwohl beide Lautsprecher sie spielen. Hier bleiben sie stehen. Deshalb heißt die Lasche |L|+|R| und nicht FFT(L+R). Dies ist das Bild, das dem am nächsten kommt, was insgesamt klingt.</div></div>
-  <div id="spektro-text-pan" style="display:none"><div class="chart-text">Dasselbe Bild, doch die Farbe trägt hier die Stereolage statt der Stärke: <span style="color:#f97b14">Orange</span> steht für links, <span style="color:#4b93f0">Blau</span> für rechts, <span style="color:#9a9aa2">Grau</span> für die Mitte. So wird erkennbar, welche Frequenzbereiche breit gemischt sind und welche in der Mitte zusammenlaufen. Das Notensystem der elf Linien ist dasselbe wie im Spektrogramm darüber.</div></div>
+  <div id="spektro-text-l"><div class="chart-text" data-i18n="sa.essay.spektro.l" data-i18n-html>Die Frequenzen über die Zeit: waagerecht die Zeit, senkrecht die Frequenz, die Farbrampe (<span style="color:#78787d">schwarz</span> – <span style="color:#9a9aa2">grau</span> – <span style="color:#e6e6e6">weiß</span> – <span style="color:#f9531c">orangerot</span>) codiert die Signalstärke. Normiert wird lokal, damit auch leise Passagen ihre Struktur zeigen — die Helligkeit ist deshalb kein absolutes Maß und zwischen zwei Songs nicht vergleichbar. Ein Band am oberen Rand markiert Stellen, an denen das Signal abgeschnitten ist. Die elf waagerechten Linien bilden ein Notensystem: unten die fünf Linien des Bassschlüssels (G2 bis A3), oben die des Violinschlüssels (E4 bis F5) und dazwischen, dünner gezeichnet, die Hilfslinie C4 für das eingestrichene C. An ihnen lässt sich ablesen, in welcher Lage ein Klang liegt.</div></div>
+  <div id="spektro-text-r" style="display:none"><div class="chart-text" data-i18n="sa.essay.spektro.r" data-i18n-html>Dasselbe Bild für den <b>rechten</b> Kanal. Nebeneinander gelesen zeigen die beiden, wie die Mischung aufgeteilt ist: Was nur in einem der Bilder steht, liegt hart auf einer Seite; was in beiden gleich aussieht, steht in der Mitte. Jedes Band ist auf sein <i>eigenes</i> Rauschen gestreckt — auch hier, mit den Perzentilen des rechten Kanals, denn die des linken würden das Bild systematisch zu hell oder zu dunkel zeichnen, je nachdem wohin gemischt wurde.</div></div>
+  <div id="spektro-text-summe" style="display:none"><div class="chart-text" data-i18n="sa.essay.spektro.summe" data-i18n-html>Beide Kanäle zusammen — und zwar die <b>Beträge</b> addiert, nicht die Signale. Der Unterschied ist wesentlich: Zwei gegenphasige Anteile löschen sich beim Mischen aus und wären in einem echten L+R verschwunden, obwohl beide Lautsprecher sie spielen. Hier bleiben sie stehen. Deshalb heißt die Lasche |L|+|R| und nicht FFT(L+R). Dies ist das Bild, das dem am nächsten kommt, was insgesamt klingt.</div></div>
+  <div id="spektro-text-pan" style="display:none"><div class="chart-text" data-i18n="sa.essay.spektro.pan" data-i18n-html>Dasselbe Bild, doch die Farbe trägt hier die Stereolage statt der Stärke: <span style="color:#f97b14">Orange</span> steht für links, <span style="color:#4b93f0">Blau</span> für rechts, <span style="color:#9a9aa2">Grau</span> für die Mitte. So wird erkennbar, welche Frequenzbereiche breit gemischt sind und welche in der Mitte zusammenlaufen. Das Notensystem der elf Linien ist dasselbe wie im Spektrogramm darüber.</div></div>
 </div>
 `;
 
@@ -1160,6 +1171,9 @@
        Instrumenterkennung weg - siehe den CSS-Block oben. */
     if (opt && opt.eingebettet) flaeche.classList.add('eingebettet');
     flaeche.innerHTML = MARKUP;
+    try {
+      if (typeof spracheAnwenden === 'function') spracheAnwenden(flaeche);
+    } catch (e) {}
     kartenSortieren(flaeche);   // erst jetzt gibt es Karten
     flaecheJetzt = flaeche;
     kern = starten(flaeche, opt || {});
@@ -1244,6 +1258,10 @@
       return kern.analyzeUrl(adresse, titel, bild);
     },
     get bereit(){ return !!kern; },
+    spracheNachziehen(){
+      if (flaecheJetzt && typeof spracheAnwenden === 'function') spracheAnwenden(flaecheJetzt);
+      if (kern && typeof kern.spracheNachziehen === 'function') kern.spracheNachziehen();
+    },
   };
 
   /* ======================================================================
@@ -1260,6 +1278,13 @@
        Analyzers läuft hierüber und lässt sich damit gemeinsam anhalten.
        Das Original ruft schlicht requestAnimationFrame(...) auf und merkt
        von der Umleitung nichts. */
+    function T(k, vars){
+      return (typeof window.t === 'function') ? window.t(k, vars) : k;
+    }
+    function loc(n, opt){
+      return Number(n).toLocaleString((typeof localeTag === 'function' ? localeTag() : 'de-DE'), opt);
+    }
+
     let laeuft = true;
     const bilder = new Set();
     function requestAnimationFrame(fn){
@@ -1465,19 +1490,21 @@
        Luecke aufgedeckt - Apple Music liegt bei -16 LUFS und fehlte.
        Anbieter aendern solche Werte, also gehoert das Datum dazu. */
     var ZIELE={
-      streaming:{name:'Streaming', lufs:-14, tp:-1.0, regelt:'beides',
-                 merkmal:'Sammelwert: Spotify, YouTube, TIDAL, Amazon, SoundCloud.'},
-      spotify:  {name:'Spotify',   lufs:-14, tp:-1.0, regelt:'beides',
-                 merkmal:'Hebt leise Titel an und laesst dabei 1 dB Reserve.'},
-      apple:    {name:'Apple Music', lufs:-16, tp:-1.0, regelt:'beides',
-                 merkmal:'Der Ausreisser: -16 statt -14, geregelt ueber Sound Check.'},
-      youtube:  {name:'YouTube',   lufs:-14, tp:-1.0, regelt:'leiser',
-                 merkmal:'Dreht nur zurueck, hebt nie an.'},
-      club:     {name:'Club',      lufs:-9,  tp:-0.5, regelt:'nein',
-                 merkmal:'Keine Regelung, dafuer Reserve fuers Pult.'},
-      broadcast:{name:'Rundfunk',  lufs:-23, tp:-1.0, regelt:'nein', toleranz:0.5,
-                 merkmal:'R128: -23 LUFS mit +-0,5 LU Toleranz.'},
+      streaming:{nameKey:'sa.ziel.streaming', lufs:-14, tp:-1.0, regelt:'beides',
+                 merkmalKey:'sa.merkmal.streaming'},
+      spotify:  {nameKey:'sa.ziel.spotify',   lufs:-14, tp:-1.0, regelt:'beides',
+                 merkmalKey:'sa.merkmal.spotify'},
+      apple:    {nameKey:'sa.ziel.apple', lufs:-16, tp:-1.0, regelt:'beides',
+                 merkmalKey:'sa.merkmal.apple'},
+      youtube:  {nameKey:'sa.ziel.youtube',   lufs:-14, tp:-1.0, regelt:'leiser',
+                 merkmalKey:'sa.merkmal.youtube'},
+      club:     {nameKey:'sa.ziel.club',      lufs:-9,  tp:-0.5, regelt:'nein',
+                 merkmalKey:'sa.merkmal.club'},
+      broadcast:{nameKey:'sa.ziel.broadcast',  lufs:-23, tp:-1.0, regelt:'nein', toleranz:0.5,
+                 merkmalKey:'sa.merkmal.broadcast'},
     };
+    function zielName(z){ return T(z.nameKey); }
+    function zielMerkmal(z){ return T(z.merkmalKey); }
     /* Ampel aus der Segmentpalette (Caspar_D, 18.08.2026: "kannst du die
        Farbstimmung des Editors an den Segmentfarben orientieren").
        Gruen und Gelb kommen unveraendert daher; fuer den Fehlerfall
@@ -1500,19 +1527,23 @@
         Object.keys(ZIELE).forEach(function(k){
           var z=ZIELE[k];
           var b=document.createElement('button');
-          b.textContent=z.name; b.dataset.ziel=k;
-          b.title=z.merkmal+'  Ziel '+z.lufs+' LUFS, Spitze '+z.tp.toFixed(1)+' dBTP';
+          b.dataset.ziel=k;
           b.onclick=function(){ ZIEL_AKTIV=k; if(window._normwerte){ befundeZeigen(window._normwerte); lautheitSpurenZeichnen(); } };
           reg.appendChild(b);
         });
-        sel.innerHTML=Object.keys(ZIELE).map(function(k){
-          return '<option value="'+k+'">'+ZIELE[k].name+' · '+ZIELE[k].lufs+' LUFS</option>'; }).join('');
         sel.onchange=function(){ ZIEL_AKTIV=sel.value;
           if(window._normwerte){ befundeZeigen(window._normwerte); lautheitSpurenZeichnen(); } };
         if(window.ResizeObserver){
           new ResizeObserver(registerAnpassen).observe(document.getElementById('sa-befunde'));
         }
       }
+      [].forEach.call(reg.children, function(b){
+        var z=ZIELE[b.dataset.ziel];
+        b.textContent=zielName(z);
+        b.title=zielMerkmal(z)+'  '+T('sa.ziel.tipp', { lufs:z.lufs, tp:z.tp.toFixed(1) });
+      });
+      sel.innerHTML=Object.keys(ZIELE).map(function(k){
+        return '<option value="'+k+'">'+zielName(ZIELE[k])+' · '+ZIELE[k].lufs+' LUFS</option>'; }).join('');
       [].forEach.call(reg.children, function(b){ b.classList.toggle('an', b.dataset.ziel===ZIEL_AKTIV); });
       sel.value=ZIEL_AKTIV;
       registerAnpassen();
@@ -2042,7 +2073,7 @@
             var vor=lab[i9], nach=lab[i9+1];
             var wie=(vor&&nach) ? ' · '+vor+' → '+nach : '';
             teile.push('<rect x="'+(xw-14).toFixed(1)+'" y="'+yTickO+'" width="28" height="6" fill="transparent" '
-              +'data-t="'+t9.toFixed(2)+'" class="bf-tref"><title>Suno-Wechsel · '+zeitTxt(t9)+wie+'</title></rect>');
+              +'data-t="'+t9.toFixed(2)+'" class="bf-tref"><title>'+T('sa.bahn.wechsel', { zeit:zeitTxt(t9), wie:wie })+'</title></rect>');
           });
         }
         /* KEIN HINTERGRUND MEHR und keine eigene Topline (Caspar_D, 23.08.2026:
@@ -2384,8 +2415,8 @@
          song gemessen wurde.") Dieselbe Regel wie bei den
          Schimmerfunden: was fuer alle Zeilen gilt, steht im Kopf. */
       var KOPF='<span class="kopf"></span>'
-        +'<span class="kopf" style="text-align:right">Ziel</span>'
-        +'<span class="kopf" style="text-align:right">dieser Song</span>'
+        +'<span class="kopf" style="text-align:right">'+T('sa.kopf.ziel')+'</span>'
+        +'<span class="kopf" style="text-align:right">'+T('sa.kopf.dieser')+'</span>'
         +'<span class="kopf"></span>';
       var zeilenV=[];
       var v=function(gr, soll, ist, stufe, urteil){
@@ -2395,21 +2426,21 @@
 
       /* Was die Plattform tut, steht einmal oben - nicht in jeder
          Zeile. Es ist ihre Eigenschaft, nicht die des Parameters. */
-      var verhalten = ziel.regelt==='leiser' ? 'dreht nur zurück, hebt nie an'
-                    : ziel.regelt==='beides' ? 'regelt in beide Richtungen, hebt mit Begrenzer an'
-                    : 'regelt nicht';
+      var verhalten = ziel.regelt==='leiser' ? T('sa.regelt.leiser')
+                    : ziel.regelt==='beides' ? T('sa.regelt.beides')
+                    : T('sa.regelt.nein');
       document.getElementById('sa-plattform').innerHTML=
-        '<b>'+ziel.name+'</b> — '+verhalten+' · '+ziel.merkmal;
+        '<b>'+zielName(ziel)+'</b> — '+verhalten+' · '+zielMerkmal(ziel);
 
       var lautStufe = Math.abs(soll)<=tol ? 0
                     : (soll<0 ? (ziel.regelt==='nein'?2:1) : (ziel.regelt==='beides'?2:1));
-      var lautUrteil = Math.abs(soll)<=tol ? 'passt'
-                     : (soll<0 ? (-soll).toFixed(1)+' LU zu laut' : soll.toFixed(1)+' LU zu leise');
-      v('Lautheit', ziel.lufs+' LUFS', msg.lufs.toFixed(1), lautStufe, lautUrteil);
+      var lautUrteil = Math.abs(soll)<=tol ? T('sa.urteil.passt')
+                     : (soll<0 ? T('sa.urteil.zu_laut', { n:(-soll).toFixed(1) }) : T('sa.urteil.zu_leise', { n:soll.toFixed(1) }));
+      v(T('sa.gr.lautheit'), ziel.lufs+' LUFS', msg.lufs.toFixed(1), lautStufe, lautUrteil);
 
-      v('Spitze', '≤ '+ziel.tp.toFixed(1)+' dBTP',
+      v(T('sa.gr.spitze'), '≤ '+ziel.tp.toFixed(1)+' dBTP',
         msg.truePeak.toFixed(1), msg.truePeak>ziel.tp?2:0,
-        msg.truePeak>ziel.tp? Math.abs(luft).toFixed(1)+' dB darüber' : luft.toFixed(1)+' dB Luft');
+        msg.truePeak>ziel.tp? T('sa.urteil.darueber', { n:Math.abs(luft).toFixed(1) }) : T('sa.urteil.luft', { n:luft.toFixed(1) }));
 
       /* Die Normalisierung der Dienste ist STATISCH: ein Verstaerkungswert
          je Song, aus der integrierten Lautheit. Die Schwankung ist
@@ -2418,10 +2449,10 @@
          (25.08.2026, Review). Einziger echter Sonderfall: Plattformen,
          die anheben ('beides'), schicken zu leise Songs durch einen
          Begrenzer - der greift in die Spitzen. */
-      v('Schwankung', '—', msg.lra.toFixed(1)+' LU', 0,
+      v(T('sa.gr.schwankung'), '—', msg.lra.toFixed(1)+' LU', 0,
         (ziel.regelt==='beides' && soll>tol)
-          ? 'beim Anheben greift der Begrenzer in die Spitzen'
-          : 'bleibt erhalten');
+          ? T('sa.urteil.begrenzer')
+          : T('sa.urteil.erhalten'));
 
       /* 'Uebersteuert' erst bei LAEUFEN am Anschlag (>=3 in Folge, im
          Worker gezaehlt). Einzelne Werte an der Decke sind heisses, aber
@@ -2429,19 +2460,19 @@
          Alte Ablagen kennen clipLauf nicht (undefined): dann gilt das
          alte, strenge Urteil weiter, statt faelschlich zu entwarnen. */
       if(msg.clip>0 && msg.clipLauf===0)
-        v('Vollausschläge','keine', msg.clip.toLocaleString('de-DE')+' einzeln', 1,
-          'am Anschlag, aber nie in Folge');
+        v(T('sa.gr.voll'), T('sa.voll.keine'), T('sa.voll.einzeln', { n:loc(msg.clip) }), 1,
+          T('sa.urteil.einzeln'));
       else if(msg.clip>0)
-        v('Vollausschläge','keine', msg.clip.toLocaleString('de-DE'), 2,
-          'übersteuert'+(msg.clipLauf>0?' ('+msg.clipLauf+' Läufe)':''));
-      else v('Vollausschläge','keine','0',0,'');
+        v(T('sa.gr.voll'), T('sa.voll.keine'), loc(msg.clip), 2,
+          msg.clipLauf>0 ? T('sa.urteil.laeufe', { n:msg.clipLauf }) : T('sa.urteil.uebersteuert'));
+      else v(T('sa.gr.voll'), T('sa.voll.keine'),'0',0,'');
 
-      v('Phase','positiv', msg.negPhase.toFixed(0)+'% negativ', msg.negPhase>5?1:0,
-        msg.negPhase>5?'löscht sich stellenweise':'');
+      v(T('sa.gr.phase'), T('sa.phase.positiv'), T('sa.phase.negativ', { n:msg.negPhase.toFixed(0) }), msg.negPhase>5?1:0,
+        msg.negPhase>5?T('sa.urteil.loescht'):'');
 
       /* Neue Kante, wenn gerechnet; alte Ablagen liefern nur grenzHz. */
       var obereK=isFinite(msg.kanteHz)?msg.kanteHz:msg.grenzHz;
-      if(isFinite(obereK)) v('obere Grenze','—', (obereK/1000).toFixed(1)+' kHz', 0, '');
+      if(isFinite(obereK)) v(T('sa.gr.grenze'),'—', (obereK/1000).toFixed(1)+' kHz', 0, '');
       document.getElementById('sa-vergleich').innerHTML=
         tabelleMehrspaltig('bf-vergleich', KOPF, zeilenV, 3);
 
@@ -2459,13 +2490,12 @@
             x.stufe=2;
             if(x.anzahl>1){
               var takt=(x.bis-x.von)/x.anzahl;
-              x.titel=zeitTxt(x.von)+'–'+zeitTxt(x.bis)+': '+x.anzahl+' Überschreitungen, '
-                     +'etwa alle '+takt.toFixed(1)+' s';
+              x.titel=T('sa.bahn.spitzen.mehr', { von:zeitTxt(x.von), bis:zeitTxt(x.bis), n:x.anzahl, takt:takt.toFixed(1) });
             } else {
-              x.titel=zeitTxt(x.von)+': einzelne Überschreitung über '+ziel.tp.toFixed(1)+' dBTP';
+              x.titel=T('sa.bahn.spitzen.eine', { von:zeitTxt(x.von), n:ziel.tp.toFixed(1) });
             }
             return x; });
-        if(st.length) bahnen.push({name:'Spitzen über dem Ziel — über '+ziel.tp.toFixed(1)+' dBTP', strecken:st});
+        if(st.length) bahnen.push({name:T('sa.bahn.spitzen', { n:ziel.tp.toFixed(1) }), strecken:st});
       }
 
       if(msg.clipVerlauf&&msg.clip>0){
@@ -2473,20 +2503,22 @@
         for(var i=0;i<cv.length;i++) if(cv[i]>0) idx2.push(i);
         var st2=strecken(idx2, sch2, 2).map(function(x){
           x.stufe=2;
-          x.titel=(x.anzahl>1 ? zeitTxt(x.von)+'–'+zeitTxt(x.bis)+': Vollausschläge in '+x.anzahl+' Fenstern'
-                              : zeitTxt(x.von)+': Vollausschlag');
+          x.titel=(x.anzahl>1
+            ? T('sa.bahn.voll.mehr', { von:zeitTxt(x.von), bis:zeitTxt(x.bis), n:x.anzahl })
+            : T('sa.bahn.voll.eine', { von:zeitTxt(x.von) }));
           return x; });
-        if(st2.length) bahnen.push({name:'Vollausschläge — digitale Übersteuerung', strecken:st2});
+        if(st2.length) bahnen.push({name:T('sa.bahn.voll'), strecken:st2});
       }
 
       if(msg.korrVerlauf&&msg.korrVerlauf.length){
         var idx3=[], kv=msg.korrVerlauf, sch3=msg.korrSchritt||0.4;
         for(var i=0;i<kv.length;i++) if(isFinite(kv[i])&&kv[i]<-0.10) idx3.push(i);
         var st3=strecken(idx3, sch3, 2).map(function(x){ x.stufe=1;
-            x.titel=(x.anzahl>1 ? zeitTxt(x.von)+'–'+zeitTxt(x.bis) : zeitTxt(x.von))
-                   +': negative Korrelation, in Mono löscht sich etwas aus';
+            x.titel=T('sa.bahn.phase.tipp', {
+              span: x.anzahl>1 ? zeitTxt(x.von)+'–'+zeitTxt(x.bis) : zeitTxt(x.von)
+            });
             return x; });
-        if(st3.length) bahnen.push({name:'Teilweise Stereoauslöschung — Phase negativ', strecken:st3});
+        if(st3.length) bahnen.push({name:T('sa.bahn.phase'), strecken:st3});
       }
 
       
@@ -2509,10 +2541,11 @@
         for(var i5=0;i5<kz.length;i5++) if(isFinite(kz[i5])&&kz[i5]>ziel.lufs+0.5) kIdx.push(i5);
         var st5=strecken(kIdx, kSchritt, 5).map(function(x){
           x.stufe=1;
-          x.titel=zeitTxt(x.von)+'–'+zeitTxt(x.bis)+': lauter als das Ziel von '
-                 +ziel.lufs+' LUFS ('+ziel.name+')';
+          x.titel=T('sa.bahn.lauter.tipp', {
+            von:zeitTxt(x.von), bis:zeitTxt(x.bis), lufs:ziel.lufs, ziel:zielName(ziel)
+          });
           return x; });
-        if(st5.length) bahnen.push({name:'Lauter als das Ziel — hier sitzt der Pegelüberschuss', strecken:st5});
+        if(st5.length) bahnen.push({name:T('sa.bahn.lauter'), strecken:st5});
       }
 
       /* STEHENDE TÖNE aus dem geprüften Detektor (bin/stoerfrequenz.js), von
@@ -2523,12 +2556,18 @@
       if(stT&&stT.length){
         var st6=stT.map(function(c){
           var stoer=(c.art==='Stoerton'||c.art==='Brummen');
+          var artWort=c.art==='Stoerton'||c.art==='Störton' ? T('sa.stoer.stoerton')
+                    : c.art==='Brummen' ? T('sa.stoer.brummen')
+                    : T('sa.stoer.ton');
+          var freq=c.hz>=1000
+            ? ((typeof dezimal==='function')?dezimal((c.hz/1000).toFixed(2)):(c.hz/1000).toFixed(2).replace('.',','))+' kHz'
+            : Math.round(c.hz)+' Hz';
           return { von:0, bis:dauer, stufe:stoer?2:0,
-                   titel:(c.hz>=1000?(c.hz/1000).toFixed(2).replace('.',',')+' kHz':Math.round(c.hz)+' Hz')
-                        +' · '+(c.art||'Ton').replace('Stoerton','Störton')
-                        +' · '+c.db+' dB über der Nachbarschaft · in '+Math.round(c.dauer*100)+' % des Songs'
-                        +(c.note?' · '+c.note+(c.cent>=0?'+':'')+c.cent+' Cent':'') }; });
-        bahnen.push({name:'Stehende Töne — aus dem Glockenstuhl (2,7 Hz Auflösung)', strecken:st6});
+                   titel:T('sa.stoer.tipp', {
+                     freq:freq, art:artWort, db:c.db, pct:Math.round(c.dauer*100),
+                     note:c.note?' · '+c.note+(c.cent>=0?'+':'')+c.cent+' Cent':''
+                   }) }; });
+        bahnen.push({name:T('sa.bahn.stoer', { hz:(typeof dezimal==='function')?dezimal('2.7'):'2,7' }), strecken:st6});
       }
 
       var quelleWorte=(_katalogDaten&&_katalogDaten.worte)||null;
@@ -2541,7 +2580,7 @@
         var abst=[]; for(var i7=1;i7<schl.length;i7++) abst.push(schl[i7][0]-schl[i7-1][0]);
         var srt=abst.slice().sort(function(a,b){return a-b;});
         var med=srt[srt.length>>1];
-        bahnen.unshift({name:'Takt — Sunos Schlagraster'+(med>0?' · '+Math.round(60/med)+' BPM':''),
+        bahnen.unshift({name: med>0 ? T('sa.bahn.takt.bpm', { n:Math.round(60/med) }) : T('sa.bahn.takt'),
                         strecken:[], schlaege:schl});
       }
       /* DIE HUELLKURVE HAENGT NICHT AN DER GLIEDERUNG (Caspar_D,
@@ -2610,7 +2649,7 @@
       var eigeneRoh = (window._chartData && window._chartData.energy) || null;
       var eigene = kurveFormen(eigeneRoh);
       var welleJetzt = (eigene && eigene.length) ? eigene : ((welleRoh && welleRoh.length) ? welleRoh : null);
-      bahnen.unshift({name: abs.length ? 'Track-Struktur' : 'Hüllkurve',
+      bahnen.unshift({name: abs.length ? T('sa.bahn.struktur') : T('sa.bahn.huell'),
           strecken:[], abschnitte: abs.length?abs:null,
           welle: welleJetzt,
           welleRoh: (eigene && eigene.length) ? eigeneRoh : welleRoh,
@@ -2627,23 +2666,22 @@
       var stufe, text, tipp;
       if(soll>0.5&&luft<soll){
         stufe=2;
-        text='Zu leise für '+ziel.name+' um '+soll.toFixed(1)+' LU — aber nur '
-             +luft.toFixed(1)+' dB Luft bis zur Spitze.';
-        tipp='Lauter geht nur mit Begrenzer, nicht mit dem Regler.';
+        text=T('sa.pegel.zu_leise', { ziel:zielName(ziel), n:soll.toFixed(1), luft:luft.toFixed(1) });
+        tipp=T('sa.pegel.tipp.begrenzer');
       } else if(Math.abs(soll)<=0.5&&msg.truePeak<=ziel.tp+0.1){
-        stufe=0; text='Passt für '+ziel.name+'.'; tipp='';
+        stufe=0; text=T('sa.pegel.passt', { ziel:zielName(ziel) }); tipp='';
       } else if(soll<-0.5){
-        stufe=1; text='Um '+(-soll).toFixed(1)+' LU lauter als '+ziel.name+' — wird beim Abspielen leiser geregelt.';
+        stufe=1; text=T('sa.pegel.lauter', { n:(-soll).toFixed(1), ziel:zielName(ziel) });
         /* Statische Absenkung erhaelt die Dynamik vollstaendig - der
            fruehere Tipp behauptete das Gegenteil (25.08.2026, Review). */
-        tipp='Kein Fehler: der ganze Song wird um diesen Betrag abgesenkt, die Dynamik bleibt dabei erhalten.';
+        tipp=T('sa.pegel.tipp.senken');
       } else {
-        stufe=1; text='Um '+soll.toFixed(1)+' LU leiser als '+ziel.name+'.';
-        tipp='Anheben möglich, '+luft.toFixed(1)+' dB Luft vorhanden.';
+        stufe=1; text=T('sa.pegel.leiser', { n:soll.toFixed(1), ziel:zielName(ziel) });
+        tipp=T('sa.pegel.tipp.anheben', { n:luft.toFixed(1) });
       }
       var zeilen=['<div class="bf'+(stufe?'':' gut')+'">'
         +'<span class="ampel" style="background:'+AMPEL[stufe]+'"></span>'
-        +'<span class="wo">Pegel</span><span class="was">'+text+'</span>'
+        +'<span class="wo">'+T('sa.pegel')+'</span><span class="was">'+text+'</span>'
         +'<span class="tipp">'+tipp+'</span></div>'];
       document.getElementById('sa-urteil').innerHTML=zeilen.join('');
 
@@ -3012,14 +3050,14 @@
       var ziel=(ZIELE[(document.getElementById('sa-ziel')||{}).value]||ZIELE.streaming);
 
       spurMalen('momentanspur','spur-momentan', d.momentan, '#4b93f0',
-                'Momentanlautheit', '400 ms', null, m);
+                T('sa.momentan'), '400 ms', null, m);
       /* Nur hier die Ziellinie: Der Vergleich mit dem Zielpegel ist eine
          Aussage über die empfundene Lautheit, und die trägt das
          Kurzzeitfenster. Der Bereich wird dafür so weit aufgezogen, dass
          die Linie nicht aus dem Bild fällt - sonst verschwände sie
          still, sobald der Song weit vom Ziel weg liegt. */
       spurMalen('kurzspur','spur-kurz', d.kurz, '#f18bbb',
-                'Kurzzeitlautheit', '3 s', ziel, m);
+                T('sa.kurzzeit'), '3 s', ziel, m);
       abweichungSpurZeichnen(d, m);
       kaskadeSpurenZeichnen(m);
       linienSpurenZeichnen();
@@ -3174,7 +3212,21 @@
        abdeckt, nicht eine einzelne Fensterlänge - denn seit der
        Umstellung auf Differenzen trägt jedes Band genau das, was
        zwischen zwei Krümmungen neu hinzukommt. */
-    function kaskadeName(ms){ return ms>=1000 ? (ms/1000).toFixed(1).replace('.',',')+' s' : ms+' ms'; }
+    function kaskadeName(ms){
+      if(ms>=1000){
+        var s=(ms/1000).toFixed(1);
+        return ((typeof dezimal==='function')?dezimal(s):s.replace('.',','))+' s';
+      }
+      return ms+' ms';
+    }
+    /* Die Wörter „über“/„unter“ hängen an der Anzeige, nicht an der
+       Zerlegung — sonst bleiben sie nach einem Sprachwechsel Deutsch. */
+    function kaskadeBandWort(name){
+      if(typeof name!=='string') return String(name||'');
+      if(name.indexOf('über ')===0) return T('sa.kaskade.ueber', {n:name.slice(5)});
+      if(name.indexOf('unter ')===0) return T('sa.kaskade.unter', {n:name.slice(6)});
+      return name;
+    }
 
     function kaskadeRechnen(reihe, schrittMs){
       var n=reihe.length;
@@ -3405,7 +3457,9 @@
 
       var baender=lBands.length, n=lBands[0].length, H=192;
       var bandH=H/baender, maxH=bandH*0.44;
-      var BANDNAMEN=['20-60','60-150','150-400','400-1k','1-2,5k','2,5-6k','6-12k','12-20k'];
+      var BANDNAMEN=['20-60','60-150','150-400','400-1k','1-2,5k','2,5-6k','6-12k','12-20k'].map(function(s){
+        return (typeof localeTag==='function' && String(localeTag()).indexOf('en')===0) ? s.replace(/,/g,'.') : s;
+      });
 
       var punkte=Math.min(SPUR_W, n);
       var teile=['<svg viewBox="'+(viewStart*SPUR_W).toFixed(1)+' 0 '
@@ -3453,9 +3507,9 @@
         return '<span style="top:'+((m.y-bandH/2+3)/H*100).toFixed(2)+'%">'+m.text+'</span>'; }).join('');
 
       var titel=document.querySelector('#spur-stereo .spur-titel');
-      if(titel) titel.innerHTML='<span class="nam" style="color:#f97b14">Stereopanorama</span> — '
-        +'<span style="color:#f97b14">▲ links</span> · <span style="color:#4b93f0">▼ rechts</span> · '
-        +'<span style="opacity:.82">unten Bass, oben Höhen · je Band auf sein 95. Perzentil normiert</span>';
+      if(titel) titel.innerHTML='<span class="nam" style="color:#f97b14">'+T('sa.stereo.nam')+'</span> — '
+        +'<span style="color:#f97b14">'+T('sa.links')+'</span> · <span style="color:#4b93f0">'+T('sa.rechts')+'</span> · '
+        +'<span style="opacity:.82">'+T('sa.stereo.erkl')+'</span>';
     }
 
 
@@ -3544,10 +3598,11 @@
        schreiben - das Titelfeld liegt jetzt ueber den Laschen und gehoert
        keiner der beiden allein. */
     var _notenErkl={takt:'', alles:''};
+    var _notenStand=null;
     function notenTitelSetzen(){
       var titel=document.querySelector('#spur-noten .spur-titel');
       if(!titel) return;
-      titel.innerHTML='<span class="nam" style="color:'+TASTE_HELL+'">Chroma</span> — '
+      titel.innerHTML='<span class="nam" style="color:'+TASTE_HELL+'">'+T('sa.chroma.nam')+'</span> — '
         + (_notenErkl[_lascheOffen]||'');
     }
 
@@ -3746,12 +3801,12 @@
          geteilt sein koennen (bei "Okkultation" 570 Schlaege in rund
          142 Takten). Zonenzahl und Herkunftsangabe bleiben draussen,
          der Titel soll ein Satz bleiben (beides Caspar_Ds Entscheidung). */
+      _notenStand={ raster:nz.raster, v:Math.round(100*(zs[1]||0)/su), a:Math.round(100*(zs[2]||0)/su), s:Math.round(100*(zs[4]||0)/su) };
       _notenErkl.takt=
-          '<span class="erkl">bei den Halbtonfrequenzen gemessen · Raster '
-        + (nz.raster==='bass' ? 'aus dem Bass' : 'aus dem Mix') + ' · '
-        + '<span style="color:#4b93f0">Taktschläge mit Vierteln ' + Math.round(100*(zs[1]||0)/su) + ' %</span> · '
-        + '<span style="color:#45e989">mit Achteln ' + Math.round(100*(zs[2]||0)/su) + ' %</span> · '
-        + '<span style="color:#f9531c">mit Sechzehnteln ' + Math.round(100*(zs[4]||0)/su) + ' %</span></span>';
+          '<span class="erkl">'+T('sa.chroma.takt.erkl', {
+            raster: nz.raster==='bass' ? T('sa.chroma.raster.bass') : T('sa.chroma.raster.mix'),
+            v:_notenStand.v, a:_notenStand.a, s:_notenStand.s
+          })+'</span>';
       notenTitelSetzen();
     }
 
@@ -3820,10 +3875,7 @@
       host.innerHTML=teile.join('');
 
       _lascheGezeichnet.alles=true;
-      _notenErkl.alles='<span class="erkl">über das ganze Signal gemittelt · '
-        +'<span style="opacity:.88">Oktaven addiert, Breite = Intensität</span> · '
-        +'<span style="opacity:.82">Tastenfarben: <span style="color:'+TASTE_HELL+'">weiß</span> '
-        +'und <span style="color:'+lesbar(TASTE_DUNKEL, 6.6)  /* Reserve fuer die 0,82 Deckkraft des umgebenden Spans */+'">schwarz</span> wie auf der Klaviatur</span></span>';
+      _notenErkl.alles='<span class="erkl">'+T('sa.chroma.alles.erkl')+'</span>';
       notenTitelSetzen();
     }
 
@@ -4022,13 +4074,9 @@
       t2.push('</svg>');
       document.getElementById('stapelspur-canvas').innerHTML=t2.join('');
       var ts=document.querySelector('#spur-stapel .spur-titel');
-      if(ts) ts.innerHTML='<span class="nam" style="color:#4b93f0">Gestapelte zeitintervallsortierte Anteile</span> — <span class="erkl">dieselben Bänder addiert</span> · '
-        +N.slice(erstes).map(function(x,i){return '<span style="color:'+lesbar(farben[(i+erstes)%farben.length])+'">'+x+'</span>';}).join(' · ')
-        +' · <span style="opacity:.82"><b>in Energie</b> gerechnet, nicht in Dezibel — nur dort ist eine Summe eine Summe · '
-        +'je Zeitpunkt auf 100 % normiert — woraus der Song gerade besteht, '
-        +'nicht wie laut er ist · ohne das Sockelband '+N[0]+' (im Mittel 81 % und keine Ereignisse) · '
-        +'unten die längste Wellenlänge, Spitzen obenauf · '
-        +'<span style="color:#9a9aa2">grau</span> = still, kein Anteil bestimmbar</span>';
+      if(ts) ts.innerHTML='<span class="nam" style="color:#4b93f0">'+T('sa.stapel.nam')+'</span> — <span class="erkl">'+T('sa.stapel.erkl')+'</span> · '
+        +N.slice(erstes).map(function(x,i){return '<span style="color:'+lesbar(farben[(i+erstes)%farben.length])+'">'+kaskadeBandWort(x)+'</span>';}).join(' · ')
+        +' · <span style="opacity:.82">'+T('sa.stapel.detail', { sockel:kaskadeBandWort(N[0]) })+'</span>';
     }
 
     function abweichungSpurZeichnen(d, m){
@@ -4083,10 +4131,10 @@
 
       var titel=document.querySelector('#spur-abweichung .spur-titel');
       if(titel) titel.innerHTML=
-          '<span class="nam">Abweichung</span> — <span class="erkl">Augenblick gegen Umgebung</span> · '
-        + '<span style="color:'+OBEN+'">oben: ragt heraus</span> · '
-        + '<span style="color:'+UNTEN+'">unten: fällt ab</span> · '
-        + '<span style="opacity:.9">' + lo.toFixed(1) + ' bis +' + hi.toFixed(1) + ' LU</span>';
+          '<span class="nam">'+T('sa.abweichung')+'</span> — <span class="erkl">'+T('sa.abweichung.erkl')+'</span> · '
+        + '<span style="color:'+OBEN+'">'+T('sa.ragt')+'</span> · '
+        + '<span style="color:'+UNTEN+'">'+T('sa.faellt')+'</span> · '
+        + '<span style="opacity:.9">' + T('sa.bis', { lo:lo.toFixed(1), hi:'+'+hi.toFixed(1) }) + ' LU</span>';
     }
 
     /* DIE KORRELATIONSSPUR (25.08.2026, Review Block 6). Dieselbe Bauart
@@ -4138,12 +4186,12 @@
 
       var titel=document.querySelector('#spur-korr .spur-titel');
       if(titel) titel.innerHTML=
-          '<span class="nam">Verträgt er Mono?</span> — <span class="erkl">Stereo-Korrelation über die Zeit</span> · '
-        + '<span style="color:'+OBEN+'">+1 gleich</span> · '
-        + '<span style="color:'+UNTEN+'">−1 gegenphasig</span>'
-        + (isFinite(msg.korr) ? ' · <span style="opacity:.9">Mittel '+msg.korr.toFixed(2)+'</span>' : '')
+          '<span class="nam">'+T('sa.korr.nam')+'</span> — <span class="erkl">'+T('sa.korr.erkl')+'</span> · '
+        + '<span style="color:'+OBEN+'">'+T('sa.korr.plus')+'</span> · '
+        + '<span style="color:'+UNTEN+'">'+T('sa.korr.minus')+'</span>'
+        + (isFinite(msg.korr) ? ' · <span style="opacity:.9">'+T('sa.korr.mittel', { n:msg.korr.toFixed(2) })+'</span>' : '')
         + (isFinite(msg.negPhase) && msg.negPhase>=0.5
-            ? ' · <span style="color:'+UNTEN+'">'+msg.negPhase.toFixed(0)+' % unter −0,1</span>' : '');
+            ? ' · <span style="color:'+UNTEN+'">'+T('sa.korr.unter', { n:msg.negPhase.toFixed(0) })+'</span>' : '');
     }
 
     /* ==================================================================
@@ -4266,18 +4314,12 @@
     /* Was unter den beiden Spuren steht. Sie entstehen dynamisch, also
        reist der Text hier mit. */
     var SPUR_TEXT={
-      energie:'Der Energieverlauf über die Zeit, im Standard geglättet mit einer Kuppel von rund '
-        +'268 Millisekunden Wirkbreite. Gezeigt wird der Spannungsbogen eines Stücks — wo es '
-        +'aufbaut, wo es steht, wo es abfällt. Einzelne Anschläge verschwinden dabei in der '
-        +'Glättung; wer sie sucht, findet sie in der Klangveränderung weiter unten.',
-      crest:'Das Verhältnis von Spitzenwert zu Effektivwert, ungeglättet und mit einem Punkt je '
-        +'halbe Sekunde. Hohe Werte bedeuten lebendige Anschläge mit Luft dazwischen, niedrige '
-        +'einen dichten, stark komprimierten Klang. Werte um drei zeigen kräftige Kompression an, '
-        +'Werte über zehn einen weitgehend unbearbeiteten Klang.'
+      energie:'sa.essay.energie',
+      crest:'sa.essay.crest'
     };
     var SPUREN=[
-      {id:'energie',  quelle:function(d){return d.energy;},   farbe:'#f97b14', name:'Signalenergie', einheit:'', db:false},
-      {id:'crest',    quelle:function(d){return d.crest;},    farbe:'#16be5c', name:'Dynamikumfang (Crest)', einheit:''},
+      {id:'energie',  quelle:function(d){return d.energy;},   farbe:'#f97b14', nameKey:'sa.spur.energie', einheit:'', db:false},
+      {id:'crest',    quelle:function(d){return d.crest;},    farbe:'#16be5c', nameKey:'sa.spur.crest', einheit:''},
     ];
 
     /* Die Gewichtsprofile als SYMBOL, nicht als Wort.
@@ -4302,14 +4344,12 @@
          also konkav, nicht konvex wie bei der Glocke. */
       spitze:  'M1 8.7 C4.5 8.4 6 7 7 2 C8 7 9.5 8.4 13 8.7'
     };
-    var PROFIL_NAME={ rechteck:'Rechteck', dreieck:'Dreieck (Zelt)',
-                      kuppel:'Kuppel (Halbkreis)', glocke:'Glocke',
-                      spitze:'Spitze (Laplace)' };
+    function profilName(k){ return T('sa.profil.'+k); }
 
     function profilKnoepfe(id){
       return '<span class="spur-profil" data-fuer="'+id+'" data-wert="kuppel">'
         + Object.keys(PROFIL_FORM).map(function(k){
-            return '<button data-p="'+k+'" class="'+(k==='kuppel'?'an':'')+'" title="'+PROFIL_NAME[k]+'">'
+            return '<button data-p="'+k+'" class="'+(k==='kuppel'?'an':'')+'" title="'+profilName(k)+'">'
               + '<svg viewBox="0 0 14 11" width="14" height="11">'
               + '<path d="'+PROFIL_FORM[k]+'" fill="none" stroke="currentColor" stroke-width="1.2"'
               + ' stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg></button>';
@@ -4330,11 +4370,11 @@
           + '<div class="slbl"><span class="spur-titel"></span></div>'
           + '<div class="chart-outer" style="height:44px"><div id="'+s.id+'spur-canvas" class="spur-flaeche"></div>'
           + '<div class="playhead" id="ph-'+s.id+'spur"></div></div>'
-          + (SPUR_TEXT[s.id] ? '<div class="chart-text">'+SPUR_TEXT[s.id]+'</div>' : '')
+          + (SPUR_TEXT[s.id] ? '<div class="chart-text" data-i18n="'+SPUR_TEXT[s.id]+'">'+T(SPUR_TEXT[s.id])+'</div>' : '')
           + '<div class="spur-wahl">'
           + profilKnoepfe(s.id)
-          + '<select class="spur-fenster" data-fuer="'+s.id+'" title="Fensterlänge in Millisekunden">'
-          + '<option value="0">ohne</option><option value="50">50 ms</option>'
+          + '<select class="spur-fenster" data-fuer="'+s.id+'" title="'+T('sa.fenster.titel')+'" data-i18n-title="sa.fenster.titel">'
+          + '<option value="0" data-i18n="sa.fenster.ohne">'+T('sa.fenster.ohne')+'</option><option value="50">50 ms</option>'
           + '<option value="100">100 ms</option><option value="200">200 ms</option>'
           + '<option value="400" selected>400 ms</option><option value="1000">1 s</option>'
           + '<option value="3000">3 s</option></select>'
@@ -4450,17 +4490,18 @@
 
         var pr=PROFILE[profil]||PROFILE.kuppel;
         var titel=abschnitt.querySelector('.spur-titel');
-        var zahl=function(v){var b=Math.abs(v);return b>=1000?Math.round(v).toLocaleString('de-DE'):b>=10?v.toFixed(0):b>=1?v.toFixed(1):v.toFixed(2);};
+        var zahl=function(v){var b=Math.abs(v);return b>=1000?loc(Math.round(v)):b>=10?v.toFixed(0):b>=1?v.toFixed(1):v.toFixed(2);};
+        var profilKey=null;
+        for(var pk in PROFILE) if(PROFILE[pk]===pr) profilKey=pk;
         if(titel) titel.innerHTML=
-            '<span class="nam" style="color:'+s.farbe+'">'+s.name+'</span>'
-          + ' — <span class="erkl">'+zahl(lo)+' bis '+zahl(hi)+s.einheit+'</span>'
+            '<span class="nam" style="color:'+s.farbe+'">'+T(s.nameKey)+'</span>'
+          + ' — <span class="erkl">'+T('sa.bis', { lo:zahl(lo), hi:zahl(hi) })+s.einheit+'</span>'
           + (breite>1
-              ? ' · <span style="opacity:.82">'+pr.name+', wirksam '
-                + (function(ms){ return kaskadeName(Math.round(ms)); })(breite*schrittMs*pr.wirksam)
-                + '</span>'
-              : ' · <span style="opacity:.78">ohne Glättung, '
-                + kaskadeName(Math.round(schrittMs))
-                + ' je Punkt</span>');
+              ? ' · <span style="opacity:.82">'+T('sa.glatt.mit', {
+                  profil: profilKey?T('sa.profil.'+profilKey):'',
+                  breit: kaskadeName(Math.round(breite*schrittMs*pr.wirksam))
+                })+'</span>'
+              : ' · <span style="opacity:.78">'+T('sa.glatt.ohne', { schritt:kaskadeName(Math.round(schrittMs)) })+'</span>');
       });
       spurSichtSetzen();
     }
@@ -4501,9 +4542,9 @@
       var titel=document.querySelector('#'+abschnitt+' .spur-titel');
       if(titel) titel.innerHTML=
           '<span class="nam" style="color:'+farbe+'">'+name+'</span>'
-        + ' — <span class="erkl">' + fenster + ' · ' + lo.toFixed(1) + ' bis ' + hi.toFixed(1) + ' LUFS</span>'
-        + ' · <span style="color:'+farbe+';opacity:.8">durchgezogen: integriert ' + m.lufs.toFixed(1) + '</span>'
-        + (ziel ? ' · <span style="color:#d8d81c">gestrichelt: Ziel ' + ziel.lufs + ' (' + ziel.name + ')</span>' : '');
+        + ' — <span class="erkl">' + fenster + ' · ' + T('sa.bis', { lo:lo.toFixed(1), hi:hi.toFixed(1) }) + ' LUFS</span>'
+        + ' · <span style="color:'+farbe+';opacity:.8">'+T('sa.durchgezogen', { n:m.lufs.toFixed(1) })+'</span>'
+        + (ziel ? ' · <span style="color:#d8d81c">'+T('sa.gestrichelt', { n:ziel.lufs, ziel:zielName(ziel) })+'</span>' : '');
     }
 
     function funkenZeichnen(){
@@ -4603,7 +4644,7 @@
 
         var zahl = function(v){
           var b = Math.abs(v);
-          return b >= 1000 ? Math.round(v).toLocaleString('de-DE')
+          return b >= 1000 ? loc(Math.round(v))
                : b >= 10   ? v.toFixed(0)
                : b >= 1    ? v.toFixed(1) : v.toFixed(2);
         };
@@ -4615,10 +4656,9 @@
         sp.innerHTML = '<i style="color:#f97b14">' + zahl(vMax) + '</i>'
                      + '<i style="color:#4b93f0">' + zahl(vMin) + '</i>';
 
-        karte.title = 'Reihe über den ganzen Song\n'
-          + 'Mittelwert (blaue Linie): ' + zahl(vMittel) + '\n'
-          + 'Median (gelb, gestrichelt): ' + zahl(vMedian) + '\n'
-          + 'höchster Wert: ' + zahl(vMax) + '\ntiefster Wert: ' + zahl(vMin);
+        karte.title = T('sa.funke.reihe', {
+          mittel:zahl(vMittel), median:zahl(vMedian), max:zahl(vMax), min:zahl(vMin)
+        });
         if (MITTELWERT_KARTEN.indexOf(id) >= 0) karte.classList.add('ist-mittel');
         karte.dataset.funke = '1';
       });
@@ -5265,6 +5305,19 @@
           +window._ablageGroesse.arten.join(',') : ''); }
     }
 
+    function rechnenHinweis(an){
+      var h=document.getElementById('sa-rechnen');
+      if(!an){ if(h) h.remove(); return; }
+      if(!h){
+        h=document.createElement('div');
+        h.id='sa-rechnen';
+        h.setAttribute('data-i18n','sa.rechnen');
+        if(WURZEL && WURZEL.firstChild) WURZEL.insertBefore(h, WURZEL.firstChild);
+        else if(WURZEL) WURZEL.appendChild(h);
+      }
+      h.textContent=T('sa.rechnen');
+    }
+
     async function analyzeUrl(src, titel, bild){
       /* Benennen, bevor gerechnet wird. Ohne das stünde hier eine
          namenlose Analyse - analyzeFile() schreibt zwar einen Namen, aber
@@ -5272,6 +5325,7 @@
          gar nicht gibt. Gefüllt wird stattdessen die Titelzeile
          (#title, #meta, #meta-sub), die den Ausbau vom 25.08.2026
          überlebt hat. Die übrigen Felder bleiben leer statt falsch. */
+      rechnenHinweis(true);
       if(titel){
         var mEl = document.getElementById('meta');
         var tEl = document.getElementById('title');
@@ -5303,7 +5357,7 @@
           typ = /\.wav(\?|$)/i.test(src) ? 'audio/wav' : 'audio/mpeg';
         var file = new File([blob], name, {type: typ});
         await analyzeFile({files:[file]});
-      }catch(e){ console.error(e); }
+      }catch(e){ console.error(e); rechnenHinweis(false); }
     }
 
     async function analyzeFile(input){
@@ -5354,6 +5408,7 @@
            Trennlauf (bin/stems.js), nicht von hier. */
       }catch(e){
         console.error(e);
+        rechnenHinweis(false);
       }
     }
 
@@ -5391,6 +5446,7 @@
          steht es jetzt hier - an der Stelle, an der BEIDE Wege
          durchkommen. Wer kuenftig etwas ergaenzt, das den dekodierten
          Puffer braucht, setzt es hierher - in startWorkerAnalysis(). */
+      rechnenHinweis(false);
       drawSpectrum(buf,'freq-canvas');
 
       var ch0=buf.getChannelData(0);
@@ -5440,6 +5496,51 @@
       }
       var alle=window._pufferFlaechen=window._pufferFlaechen||{};
       alle[schluessel]={stufen:stufen, spalten:bild.width, hoehe:bild.height, stand:stand};
+    }
+
+    /* Worte auf den Normkarten und der Formkarte, die an der Sprache
+       haengen. Zahlen bleiben, wo sie gesetzt wurden; hier nur die
+       Beschriftung, damit ein Sprachwechsel sie neu setzen kann. */
+    function normKartenWorte(msg){
+      if(!msg) return;
+      var setzN=function(id,txt){var el=document.getElementById(id);if(el)el.textContent=txt;};
+      setzN('v-clip', msg.clip ? loc(msg.clip) : '0');
+      setzN('v-korr', msg.korr.toFixed(2)+(msg.negPhase>1?T('sa.wert.neg', { n:msg.negPhase.toFixed(0) }):''));
+      setzN('v-ende', msg.endeDb>-12 ? T('sa.wert.abrupt') : T('sa.wert.klingt_aus'));
+      if(isFinite(msg.kanteHz)){
+        setzN('v-grenz', (msg.kanteHz/1000).toFixed(1)+' kHz · '
+          +(msg.kanteSteil>=20?T('sa.wert.scharf'):T('sa.wert.weich')));
+      }
+      var clipSchlecht = msg.clipLauf!==undefined ? msg.clipLauf>0 : msg.clip>0;
+      var dcSchlecht   = msg.dc>=0.005;
+      var korrSchlecht = msg.negPhase>5;
+      var punkte=[];
+      if(clipSchlecht) punkte.push(T('sa.check.clip'));
+      if(dcSchlecht)   punkte.push(T('sa.check.dc'));
+      if(korrSchlecht) punkte.push(T('sa.check.korr'));
+      var ck=document.getElementById('v-check');
+      if(ck){
+        var kl=ck.parentElement.querySelector('.lbl');
+        if(kl) kl.innerHTML = punkte.length
+          ? punkte.join(' · ')
+          : T('sa.lbl.check')+' <i>'+T('sa.lbl.check.i')+'</i>';
+      }
+    }
+    function symmetrieWort(){
+      var el=document.getElementById('v-symmetry');
+      if(!el) return;
+      var lufsArr=window._chartData&&window._chartData.lufs?Array.from(window._chartData.lufs):[];
+      if(lufsArr.length<=6) return;
+      var third=Math.floor(lufsArr.length/3);
+      var a1=lufsArr.slice(0,third).reduce(function(a,b){return a+b;},0)/third;
+      var a2=lufsArr.slice(third,2*third).reduce(function(a,b){return a+b;},0)/third;
+      var a3=lufsArr.slice(2*third).reduce(function(a,b){return a+b;},0)/third;
+      var k='sa.sym.arch';
+      if(a3>a1+1) k='sa.sym.crescendo';
+      else if(a1>a3+1) k='sa.sym.decrescendo';
+      else if(a2>a1+0.5&&a2>a3+0.5) k='sa.sym.arch';
+      else k='sa.sym.gleich';
+      el.textContent=T(k);
     }
 
     /* ------------------------------------------------------------------
@@ -5535,10 +5636,8 @@
               }
               setzN('v-psr', isFinite(kMax)&&kMax>-100 ? (msg.truePeak-kMax).toFixed(1) : '—');
             })();
-            setzN('v-clip', msg.clip ? msg.clip.toLocaleString('de-DE') : '0');
             setzN('v-dc',   msg.dc<0.0002 ? '0' : (msg.dc*100).toFixed(2)+'%');
-            setzN('v-korr', msg.korr.toFixed(2)+(msg.negPhase>1?' ('+msg.negPhase.toFixed(0)+'% neg)':''));
-            setzN('v-ende', msg.endeDb>-12 ? 'abrupt' : 'klingt aus');
+            setzN('v-ende', msg.endeDb>-12 ? T('sa.wert.abrupt') : T('sa.wert.klingt_aus'));
             /* DER GESUNDHEITSCHECK (Caspar_D, 25.08.2026: "alles gruen =
                ein Haekchen, nur Auffaelliges wird gross"). Drei rein
                technische Pruefungen - Anschlaege, Gleichspannung,
@@ -5564,18 +5663,10 @@
               zeig('v-clip', clipSchlecht);
               zeig('v-dc',   dcSchlecht);
               zeig('v-korr', korrSchlecht);
-              var punkte=[];
-              if(clipSchlecht) punkte.push('übersteuert');
-              if(dcSchlecht)   punkte.push('Welle sitzt schief');
-              if(korrSchlecht) punkte.push('Stereo löscht sich stellenweise');
               var ck=document.getElementById('v-check');
               if(ck){
-                ck.textContent = punkte.length ? '⚠' : '✓';
-                ck.style.color = punkte.length ? AMPEL[clipSchlecht?2:1] : AMPEL[0];
-                var kl=ck.parentElement.querySelector('.lbl');
-                if(kl) kl.innerHTML = punkte.length
-                  ? punkte.join(' · ')
-                  : 'Technisch sauber? <i>Anschläge · Gleichspannung · Phase</i>';
+                ck.textContent = (clipSchlecht||dcSchlecht||korrSchlecht) ? '⚠' : '✓';
+                ck.style.color = (clipSchlecht||dcSchlecht||korrSchlecht) ? AMPEL[clipSchlecht?2:1] : AMPEL[0];
               }
             })();
             window._chartData.momentan=msg.momentan;
@@ -5596,11 +5687,9 @@
                Analyzer ziehen"), und gemessen wird ohnehin nur noch aus
                der WAV. Woraus eine Ablage stammt, steht seit dem
                26.08. in ihrem Kopf: das Feld `quelle`. */
-            if(isFinite(msg.kanteHz)){
-              setzN('v-grenz', (msg.kanteHz/1000).toFixed(1)+' kHz · '
-                +(msg.kanteSteil>=20?'scharf':'weich'));
-            } else setzN('v-grenz','—');
+            if(!isFinite(msg.kanteHz)) setzN('v-grenz','—');
             window._normwerte=msg;
+            normKartenWorte(msg);
             befundeZeigen(msg);
             korrSpurZeichnen(msg);
             leereKartenNachlauf();             /* Karten ohne Wert verschwinden - erst, wenn alles da ist */
@@ -5743,12 +5832,7 @@
                 var a1=lufsArr.slice(0,third).reduce(function(a,b){return a+b;},0)/third;
                 var a2=lufsArr.slice(third,2*third).reduce(function(a,b){return a+b;},0)/third;
                 var a3=lufsArr.slice(2*third).reduce(function(a,b){return a+b;},0)/third;
-                var sym='arch';
-                if(a3>a1+1)sym='crescendo ↑';
-                else if(a1>a3+1)sym='decrescendo ↓';
-                else if(a2>a1+0.5&&a2>a3+0.5)sym='arch ∧';
-                else sym='gleichmäßig ─';
-                document.getElementById('v-symmetry').textContent=sym;
+                symmetrieWort();
               }
               /* Die Attack-Rechnung stand hier ein zweites Mal, fast
                  wortgleich - die eine lebende Fassung sitzt im
@@ -5968,7 +6052,7 @@
         ctx.fillText(db+(db===0?' dB':''), L+(db+60)/60*pb, h-3); });
       var spitze=bins.indexOf(mx);
       ctx.textAlign='left'; ctx.fillStyle='#9a9a9a';
-      ctx.fillText('häufigste Lautheit: '+(-60+spitze)+' bis '+(-59+spitze)+' dB — '+Math.round(mx/n*100)+' % des Liedes', L, 10);
+      ctx.fillText(T('sa.hist.spitze', { lo:(-60+spitze), hi:(-59+spitze), n:Math.round(mx/n*100) }), L, 10);
     }
 
 
@@ -6306,27 +6390,21 @@
       var t=c&&c.closest('.section')&&c.closest('.section').querySelector('.slbl');
       if(!t) return;
       if(_spektroOffen==='r'){
-        t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">rechter Kanal · lokal Z-normiert · dunkel=Stille · hell=Signal</span></span>';
+        t.innerHTML='<span><span class="nam">'+T('sa.spektro.nam')+'</span> — <span class="erkl">'+T('sa.spektro.r')+'</span></span>';
         return;
       }
       if(_spektroOffen==='summe'){
-        t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">beide Kanäle, Beträge addiert · lokal Z-normiert · dunkel=Stille · hell=Signal</span></span>';
+        t.innerHTML='<span><span class="nam">'+T('sa.spektro.nam')+'</span> — <span class="erkl">'+T('sa.spektro.summe')+'</span></span>';
         return;
       }
       if(_spektroOffen==='pan'){
-        t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">'
-          + 'Seitenlage je Frequenzfach · <span style="color:#f97b14">orange = links</span> · '
-          + '<span style="color:#4b93f0">blau = rechts</span> · '
-          + '<span style="color:#9a9aa2">grau = zentral</span></span></span>';
+        t.innerHTML='<span><span class="nam">'+T('sa.spektro.nam')+'</span> — <span class="erkl">'+T('sa.spektro.pan')+'</span></span>';
         return;
       }
-      t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">linker Kanal · lokal Z-normiert · '
-        + 'dunkel=Stille · hell=Signal</span>'
+      t.innerHTML='<span><span class="nam">'+T('sa.spektro.nam')+'</span> — <span class="erkl">'+T('sa.spektro.l')+'</span>'
         + (_spektroSpitzen
-            ? ' · <span style="opacity:.82">Band oben: '
-              + '<span style="color:#ffffff">weiß = abgeschnitten</span>, '
-              + '<span style="color:#e31c79">pink = unter 1 dB Luft</span></span>'
-            : ' · <span style="opacity:.78">nirgends unter 1 dB Luft</span>')+'</span>';
+            ? ' · <span style="opacity:.82">'+T('sa.spektro.band')+'</span>'
+            : ' · <span style="opacity:.78">'+T('sa.spektro.luft')+'</span>')+'</span>';
     }
 
 
@@ -6626,7 +6704,7 @@
          Flaeche ist ein Zustand, eine zweite Tonquelle ist ein Fehler. */
       if(!_fremdeQuelle||!_fremderCtx){
         ctx.fillStyle='#555';ctx.font='11px system-ui';
-        ctx.fillText('Live-Spektrum: keine Tonquelle angeschlossen',10,20);
+        ctx.fillText(T('sa.spektrum.keine_quelle'),10,20);
         return;
       }
 
@@ -6911,13 +6989,13 @@
         lg.innerHTML =
             '<span>' + '<i class="linie" style="background:#f97b14"></i>'
                      + '<i class="linie" style="background:#4b93f0"></i>'
-                     + 'Linie: Signal aus der Datei</span>'
-          + '<span>' + feld('#f9b414','#14b4a0') + 'Datei höher — Tonstudio nimmt weg</span>'
-          + '<span>' + feld('#f9143c','#2a4bf0') + 'Tonstudio höher — es hebt an</span>'
-          + '<span>' + feld('#000000') + 'deckungsgleich</span>'
-          + '<span style="color:#6e6e73">links · rechts</span>'
+                     + T('sa.spektrum.linie')+'</span>'
+          + '<span>' + feld('#f9b414','#14b4a0') + T('sa.spektrum.datei_hoeher')+'</span>'
+          + '<span>' + feld('#f9143c','#2a4bf0') + T('sa.spektrum.studio_hoeher')+'</span>'
+          + '<span>' + feld('#000000') + T('sa.spektrum.deckung')+'</span>'
+          + '<span style="color:#6e6e73">'+T('sa.spektrum.lr')+'</span>'
           + (ERKLAEREN ? '<button type="button" class="sa-info" id="sa-kette-info"'
-              + ' title="Wie die Audiokette aufgebaut ist und wo gemessen wird">'
+              + ' title="'+T('sa.spektrum.kette')+'" data-i18n-title="sa.spektrum.kette">'
               + '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">'
               + '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>'
               + '<path d="M12 11v5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
@@ -6926,37 +7004,18 @@
       if(u && _signalModus==='beide'){
         /* Kurz gehalten: Was die Farben bedeuten, steht in der Legende
            darueber. Hier steht nur, was sie nicht zeigen kann. */
-        u.innerHTML =
-          'Das Signal aus der Sound-Datei und die Anpassung im Tonstudio übereinander — so, daß nur der <b>Unterschied</b> '
-        + 'leuchtet. Was sich deckt, bleibt schwarz und ist damit auch das, was KlangTresor '
-        + 'nicht verändert hat; Farbe hat nur, wo Equalizer, Kompressor, Breite, Hall oder Echo '
-        + 'eingreifen. Die Linie steht immer auf der Höhe des Dateisignals — sie ist die Bezugsgröße: '
-        + 'Was darüber leuchtet, wurde angehoben, was darunter fehlt, weggenommen. '
-        + 'Oben der linke Kanal, unten der rechte.';
+        u.innerHTML = T('sa.essay.spektrum.beide');
         return;
       }
-      if(u) u.innerHTML =
-        'Momentane Verteilung der hörbaren Frequenzen im Track. Waagerecht sind die '
-        + 'Frequenzen von tief nach hoch sortiert, senkrecht wird die Stärke abgebildet. '
-        + (_spektrumModus==='gespiegelt'
-            ? 'Durch die Spiegelung von <span style="color:#f97b14">linkem Kanal</span> und '
-              + '<span style="color:#4b93f0">rechtem Kanal</span> können Unterschiede als '
-              + '<span style="color:#ffffff">Asymmetrie</span> sofort erkannt werden.'
-            : 'Beide Kanäle sind zu einer Kurve zusammengefasst — Seitenunterschiede sind '
-              + 'in dieser Ansicht also nicht zu sehen. Die Farbe trägt hier die Tonhöhe: '
-              + '<span style="color:#f97b14">orange</span> tief, '
-              + '<span style="color:#4b93f0">blau</span> hoch.');
+      if(u) u.innerHTML = T(_spektrumModus==='gespiegelt' ? 'sa.essay.spektrum.spiegel' : 'sa.essay.spektrum.summe');
       var t=document.getElementById('sa-spektrum-titel');
       if(!t) return;
       t.innerHTML = _spektrumModus==='gespiegelt'
-        ? '<span class="nam">Frequenzspektrum</span> — <span class="erkl">live</span> · <span style="color:#f97b14">▲ links</span> · '
-          + '<span style="color:#4b93f0">▼ rechts</span> · '
-          + '<span style="opacity:.82">gemeinsamer Sockel farbig, '
-          + '<span style="color:'+SPITZE_FARBE+'">weiße Spitzen</span> = Unterschied der Kanäle</span>'
-        : '<span class="nam">Frequenzspektrum</span> — <span class="erkl">live</span> · <span style="opacity:.9">beide Kanäle zusammen</span> · '
-          + '<span style="opacity:.82">'
-          + '<span style="color:#f97b14">orange</span> tief · '
-          + '<span style="color:#4b93f0">blau</span> hoch</span>';
+        ? '<span class="nam">'+T('sa.spektrum.nam')+'</span> — <span class="erkl">'+T('sa.spektrum.live')+'</span> · <span style="color:#f97b14">'+T('sa.links')+'</span> · '
+          + '<span style="color:#4b93f0">'+T('sa.rechts')+'</span> · '
+          + '<span style="opacity:.82">'+T('sa.spektrum.sockel')+'</span>'
+        : '<span class="nam">'+T('sa.spektrum.nam')+'</span> — <span class="erkl">'+T('sa.spektrum.live')+'</span> · <span style="opacity:.9">'+T('sa.spektrum.beide_kanaele')+'</span> · '
+          + '<span style="opacity:.82">'+T('sa.spektrum.farben')+'</span>';
     }
 
     /* Der Umschalter. Er wirkt sofort - die Zeichenschleife liest
@@ -7003,89 +7062,64 @@
     var gauges={
       'bpm':{
         min:40,max:220,nLo:75,nHi:145,p5:55,p95:175,
-        loLabels:['eher langsam','sehr langsam','extrem langsam'],
-        hiLabels:['eher schnell','sehr schnell','extrem schnell'],
         unit:'BPM'
       },
       'loud':{
         min:-28,max:-4,nLo:-18,nHi:-10,p5:-26,p95:-6,
-        loLabels:['eher leise','sehr leise','extrem leise / dynamisch'],
-        hiLabels:['eher laut','sehr laut','extrem laut / komprimiert'],
         unit:'dB'
       },
       'dyn':{
         min:2,max:25,nLo:6,nHi:16,p5:3,p95:22,
-        loLabels:['leicht komprimiert','stark komprimiert','totgepresst'],
-        hiLabels:['leicht dynamisch','sehr dynamisch','extrem dynamisch'],
         unit:'dB'
       },
       'centroid':{
         min:300,max:8000,nLo:1000,nHi:4500,p5:400,p95:7000,
-        loLabels:['eher warm','sehr warm / dunkel','extrem dunkel / dumpf'],
-        hiLabels:['eher hell','sehr hell / scharf','extrem schrill'],
         unit:'Hz'
       },
       'rolloff':{
         min:1000,max:20000,nLo:4000,nHi:14000,p5:1500,p95:18000,
-        loLabels:['eher geschlossen','sehr geschlossen','extrem bassig / stumpf'],
-        hiLabels:['eher offen / luftig','sehr offen','extrem hell / überpräsent'],
         unit:'Hz'
       },
       'stereo':{
         min:0,max:100,nLo:15,nHi:70,p5:3,p95:90,
-        loLabels:['leicht mono-nah','fast mono','komplett mono'],
-        hiLabels:['eher breit','sehr breit','extrem breit / phasig'],
         unit:'%'
       },
       'chord-rate':{
         min:0,max:2,nLo:0.1,nHi:0.8,p5:0.02,p95:1.5,
-        loLabels:['harmonisch statisch','sehr statisch / Drone','kein Akkordwechsel'],
-        hiLabels:['harmonisch aktiv','sehr aktiv','extrem schnelle Harmonik'],
         unit:'/s'
       },
       'entropy':{
         min:0,max:100,nLo:30,nHi:75,p5:10,p95:90,
-        loLabels:['eher tonal / klar','sehr tonal / wenig Obertöne','fast reiner Sinuston'],
-        hiLabels:['eher dicht / noisig','sehr dicht / Wall of Sound','weißes Rauschen'],
         unit:'%'
       },
       'texture':{
         min:0,max:100,nLo:20,nHi:70,p5:5,p95:88,
-        loLabels:['eher klar / strukturiert','sehr klar / minimalistisch','extrem simpel'],
-        hiLabels:['eher dicht / komplex','sehr komplex / chaotisch','extrem dicht'],
         unit:'%'
       },
       'inharm':{
         min:0,max:100,nLo:5,nHi:40,p5:1,p95:70,
-        loLabels:['sehr rein / harmonisch','extrem rein / synthetisch','perfekte Sinuswellen'],
-        hiLabels:['eher unrein / verstimmt','stark verstimmt / FM-artig','extrem inharmonisch'],
         unit:''
       },
       'attack':{
         min:0,max:500,nLo:20,nHi:200,p5:5,p95:400,
-        loLabels:['eher perkussiv','sehr perkussiv','extrem hart / klick-artig'],
-        hiLabels:['eher weich','sehr weich / pad-artig','extrem langsamer Fade-in'],
         unit:'ms'
       },
       'note-stab':{
         min:0,max:100,nLo:30,nHi:80,p5:10,p95:95,
-        loLabels:['eher unruhig / ornamental','sehr unruhig / viele Glissandi','extrem flatternd'],
-        hiLabels:['eher stabil / gehalten','sehr stabil / lange Noten','extrem statisch / Drone'],
         unit:'%'
       },
       'tilt':{
         min:-100,max:100,nLo:-30,nHi:30,p5:-70,p95:70,
-        loLabels:['eher hell / luftig','sehr hell / treblelastig','extrem schrill / basstarm'],
-        hiLabels:['eher warm / bassig','sehr bassig','extrem bass-dominant / dumpf'],
         unit:''
       },
       'harmdense':{
         min:0,max:16,nLo:2,nHi:10,p5:0,p95:14,
-        loLabels:['wenig Obertöne / sinusartig','kaum harmonisch','reiner Sinus'],
-        hiLabels:['reichhaltige Obertöne','sehr reich / Orgel-artig','extrem dicht / Orgel/Synthesizer'],
         unit:''
       }
     };
+    function gaugeWort(id, seite, i){
+      return T('sa.gauge.'+id+'.'+seite+i);
+    }
 
     function gaugeGradient(g){
       var lo=(g.nLo-g.min)/(g.max-g.min);
@@ -7104,15 +7138,15 @@
         '#da6506 100%)';
     }
 
-    function getGaugeLabel(g,value){
+    function getGaugeLabel(id,g,value){
       var lo=g.nLo,hi=g.nHi,p5=g.p5,p95=g.p95;
-      if(value>=lo&&value<=hi)return {text:'im Normalbereich',color:'#888'};
+      if(value>=lo&&value<=hi)return {text:T('sa.gauge.normal'),color:'#888'};
       if(value<lo){
         var depth=value<p5?2:value<(lo+p5)/2?1:0;
-        return {text:g.loLabels[depth],color:depth===2?'#0e53ac':depth===1?'#136cdf':'#3988ef'};
+        return {text:gaugeWort(id,'lo',depth),color:depth===2?'#0e53ac':depth===1?'#136cdf':'#3988ef'};
       }else{
         var depth=value>p95?2:value>(hi+p95)/2?1:0;
-        return {text:g.hiLabels[depth],color:depth===2?'#da6506':depth===1?'#cb5e05':'#f97407'};
+        return {text:gaugeWort(id,'hi',depth),color:depth===2?'#da6506':depth===1?'#cb5e05':'#f97407'};
       }
     }
 
@@ -7129,12 +7163,12 @@
 
     function gaugeZoneText(id){
       var g=gauges[id];if(!g||g._lastVal===undefined)return '';
-      var label=getGaugeLabel(g,g._lastVal);
+      var label=getGaugeLabel(id,g,g._lastVal);
       return '<br><span style="font-size:11px;color:'+label.color+'">'+label.text+'</span>'+
         '<br><span style="font-size:10px;color:#555">'+
-        '<span style="color:#136cdf">◀</span> blau = '+g.loLabels[0]+' &nbsp;'+
-        '<span style="color:#888">▬</span> grau = normal &nbsp;'+
-        '<span style="color:#cb5e05">▶</span> orange = '+g.hiLabels[0]+'</span>';
+        '<span style="color:#136cdf">◀</span> '+T('sa.gauge.blau')+' = '+gaugeWort(id,'lo',0)+' &nbsp;'+
+        '<span style="color:#888">▬</span> '+T('sa.gauge.grau')+' = '+T('sa.gauge.normal.kurz')+' &nbsp;'+
+        '<span style="color:#cb5e05">▶</span> '+T('sa.gauge.orange')+' = '+gaugeWort(id,'hi',0)+'</span>';
     }
     var tt=document.getElementById('tt');
     var ttData={}; // stores arrays per chart id for hover lookup
@@ -7150,21 +7184,21 @@
 
     // card tooltips
     var cardTips={
-      'v-plays':'Anzahl der Wiedergaben insgesamt auf Suno.',
-      'v-likes':'Anzahl der Likes (Upvotes).',
-      'v-comments':'Anzahl der Kommentare.',
-      'v-ratio':'Plays pro Like — niedriger Wert = hohe Engagement-Rate.',
-      'v-age':'Alter des Songs seit Veröffentlichung.',
-      'v-ppd':'Durchschnittliche Plays pro Tag seit Veröffentlichung.',
-      'v-model':'Suno-Modellversion mit der der Song generiert wurde.',
-      'v-dur':'Gesamtdauer des Songs.',
-      'v-loud':'RMS-Lautheit in dB. Streaming-Standard ca. -14 dB. Normalbereich -18 bis -10 dB.',
-      'v-dyn':'Dynamikumfang: Peak-dB minus RMS-dB. Normalbereich 6–16 dB.',
-      'v-key':'Grundton aus dem Bass auf Sunos Eins - dort spielt er fast immer den Grundton des Akkords. Das Tongeschlecht aus der gezählten Terz in den melodischen Spuren; fehlt sie (bei Powerchords die Regel), steht nur der Grundton da.',
-      'v-grenz':'Bis wohin die Höhen reichen, und WIE sie enden. Die Frequenz ist die Stelle, ab der der Pegel dauerhaft rund 30 dB unter der 1–8-kHz-Referenz bleibt. Der Zusatz sagt, ob dort geschnitten wurde: \u00bbscharf\u00ab ab 20 dB/kHz Flanke ist ein Schnitt \u2013 ein Codec oder das Modell selbst; \u00bbweich\u00ab ist natürliches Auslaufen. Gemessen am 26.08.2026 an fünf Suno-WAVs: der Abfall von 17 auf 21 kHz betrug 8,5 bis 19,6 dB, also durchweg WEICH. Sunos WAVs tragen keine Codec-Kante; ein 192-kbps-MP3 macht dort über 40 dB auf einem einzigen Kilohertz. Aus einem MP3 gemessen tr\u00fcge der Wert dessen Encoderkante statt der des Modells \u2013 deshalb wird seit dem 26.08.2026 nur noch aus der WAV gerechnet.',
-      'v-stereo':'Stereobreite als L–R-Differenz. Normalbereich 15–70%.',
-      'v-entropy':'Spektrale Entropie: wie gleichmäßig ist Energie über alle Frequenzen verteilt. Niedrig = tonal/klar, hoch = noisig/dicht.',
-      'v-symmetry':'Energie-Form des Songs aus drittel-Segmenten der LUFS-Kurve. Crescendo ↑ / Decrescendo ↓ / Arch ∧ / Gleichmäßig ─.',
+      'v-plays':'sa.tip.plays',
+      'v-likes':'sa.tip.likes',
+      'v-comments':'sa.tip.comments',
+      'v-ratio':'sa.tip.ratio',
+      'v-age':'sa.tip.age',
+      'v-ppd':'sa.tip.ppd',
+      'v-model':'sa.tip.model',
+      'v-dur':'sa.tip.dur',
+      'v-loud':'sa.tip.loud',
+      'v-dyn':'sa.tip.dyn',
+      'v-key':'sa.tip.key',
+      'v-grenz':'sa.tip.grenz',
+      'v-stereo':'sa.tip.stereo',
+      'v-entropy':'sa.tip.entropy',
+      'v-symmetry':'sa.tip.symmetry',
     };
     var gaugeIds={'v-loud':'loud','v-dyn':'dyn','v-stereo':'stereo','v-entropy':'entropy',};
 
@@ -7176,11 +7210,11 @@
       card.style.cursor='help';
       card.addEventListener('mouseenter',function(e){
         var gid=gaugeIds[id];
-        showTT(cardTips[id]+(gid?gaugeZoneText(gid):''),e.clientX,e.clientY);
+        showTT(T(cardTips[id])+(gid?gaugeZoneText(gid):''),e.clientX,e.clientY);
       });
       card.addEventListener('mousemove',function(e){
         var gid=gaugeIds[id];
-        showTT(cardTips[id]+(gid?gaugeZoneText(gid):''),e.clientX,e.clientY);
+        showTT(T(cardTips[id])+(gid?gaugeZoneText(gid):''),e.clientX,e.clientY);
       });
       card.addEventListener('mouseleave',hideTT);
     });
@@ -7188,12 +7222,12 @@
     // chart tooltips: description + value at cursor position
     var chartTips={
       'flux-canvas':{
-        desc:'<b>Klangveränderung (Spektrale Fluktuation) — 8-Band Heatmap</b><br>X: Zeit · 8 Zeilen = 8 Frequenzbänder (Bass unten, Höhen oben)<br>Helligkeit = wie stark sich dieses Frequenzband von Frame zu Frame verändert. Logarithmisch normiert per Band.<br><br>Heller Blitz im Bass-Band = Kick Drum. Heller Blitz in Höhen = Hi-Hat. Breiter Blitz über viele Bänder = Synthesizer-Attack. Alles dunkel = Pad/Drone ohne Änderung. Mitten flackern = Melodie mit schnellen Noten.',
+        desc:'sa.tip.flux',
         valFn:null
       },
 
       'spectro-canvas':{
-        desc:'<b>Spektrogramm (Zeit × Frequenz)</b><br>X: Zeit · Y: Frequenz log. (20Hz–22kHz) mit Notenlinien<br>Schwarz = kein Signal. Weiß = bis P90 (90. Perzentil der lokalen Amplitude). <span style="color:#f97306">Orange</span> = über P90 — die lautesten Anteile.<br><br>Horizontal helle Linien = gehaltene Töne. Vertikale Striche = Transienten/Drums. Orange Bereiche = dominante Frequenzen. Lokal Z-normiert pro Frequenzbin.',
+        desc:'sa.tip.spectro',
         valFn:function(pct,yPct,sr){
           var logMin=Math.log10(20),logMax=Math.log10((sr||44100)/2);
           var freq=Math.pow(10,logMin+(logMax-logMin)*(1-yPct));
@@ -7201,7 +7235,7 @@
         }
       },
       'stereospectro-canvas':{
-        desc:'<b>Stereo-Spektrogramm — Panning pro Frequenz</b><br>X: Zeit · Y: Frequenz · Farbe: Panning-Richtung<br><span style="color:#ff6600">■ Orange</span> = linker Kanal dominant. <span style="color:#1472eb">■ Blau</span> = rechter Kanal dominant. Grau = zentriert. Helligkeit = Amplitude.<br><br>Bass fast immer grau = gutes Mastering. Höhen oft orange/blau = Reverb gepannt. Komplett einfarbige Frequenz = hard-panned Instrument.',
+        desc:'sa.tip.stereospectro',
         valFn:function(pct,yPct,sr){
           var logMin=Math.log10(20),logMax=Math.log10((sr||44100)/2);
           var freq=Math.pow(10,logMin+(logMax-logMin)*(1-yPct));
@@ -7209,7 +7243,7 @@
         }
       },
       'freq-canvas':{
-        desc:'<b>Frequenzspektrum — live</b><br>X: Frequenz (logarithmisch, 20Hz–20kHz) · Y: Amplitude · 60fps<br>Zeigt den momentanen Frequenzinhalt während der Wiedergabe. Bass links, Mitten Mitte, Höhen rechts.<br><br>Peaks = dominante Frequenzen. Gleichmäßige Füllung = dichte Textur. Für Echtzeit-Monitoring.',
+        desc:'sa.tip.freq',
         valFn:function(pct,yPct,sr){
           var logMin=Math.log10(20),logMax=Math.log10((sr||44100)/2);
           var freq=Math.pow(10,logMin+(logMax-logMin)*pct);
@@ -7228,10 +7262,10 @@
         var pct=(e.clientX-rect.left)/rect.width;
         var yPct=(e.clientY-rect.top)/rect.height;
         var t=fmt(pct*songDuration);
-        var html='<span style="color:#888;font-size:11px">'+t+'</span><br>'+tip.desc;
+        var html='<span style="color:#888;font-size:11px">'+t+'</span><br>'+T(tip.desc);
         if(tip.valFn){
           var val=tip.valFn(pct,yPct,currentSR);
-          if(val)html='<span style="color:#888;font-size:11px">'+t+'</span> <span style="color:#4b93f0;font-weight:500">'+val+'</span><br>'+tip.desc;
+          if(val)html='<span style="color:#888;font-size:11px">'+t+'</span> <span style="color:#4b93f0;font-weight:500">'+val+'</span><br>'+T(tip.desc);
         }
         showTT(html,e.clientX,e.clientY);
       });
@@ -7311,7 +7345,10 @@
       stemSpurenZeichnen(t);
       if (vEl){
         var lage = (t && t.stimme && t.stimme.lage) || '—';
-        vEl.textContent = lage;
+        vEl.textContent = lage === 'weiblich' ? T('sa.lage.weiblich')
+                        : lage === 'männlich' ? T('sa.lage.maennlich')
+                        : lage === 'instrumental' ? T('sa.lage.instrumental')
+                        : lage;
         /* Dieselben Farben wie im Stereobild: orange fuer die eine
            Seite, blau fuer die andere, grau fuer "weiss ich nicht". */
         /* 'instrumental' ist kein Meswert, sondern ein Urteil - es
@@ -7320,8 +7357,8 @@
         vEl.style.color = lage === 'weiblich' ? '#f97b14'
                         : lage === 'männlich' ? '#4b93f0' : '#9a9aa2';
         vEl.title = lage === 'instrumental'
-          ? 'Ohne Gesang — hier wird keine Stimme gemessen'
-          : (t && t.stimme && t.stimme.n) ? t.stimme.n + ' gemessene Tonhöhen' : '';
+          ? T('sa.lage.ohne')
+          : (t && t.stimme && t.stimme.n) ? T('sa.lage.n', { n:t.stimme.n }) : '';
       }
     }
 
@@ -7348,24 +7385,28 @@
        25.08.2026 fast mit ihr gefallen - er gehoert aber den
        Einzelspuren hier, deshalb steht er jetzt bei ihnen. */
     var STEM_RANG = [
-      { id:'drums',  farbe:'#e31c79', name:'Schlagzeug' },  /* Rot    */
-      { id:'bass',   farbe:'#fba04f', name:'Bass'       },  /* Orange */
-      { id:'vocals', farbe:'#d8d81c', name:'Gesang'     },  /* Gelb   */
-      { id:'guitar', farbe:'#4b93f0', name:'Gitarre'    },  /* Blau   */
-      { id:'piano',  farbe:'#16be5c', name:'Klavier'    },  /* Gruen  */
-      { id:'other',  farbe:'#b0b0b6', name:'Rest'       }   /* Grau   */
+      { id:'drums',  farbe:'#e31c79', nameKey:'sa.stem.drums' },  /* Rot    */
+      { id:'bass',   farbe:'#fba04f', nameKey:'sa.stem.bass' },  /* Orange */
+      { id:'vocals', farbe:'#d8d81c', nameKey:'sa.stem.vocals' },  /* Gelb   */
+      { id:'guitar', farbe:'#4b93f0', nameKey:'sa.stem.guitar' },  /* Blau   */
+      { id:'piano',  farbe:'#16be5c', nameKey:'sa.stem.piano' },  /* Gruen  */
+      { id:'other',  farbe:'#b0b0b6', nameKey:'sa.stem.other' }   /* Grau   */
     ];
-    var STEM_FARBE = {}, STEM_NAME = {};
+    var STEM_FARBE = {}, STEM_NAMEKEY = {};
     STEM_RANG.forEach(function(s){
-      STEM_FARBE[s.id] = s.farbe; STEM_NAME[s.id] = s.name;
+      STEM_FARBE[s.id] = s.farbe; STEM_NAMEKEY[s.id] = s.nameKey;
     });
+    function stemName(id){ return T(STEM_NAMEKEY[id]||id); }
 
     /* DIE SECHS STEMS als Huellkurven. Gezeichnet wird ueber die GANZE
        Laenge (0..SPUR_W); den Ausschnitt schneidet spurSichtSetzen()
        spaeter mit der viewBox heraus - deshalb muss beim Zoomen nichts
        neu gerechnet werden. Hausform wie ueberall: halb deckende Flaeche
        auf der Grundlinie, darauf die Kontur in voller Staerke. */
+    var _toeneJetzt = null;
     function stemSpurenZeichnen(t){
+      if (t) _toeneJetzt = t;
+      else t = _toeneJetzt;
       var H = 44, pad = 2, gezeigt = 0;
       for (var stem in STEM_FARBE){
         var rahmen = document.getElementById('spur-stem-' + stem);
@@ -7403,9 +7444,9 @@
           var inspAn = !!(window.stemInspektionStand && window.stemInspektionStand());
           titel.innerHTML =
               (inspAn ? '<span class="stemsolo" data-stem="' + stem + '" style="color:' + farbe + '"'
-                + ' title="' + STEM_NAME[stem] + ' allein hören — nochmal klicken beendet es"></span>' : '')
-            + '<span class="nam" style="color:' + farbe + '">' + STEM_NAME[stem] + '</span>'
-            + ' — <span class="erkl">klingt in ' + Math.round(100*laut/n) + ' % des Stücks</span>';
+                + ' title="' + T('sa.stem.solo', { name:stemName(stem) }) + '"></span>' : '')
+            + '<span class="nam" style="color:' + farbe + '">' + stemName(stem) + '</span>'
+            + ' — <span class="erkl">'+T('sa.stem.anteil', { n:Math.round(100*laut/n) })+'</span>';
           var kreis = titel.querySelector('.stemsolo');
           if (kreis){
             /* Der Titel wird bei jedem Aufbau neu gesetzt - der Blob
@@ -7431,8 +7472,7 @@
         if (kt && gezeigt){
           var an = !!(window.stemInspektionStand && window.stemInspektionStand());
           kt.innerHTML =
-              '<span class="nam">Einzelspuren</span> — <span class="erkl">der Mix in '
-            + gezeigt + ' Spuren zerlegt · Hüllkurve je Spur</span>'
+              '<span class="nam">'+T('sa.stem.kopf')+'</span> — <span class="erkl">'+T('sa.stem.erkl', { n:gezeigt })+'</span>'
             /* DIE PILLE (Caspar_D, 24.08.2026: "die 6 stems scheinen das
                System auf Trab zu halten"). Sechs FLAC-Stroeme mitlaufen
                zu lassen kostet dauerhaft Rechenzeit - auch wenn niemand
@@ -7440,8 +7480,8 @@
                eingeschaltet wird; solange bleiben die Huellkurven zu
                sehen und der Ton kommt allein aus dem Mix. */
             + '<span class="stem-pille' + (an ? ' an' : '') + '" id="stem-pille"'
-            + ' title="Lädt die sechs Spuren und macht die Solokreise anklickbar">'
-            + 'Kanal-Inspektion</span>';
+            + ' title="'+T('sa.stem.pille.tipp')+'">'
+            + T('sa.stem.pille')+'</span>';
           var pille = kt.querySelector('#stem-pille');
           if (pille) pille.onclick = function(e){
             e.stopPropagation();
@@ -7530,6 +7570,7 @@
       song(d){
         _katalogDaten = d;
         _laufendeId = d.id || null;
+        spektrumTexteSetzen();
         /* ERST IN DIE ABLAGE SCHAUEN. Liegt der Song dort, wird der
            Mitschnitt abgespielt - 0,4 s statt 16,9. Fehlt er oder ist
            er von einem anderen Stand, wird gerechnet UND danach
@@ -7540,6 +7581,41 @@
          Pille und die Solokreise, und beide haengen an einem Zustand,
          den die Buehne kennt, nicht der Analyzer. */
       stemsZeichnen(t){ stemSpurenZeichnen(t); },
+      spracheNachziehen(){
+        try {
+          if (typeof spracheAnwenden === 'function' && WURZEL) spracheAnwenden(WURZEL);
+        } catch (e) {}
+        registerBauen();
+        if (window._normwerte){
+          normKartenWorte(window._normwerte);
+          befundeZeigen(window._normwerte);
+          korrSpurZeichnen(window._normwerte);
+        }
+        symmetrieWort();
+        spektrumTexteSetzen();
+        spektroTitelSetzen();
+        if (window._chartData && window._normwerte) lautheitSpurenZeichnen();
+        if (window._chartData && window._chartData.lufs) drawLufsHist(window._chartData.lufs);
+        if (window._chartData && window._chartData.lBands)
+          stereoSpurZeichnen(window._chartData.lBands, window._chartData.rBands, window._chartData.dur);
+        funkenZeichnen();
+        if (_notenStand){
+          _notenErkl.takt='<span class="erkl">'+T('sa.chroma.takt.erkl', {
+            raster: _notenStand.raster==='bass' ? T('sa.chroma.raster.bass') : T('sa.chroma.raster.mix'),
+            v:_notenStand.v, a:_notenStand.a, s:_notenStand.s
+          })+'</span>';
+        }
+        _notenErkl.alles='<span class="erkl">'+T('sa.chroma.alles.erkl')+'</span>';
+        notenTitelSetzen();
+        var st=document.querySelector('#spur-stereo .spur-titel');
+        if(st && st.innerHTML) st.innerHTML='<span class="nam" style="color:#f97b14">'+T('sa.stereo.nam')+'</span> — '
+          +'<span style="color:#f97b14">'+T('sa.links')+'</span> · <span style="color:#4b93f0">'+T('sa.rechts')+'</span> · '
+          +'<span style="opacity:.82">'+T('sa.stereo.erkl')+'</span>';
+        stemSpurenZeichnen(_toeneJetzt);
+        document.querySelectorAll('.spur-profil button[data-p]').forEach(function(b){
+          b.title = T('sa.profil.'+b.dataset.p);
+        });
+      },
       anhalten(){
         laeuft = false;
         for (const id of bilder) window.cancelAnimationFrame(id);
