@@ -202,7 +202,7 @@ h1{
 /* Die Regler im Schaum-Panel (Farbe über den Bildern, „zeigt N von M") stehen in ihrer Zeile ueber die volle Breite */
 #schaumrechts .pzeile.pregler{flex-direction:column;align-items:stretch;gap:4px}
 #schaumrechts .pzeile.pregler .ptitel{flex:0 0 auto}
-#schaumrechts .pzeile.pregler .ptitel span{text-transform:none;letter-spacing:0;font-size:12px;color:var(--text)}
+#schaumrechts .pzeile.pregler .ptitel span:not([data-i18n]){text-transform:none;letter-spacing:0;font-size:12px;color:var(--text)}
 #schaumrechts .pzeile .farbwahl{flex:1 1 auto;min-width:0;margin-top:0}
 /* Schmales Panel: der Palettenname kuerzt sich, statt umzubrechen oder ueber den Rand zu ragen */
 .farbwahl .fw-knopf span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -3331,7 +3331,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <div id="studioregz">
       <button class="sreg" data-sreg="eq" onclick="studioLasche('eq')" data-i18n="studio.reg.eq">Equalizer</button>
       <button class="sreg" data-sreg="pro" onclick="studioLasche('pro')" data-i18n="komp.kompressor">Kompressor</button>
-      <button class="sreg" data-sreg="fx" onclick="studioLasche('fx')" data-i18n="studio.reg.ghetto">Ghettoblaster</button>
+      <button class="sreg" data-sreg="fx" onclick="studioLasche('fx')" data-i18n="studio.reg.ghetto"
+        title="Ghettoblaster – der alte mit einem Schalter für alles: Loudness, Bass, Höhen, Nacht" data-i18n-title="studio.reg.ghetto.titel">Ghettoblaster</button>
       <button class="sreg" data-sreg="mess" onclick="studioLasche('mess')" data-i18n="studio.reg.mess">Einmessen</button>
     </div>
 
@@ -4234,7 +4235,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="drawerinhalt"><div class="dinnen"><div class="panel">
         <div class="pzeile pwahl"><span class="ptitel" data-i18n="schaum.flaeche_nach">Fläche nach</span><span class="pinhalt" id="schaummass"></span></div>
         <div class="pzeile pwahl"><span class="ptitel" data-i18n="schaum.gegliedert">Gegliedert nach</span><span class="pinhalt" id="schaumgliederung"></span></div>
-        <div class="pzeile pwahl bilderzeile" hidden><span class="ptitel" data-i18n="schaum.skala">Skalen&shy;transformation</span><span class="pinhalt" id="bildertrafo"></span></div>
+        <div class="pzeile pwahl bilderzeile" hidden><span class="ptitel" data-i18n="schaum.skala" data-i18n-html>Skalen&shy;transformation</span><span class="pinhalt" id="bildertrafo"></span></div>
         <div class="pzeile pwahl bilderzeile" hidden><span class="ptitel" data-i18n="schaum.haengung">Hängung</span><span class="pinhalt" id="bilderhaengung"></span></div>
         <div class="pzeile bilderzeile" hidden><span class="ptitel" data-i18n="schaum.zeigen">Zeigen</span><span class="pinhalt">
           <button type="button" class="pille" id="bilderrahmen" onclick="bilderschauWahl('rahmen', !bilderWahl.rahmen)" title="Ein schmaler Rahmen je Bild in der Farbe seiner Gruppe aus dem Klangraum – voll nur unter der Maus und am laufenden Titel" data-i18n-title="schaum.rahmen.titel" data-i18n="schaum.rahmen" data-i18n-title="schaum.rahmen.titel">Rahmen</button>
@@ -4308,7 +4309,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         </div>
       </div>
       <div class="werblock">
-        <div class="werrolle" data-i18n="wer.rolle.dabei">Mit dabei</div>
+        <div class="werrolle" data-i18n="wer.rolle.mit">Mitentwicklerin</div>
         <div class="wername">Tarja</div>
         <!-- Nachtrag 27.08.2026 (Caspar_D): "das Tarja sich um das
              Verständnis des studio endpoints verdient gemacht hat" -
@@ -4317,11 +4318,16 @@ h3 .infoknopf .ico{width:14px;height:14px}
              Glocke haengen". Genannt wird also die Leistung, nicht
              wofuer sie sich verwenden laesst.
              16.10.2026: das Drängen auf die Öffentlichkeit weicht der
-             Mitarbeit an der Entwicklung — weiterhin ohne Aufzählung. -->
+             Mitarbeit an der Entwicklung — weiterhin ohne Aufzählung.
+             16.10.2026 (Caspar_D, Abnahme PR 10): Rolle „Mitentwicklerin“,
+             Würdigung im Wortlaut von Caspar_D, jetzt mit Aufzählung. -->
         <div class="wertext" data-i18n="wer.tarja">Hat Whisper ins Haus geholt, prüft unter Linux
-          und arbeitet an der Entwicklung mit. Ihr verdanken wir außerdem das
-          Verständnis der Studio-Schnittstelle — wie Sunos eigene Oberfläche
-          mit ihr spricht, war lange unklar.</div>
+          und optimiert für Docker, hat das Update-Skript und die Versions-Glocke
+          gebaut und den KlangTresor zweisprachig gemacht – sie hat entschieden,
+          wovor ich mich lange gedrückt habe, obwohl ich es auch wollte. Ihr
+          verdanken wir außerdem einen großen Teil unseres Verständnisses der
+          Suno-Studio-Schnittstelle — wie Sunos eigene Oberfläche mit uns
+          spricht, war lange unklar.</div>
         <div class="werlinks">
           <a href="https://suno.com/@tarja_ravenveil" target="_blank" rel="noopener" data-i18n="wer.suno">Songs auf Suno</a>
         </div>
@@ -8012,6 +8018,10 @@ const raumWas  = (k) => t('raum.was.' + k);
 let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
 if (!RAUM_NAME[raumJetzt]) raumJetzt = 'klang';   /* gemerkter Raum, den es nicht mehr gibt (lied) */
 const raumDaten = {};      /* je Raum die geladene Karte */
+/* Gruppennamen kommen vom Server (bin/ortsbegriffe.js) und bleiben dort
+   deutsch; der Name „(gemischte Gegend)“ wird dort nur erzeugt, nirgends
+   verglichen. Übersetzt wird er deshalb nur in der Anzeige. */
+function ortsName(n){ return n === '(gemischte Gegend)' ? t('karte.gruppe.gemischt') : n; }
 let raumDa = null;         /* welche Räume gerechnet sind */
 
 /* Die Karte, die GERADE gezeigt wird. Alles, was mit Sternlagen zu tun
@@ -11091,7 +11101,7 @@ async function karteZeichnen(){
     return `<circle class="stern${p.id === aktuellId && schiffArt === 'direkt' ? ' laeuft' : ''}" data-id="${p.id}" data-g="${p.gruppe}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${((6 + 8 * p.dichte) * rk * tf).toFixed(1)}" fill="transparent"/>`; }
   ).join('') + ((karteSternbilder || []).map(({ t, i }) => { const [x, y] = karteSternbildLage.get(i) || [-99, -99];
     return `<circle class="sternbild" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(14 * rk).toFixed(1)}" fill="transparent"><title>Sternbild ${t.name} (${t.art}) — erklärt ${Math.round((t.erklaert || 0) * 100)} % der Gruppentrennung, markiert „${(d.gruppen[t.markiert] || {}).name || '?'}“; ${t.songs} Titel</title></circle>`; }).join(''))
-  + (L.gruppen && karteLoecher ? L.gruppen.map((G, gi) => G ? `<circle class="loch" data-g="${gi}" cx="${(karteZoom.tx + karteZoom.k * G.p[0]).toFixed(1)}" cy="${(karteZoom.ty + karteZoom.k * G.p[1]).toFixed(1)}" r="${(12 * rk).toFixed(1)}" fill="transparent"><title>${d.gruppen[gi].name} — Massezentrum der Gruppe; Klick hebt sie hervor. Jet = Hauptachse (${Math.round((G.ger || 0) * 100)} % der Ausdehnung)</title></circle>` : '').join('') : '');
+  + (L.gruppen && karteLoecher ? L.gruppen.map((G, gi) => G ? `<circle class="loch" data-g="${gi}" cx="${(karteZoom.tx + karteZoom.k * G.p[0]).toFixed(1)}" cy="${(karteZoom.ty + karteZoom.k * G.p[1]).toFixed(1)}" r="${(12 * rk).toFixed(1)}" fill="transparent"><title>${ortsName(d.gruppen[gi].name)} — Massezentrum der Gruppe; Klick hebt sie hervor. Jet = Hauptachse (${Math.round((G.ger || 0) * 100)} % der Ausdehnung)</title></circle>` : '').join('') : '');
   svg.querySelectorAll('.loch').forEach(c => c.onclick = () => { const g = +c.dataset.g; karteGruppeAn = karteGruppeAn === g ? null : g; karteZeichnen(); });
   svg.querySelectorAll('.sternbild').forEach(c => {
     c.onmouseenter = () => { const t = d.tags[+c.dataset.i], m = new Set(t.sterne || []); svg.querySelectorAll('.stern').forEach(o => o.classList.toggle('nachbar', m.has(o.dataset.id))); };
@@ -11113,7 +11123,7 @@ async function karteZeichnen(){
          schlicht leer, falls eine alte karte.json geladen wird. */
       e.mollAnteil != null && `${Math.round(e.mollAnteil * 100)} % Moll`, e.stimme && e.stimme].filter(Boolean).join(' · ');
     return `<div class="gruppe${karteGruppeAn === g.nr ? ' an' : ''}" data-g="${g.nr}"><span class="farbe" style="background:${karteFarbe(g.nr)}"></span>` +
-      `<span><b>${g.name}</b><small>${t('karte.titel_legende', { n: g.anzahl })}${erd ? ' — ' + erd : ''}</small></span></div>`;
+      `<span><b>${ortsName(g.name)}</b><small>${t('karte.titel_legende', { n: g.anzahl })}${erd ? ' — ' + erd : ''}</small></span></div>`;
   }).join('') + `</div></div>` + karteLesarten() + `</div>`;
   /* Das Panel NUR neu bauen, wenn sich sein Zustand geaendert hat
      (Caspar_D, 22.08.: "irgendwas klaut den Mausfokus" - Nachlauf und
@@ -15368,13 +15378,13 @@ function kuriosSeiten(eigene){
         /* Tagesviertel, nicht einzelne Stunde - eine Stunde kann ein
            einziger Upload-Nachmittag sein. */
         const VIERTEL = [['nacht','profil.kurios.nacht',0,6],['morgen','profil.kurios.morgen',6,12],['nachmittag','profil.kurios.nachmittag',12,18],['abend','profil.kurios.abend',18,24]];
-        const viertel = VIERTEL.map(([id, key, a, b]) => ({ id, wort: t(key), n: summe(a, b), spanne: a + '–' + b })).sort((a,b) => b.n - a.n);
+        const viertel = VIERTEL.map(([id, key, a, b]) => ({ id, wort: t(key), wann: t('profil.kurios.wann.' + id), n: summe(a, b), spanne: a + '–' + b })).sort((a,b) => b.n - a.n);
         const box = document.createElement('div');
         box.appendChild(satz(t('profil.kurios.uhr.satz', { teil: viertel[0].wort })));
         const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
         f.textContent = t('profil.kurios.uhr.fuss', {
-          p: Math.round(100 * viertel[0].n / n), teil: viertel[0].wort, spanne: viertel[0].spanne,
-          p2: Math.round(100 * viertel[1].n / n), teil2: viertel[1].wort,
+          p: Math.round(100 * viertel[0].n / n), wann: viertel[0].wann, spanne: viertel[0].spanne,
+          p2: Math.round(100 * viertel[1].n / n), wann2: viertel[1].wann,
           von: spitze, bis: spitze + 1, n: st[spitze]
         });
         box.appendChild(f); return box;
@@ -15724,6 +15734,8 @@ function profilZahlenFuellen(){
     if (!d) return '–';
     const dt = new Date(d.slice(0, 10) + 'T00:00:00');
     if (isNaN(dt)) return d;
+    /* Deutsch wie bisher „17.08.“, Englisch „17 Aug“. */
+    if (sprache() !== 'en') return d.slice(8, 10) + '.' + d.slice(5, 7) + '.';
     return dt.toLocaleDateString(localeTag(), { day: 'numeric', month: 'short' });
   };
   const vierWochenText = verlaufSeit && verlaufSeit > new Date(Date.now() - 28 * 86400000).toISOString().slice(0, 10)
@@ -21453,10 +21465,12 @@ async function analyzerAufbauen(){
     console.warn('Analyse übersprungen: für "' + (bSong.titel || bSong.id)
       + '" liegt keine WAV vor. Aus dem MP3 wird nicht gemessen.');
     analyzerOhneMessung(true);
+    analyzerHerkunft(false);
     analyseFuer = bSong.id;
     return;
   }
   analyzerOhneMessung(false);
+  analyzerHerkunft(datei !== 'audio.wav');
   /* Die STEHENDEN TÖNE kommen aus dem geprüften Detektor (bin/stoerfrequenz.js,
      FFT 16384 = 2,7 Hz), nicht aus dem Schimmer des Analyzers - der fand
      durchweg Musiktöne (Caspar_D, 23.08.2026: "die Suche nach stehenden Tönen
@@ -21527,6 +21541,24 @@ function analyzerOhneMessung(zeigen){
     f.insertBefore(h, f.firstChild);
   }
   h.textContent = t('sa.ohne_messung');
+}
+
+/* HERKUNFT NENNEN (Hausregel 24): misst die Analyse die eigene WAV statt
+   Sunos audio.wav, steht das sichtbar über den Messungen. */
+function analyzerHerkunft(eigen){
+  const f = $('banalyse');
+  if (!f) return;
+  let h = f.querySelector('#sa-herkunft');
+  if (!eigen) { if (h) h.remove(); return; }
+  if (!h) {
+    h = document.createElement('div');
+    h.id = 'sa-herkunft';
+    h.className = 'fussnote';
+    h.style.margin = '0 0 6px';
+    h.setAttribute('data-i18n', 'sa.herkunft.eigen');
+    f.insertBefore(h, f.firstChild);
+  }
+  h.textContent = t('sa.herkunft.eigen');
 }
 
 function analyzerAbraeumen(){
