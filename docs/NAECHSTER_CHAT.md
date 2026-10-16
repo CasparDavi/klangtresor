@@ -9263,3 +9263,16 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
   „aber nicht jetzt, der ist grade nicht so richtig modulfähig dafür“ (Jörg, 15.10.2026).
 - Rechteckige Areale (räumlich geordnetes Treemap) liegen als Probe auf Zweig rechteck-areale (scratchpad/wt-rechteck), nicht
   ausgeliefert; bei Randlos flächentreuer, Dichte gleich.
+
+## 101. 16.10.2026: 1.0.83 – Oberfläche Deutsch/Englisch (Tarjas Pull Request 10) übernommen
+- Tarjas PR 10 gemergt; Übernahme mit Jörgs Abnahme aller 1347 Texte (Abnahme-Seite https://claude.ai/artifact/CtNg6cCNZkosZVXAmW3Na2,
+  175 Entscheidungen) und den Begriffen: Spaces & Foams, Sound Space, Story Space, Sound Foam, Groupie Foam, Picture Wall, Sound Ship,
+  Bell Frame, Boombox (Ghettoblaster), motion artwork (Bewegtbild), h-index, Momentum, Calibrate, own cut (Lied-Fassung; „version“ nur
+  fürs Programm), Watchers, britisches Englisch (Equaliser). Entscheidungen: scratchpad/pr10-entscheidungen.md (Sitzung 37f6b667).
+- Tarja: Rolle „Mitentwicklerin / Co-developer“ mit Jörgs Text. Casto: „Mit dabei / On board“.
+- Stilgruppen auf Englisch = Originaletiketten des Modells (web/klang-woerter.js, gemeinsam mit bin/karte.js); Daten bleiben deutsch.
+- Analyse misst bei fehlender audio.wav die eigen.wav und sagt „gemessen an der eigenen Fassung“.
+### Als Nächstes (1.0.84)
+- ~85 deutsche Reste im Englischen (Liste scratchpad/pr10-pruefung/enrest1.txt), Plakat-Studio (Plakatsprache = Sprache der
+  Oberfläche, „Caspar_D’s Picture Wall“), Groupieschaum-Fußnote – vorübersetzen, Jörg geht die Texte wieder auf der Abnahme-Seite durch.
+- Später, mit Tarja abstimmen: Effektclip-Studio, Einrichtung, Server-Meldungen, Update-Skript, englische START-HIER.
