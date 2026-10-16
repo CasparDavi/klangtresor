@@ -17,11 +17,16 @@
    Erst gab es je Gruppe einen rechteckigen Wandabschnitt mit eigener Salonhaengung (Caspar_D: „diese
    4 Ellipsen sehen komisch aus") - ersetzt, nicht stehen gelassen. */
 
+/* Name und Kurzform in der Sprache der Oberfläche (web/ui-sprache.js); kurzMit setzt statt „Wert" ein Maß ein (Plakat: „Fläche ∝ √Abrufe").
+   Im Worker (bilderschau-worker.js) gibt es kein window - dort liest niemand Name oder Kurzform. */
+const wort = (k, v) => (typeof window !== 'undefined' && window.t ? window.t(k, v) : k);
+const trafo = (id, f) => ({ id, f, get name(){ return wort('bilder.trafo.' + id); }, kurzMit(w){ return wort('bilder.trafo.' + id + '.kurz', { wert: w }); },
+  get kurz(){ return this.kurzMit(wort('bilder.wert')); } });
 export const TRANSFORMATIONEN = [
-  { id: 'keine', name: 'keine (flächentreu)', f: v => v, kurz: 'Fläche ∝ Wert' },
-  { id: 'wurzel', name: 'Wurzel', f: v => Math.sqrt(v), kurz: 'Fläche ∝ √Wert' },
-  { id: 'kubik', name: 'Kubikwurzel', f: v => Math.cbrt(v), kurz: 'Fläche ∝ ∛Wert' },
-  { id: 'log', name: 'Logarithmus', f: v => Math.log1p(v), kurz: 'Fläche ∝ log(1 + Wert)' },
+  trafo('keine', v => v),
+  trafo('wurzel', v => Math.sqrt(v)),
+  trafo('kubik', v => Math.cbrt(v)),
+  trafo('log', v => Math.log1p(v)),
 ];
 
 /* ---- EINE HAENGUNG IN SCHAUM-AREALEN (Caspar_D, 11.10.2026: „mache eine Schaumtreemap für die

@@ -3398,24 +3398,24 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <!-- Stoerfrequenzen (bin/stoerfrequenz.js, 23.08.2026): feine Trennlinie unter
              den Kreisen, kleine Ueberschrift, darunter Scan-Knopf oder die Vorschlaege;
              die Griffe zum Hoeren/Kerben sitzen an den Ticks im Diagramm. -->
-        <div id="stoerblock"><hr class="feinlinie"><div class="prokopf">Störfrequenzen</div><div id="kerbevorschlaege" class="fussnote" style="margin:0">—</div></div>
+        <div id="stoerblock"><hr class="feinlinie"><div class="prokopf" data-i18n="studio.stoer.kopf">Störfrequenzen</div><div id="kerbevorschlaege" class="fussnote" style="margin:0">—</div></div>
         <div id="parlegende" class="fussnote" style="margin-top:14px">
           <div>
-            <p><b style="color:var(--text)">Bedienung:</b> Punkte senkrecht ziehen = Höhe, <b>seitlich</b> = Mittenfrequenz
+            <p data-i18n="studio.glocken.leg.1" data-i18n-html><b style="color:var(--text)">Bedienung:</b> Punkte senkrecht ziehen = Höhe, <b>seitlich</b> = Mittenfrequenz
             (rastet auf der Standardmitte, wandert nie über den Nachbarn).</p>
-            <p>Die <b>weißen Griffe</b> auf den Schultern der aktiven Glocke ändern die Güte — auch per Scrollrad.</p>
-            <p><b>Doppelklick</b> stellt auf 0, <b>Alt-Doppelklick</b> holt Frequenz und Güte zurück auf den Standard.</p>
-            <p>Decke, Magnet und „Kein Übersteuern" gelten unverändert.</p>
+            <p data-i18n="studio.glocken.leg.2" data-i18n-html>Die <b>weißen Griffe</b> auf den Schultern der aktiven Glocke ändern die Güte — auch per Scrollrad.</p>
+            <p data-i18n="studio.glocken.leg.3" data-i18n-html><b>Doppelklick</b> stellt auf 0, <b>Alt-Doppelklick</b> holt Frequenz und Güte zurück auf den Standard.</p>
+            <p data-i18n="studio.glocken.leg.4" data-i18n-html>Decke, Magnet und „Kein Übersteuern" gelten unverändert.</p>
           </div>
           <div>
-            <p>Die Glocken: <span style="color:var(--akzent)">Anhebungen</span> und <span style="color:#8b8b90">Absenkungen</span>.
+            <p data-i18n="studio.glocken.leg.5" data-i18n-html>Die Glocken: <span style="color:var(--akzent)">Anhebungen</span> und <span style="color:#8b8b90">Absenkungen</span>.
             Bei Einzel-Glocken als Flächen mit Viertel-Deckung: wo sie sich überlappen, addiert sich die Intensität.
             Im Glocken-Stapel geschichtet, jede Schicht an ihrer Außenkante am intensivsten; die aktive Glocke leuchtet heller,
             in der Einzelansicht trägt sie die gestrichelte Kontur.</p>
-            <p>Die <span style="color:var(--akzent)">Summenkurve</span> — das, was das Signal wirklich erfährt.</p>
-            <p><b style="color:var(--text)">Schwarze Haarlinien</b> (im Stapel): die Schichtkanten und die Resultierende,
+            <p data-i18n="studio.glocken.leg.6" data-i18n-html>Die <span style="color:var(--akzent)">Summenkurve</span> — das, was das Signal wirklich erfährt.</p>
+            <p data-i18n="studio.glocken.leg.7" data-i18n-html><b style="color:var(--text)">Schwarze Haarlinien</b> (im Stapel): die Schichtkanten und die Resultierende,
             Filter für Filter aufgebaut — wo sie von den Kanten abweicht, wird gegengerechnet.</p>
-            <p><span style="color:#8b8b90">Graue Treppe mit Ringen:</span> die Decke je Messband — Messpunkte, sie stehen fest.
+            <p data-i18n="studio.glocken.leg.8" data-i18n-html><span style="color:#8b8b90">Graue Treppe mit Ringen:</span> die Decke je Messband — Messpunkte, sie stehen fest.
             Die stille graue Fläche dahinter: das laufende Spektrum des Titels, gemittelt über die am Regler „Anzeige-Mittelung" eingestellte Zeit — kurz folgt sie flink, lang wird sie ruhig. Kontext, keine Skala.</p>
           </div>
         </div>
@@ -3425,13 +3425,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
            laesst - Klartext statt Legende (Caspar_D, 20.08.2026). -->
       <!-- Ergaenzt die Legende, wiederholt sie nicht (Caspar_D,
            20.08.2026: "danach kommt nochmal dasselbe"). -->
-      <div id="eqerkl" class="fussnote">
-        Die Faktoren an der Skala übersetzen die Dezibel
+      <div id="eqerkl" class="fussnote"><span data-i18n="studio.eq.erkl" data-i18n-html>Die Faktoren an der Skala übersetzen die Dezibel
         (+6 dB = doppelte Amplitude). Wie viel Spielraum ein Band hat, bestimmt der Titel
         selbst: Sein lautestes Band trägt die Pegelspitzen und verträgt kaum Anhebung —
         je leiser ein Band, desto mehr Luft nach oben. <b>Absenken ist immer gefahrlos.</b>
         Wer dennoch über die Grenze will, spannt vorher in der Lasche Kompressor ein
-        Sicherheitsnetz: die Limiter-Pille (Kompressor) oder den Lautpunkt (Gradationskompressor).<span id="eqspielraum"></span>
+        Sicherheitsnetz: die Limiter-Pille (Kompressor) oder den Lautpunkt (Gradationskompressor).</span><span id="eqspielraum"></span>
       </div>
     </div>
 
@@ -3445,7 +3444,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div id="blasterlampen">
         <span class="lampe an gruen" id="lpPower"></span><b>POWER</b>
         <span class="lampe" id="lpStereo"></span><b>WIDE</b>
-        <span class="lampe" id="lpHall"></span><b>HALL</b>
+        <span class="lampe" id="lpHall"></span><b data-i18n="studio.lampe.hall">HALL</b>
         <span class="lampe" id="lpEcho"></span><b>ECHO</b>
         <span class="lampe" id="lpTempo"></span><b>TEMPO</b>
         <span class="lampe" id="lpBass"></span><b>MEGA BASS</b>
@@ -3538,16 +3537,16 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="messeinleitung" id="messeinleitung">
         <h5 data-i18n="mess.wozu.titel">Wozu sollte die Hörumgebung eingemessen werden?</h5>
         <div class="messwozu">
-        <p>Was aus den Lautsprechern kommt, weicht immer von dem ab, was der Rechner
+        <p data-i18n="mess.wozu.1">Was aus den Lautsprechern kommt, weicht immer von dem ab, was der Rechner
         losgeschickt hat. Zwischen Musikdatei und Ohr liegen der Lautsprecher, der Raum und
         dein Platz darin. Ein Regler, den du um 6 dB hochziehst, kann am Ohr mit 2 dB
         ankommen — oder mit 8, wenn eine stehende Welle mitmischt.</p>
-        <p>Diese Messung findet heraus, welche Anteile des akustischen Signals tatsächlich bei
+        <p data-i18n="mess.wozu.2">Diese Messung findet heraus, welche Anteile des akustischen Signals tatsächlich bei
         dir ankommen. Dafür läuft ein (nervtötender) Ton über deine Lautsprecher, und das
         Mikrofon, was du konfiguriert hast, hört zu. Das passiert einmal neutral in den
         Standardeinstellungen und dann mit Variationen in den Einstellungen. Was beide Male
         gleich ist, kürzt sich heraus; übrig bleibt die Wahrheit über deinen Hörplatz.</p>
-        <p>Der Ablauf führt durch verschiedene Schritte. Die Einstellungen nehme ich vor, du
+        <p data-i18n="mess.wozu.3">Der Ablauf führt durch verschiedene Schritte. Die Einstellungen nehme ich vor, du
         bestimmst nur, wann es still genug ist und ohne Störungen möglich ist, zu messen. Kein
         Schritt beginnt ungefragt, und jeder läßt sich wiederholen.</p>
         </div>
@@ -3853,55 +3852,55 @@ h3 .infoknopf .ico{width:14px;height:14px}
            Vergleich beider Bilder (Diptychon) nur im Gradationsmodus. -->
       <div id="kompmoduszeile">
         <select id="kompmodus" title="Kompressor: die klassische Knickkurve (Schwelle, Verhältnis, Aufholen, Limiter). Gradationskompressor: Leise-/Lautpunkt (Schwarz-/Weißpunkt des Grafikers), Gamma oder Sigmoidal mit einem Regler — wie ein Grafikprogramm am Ton. Es gilt immer genau einer; die Werte des anderen bleiben gemerkt." data-i18n-title="komp.modus">
-          <option value="klassisch">Kompressor</option>
-          <option value="gradation">Gradationskompressor</option>
+          <option value="klassisch" data-i18n="komp.kompressor">Kompressor</option>
+          <option value="gradation" data-i18n="komp.gradation">Gradationskompressor</option>
         </select>
       </div>
       <div id="gradzeile" class="klassisch">
         <div class="gradspalte lin nurgradation">
-          <div class="gradtitel">Wie im Grafikprogramm — linear</div>
+          <div class="gradtitel" data-i18n="komp.titel.linear">Wie im Grafikprogramm — linear</div>
           <svg id="gradlin" viewBox="0 0 447 276" preserveAspectRatio="none"></svg>
           <!-- HAECKEL-Bedienung: Kurvenform exklusiv (Aus | Gamma | Sigmoidal),
                EIN Regler "Tone" -1..+1; Schwarz-/Weisspunkt sind die Dreiecke
                unter dem Histogramm in beiden Bildern, direkt ziehbar. -->
           <div id="gradformen">
-            <div class="prokopf">Gradation</div>
-            <div class="gradformzeile"><span class="gradformname">Form</span>
-              <button class="pille gradform" data-form="aus" title="Kurve aus — linear, keine Erfindung" data-i18n-title="komp.aus.titel">Aus</button>
-              <button class="pille gradform" data-form="gamma" title="Gamma auf der dB-Achse zwischen Leise- und Lautpunkt: γ < 1 hebt Leises und staucht Lautes (Schatten aufziehen) — ganz unten wird die Kurve steil, Ausklänge springen schneller ins Nichts; γ > 1 umgekehrt" data-i18n-title="komp.gamma.titel">Gamma</button>
-              <button class="pille gradform" data-form="sig" title="Sigmoidal: + macht die Mitten kontrastreicher und drückt die Ränder flach (oben wie ein weicher Limiter); − staucht die Mitten und macht die Ränder steil — Leises und Lautes werden härter" data-i18n-title="komp.sig.titel">Sigmoidal</button></div>
-            <label><span class="gradformname" title="Wie stark die Form wirkt: Gamma ¼ … 4, Sigmoid −10 … +10" data-i18n-title="komp.staerke.titel">Stärke</span><input id="gftone" type="range" min="-100" max="100" step="1" value="0" list="gftoneticks"><span id="gftonev">—</span></label>
+            <div class="prokopf" data-i18n="komp.gradation.kopf">Gradation</div>
+            <div class="gradformzeile"><span class="gradformname" data-i18n="komp.form">Form</span>
+              <button class="pille gradform" data-form="aus" title="Kurve aus — linear, keine Erfindung" data-i18n-title="komp.aus.titel" data-i18n="komp.aus">Aus</button>
+              <button class="pille gradform" data-form="gamma" title="Gamma auf der dB-Achse zwischen Leise- und Lautpunkt: γ < 1 hebt Leises und staucht Lautes (Schatten aufziehen) — ganz unten wird die Kurve steil, Ausklänge springen schneller ins Nichts; γ > 1 umgekehrt" data-i18n-title="komp.gamma.titel" data-i18n="komp.gamma">Gamma</button>
+              <button class="pille gradform" data-form="sig" title="Sigmoidal: + macht die Mitten kontrastreicher und drückt die Ränder flach (oben wie ein weicher Limiter); − staucht die Mitten und macht die Ränder steil — Leises und Lautes werden härter" data-i18n-title="komp.sig.titel" data-i18n="komp.sig">Sigmoidal</button></div>
+            <label><span class="gradformname" title="Wie stark die Form wirkt: Gamma ¼ … 4, Sigmoid −10 … +10" data-i18n-title="komp.staerke.titel" data-i18n="komp.staerke">Stärke</span><input id="gftone" type="range" min="-100" max="100" step="1" value="0" list="gftoneticks"><span id="gftonev">—</span></label>
             <datalist id="gftoneticks"><option value="-100"><option value="0" label="0"><option value="100"></datalist>
-            <div class="gradformzeile"><span class="gradformname" title="Leisepunkt (Schwarzpunkt) · Lautpunkt (Weißpunkt)" data-i18n-title="komp.leise_laut.titel">Leise / Laut</span><span id="gfsw" class="gradwert">−60 dB</span><span class="gradwert" style="opacity:.5">·</span><span id="gfws" class="gradwert">0 dB</span><small>Dreiecke unter dem Histogramm ziehen</small></div>
+            <div class="gradformzeile"><span class="gradformname" title="Leisepunkt (Schwarzpunkt) · Lautpunkt (Weißpunkt)" data-i18n-title="komp.leise_laut.titel" data-i18n="komp.leise_laut">Leise / Laut</span><span id="gfsw" class="gradwert">−60 dB</span><span class="gradwert" style="opacity:.5">·</span><span id="gfws" class="gradwert">0 dB</span><small>Dreiecke unter dem Histogramm ziehen</small></div>
           </div>
         </div>
         <div class="gradspalte db">
-          <div class="gradtitel">Wie im Studio — Dezibel</div>
+          <div class="gradtitel" data-i18n="komp.titel.db">Wie im Studio — Dezibel</div>
           <svg id="gradkurve" viewBox="0 0 447 276" preserveAspectRatio="none"></svg>
           <div id="gradseite">
       <div id="prokomp">
-        <div class="prokopf"><span class="nurklassisch">Kompressor</span><span class="nurgradation">Gedächtnis</span>
+        <div class="prokopf"><span class="nurklassisch" data-i18n="komp.kompressor">Kompressor</span><span class="nurgradation" data-i18n="komp.gedaechtnis">Gedächtnis</span>
           <button id="komplimit" class="pille nurklassisch" title="Limiter: Schwelle −3 dB, 20:1, Attack 3 ms. Der Regler hält dann die Spitzen (nicht das Mittel), schaut einen Block voraus und kappt als letzte Sicherheit hart am Dach — Sicherheitsnetz statt Klangfarbe" data-i18n-title="komp.limiter.titel">Limiter</button>
           <span id="kompgr" title="Wegregelung — was der Kompressor gerade wegnimmt (−) oder dazugibt (+)" data-i18n-title="komp.gr.titel"></span>
         </div>
         <div id="kompregler">
-          <label class="nurklassisch" title="Schwelle: ab diesem Eingangspegel knickt die Kennlinie — darunter passiert nichts" data-i18n-title="komp.schwelle.titel">Schwelle <input type="range" id="kompthr" min="-60" max="0" step="1" value="0" list="kompthrticks">
+          <label class="nurklassisch" title="Schwelle: ab diesem Eingangspegel knickt die Kennlinie — darunter passiert nichts" data-i18n-title="komp.schwelle.titel"><span data-i18n="komp.schwelle">Schwelle</span> <input type="range" id="kompthr" min="-60" max="0" step="1" value="0" list="kompthrticks">
             <span id="kompthrv">aus</span></label>
           <datalist id="kompthrticks"><option value="-60"><option value="-40"><option value="-20"><option value="0"></datalist>
-          <label class="nurklassisch" title="Verhältnis: Steigung über der Schwelle — bei 4:1 wird aus 4 dB mehr Eingang 1 dB mehr Ausgang" data-i18n-title="komp.verhaeltnis.titel">Verhältnis <input type="range" id="kompratio" min="1" max="20" step="0.5" value="1" list="kompratioticks">
+          <label class="nurklassisch" title="Verhältnis: Steigung über der Schwelle — bei 4:1 wird aus 4 dB mehr Eingang 1 dB mehr Ausgang" data-i18n-title="komp.verhaeltnis.titel"><span data-i18n="komp.verhaeltnis">Verhältnis</span> <input type="range" id="kompratio" min="1" max="20" step="0.5" value="1" list="kompratioticks">
             <span id="kompratiov">1:1</span></label>
           <datalist id="kompratioticks"><option value="1"><option value="4"><option value="10"><option value="20"></datalist>
-          <label title="Attack: Adaptionszeit der Belichtungsautomatik nach oben — wie schnell der Kompressor zupackt (im Limiter-Fall sofort)" data-i18n-title="komp.attack.titel">Attack <input type="range" id="kompatt" min="1" max="300" step="1" value="10" list="kompattticks">
+          <label title="Attack: Adaptionszeit der Belichtungsautomatik nach oben — wie schnell der Kompressor zupackt (im Limiter-Fall sofort)" data-i18n-title="komp.attack.titel"><span data-i18n="komp.attack">Attack</span> <input type="range" id="kompatt" min="1" max="300" step="1" value="10" list="kompattticks">
             <span id="kompattv">10 ms</span></label>
           <datalist id="kompattticks"><option value="1"><option value="10"><option value="100"><option value="300"></datalist>
-          <label title="Release: Adaptionszeit nach unten — wie schnell er wieder loslässt" data-i18n-title="komp.release.titel">Release <input type="range" id="komprel" min="50" max="1000" step="10" value="250" list="komprelticks">
+          <label title="Release: Adaptionszeit nach unten — wie schnell er wieder loslässt" data-i18n-title="komp.release.titel"><span data-i18n="komp.release">Release</span> <input type="range" id="komprel" min="50" max="1000" step="10" value="250" list="komprelticks">
             <span id="komprelv">250 ms</span></label>
           <datalist id="komprelticks"><option value="50"><option value="250"><option value="500"><option value="1000"></datalist>
-          <label class="nurklassisch" title="Aufholen: hebt die ganze Kennlinie — bis ans Dach bei 0 dB; was darüber läge, wird flach" data-i18n-title="komp.aufholen.titel">Aufholen <input type="range" id="kompauf" min="0" max="12" step="0.5" value="0" list="kompaufticks">
+          <label class="nurklassisch" title="Aufholen: hebt die ganze Kennlinie — bis ans Dach bei 0 dB; was darüber läge, wird flach" data-i18n-title="komp.aufholen.titel"><span data-i18n="komp.aufholen">Aufholen</span> <input type="range" id="kompauf" min="0" max="12" step="0.5" value="0" list="kompaufticks">
             <span id="kompaufv">0 dB</span></label>
           <datalist id="kompaufticks"><option value="0"><option value="3"><option value="6"><option value="12"></datalist>
         </div>
-        <div class="prozurueck"><button id="gradzuruecksetzen" class="pille" title="Das aktive Werkzeug auf die Diagonale - das andere bleibt gemerkt" data-i18n-title="komp.diagonale.titel">Auf Diagonale zurücksetzen</button></div>
+        <div class="prozurueck"><button id="gradzuruecksetzen" class="pille" title="Das aktive Werkzeug auf die Diagonale - das andere bleibt gemerkt" data-i18n-title="komp.diagonale.titel" data-i18n="komp.diagonale">Auf Diagonale zurücksetzen</button></div>
       </div>
         </div>
         </div>
@@ -3909,15 +3908,15 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div id="studiomess"></div>
       <div id="proerklaerung" class="fussnote">
         <div class="probedienung">
-          <p class="nurklassisch"><b>Bedienung:</b> Eingang unten, Ausgang links, beides in dB.
+          <p class="nurklassisch" data-i18n="komp.erkl.bedienung" data-i18n-html><b>Bedienung:</b> Eingang unten, Ausgang links, beides in dB.
           Ab der <i>Schwelle</i> knickt die Kennlinie mit der Steigung 1/<i>Verhältnis</i>;
           <i>Aufholen</i> hebt alles — bis ans Dach bei 0 dB. Knick und Endpunkt lassen sich
           auch im Bild ziehen.</p>
-          <p class="nurgradation"><b>Bedienung wie im Grafikprogramm:</b> Zwei Bilder, eine
+          <p class="nurgradation" data-i18n="komp.erkl.grafik" data-i18n-html><b>Bedienung wie im Grafikprogramm:</b> Zwei Bilder, eine
           Kurve — links linear, rechts in dB. <b>Leise- und Lautpunkt</b> sind die Dreiecke
           unter dem Histogramm: ziehen. Was unter dem Leisepunkt liegt, wird Stille; was über
           dem Lautpunkt liegt, wird Voll — das ist der Limiter.</p>
-          <p class="prolegende"><b>Das graue Gebirge</b>: das Lautheitshistogramm — wie laut ist wieviel
+          <p class="prolegende" data-i18n="komp.erkl.legende" data-i18n-html><b>Das graue Gebirge</b>: das Lautheitshistogramm — wie laut ist wieviel
           Prozent des Liedes. <b>Die Stäbe</b> (Eingangsachse): die Lautheit des ganzen Titels
           (LUFS) und — für den Limiter — seine Spitze. <b>Die Marken</b> (Ausgangsachse): die
           Ziele — Vollpegel, Streaming-Richtwert, die Lautheit seiner Stilgruppe. Forme die Kurve
@@ -3927,31 +3926,31 @@ h3 .infoknopf .ico{width:14px;height:14px}
           jetzt, mit Gedächtnis geglättet — über der Diagonale wird angehoben, darunter abgesenkt.</p>
         </div>
         <div class="hintergrund" id="prohintergrund">
-          <button type="button" class="hgkopf" id="prohgkopf" title="Hintergrund auf- und zuklappen" data-i18n-title="mess.hg"><span class="hgpfeil">▸</span> Hintergrund — <b>Der Kompressor ist eine Gammakorrektur der Lautheit — mit Gedächtnis.</b></button>
+          <button type="button" class="hgkopf" id="prohgkopf" title="Hintergrund auf- und zuklappen" data-i18n-title="mess.hg"><span class="hgpfeil">▸</span> <span data-i18n="komp.hg.kopf" data-i18n-html>Hintergrund — <b>Der Kompressor ist eine Gammakorrektur der Lautheit — mit Gedächtnis.</b></span></button>
           <div class="hgkoerper" hidden>
             <div>
-              <p>Die Kennlinie oben zeigt es. Ab der <i>Schwelle</i> knickt die Kurve: aus 4 dB über
+              <p data-i18n="komp.hg.1" data-i18n-html>Die Kennlinie oben zeigt es. Ab der <i>Schwelle</i> knickt die Kurve: aus 4 dB über
               der Schwelle wird bei 4:1 genau 1 dB. Im Log-Raum eine Gerade, in Amplituden ein
               Potenzgesetz (γ = 1/Verhältnis) — die Mathematik der Gammakorrektur.<span class="nurgradation">
               Das linke Bild zeigt es. Das <b>Gamma</b> des Gradationskompressors wirkt auf der
               dB-Achse zwischen Leise- und Lautpunkt (γ = ¼ … 4) — nicht dasselbe γ wie 1/Verhältnis
               der Knickkurve, aber dieselbe Idee.</span></p>
-              <p>Der Unterschied zum Bild: Gamma wirkt statisch pro Pixel — der Kompressor
+              <p data-i18n="komp.hg.2" data-i18n-html>Der Unterschied zum Bild: Gamma wirkt statisch pro Pixel — der Kompressor
               verfolgt stattdessen die <i>Hüllkurve</i> und regelt langsam nach; <i>Attack</i> und
               <i>Release</i> sind die Adaptionszeiten dieser Belichtungsautomatik (das
               <b>Gedächtnis</b>, in beiden Werkzeugen gleich). Bei flacher Oberkante (Limiter) greift
               Attack nicht mehr: Spitzen werden sofort gefasst, nur Release gilt.</p>
             </div>
             <div>
-              <p class="nurklassisch"><b>Limiter</b> = 20:1 ab −3 dB mit harter Kappe am Vollpegel — nicht die
+              <p class="nurklassisch" data-i18n="komp.hg.3" data-i18n-html><b>Limiter</b> = 20:1 ab −3 dB mit harter Kappe am Vollpegel — nicht die
               weiche Schulter der Fotokurve, sondern ihr abgeschnittenes Ende. Eine flache
               Oberkante (auch Aufholen bis ans Dach) macht aus dem Kompressor automatisch einen
               Limiter: er hält dann die Spitzen, schaut einen Block voraus und kappt als letzte
               Sicherheit hart am Dach.</p>
-              <p class="nurgradation"><b>Lautpunkt</b> = der Weißpunkt des Grafikers, also der Limiter: alles
+              <p class="nurgradation" data-i18n="komp.hg.4" data-i18n-html><b>Lautpunkt</b> = der Weißpunkt des Grafikers, also der Limiter: alles
               darüber wird Voll. Der Regler hält die Spitzen, weil er im Limiter-Fall die Spitze
               regelt, nicht das Mittel — mit einem Block Vorausschau und harter Kappe am Dach.</p>
-              <p>Die Messwerte in der Zeile darüber erklären sich per Tooltip. Lautheit, Spanne,
+              <p data-i18n="komp.hg.5" data-i18n-html>Die Messwerte in der Zeile darüber erklären sich per Tooltip. Lautheit, Spanne,
               True Peak, Korrelation und Clipping sind vorgerechnet (Klanganalyse); nur
               <i>Ausgang Spitze</i> ist live — erreicht sie 0 dBFS, zündet im Ghettoblaster die
               CLIP-Lampe.</p>
@@ -4588,7 +4587,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
-<script src="/ui-sprache.js?v=5"></script>
+<script src="/ui-sprache.js?v=6"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js"></script>
 <script>
@@ -4683,20 +4682,20 @@ function eingefrorenAnwenden(){
   const e = katalogInfo && katalogInfo.eingefroren;
   if (!e){ b.hidden = true; return; }
   const seit = e.seit ? new Date(e.seit) : null;
-  const tag = seit && !isNaN(seit) ? seit.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–';
+  const tag = seit && !isNaN(seit) ? seit.toLocaleDateString(localeTag(), { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–';
   /* Die Fussnote des Sticks (Caspar_D, 09.09.2026: "partielles Archiv von
      xxx vom xxxxx, mit Suno-Alias und Datum"): eine Teilkopie sagt, wessen
      sie ist, von wann, und wie viele der Titel schon drauf sind - der
      Export schreibt die neuesten zuerst, die fehlenden zeigt die Liste
      gar nicht erst. */
-  const wer = e.handle ? ` von @${esc(e.handle)}` : '';
+  const wer = e.handle ? window.t('eingefroren.wer', { handle: esc(e.handle) }) : '';
   const n = Number(katalogInfo.anzahl || 0), alle = Number(e.titelKatalog || 0);
   if (e.teilkopie)
-    b.innerHTML = `<b>Teilkopie${wer} vom ${tag}</b> — ${n.toLocaleString('de-DE')} von ${alle.toLocaleString('de-DE')} Titeln, die neuesten`
-      + (e.stufe ? ` · Stufe ${e.stufe.nr} von ${e.stufe.von}` : '') + ' · eingefroren, nur Abspielen';
+    b.innerHTML = window.t('eingefroren.teilkopie', { wer, tag, n: tZahl(n), alle: tZahl(alle) })
+      + (e.stufe ? window.t('eingefroren.stufe', { nr: e.stufe.nr, von: e.stufe.von }) : '') + window.t('eingefroren.nur_teil');
   else
-    b.innerHTML = `<b>Archiv${wer} vom ${tag}</b> — eingefroren, nur Abspielen`
-      + (n ? ` · ${n.toLocaleString('de-DE')} Titel` : '');
+    b.innerHTML = window.t('eingefroren.archiv', { wer, tag }) + window.t('eingefroren.nur')
+      + (n ? ' · ' + window.t('zahl.titel', { n: tZahl(n) }) : '');
   b.hidden = false;
   /* Der rote Knopf holt und schreibt - im Archiv gibt es nichts zu holen.
      Die Glocke fragt GitHub — der Stick greift nicht ins Netz. */
@@ -4732,7 +4731,7 @@ async function start(){
   katalogInfo = d;
   eingefrorenAnwenden();
   if (d.profil && d.profil.display_name) {
-    document.getElementById('ich').title = 'Über ' + d.profil.display_name;
+    document.getElementById('ich').title = window.t('kopf.ueber', { name: d.profil.display_name });
   }
 
   // Modell-Auswahl aus den Daten füllen
@@ -5560,7 +5559,7 @@ function studioKompressor(){
   const anwenden = () => {
     if (!analyseStarten()) return;
     gradSenden();
-    $('kompthrv').textContent   = +thr.value === 0 ? 'aus' : thr.value + ' dB';   /* Einheit im Wert - das extra <small> brach in eine zweite Rasterzeile um (23.08.) */
+    $('kompthrv').textContent   = +thr.value === 0 ? window.t('komp.wert.aus') : thr.value + ' dB';   /* Einheit im Wert - das extra <small> brach in eine zweite Rasterzeile um (23.08.) */
     $('kompratiov').textContent = (+ratio.value).toFixed(1).replace('.0','') + ':1';
     $('kompattv').textContent   = att.value + ' ms';
     $('komprelv').textContent   = rel.value + ' ms';
@@ -5639,13 +5638,13 @@ function kompKurveZeichnen(){
   const G = stilgruppeVon(aktuellId);
   const gruppeLufs = G && G.erdung && G.erdung.lufs != null ? +G.erdung.lufs : null;
   const marke = (ziel, name) => { const d = lufsAus != null ? lufsAus - ziel : null, nah = d != null && Math.abs(d) <= 1;
-    const txt = d == null ? name : `${name} · ${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1).replace('.', ',')} dB`;
+    const txt = d == null ? name : `${name} · ${d >= 0 ? '+' : '−'}${dezimal(Math.abs(d).toFixed(1))} dB`;
     return [ziel, txt, nah ? 'var(--akzent)' : '#6c6c72']; };
-  const yMarken = [[0, 'Voll — Überschreien', '#6c6c72'], marke(-14, 'Streaming-Richtwert')];
-  if (gruppeLufs != null && Math.abs(gruppeLufs + 14) > 0.6) yMarken.push(marke(gruppeLufs, `≈ Stilgruppe (${gruppeLufs.toFixed(1).replace('.', ',')})`));
+  const yMarken = [[0, window.t('komp.marke.voll'), '#6c6c72'], marke(-14, window.t('komp.marke.streaming'))];
+  if (gruppeLufs != null && Math.abs(gruppeLufs + 14) > 0.6) yMarken.push(marke(gruppeLufs, window.t('komp.marke.gruppe', { lufs: dezimal(gruppeLufs.toFixed(1)) })));
   const xMarken = [];
-  if (a && a.truePeak != null) xMarken.push([Math.max(-59, +a.truePeak), 'Spitze heute', '#8b8b90']);
-  if (a && a.lufs != null) xMarken.push([Math.max(-59, +a.lufs), '≈ Lautheit heute', '#8b8b90']);
+  if (a && a.truePeak != null) xMarken.push([Math.max(-59, +a.truePeak), window.t('komp.marke.spitze'), '#8b8b90']);
+  if (a && a.lufs != null) xMarken.push([Math.max(-59, +a.lufs), window.t('komp.marke.lautheit'), '#8b8b90']);
 
   /* EIN Zeichner, zwei Abbildungen (wie beim EQ): dieselbe Kurve als
      Grafikprogramm-Bild (linear, Amplitude) und als Studio-Bild
@@ -5687,14 +5686,14 @@ function kompKurveZeichnen(){
         inhalt += `<text x="${L2 - 8}" y="${(nachY(db) + 4).toFixed(1)}" font-size="12" fill="#8b8b90" text-anchor="end">${db}</text>`
                 + `<text x="${nachX(db).toFixed(1)}" y="${H - 8}" font-size="12" fill="#8b8b90" text-anchor="middle">${db}</text>`;
       }
-      inhalt += `<text x="${W - R3}" y="${H - 8 - 16}" font-size="12" fill="#6c6c72" text-anchor="end">ein · dB</text>`;
+      inhalt += `<text x="${W - R3}" y="${H - 8 - 16}" font-size="12" fill="#6c6c72" text-anchor="end">${window.t('komp.achse.ein_db')}</text>`;
     } else {
       for (const [t2, txt] of [[1, '1'], [0.5, '½'], [0, '0']]){
         const db = t2 > 0 ? 20 * Math.log10(t2) : -60;
         inhalt += `<text x="${L2 - 8}" y="${(nachY(db) + 4).toFixed(1)}" font-size="12" fill="#8b8b90" text-anchor="end">${txt}</text>`
                 + `<text x="${nachX(db).toFixed(1)}" y="${H - 8}" font-size="12" fill="#8b8b90" text-anchor="middle">${txt}</text>`;
       }
-      inhalt += `<text x="${W - R3}" y="${H - 8 - 16}" font-size="12" fill="#6c6c72" text-anchor="end">ein · Amplitude</text>`;
+      inhalt += `<text x="${W - R3}" y="${H - 8 - 16}" font-size="12" fill="#6c6c72" text-anchor="end">${window.t('komp.achse.ein_amp')}</text>`;
     }
     inhalt += `<line x1="${nachX(von).toFixed(1)}" y1="${nachY(von).toFixed(1)}" x2="${nachX(0).toFixed(1)}" y2="${nachY(0).toFixed(1)}" stroke="#ffffff" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>`;
     /* Die Kurve: dicht gesampelt - im linearen Bild wird die
@@ -6096,9 +6095,9 @@ async function studioAuf(){
     if (rs){
       const t = (rs.titel.length > 24 ? rs.titel.slice(0, 23) + '…' : rs.titel)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      $('studioref').innerHTML = 'Referenz: ' + t
-        + ' <span id="studiorefx" title="Referenz löschen" style="margin-left:6px;opacity:.65">×</span>';
-    } else $('studioref').textContent = 'Laufenden Titel als Referenz'; };
+      $('studioref').innerHTML = window.t('studio.ref.ist', { titel: t })
+        + ' <span id="studiorefx" title="' + window.t('studio.ref.weg') + '" style="margin-left:6px;opacity:.65">×</span>';
+    } else $('studioref').textContent = window.t('studio.ref.knopf'); };
   $('studioref').onclick = (e) => {
     if (e.target && e.target.id === 'studiorefx'){          /* das x loescht die Referenz */
       eqReferenz = null; localStorage.removeItem('mysuno-eq-referenz');
@@ -6114,9 +6113,9 @@ async function studioAuf(){
     EQ_NAMEN.forEach((name, i) => {
       const w = document.createElement('div'); w.className = 'eqband';
       w.innerHTML = `<span class="eqf" id="eqfn${i}">${name}${i < 7 ? ' Hz' : ''}</span>
-          <input type="number" id="eqf${i}" min="20" max="18000" step="1" title="Mittenfrequenz in Hz">
-          ${i > 0 && i < 7 ? `<input type="number" id="eqq${i}" min="0.2" max="8" step="0.1" title="Güte Q — schmal (hoch) bis breit (niedrig)">` : '<span class="eqqleer"></span>'}
-          <span class="parsolokreis" data-band="${i}" title="Solo: dieses Band mithören — nochmal klicken löst"></span>`;
+          <input type="number" id="eqf${i}" min="20" max="18000" step="1" title="${window.t('studio.eq.mitte')}">
+          ${i > 0 && i < 7 ? `<input type="number" id="eqq${i}" min="0.2" max="8" step="0.1" title="${window.t('studio.eq.guete')}">` : '<span class="eqqleer"></span>'}
+          <span class="parsolokreis" data-band="${i}" title="${window.t('studio.solo.titel')}"></span>`;
       feld.appendChild(w);
       w.querySelector('.parsolokreis').onclick = () => eqSoloToggle(i);
       const fIn = w.querySelector(`#eqf${i}`), qIn = w.querySelector(`#eqq${i}`);
@@ -6140,15 +6139,15 @@ async function studioAuf(){
     for (let i = 0; i < 8; i++){
       const k = document.createElement('span');
       k.className = 'parsolokreis'; k.dataset.band = i;
-      k.title = 'Solo: dieses Band mithören — nochmal klicken löst';
+      k.title = window.t('studio.solo.titel');
       k.style.position = 'absolute';
       k.style.left = (L + PUNKT + i * (W - L - R2 - 2 * PUNKT) / 7 - 8).toFixed(0) + 'px';
       k.onclick = () => eqSoloToggle(i);
       bz.appendChild(k);
     }
     const iv2 = document.createElement('button');
-    iv2.className = 'pille inversknopf'; iv2.textContent = 'Invers';
-    iv2.title = 'Invers: es spielen alle Bänder außer den gewählten';
+    iv2.className = 'pille inversknopf'; iv2.textContent = window.t('studio.invers');
+    iv2.title = window.t('studio.invers.titel');
     iv2.style.cssText = 'position:absolute;left:' + (W + 14) + 'px;top:-5px;font-size:11px;padding:5px 10px';
     iv2.dataset.dran = '1'; iv2.onclick = eqSoloInversToggle;
     bz.appendChild(iv2);
@@ -6263,14 +6262,14 @@ function studioPresetsPruefen(){
   const sperre = (wert, grund) => { const o = d.querySelector(`option[value="${wert}"]`); if (!o) return;
     if (!o.dataset.text) o.dataset.text = o.textContent;
     o.disabled = !!grund; o.textContent = grund ? `${o.dataset.text} — ${grund}` : o.dataset.text; };
-  const ohneProfil = !P ? 'kein Profil für diesen Titel' : '';
-  sperre('sammlung', ohneProfil || (!(eqProfil && eqProfil.mittel) ? 'kein Sammlungsmittel' : ''));
-  sperre('referenz', ohneProfil || (!eqReferenz ? 'noch keine Referenz gemerkt' : !(eqProfil && eqProfil.songs[eqReferenz]) ? 'Referenz ohne Profil' : ''));
+  const ohneProfil = !P ? window.t('studio.preset.ohne_profil') : '';
+  sperre('sammlung', ohneProfil || (!(eqProfil && eqProfil.mittel) ? window.t('studio.preset.ohne_mittel') : ''));
+  sperre('referenz', ohneProfil || (!eqReferenz ? window.t('studio.preset.ohne_ref') : !(eqProfil && eqProfil.songs[eqReferenz]) ? window.t('studio.preset.ref_ohne_profil') : ''));
   { const s = songVonId.get(aktuellId), plId = s && s.playlists && s.playlists[0];
     const n = plId ? alle.filter(x => (x.playlists || []).includes(plId)).filter(x => eqProfil && eqProfil.songs[x.id]).length : 0;
-    sperre('playlist', ohneProfil || (!plId ? 'Titel steht in keinem Album' : n < 2 ? 'Album ohne genug Profile' : '')); }
+    sperre('playlist', ohneProfil || (!plId ? window.t('studio.preset.ohne_album') : n < 2 ? window.t('studio.preset.album_wenig') : '')); }
   { const pK = karteDaten && karteDaten.songs.find(q => q.id === aktuellId), G = pK && karteDaten.gruppen[pK.gruppe];
-    sperre('gruppe', ohneProfil || (!karteDaten ? 'noch kein Klangraum' : !pK ? 'Titel noch nicht vermessen' : !(G && G.profil) ? 'Gruppe ohne Klangprofil' : '')); }
+    sperre('gruppe', ohneProfil || (!karteDaten ? window.t('studio.preset.ohne_raum') : !pK ? window.t('studio.preset.nicht_vermessen') : !(G && G.profil) ? window.t('studio.preset.gruppe_ohne') : '')); }
 }
 
 /* Die Preset-Anzeige aus dem IST-Zustand ableiten - eine Stelle statt
@@ -6316,18 +6315,18 @@ function studioMesswerte(){
   const feld = $('studiomess'); if (!feld) return;
   const s = songVonId.get(aktuellId);
   const a = s && s.analyse;
-  if (!a){ feld.innerHTML = '<span class="mw">Noch keine Klanganalyse für diesen Titel.</span>'; return; }
+  if (!a){ feld.innerHTML = '<span class="mw">' + window.t('komp.mw.keine') + '</span>'; return; }
   /* Glossar als Tooltips am Gegenstand (Hausregel; Review 23.08.) */
   const w = (name, wert, einheit, tip) => wert == null ? '' :
-    `<span class="mw"${tip ? ` title="${tip}"` : ''}>${name}<b>${String(wert).replace('.', ',')}${einheit || ''}</b></span>`;
+    `<span class="mw"${tip ? ` title="${tip}"` : ''}>${name}<b>${dezimal(wert)}${einheit || ''}</b></span>`;
   feld.innerHTML =
-    w('Lautheit', a.lufs, ' LUFS', 'wie laut der Titel dem Ohr erscheint — gehörgewichtet und in Dezibel, so wie L* die Helligkeit nach dem Auge statt nach dem Photonenzähler misst. Die meisten Streaming-Dienste normalisieren auf etwa −14 (Apple −16): Lauteres wird dort einfach leiser gedreht') +
-    w('Spanne', a.lra, ' LU', 'Kontrastumfang zwischen leisen und lauten Passagen') +
-    w('True Peak', a.truePeak, ' dBTP', 'die hellste einzelne Spitze — über 0 dBTP brennt es aus (Verzerrungen, Überschreien)') +
-    w('Korrelation', a.korrelation, '', '1 = mono-kompatibel, negativ = Auslöschungsgefahr') +
-    w('Tempo', a.bpm, ' BPM', 'geschätztes Tempo aus der Klanganalyse') +
-    (a.clip ? `<span class="mw" title="Anschläge ans Maximum in der Aufnahme (vorgerechnet)">Clipping<b>${a.clip}×</b></span>` : '') +
-    `<span class="mw" title="gehört: Sample-Spitze am Ausgang des Tonpfads, mit allem, was wirkt">Ausgang Spitze<b id="studioausgang">—</b></span>`;
+    w(window.t('komp.mw.lautheit'), a.lufs, ' LUFS', window.t('komp.mw.lautheit.titel')) +
+    w(window.t('komp.mw.spanne'), a.lra, ' LU', window.t('komp.mw.spanne.titel')) +
+    w(window.t('komp.mw.truepeak'), a.truePeak, ' dBTP', window.t('komp.mw.truepeak.titel')) +
+    w(window.t('komp.mw.korrelation'), a.korrelation, '', window.t('komp.mw.korrelation.titel')) +
+    w(window.t('komp.mw.tempo'), a.bpm, ' BPM', window.t('komp.mw.tempo.titel')) +
+    (a.clip ? `<span class="mw" title="${window.t('komp.mw.clip.titel')}">Clipping<b>${a.clip}×</b></span>` : '') +
+    `<span class="mw" title="${window.t('komp.mw.ausgang.titel')}">${window.t('komp.mw.ausgang')}<b id="studioausgang">—</b></span>`;
 }
 
 /* Ausgangs-Spitzenmesser am master (Review 22.08.2026: EQ +12 dB, Breite
@@ -6988,27 +6987,26 @@ function studioZeichnen(){
   const spielraum = $('eqspielraum');
   if (spielraum){
     if (decke){
-      const namen = ['Sub', 'Bass', 'Tiefmitten', 'Mitten', 'Hochmitten', 'Präsenz', 'Brillanz', 'Höhen'];
+      const namen = ['sub', 'bass', 'tiefmitten', 'mitten', 'hochmitten', 'praesenz', 'brillanz', 'hoehen'].map(k => window.t('studio.band.' + k));
       let eng = 0, weit = 0;
       decke.forEach((d, i) => { if (d < decke[eng]) eng = i; if (d > decke[weit]) weit = i; });
-      const db = (v) => (v >= 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + ' dB';
-      spielraum.textContent = ` Bei diesem Titel: engster Spielraum im ${namen[eng]}-Band (${db(decke[eng])})`
-        + `${decke[eng] < 0 ? ' — der Titel reizt sein Budget schon unverändert aus' : ''},`
-        + ` am meisten Luft im ${namen[weit]}-Band (${decke[weit] > 12 ? 'mehr als +12 dB' : db(decke[weit])}).`;
-    } else spielraum.textContent = ' Für diesen Titel fehlt Profil oder True Peak — keine Decke berechenbar.';
+      const db = (v) => (v >= 0 ? '+' : '') + dezimal(v.toFixed(1)) + ' dB';
+      spielraum.textContent = window.t('studio.spielraum', { eng: namen[eng], engdb: db(decke[eng]), aus: decke[eng] < 0 ? window.t('studio.spielraum.aus') : '',
+        weit: namen[weit], weitdb: decke[weit] > 12 ? window.t('studio.spielraum.mehr12') : db(decke[weit]) });
+    } else spielraum.textContent = window.t('studio.spielraum.fehlt');
   }
   /* Legende in Caspar_Ds Worten (20.08.2026). Davor ggf. die Zeile des Presets (Stilgruppe, 22.08.). */
   $('studiofuss').innerHTML =
     (studioHinweis ? `<p style="color:var(--text)">${studioHinweis}</p>` : '')
-    + '<p><b style="color:var(--text)">Die roten Punkte sind die Regler:</b> senkrecht ziehen, Doppelklick stellt auf 0. An der grauen Decke rasten sie ein.</p>'
-    + '<p><span style="color:var(--akzent)">Farbig:</span> Frequenzprofil nach Regelung — die Kurve ist das echte Ergebnis der runden Filter, die Punkte sind die Einstellung je Band (Analyse blockig, Filterung glockig)</p>'
-    + '<p><span style="color:#fff">Grau:</span> die Decke — wie viel Luft ein Band noch bis zum Vollpegel hat, geschätzt aus Bandprofil und True Peak</p>'
-    + '<p><span style="color:#fff;background:color-mix(in srgb, var(--akzent) 50%, transparent);border:1px solid #fff;border-radius:999px;padding:0 8px">Gefüllt</span>: die Kurve liegt über der Decke — der Titel würde übersteuern (Verzerrungen, Überschreien)</p>'
-    + '<p>Die Kreise darunter: <b style="color:var(--text)">Solo</b> — hier das Messband von Trennfrequenz zu Trennfrequenz, im Glockenstuhl die Glocke selbst; Invers spielt alle anderen.</p>'
-    + '<p style="opacity:.75">Bandprofil und True Peak stammen aus der Klanganalyse des Titels — vorgerechnet von der Titel-Analyse, keine Live-Messung.</p>'
-    + (decke && Math.min(...decke) < 0 ? '<p>Achtung: dieser Titel reizt sein Budget schon unverändert aus (True Peak ≥ 0).</p>' : '')
-    + (!decke ? '<p>Keine Grenze berechenbar: für diesen Titel fehlt Profil oder True Peak.</p>' : '')
-    + (eqAus ? '<p>A/B: Original läuft.</p>' : '');
+    + '<p>' + window.t('studio.eqleg.punkte') + '</p>'
+    + '<p>' + window.t('studio.eqleg.farbig') + '</p>'
+    + '<p>' + window.t('studio.eqleg.grau') + '</p>'
+    + '<p>' + window.t('studio.eqleg.gefuellt') + '</p>'
+    + '<p>' + window.t('studio.eqleg.kreise') + '</p>'
+    + '<p style="opacity:.75">' + window.t('studio.eqleg.quelle') + '</p>'
+    + (decke && Math.min(...decke) < 0 ? '<p>' + window.t('studio.eqleg.achtung') + '</p>' : '')
+    + (!decke ? '<p>' + window.t('studio.eqleg.keine_grenze') + '</p>' : '')
+    + (eqAus ? '<p>' + window.t('studio.eqleg.ab') + '</p>' : '');
   parZeichnen();                                 /* das Frequenzbild zieht immer mit */
 }
 
@@ -7041,13 +7039,13 @@ async function studioPreset(art){
     if (art === 'sammlung') ziel = eqProfil && eqProfil.mittel;
     else if (art === 'gruppe'){
       const pK = karteDaten && karteDaten.songs.find(q => q.id === aktuellId), G = stilgruppeVon(aktuellId);
-      if (!karteDaten) hinweis = 'Noch kein Klangraum — der Morgenlauf „Musikstil und Klangraum" rechnet ihn.';
-      else if (!pK) hinweis = 'Dieser Titel ist noch nicht im Klangraum vermessen.';
-      else if (!G || !G.profil) hinweis = 'Für diese Stilgruppe gibt es noch kein Klangprofil.';
-      else { ziel = G.profil; hinweis = `Stilgruppe „${gruppenAnzeige(G.name)}“ (${G.anzahl} Titel): Klangprofil der Gruppe als Ziel, halbe Stärke.`; }
+      if (!karteDaten) hinweis = window.t('studio.preset.h.ohne_raum');
+      else if (!pK) hinweis = window.t('studio.preset.h.nicht_vermessen');
+      else if (!G || !G.profil) hinweis = window.t('studio.preset.h.gruppe_ohne');
+      else { ziel = G.profil; hinweis = window.t('studio.preset.h.gruppe', { name: gruppenAnzeige(G.name), n: G.anzahl }); }
     }
     else if (art === 'referenz'){ ziel = eqProfil && eqProfil.songs[eqReferenz];
-      if (!eqReferenz) hinweis = 'Erst eine Referenz merken: Titel abspielen, dann „Laufenden Titel als Referenz".'; }
+      if (!eqReferenz) hinweis = window.t('studio.preset.h.ohne_ref'); }
     else if (art === 'playlist'){
       /* Mittel der (ersten) Playlist, in der der Song steht - aus den
          echten Profilen ihrer Mitglieder. */
@@ -7057,9 +7055,9 @@ async function studioPreset(art){
                                     .map(x => eqProfil.songs[x.id]).filter(Boolean) : [];
       if (mitglieder.length >= 2)
         ziel = eqGains.map((_, b) => mitglieder.reduce((q, m) => q + m[b], 0) / mitglieder.length);
-      else hinweis = 'Der Titel steht in keinem Album mit genug Profilen.';
+      else hinweis = window.t('studio.preset.h.album');
     }
-    if (!P || !ziel){ $('studiofuss').textContent = !P ? 'Kein Profil für diesen Titel.' : hinweis; return; }
+    if (!P || !ziel){ $('studiofuss').textContent = !P ? window.t('studio.preset.h.ohne_profil') : hinweis; return; }
     eqGains = P.map((v, i) => Math.max(-6, Math.min(6, +(((ziel[i] - v) / 2).toFixed(1)))));
     if (art === 'gruppe') studioHinweis = hinweis;
   }
@@ -7671,19 +7669,19 @@ function sortierungenAnbieten(){
   const sel = $('sortierung');
   if (!sel || sel.dataset.ergaenzt) return;
   sel.dataset.ergaenzt = '1';
-  const opt = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; };
-  sel.appendChild(opt('kommentare', 'Meiste Kommentare'));
-  sel.appendChild(opt('dauer', 'Längste zuerst'));
+  const opt = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; o.dataset.erg = '1'; return o; };
+  sel.appendChild(opt('kommentare', window.t('filter.sort.kommentare')));
+  sel.appendChild(opt('dauer', window.t('filter.sort.dauer')));
   /* Bewegung: Zuwachs der letzten sieben Tage, aus dem Zaehlerverlauf
      (katalog.js). Nur anbieten, wenn sich irgendwo etwas bewegt hat -
      eine Sortierung ueber lauter Nullen sortiert nichts. */
   const bewegt = alle.some(s => s.bewegung && (s.bewegung.plays || s.bewegung.likes || s.bewegung.kommentare));
   if (bewegt) {
-    const b = document.createElement('optgroup'); b.label = 'Bewegung, 7 Tage';
-    b.appendChild(opt('bewPlays', 'Meiste neue Abrufe'));
-    b.appendChild(opt('bewLikes', 'Meiste neue Herzen'));
-    b.appendChild(opt('bewKommentare', 'Meiste neue Kommentare'));
-    b.appendChild(opt('bewSumme', 'Meiste Bewegung'));     // die Kombizahl zuletzt
+    const b = document.createElement('optgroup'); b.dataset.erg = '1'; b.label = window.t('filter.sort.gruppe.bewegung');
+    b.appendChild(opt('bewPlays', window.t('filter.sort.bewPlays')));
+    b.appendChild(opt('bewLikes', window.t('filter.sort.bewLikes')));
+    b.appendChild(opt('bewKommentare', window.t('filter.sort.bewKommentare')));
+    b.appendChild(opt('bewSumme', window.t('filter.sort.bewSumme')));     // die Kombizahl zuletzt
     sel.appendChild(b);
   }
   /* TEMPO nach Sunos Taktraster (23.08.2026). Eine eigene Gruppe, denn es ist
@@ -7693,9 +7691,9 @@ function sortierungenAnbieten(){
      stossen tempoverwandte Songs aneinander, und der Anschluss greift fast
      immer - genau dafuer ist die Reihenfolge gedacht (Caspar_Ds Idee). */
   if (alle.some(s => s.taktBpm)){
-    const t = document.createElement('optgroup'); t.label = 'Tempo (Sunos Takt)';
-    t.appendChild(opt('taktAuf', 'Langsam → schnell'));
-    t.appendChild(opt('taktAb', 'Schnell → langsam'));
+    const t = document.createElement('optgroup'); t.dataset.erg = '1'; t.label = window.t('filter.sort.gruppe.tempo');
+    t.appendChild(opt('taktAuf', window.t('filter.sort.taktAuf')));
+    t.appendChild(opt('taktAb', window.t('filter.sort.taktAb')));
     sel.appendChild(t);
   }
   const hatIndex = analyseIndex && Object.keys(analyseIndex).length > 0;
@@ -7705,13 +7703,13 @@ function sortierungenAnbieten(){
      Sortierung über lauter fehlende Werte sortiert nichts und behauptet
      trotzdem etwas. */
   const da = (k) => alle.some(s => s.analyse && s.analyse[k] != null);
-  const g = document.createElement('optgroup'); g.label = 'Gemessen';
+  const g = document.createElement('optgroup'); g.dataset.erg = '1'; g.label = window.t('filter.sort.gruppe.gemessen');
   const paare = [
-    ['bpm', 'Schnellste zuerst (gemessen)'], ['bpmAuf', 'Langsamste zuerst (gemessen)'],
-    ['lufs', 'Lauteste zuerst'], ['lufsAuf', 'Leiseste zuerst'],
-    ['dynamik', 'Dynamischste zuerst'], ['dynamikAuf', 'Komprimierteste zuerst'],
-    ['lra', 'Größte Schwankung'], ['stereo', 'Breitestes Stereo'],
-    ['truePeak', 'Höchste Spitze'],
+    ['bpm', window.t('filter.sort.bpm')], ['bpmAuf', window.t('filter.sort.bpmAuf')],
+    ['lufs', window.t('filter.sort.lufs')], ['lufsAuf', window.t('filter.sort.lufsAuf')],
+    ['dynamik', window.t('filter.sort.dynamik')], ['dynamikAuf', window.t('filter.sort.dynamikAuf')],
+    ['lra', window.t('filter.sort.lra')], ['stereo', window.t('filter.sort.stereo')],
+    ['truePeak', window.t('filter.sort.truePeak')],
   ];
   for (const [k, t] of paare) if (da(k.replace(/Auf$/, ''))) g.appendChild(opt(k, t));
   if (g.children.length) sel.appendChild(g);
@@ -8028,7 +8026,12 @@ const raumDaten = {};      /* je Raum die geladene Karte */
    Ortsbegriffe des Geschichten-Raums sind Wörter aus den eigenen Liedern und bleiben. */
 const KLANG_EN = new Map((window.KLANG_WOERTER || []).map(([, de, en]) => [de, en]));
 const GRUPPE_GANZ = { '(gemischte Gegend)': 'karte.gruppe.gemischt', 'ohne Stilgruppe': 'schaum.glied.ohne_stil',
-  'gemischt': 'gruppe.gemischt', 'ohne Angabe': 'schaum.ohne_angabe' };
+  'gemischt': 'gruppe.gemischt', 'ohne Angabe': 'schaum.ohne_angabe',
+  /* die Areale des Groupieschaums (GROUPIE_AREALE, GROUPIE_BEZIEHUNG, GROUPIE_LEBENDIG, groupiePerson) - Schlüssel für Farbe und Lage */
+  'nur Herzen': 'groupie.areal.herzen', 'Herzen und Kommentare': 'groupie.areal.beides', 'nur Kommentare': 'groupie.areal.kommentare',
+  'ihr folgt euch': 'groupie.areal.gegenseitig', 'folgt dir': 'groupie.areal.folgt_dir', 'du folgst ihr': 'groupie.areal.du_folgst',
+  'keiner folgt': 'groupie.areal.keiner', 'unbekannt': 'groupie.areal.unbekannt', 'Zeit unbekannt': 'groupie.areal.zeit_unbekannt',
+  'in den letzten 4 Wochen': 'groupie.areal.vier_wochen', 'davor': 'groupie.areal.davor' };
 function gruppenAnzeige(name){
   if (name == null || sprache() !== 'en') return name;
   const s = String(name);
@@ -8074,16 +8077,16 @@ let karteAnflug = null;
    faellt auf den Standard zurueck. karteFarbe liest die geltende Palette: Klangraum, Klangschaum
    (Gliederung Klang), Groupie-Geschmack und die Stilgruppen im Profil folgen ihr. */
 const KLANGRAUM_PALETTEN = [
-  { id: 'nebel', name: 'Nebel (Standard)', f: ['#e0455a', '#2ec4b6', '#4f7bd9', '#e8c04a', '#b05cd6', '#ff8c42', '#7bd389', '#9bb7ff'] },
-  { id: 'eis', name: 'Eisnebel', f: ['#6fd3ff', '#2ec4b6', '#6f7bff', '#c9ecff', '#2f8cff', '#7ff2dc', '#a99bff', '#3fa8c4'] },
-  { id: 'polar', name: 'Polarlicht', f: ['#45f0a0', '#3aa8ff', '#b36cff', '#8ff6ff', '#2fd1b4', '#6f7dff', '#e0a6ff', '#a6ffcf'] },
+  { id: 'nebel', get name(){ return window.t('karte.palette.nebel'); }, f: ['#e0455a', '#2ec4b6', '#4f7bd9', '#e8c04a', '#b05cd6', '#ff8c42', '#7bd389', '#9bb7ff'] },
+  { id: 'eis', get name(){ return window.t('karte.palette.eis'); }, f: ['#6fd3ff', '#2ec4b6', '#6f7bff', '#c9ecff', '#2f8cff', '#7ff2dc', '#a99bff', '#3fa8c4'] },
+  { id: 'polar', get name(){ return window.t('karte.palette.polar'); }, f: ['#45f0a0', '#3aa8ff', '#b36cff', '#8ff6ff', '#2fd1b4', '#6f7dff', '#e0a6ff', '#a6ffcf'] },
   /* statt „Tiefer Raum" (Caspar_D: „die drei kalten sind sehr ähnlich, ersetze einen mit einem: hellcyan,
      hellblau, hellbeige, cyan"); die ersten vier in seiner Reihenfolge, dahinter Mittelblau, blasses Eis,
      Sand, Aqua */
-  { id: 'mond', name: 'Mondlicht', f: ['#9ff3ff', '#a9c8ff', '#efe0c2', '#20d4e8', '#7fb2e6', '#d8f6ff', '#c9b48f', '#5fe0d0'] },
-  { id: 'glut', name: 'Sonnenglut', f: ['#ff5a48', '#ffb03a', '#ff6fa8', '#ffe07a', '#d9456e', '#ff8a52', '#f0c38f', '#c7372f'] },
-  { id: 'borg', name: 'Borg', gestalt: 'kubus', f: ['#39ff6a', '#18b85c', '#a8ff3e', '#0e8f6e', '#62dca0', '#d4ff8f', '#2fe6bd', '#7aa83a'] },
-  { id: 'rabe', name: 'Rabe', gestalt: 'rabe', f: ['#b05cd6', '#ff5fb3', '#5a6cff', '#e590ff', '#7d3cff', '#ff9ad8', '#4fa3ff', '#c9a8ff'] },
+  { id: 'mond', get name(){ return window.t('karte.palette.mond'); }, f: ['#9ff3ff', '#a9c8ff', '#efe0c2', '#20d4e8', '#7fb2e6', '#d8f6ff', '#c9b48f', '#5fe0d0'] },
+  { id: 'glut', get name(){ return window.t('karte.palette.glut'); }, f: ['#ff5a48', '#ffb03a', '#ff6fa8', '#ffe07a', '#d9456e', '#ff8a52', '#f0c38f', '#c7372f'] },
+  { id: 'borg', get name(){ return window.t('karte.palette.borg'); }, gestalt: 'kubus', f: ['#39ff6a', '#18b85c', '#a8ff3e', '#0e8f6e', '#62dca0', '#d4ff8f', '#2fe6bd', '#7aa83a'] },
+  { id: 'rabe', get name(){ return window.t('karte.palette.rabe'); }, gestalt: 'rabe', f: ['#b05cd6', '#ff5fb3', '#5a6cff', '#e590ff', '#7d3cff', '#ff9ad8', '#4fa3ff', '#c9a8ff'] },
 ];
 let klangraumPalette = (() => { try { const id = localStorage.getItem('mysuno-klangraum-farben');
   return KLANGRAUM_PALETTEN.some(p => p.id === id && !p.gestalt) ? id : 'nebel'; } catch (e) { return 'nebel'; } })();
@@ -8465,23 +8468,23 @@ function karteTippWeg(){ const t = document.getElementById('kartetipp'); if (t) 
 function karteLesarten(){
   const z = (farbe, titel, text) => `<div class="kartelesart"><span class="farbe" style="${farbe}"></span><span><b>${titel}</b><small>${text}</small></span></div>`;
   const block = (titel, inhalt) => `<div class="lblock"><h4>${titel}</h4><div class="lgrid" data-leg="${titel}">${inhalt}</div></div>`;
-  return block('Sterne',
-    z('background:radial-gradient(#fff,#fff 20%,transparent 70%);transform:scale(1.25)', 'Größe = Abrufe', 'je öfter gehört, desto größer (logarithmisch, nach Rang)') +
-    z('background:radial-gradient(#fff,#fff 30%,transparent 70%)', 'Helligkeit = Herzen', 'beliebte Titel leuchten') +
-    z('background:radial-gradient(circle,#fff 18%,#e0455a 30%,transparent 60%);border:none', 'Korona = Kommentare', 'Farbe = Stilgruppe, Stärke = wie viel besprochen wird') +
-    z('background:linear-gradient(90deg,transparent 44%,#fff 48%,#fff 52%,transparent 56%),linear-gradient(0deg,transparent 44%,#fff 48%,#fff 52%,transparent 56%);border:none', 'Kreuz = Bewegung', 'Abrufe in den letzten 7 Tagen; Länge = wie viele') +
-    z('background:linear-gradient(90deg,#ff9a3c,#fff,#9bb7ff)', 'Sternfarbe = Alter', 'älteste rot, neueste blauweiß') +
-    z('background:#000;border:1px solid #888', 'Schatten = privat', 'da, aber ohne Licht — Suno zeigt ihn nicht')) +
-  block('Lebende Sterne',
-    z('background:radial-gradient(#fff,transparent 70%);opacity:.7', 'Flimmern = neu', 'Titel der letzten 7 Tage szintillieren') +
-    z('background:radial-gradient(#ffb070,transparent 70%)', 'Pulsieren = Hybrid', 'Strophe und Refrain klingen verschieden') +
-    z('background:radial-gradient(ellipse 70% 35% at 50% 50%,#ffffff55,transparent 70%);border:none', 'Doppelsystem = Zwillinge', 'zwei Fassungen desselben Titels in einer Hülle') +
-    z('background:radial-gradient(#fff,#fff 25%,transparent 60%)', 'Fäden = Nachbarn', 'unter der Maus: Fäden zu den sechs nächsten, Deckung nach Nähe')) +
-  block('Zuschaltbar',
-    z('background:radial-gradient(#e0455a66,transparent 70%)', 'Nebel = Stilgruppe', 'Staubwolken addieren sich') +
-    z('background:linear-gradient(160deg,transparent 45%,#c8d7ff 47%,transparent 49%),linear-gradient(20deg,transparent 45%,#c8d7ff 47%,transparent 49%);border:none', 'Sternbild = Klassifikator', 'Linien durch seine stärksten Titel') +
-    z('background:radial-gradient(circle,#000 30%,#e0455a 36%,transparent 52%);border:none', 'Attraktor = Massezentrum', 'eines je Gruppe, Jets = Hauptachse') +
-    z('background:linear-gradient(155deg,transparent 44%,#c9c9cd 47%,#c9c9cd 53%,transparent 56%);border:none', 'Flugbahn = Reiseweg', 'die wirklich geflogene Bahn des Schiffs'));
+  return block(window.t('karte.les.sterne'),
+    z('background:radial-gradient(#fff,#fff 20%,transparent 70%);transform:scale(1.25)', window.t('karte.les.groesse'), window.t('karte.les.groesse.text')) +
+    z('background:radial-gradient(#fff,#fff 30%,transparent 70%)', window.t('karte.les.hell'), window.t('karte.les.hell.text')) +
+    z('background:radial-gradient(circle,#fff 18%,#e0455a 30%,transparent 60%);border:none', window.t('karte.les.korona'), window.t('karte.les.korona.text')) +
+    z('background:linear-gradient(90deg,transparent 44%,#fff 48%,#fff 52%,transparent 56%),linear-gradient(0deg,transparent 44%,#fff 48%,#fff 52%,transparent 56%);border:none', window.t('karte.les.kreuz'), window.t('karte.les.kreuz.text')) +
+    z('background:linear-gradient(90deg,#ff9a3c,#fff,#9bb7ff)', window.t('karte.les.farbe'), window.t('karte.les.farbe.text')) +
+    z('background:#000;border:1px solid #888', window.t('karte.les.schatten'), window.t('karte.les.schatten.text'))) +
+  block(window.t('karte.les.lebend'),
+    z('background:radial-gradient(#fff,transparent 70%);opacity:.7', window.t('karte.les.flimmern'), window.t('karte.les.flimmern.text')) +
+    z('background:radial-gradient(#ffb070,transparent 70%)', window.t('karte.les.pulsieren'), window.t('karte.les.pulsieren.text')) +
+    z('background:radial-gradient(ellipse 70% 35% at 50% 50%,#ffffff55,transparent 70%);border:none', window.t('karte.les.doppel'), window.t('karte.les.doppel.text')) +
+    z('background:radial-gradient(#fff,#fff 25%,transparent 60%)', window.t('karte.les.faeden'), window.t('karte.les.faeden.text'))) +
+  block(window.t('karte.les.zuschaltbar'),
+    z('background:radial-gradient(#e0455a66,transparent 70%)', window.t('karte.les.nebel'), window.t('karte.les.nebel.text')) +
+    z('background:linear-gradient(160deg,transparent 45%,#c8d7ff 47%,transparent 49%),linear-gradient(20deg,transparent 45%,#c8d7ff 47%,transparent 49%);border:none', window.t('karte.les.sternbild'), window.t('karte.les.sternbild.text')) +
+    z('background:radial-gradient(circle,#000 30%,#e0455a 36%,transparent 52%);border:none', window.t('karte.les.attraktor'), window.t('karte.les.attraktor.text')) +
+    z('background:linear-gradient(155deg,transparent 44%,#c9c9cd 47%,#c9c9cd 53%,transparent 56%);border:none', window.t('karte.les.bahn'), window.t('karte.les.bahn.text')));
 }
 
 /* Der Knopf "Export" in der Klangraum-Legende (karteExportKlick,
@@ -8502,7 +8505,7 @@ const LADEN_ICON = {
 };
 let karteLaden = (() => { try { return JSON.parse(localStorage.getItem('mysuno-karte-laden')) || { einstellungen: false, legende: true, werk: true }; } catch (e) { return { einstellungen: false, legende: true, werk: true }; } })();
 function ladeHtml(schl, titel, kurz, inhalt){
-  return `<div class="drawer${karteLaden[schl] ? ' offen' : ''}" data-lade="${schl}"><button class="drawerkopf" title="${titel} auf- und zuklappen"><span class="dicon">${LADEN_ICON[schl]}</span><span class="dtitel">${titel}</span><span class="dkurz">${kurz || ''}</span><span class="pfeil">›</span></button><div class="drawerinhalt"><div class="dinnen">${inhalt}</div></div></div>`;
+  return `<div class="drawer${karteLaden[schl] ? ' offen' : ''}" data-lade="${schl}"><button class="drawerkopf" title="${esc(window.t('schaum.lade.' + schl))}"><span class="dicon">${LADEN_ICON[schl]}</span><span class="dtitel">${titel}</span><span class="dkurz">${kurz || ''}</span><span class="pfeil">›</span></button><div class="drawerinhalt"><div class="dinnen">${inhalt}</div></div></div>`;
 }
 function ladenDran(leg){
   leg.querySelectorAll('.drawer > .drawerkopf').forEach(b => b.onclick = () => { const d = b.parentElement, k = d.dataset.lade; karteLaden[k] = !karteLaden[k]; try { localStorage.setItem('mysuno-karte-laden', JSON.stringify(karteLaden)); } catch (e) {} d.classList.toggle('offen', karteLaden[k]); ladenLeiste(); });
@@ -8911,11 +8914,10 @@ function groupieAuswahl(zeilen){
   const bleiben = new Set(rang.slice(0, n).map(r => r.z));
   return { zeilen: zeilen.filter(z => bleiben.has(z)), gesamt: M };        /* in der alten Reihenfolge - die Engine legt danach */
 }
-const groupieZeigtText = (n, M) => { const z = (x) => x.toLocaleString('de-DE');
-  return n >= M ? `zeigt ${M === 1 ? '' : 'alle '}${z(M)} ${M === 1 ? 'Person' : 'Personen'}` : `zeigt ${z(n)} von ${z(M)} Personen`; };
+const groupieZeigtText = (n, M) => { const z = (x) => x.toLocaleString(localeTag());
+  return n >= M ? window.t('groupie.zeigt.alle', { n: M, m: z(M) }) : window.t('groupie.zeigt.von', { n: z(n), m: z(M) }); };
 /* Der Satz für die Fußnote - leer, solange niemand ausgeblendet ist */
-const groupieZeigtSatz = (n, M, m) => n >= M ? '' : `Der Regler zeigt die ${n.toLocaleString('de-DE')} mit den höchsten Werten bei ${m.name}; `
-  + `${(M - n).toLocaleString('de-DE')} weitere sind ausgeblendet (bei Gleichstand bleibt, wer zuletzt reagiert hat). `;
+const groupieZeigtSatz = (n, M, m) => n >= M ? '' : window.t('groupie.fuss.regler', { n: n.toLocaleString(localeTag()), mass: m.name, rest: (M - n).toLocaleString(localeTag()) });
 /* Stellt den Regler auf die Ansicht: M ist, was sie ohne ihn zeigte, n, was sie zeigt. Unter 13 gibt es nichts zu wählen. */
 function groupieZeigtSetzen(M, n){
   const zeile = $('groupiezeigtzeile'), r = $('groupiezeigt'); if (!zeile || !r) return;
@@ -8952,9 +8954,9 @@ let bilderWahl = (() => { try { const w = { ...BILDER_VORGABE, ...JSON.parse(loc
 /* Die Haengungen (bilderschau.js); als Pille der kurze Name, das Prinzip im Tooltip - bis 1.0.78 stand es im Dropdown-Eintrag
    („Salon – große Bilder zur Mitte") */
 const BILDER_HAENGUNGEN = [
-  { id: 'salon', name: 'Salon', title: 'Große Bilder zur Mitte der Wand' },
-  { id: 'achse', name: 'Achse', title: 'Große Bilder auf der waagrechten Achse durch die Mitte, von dort nach oben und unten' },
-  { id: 'dicht', name: 'Dicht', title: 'Von oben nach unten' },
+  { id: 'salon', get name(){ return window.t('bilder.haengung.salon'); }, get title(){ return window.t('bilder.haengung.salon.titel'); } },
+  { id: 'achse', get name(){ return window.t('bilder.haengung.achse'); }, get title(){ return window.t('bilder.haengung.achse.titel'); } },
+  { id: 'dicht', get name(){ return window.t('bilder.haengung.dicht'); }, get title(){ return window.t('bilder.haengung.dicht.titel'); } },
 ];
 wahlTun.bildertrafo = (v) => bilderschauWahl('trafo', v);
 wahlTun.bilderhaengung = (v) => bilderschauWahl('haengung', v);
@@ -8979,23 +8981,25 @@ async function bilderFormateHolen(urls, melde){
 }
 async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, auswahl }){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
-  if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.81'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
+  if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.84'); } catch (e) { stand.textContent = window.t('bilder.laden_fehler'); return; } }
   const T = bilderModul.TRANSFORMATIONEN, t = T.find(x => x.id === bilderWahl.trafo) || T[1];
-  wahlSetzen($('bildertrafo'), 'bildertrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), t.id, { titel: 'Wie aus dem Wert die Fläche des Bildes wird' });
+  wahlSetzen($('bildertrafo'), 'bildertrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), t.id, { titel: window.t('bilder.wahl.trafo') });
   const h = BILDER_HAENGUNGEN.find(x => x.id === bilderWahl.haengung) || BILDER_HAENGUNGEN[0];
-  wahlSetzen($('bilderhaengung'), 'bilderhaengung', BILDER_HAENGUNGEN, h.id, { titel: 'Wie die Bilder in ihren Arealen hängen' });
+  wahlSetzen($('bilderhaengung'), 'bilderhaengung', BILDER_HAENGUNGEN, h.id, { titel: window.t('bilder.wahl.haengung') });
   for (const [id, k] of [['bilderrahmen', 'rahmen'], ['bilderkopf', 'kopf'], ['bilderunter', 'unter']]) $(id).classList.toggle('an', !!bilderWahl[k]);
-  schaumKurzSetzen([m.name, gl.name.replace('Klang: ', ''), t.name, h.name,
-    ...[['rahmen', 'Rahmen'], ['kopf', 'Überschriften'], ['unter', 'Bildunterschriften']].filter(([k]) => bilderWahl[k]).map(([, n]) => n),
-    auswahl.n < auswahl.M ? auswahl.n.toLocaleString('de-DE') + ' von ' + auswahl.M.toLocaleString('de-DE') : null]);
+  schaumKurzSetzen([m.name, gl.name.replace(/^(Klang|Sound): /, ''), t.name, h.name,
+    ...[['rahmen', 'schaum.rahmen'], ['kopf', 'schaum.ueberschriften'], ['unter', 'schaum.unterschriften']].filter(([k]) => bilderWahl[k]).map(([, n]) => window.t(n)),
+    auswahl.n < auswahl.M ? window.t('zahl.von', { n: tZahl(auswahl.n), m: tZahl(auswahl.M) }) : null]);
   $('schaumwas').textContent = (m.was || '') + ' ' + t.kurz + '.';
-  fuss.textContent = `Bilderschau: ${schaumZoom ? zeilen.length + ' Titel aus „' + schaumZoom + '"' + auswahl.zusatz : auswahl.text}, jedes Cover im Originalformat, ${t.kurz} (${m.name}). `
-    + `Ein Schaum teilt die Wand in Areale je ${schaumZoom ? gl.unten.replace(/e$/, '').replace(/s$/, '') : gl.oben.replace(/n$/, '')}; jedes Bild hängt mit seinem Schwerpunkt im Areal seiner Gruppe, `
-    + ({ salon: 'die großen zur Mitte der Wand. ', achse: 'die großen auf der waagrechten Achse durch die Mitte, von dort nach oben und unten. ', dicht: 'von oben nach unten. ' }[bilderWahl.haengung] || '')
-    + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
-    + (m.ernte && stamm ? `Zahlen: Stand des Katalogs vom ${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}. ` : '')
-    + `Die Areale starten an den Sternen im Klangraum (${karteVerf === 'umap' ? 'UMAP' : 'NMDS'}). Klick auf ein Bild spielt den Titel.`;
-  if (!zeilen.length){ bild.innerHTML = ''; schaumBildArt = null; bilderGezeigt = null; stand.textContent = auswahl.n ? `Kein Titel hat bei ${m.name} mehr als null.` : titelLeerSatz(auswahl); return; }
+  /* „Areale je Stilgruppe": im Deutschen aus der Mehrzahl gekürzt (Stilgruppen, Genres, Modelle), im Englischen ohne das s */
+  const je = schaumZoom ? (sprache() === 'en' ? gl.unten.replace(/s$/, '').toLowerCase() : gl.unten.replace(/e$/, '').replace(/s$/, ''))
+    : (sprache() === 'en' ? gl.oben.replace(/s$/, '').toLowerCase() : gl.oben.replace(/n$/, ''));
+  fuss.textContent = window.t('bilder.fuss', { auswahl: schaumZoom ? window.t('bilder.fuss.zoom', { n: zeilen.length, gruppe: gruppenAnzeige(schaumZoom), zusatz: auswahl.zusatz }) : auswahl.text, trafo: t.kurz, mass: m.name, je })
+    + (window.t('bilder.fuss.haengung.' + bilderWahl.haengung) || '')
+    + (ohneWert.length ? window.t('schaum.fuss.ohne', { n: ohneWert.length, mass: m.name }) : '')
+    + (m.ernte && stamm ? window.t('schaum.fuss.zahlen', { datum: sprache() === 'en' ? new Date(stamm.slice(0, 10) + 'T00:00:00').toLocaleDateString(localeTag()) : `${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}` }) : '')
+    + window.t('bilder.fuss.start', { verf: karteVerf === 'umap' ? 'UMAP' : 'NMDS' });
+  if (!zeilen.length){ bild.innerHTML = ''; schaumBildArt = null; bilderGezeigt = null; stand.textContent = auswahl.n ? window.t('schaum.kein_wert', { mass: m.name }) : titelLeerSatz(auswahl); return; }
   const feld = $('schaumfeld').getBoundingClientRect(), W = Math.round(feld.width), H = Math.round(feld.height);
   if (W < 50 || H < 50) return;
   /* Gezoomt: die Untergruppen bekommen die Areale, alle in der Farbe der Gruppe */
@@ -9017,7 +9021,7 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   if (bilderArbeit) bilderArbeit.worker.terminate();
   bilderArbeit = { schluessel, worker: null };
   const meine = bilderArbeit;
-  await bilderFormateHolen([...urls.values()], (n, von) => { if (bilderArbeit === meine) stand.textContent = `Die Bilder werden vermessen … ${n} von ${von}`; });
+  await bilderFormateHolen([...urls.values()], (n, von) => { if (bilderArbeit === meine) stand.textContent = window.t('bilder.vermessen', { n, von }); });
   if (bilderArbeit !== meine) return;
   const G = new Map();
   for (const z of zeilen){ const g = gruppeVon(z); if (!G.has(g)) G.set(g, []);
@@ -9028,13 +9032,13 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   for (const g of gruppen) if (saat && saat[g.name]) seeds[g.name] = saat[g.name];
   const mess = document.createElement('canvas').getContext('2d'); mess.font = '12.5px ' + getComputedStyle(document.body).fontFamily;
   const kopfBreite = Object.fromEntries(gruppen.map(g => [g.name, mess.measureText(gruppenAnzeige(g.name) + '  ' + window.t('zahl.titel', { n: g.bilder.length })).width + 4]));
-  stand.textContent = 'Die Galerie wird aufgehängt …';                     /* Caspar_Ds Wortlaut, 11.10.2026 */
+  stand.textContent = window.t('bilder.aufhaengen');                     /* Caspar_Ds Wortlaut, 11.10.2026 */
   const t0 = performance.now();
   const daten = { gruppen, seeds: Object.keys(seeds).length === gruppen.length ? seeds : null,
     opt: { haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen, kopf: bilderWahl.kopf ? 22 : 0, schild: bilderWahl.unter ? 15 : 0 }, kopfBreite };
   const res = await bilderImWorker({ ...daten, W, H }, (w) => { meine.worker = w; });
   if (bilderArbeit === meine) bilderArbeit = null;
-  if (res.fehler || !res.res){ console.log('Bilderschau:', res.fehler || 'passt nicht'); if (bilderArbeit === null) stand.textContent = 'Die Bilder passen nicht auf die Wand.'; return; }
+  if (res.fehler || !res.res){ console.log('Bilderschau:', res.fehler || 'passt nicht'); if (bilderArbeit === null) stand.textContent = window.t('bilder.passt_nicht'); return; }
   res.res.ms = Math.round(performance.now() - t0);
   /* fuers Plakat (plakat.js): dort wird im Format der Seite neu gehaengt; wahl sagt, zu welchen Einstellungen diese Wand gehoert */
   res.res.daten = { ...daten, zeilen: zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })),
@@ -9045,7 +9049,7 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
 }
 function bilderImWorker(auftrag, merke = () => {}){
   return new Promise(ok => {
-    let w; try { w = new Worker('/klangschaum/bilderschau-worker.js?v=1.0.81', { type: 'module' }); } catch (e) { ok({ fehler: String(e) }); return; }
+    let w; try { w = new Worker('/klangschaum/bilderschau-worker.js?v=1.0.84', { type: 'module' }); } catch (e) { ok({ fehler: String(e) }); return; }
     merke(w);
     w.onmessage = (ev) => { w.terminate(); ok(ev.data); };
     w.onerror = (ev) => { w.terminate(); ok({ fehler: ev.message || 'Worker' }); };
@@ -9157,11 +9161,11 @@ let schaumLeute = null;
    Layout bleibt gemerkt (schaumLagen). Die vierte Farbe (v) braucht die Gliederung „Beziehung“ mit
    vier Klassen; die Liste zeigt weiter die drei der Areale. */
 const GROUPIE_PALETTEN = [
-  { id: 'E', name: 'Warm mit Gegenpol', f: ['#e0604a', '#e3b43c', '#2f8f8a'], v: '#8c6bb1' },
-  { id: 'A', name: 'Glut', f: ['#d6334a', '#f2a227', '#e0758f'], v: '#7a2e3b' },
-  { id: 'B', name: 'Sonnenuntergang', f: ['#c2307a', '#ef7b2a', '#e9c13a'], v: '#6d3b8f' },
-  { id: 'C', name: 'Erde', f: ['#c4532f', '#c99a2e', '#7f9a3a'], v: '#3f7f86' },
-  { id: 'D', name: 'Wein und Honig', f: ['#8e2240', '#e2a33a', '#ef8a6b'], v: '#b85c2c' },
+  { id: 'E', get name(){ return window.t('groupie.palette.E'); }, f: ['#e0604a', '#e3b43c', '#2f8f8a'], v: '#8c6bb1' },
+  { id: 'A', get name(){ return window.t('groupie.palette.A'); }, f: ['#d6334a', '#f2a227', '#e0758f'], v: '#7a2e3b' },
+  { id: 'B', get name(){ return window.t('groupie.palette.B'); }, f: ['#c2307a', '#ef7b2a', '#e9c13a'], v: '#6d3b8f' },
+  { id: 'C', get name(){ return window.t('groupie.palette.C'); }, f: ['#c4532f', '#c99a2e', '#7f9a3a'], v: '#3f7f86' },
+  { id: 'D', get name(){ return window.t('groupie.palette.D'); }, f: ['#8e2240', '#e2a33a', '#ef8a6b'], v: '#b85c2c' },
 ];
 const GROUPIE_AREALE = ['nur Herzen', 'Herzen und Kommentare', 'nur Kommentare'];
 let groupiePalette = (() => { try { return localStorage.getItem('mysuno-groupie-farben') || 'E'; } catch (e) { return 'E'; } })();
@@ -9187,24 +9191,24 @@ document.addEventListener('click', (e) => { const el = $('groupiefarben'); if (e
    Monat halb). Die Areale bleiben nach Herzen und Kommentaren insgesamt; wer bei einem Mass null
    hat, faellt heraus. */
 const GROUPIE_MASSE = [
-  { id: 'beides', name: 'Herzen + Kommentare', wert: z => z.h + z.k, text: n => schaumZahl(n) + ' Herzen und Kommentare',
-    was: 'Jede Person so groß wie alle Herzen und Kommentare, die sie deinen Titeln gegeben hat.' },
-  { id: 'herzen', name: 'Herzen', wert: z => z.h, text: n => schaumZahl(n) + ' Herzen',
-    was: 'Jede Person so groß wie die Herzen, die sie deinen Titeln gegeben hat; wer nur kommentiert, fehlt.' },
-  { id: 'kommentare', name: 'Kommentare', wert: z => z.k, text: n => schaumZahl(n) + ' Kommentare',
-    was: 'Jede Person so groß wie ihre Kommentare und Antworten unter deinen Titeln; wer nur Herzen gibt, fehlt.' },
+  { id: 'beides', get name(){ return window.t('groupie.mass.beides'); }, wert: z => z.h + z.k, text: n => window.t('groupie.mass.beides.text', { n: schaumZahl(n) }),
+    get was(){ return window.t('groupie.mass.beides.was'); } },
+  { id: 'herzen', get name(){ return window.t('groupie.mass.herzen'); }, wert: z => z.h, text: n => window.t('groupie.mass.herzen.text', { n: schaumZahl(n) }),
+    get was(){ return window.t('groupie.mass.herzen.was'); } },
+  { id: 'kommentare', get name(){ return window.t('groupie.mass.kommentare'); }, wert: z => z.k, text: n => window.t('groupie.mass.kommentare.text', { n: schaumZahl(n) }),
+    get was(){ return window.t('groupie.mass.kommentare.was'); } },
   /* Caspar_D, 06.10.2026: „Gesamtlänge der Kommentare wäre noch ein schönes Größenmaß für die Zellen".
      Zeichen als Schriftzeichen gezaehlt ([...text]), ein Emoji ist eines. Die Spannweite ist gross
      (im Bestand vom 06.10.: eine Person 1 Zeichen, eine 20203). */
-  { id: 'zeichen', name: 'Kommentarlänge', wert: z => z.zeichen, text: n => schaumZahl(n) + ' Zeichen',
-    was: 'Jede Person so groß wie alles, was sie bei dir geschrieben hat, in Zeichen gezählt; wer nur Herzen gibt, fehlt.' },
-  { id: 'aktuell', name: 'Aktuell', wert: z => z.aktuell >= 1 / 16 ? z.aktuell : 0, text: n => n.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' (gewichtet)',
+  { id: 'zeichen', get name(){ return window.t('groupie.mass.zeichen'); }, wert: z => z.zeichen, text: n => window.t('groupie.mass.zeichen.text', { n: schaumZahl(n) }),
+    get was(){ return window.t('groupie.mass.zeichen.was'); } },
+  { id: 'aktuell', get name(){ return window.t('groupie.mass.aktuell'); }, wert: z => z.aktuell >= 1 / 16 ? z.aktuell : 0, text: n => window.t('groupie.mass.aktuell.text', { n: n.toLocaleString(localeTag(), { maximumFractionDigits: 1 }) }),
     /* Wer zusammen weniger als ein Sechzehntel erreicht, fehlt - sonst wuerden die Groessen so ungleich, dass
        der Schaum eine Minute braucht. Herzen aus Sunos Listen ohne genaue Zeit zaehlen hier nicht. */
-    was: 'Herzen und Kommentare, die jüngeren zählen mehr: von heute voll, von vor einem Monat halb, von vor zwei Monaten ein Viertel. Wer seit etwa vier Monaten nichts gegeben hat, fehlt.' },
-  { id: 'titel', name: 'Titel', wert: z => z.titelZahl, text: n => schaumZahl(n) + ' Titel', was: 'Jede Person so groß wie die Zahl deiner Titel, die sie mit Herz oder Kommentar bedacht hat.' },
-  { id: 'treue', name: 'Treue', wert: z => z.treue, text: n => schaumZahl(n) + ' Tage',
-    was: 'Jede Person so groß wie die Zeit von ihrer ersten bis zur letzten Reaktion, in Tagen; wer nur einmal da war, zählt einen Tag.' },
+    get was(){ return window.t('groupie.mass.aktuell.was'); } },
+  { id: 'titel', get name(){ return window.t('groupie.mass.titel'); }, wert: z => z.titelZahl, text: n => window.t('groupie.mass.titel.text', { n: schaumZahl(n) }), get was(){ return window.t('groupie.mass.titel.was'); } },
+  { id: 'treue', get name(){ return window.t('groupie.mass.treue'); }, wert: z => z.treue, text: n => window.t('groupie.mass.treue.text', { n: schaumZahl(n) }),
+    get was(){ return window.t('groupie.mass.treue.was'); } },
 ];
 let groupieMass = (() => { try { return localStorage.getItem('mysuno-groupie-mass') || 'beides'; } catch (e) { return 'beides'; } })();
 /* DIE GLIEDERUNGEN DES GROUPIESCHAUMS (Caspar_D, 06.10.2026: „die alternativen Gliederungen sind noch
@@ -9226,24 +9230,24 @@ const GROUPIE_LEBENDIG = ['in den letzten 4 Wochen', 'davor'];
 const GROUPIE_GRAU = '#6b6f76';
 const groupieVier = () => { const p = groupiePal(); return [p.f[0], p.f[1], p.f[2], p.v]; };
 const GROUPIE_GLIEDERUNGEN = [
-  { id: 'art', name: 'Art der Reaktion', klasse: z => z.art, ordnung: () => GROUPIE_AREALE, farbe: a => groupieFarbe(a),
-    was: 'Gegliedert danach, ob jemand nur Herzen gibt, nur kommentiert oder beides tut.' },
-  { id: 'beziehung', name: 'Beziehung', klasse: z => z.beziehung,
+  { id: 'art', get name(){ return window.t('groupie.glied.art'); }, klasse: z => z.art, ordnung: () => GROUPIE_AREALE, farbe: a => groupieFarbe(a),
+    get was(){ return window.t('groupie.glied.art.was'); } },
+  { id: 'beziehung', get name(){ return window.t('groupie.glied.beziehung'); }, klasse: z => z.beziehung,
     ordnung: (ks) => [...GROUPIE_BEZIEHUNG, ...(ks.has('unbekannt') ? ['unbekannt'] : [])],
     farbe: a => groupieVier()[GROUPIE_BEZIEHUNG.indexOf(a)] || null,
-    was: 'Wer dir folgt und wem du folgst, nach dem letzten Stand der Beobachterliste.' },
-  { id: 'ankunft', name: 'Ankunft', klasse: z => z.ankunft,
+    get was(){ return window.t('groupie.glied.beziehung.was'); } },
+  { id: 'ankunft', get name(){ return window.t('groupie.glied.ankunft'); }, klasse: z => z.ankunft,
     ordnung: (ks) => [...ks].filter(k => /^\d{4}$/.test(k)).sort().concat(ks.has('Zeit unbekannt') ? ['Zeit unbekannt'] : []),
     farbe: (a, ks) => { if (!/^\d{4}$/.test(a)) return null; const jahre = [...ks].filter(k => /^\d{4}$/.test(k)).sort().reverse(); return groupieVier()[jahre.indexOf(a) % 4]; },
-    was: 'Das Jahr der ersten Reaktion. Viele Herzen aus Sunos Listen tragen keine Zeit - wer nur solche gab, steht unter „Zeit unbekannt".' },
-  { id: 'lebendig', name: 'Lebendig', klasse: z => z.lebendig, ordnung: () => GROUPIE_LEBENDIG,
+    get was(){ return window.t('groupie.glied.ankunft.was'); } },
+  { id: 'lebendig', get name(){ return window.t('groupie.glied.lebendig'); }, klasse: z => z.lebendig, ordnung: () => GROUPIE_LEBENDIG,
     farbe: a => a === GROUPIE_LEBENDIG[0] ? groupiePal().f[0] : groupiePal().f[2],
-    was: 'Ob die letzte Reaktion in den letzten vier Wochen lag.' },
-  { id: 'geschmack', name: 'Geschmack', klasse: z => z.geschmack,
+    get was(){ return window.t('groupie.glied.lebendig.was'); } },
+  { id: 'geschmack', get name(){ return window.t('groupie.glied.geschmack'); }, klasse: z => z.geschmack,
     ordnung: (ks) => [...((karteDaten && karteDaten.gruppen) || [])].sort((a, b) => a.nr - b.nr).map(g => g.name || 'Gruppe ' + g.nr)
       .filter(n => ks.has(n)).concat(['gemischt', 'ohne Stilgruppe'].filter(n => ks.has(n))),
     farbe: a => { const g = ((karteDaten && karteDaten.gruppen) || []).find(g => (g.name || 'Gruppe ' + g.nr) === a); return g ? karteFarbe(g.nr) : null; },
-    was: 'Die Stilgruppe des Klangraums, deren Titel jemand am meisten bedacht hat - gemessen an der Zahl ihrer Titel. Farben wie im Klangraum.' },
+    get was(){ return window.t('groupie.glied.geschmack.was'); } },
 ];
 let groupieGliederung = (() => { try { return localStorage.getItem('mysuno-groupie-gliederung') || 'art'; } catch (e) { return 'art'; } })();
 const groupieGl = () => GROUPIE_GLIEDERUNGEN.find(g => g.id === groupieGliederung) || GROUPIE_GLIEDERUNGEN[0];
@@ -9300,7 +9304,7 @@ async function groupieZeilen(m, gl){
      Der Regler „zeigt N von M" (groupieAuswahl, 15.10.2026) ist keine Rechenzeit-Grenze: er blendet auf Wunsch aus, ohne Sammelzelle. */
   return alle;
 }
-const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : '', z.k ? `${z.k} ${z.k === 1 ? 'Kommentar' : 'Kommentare'}` : ''].filter(Boolean).join(', ');
+const groupieText = (z) => [z.h ? window.t('groupie.herzen', { n: z.h }) : '', z.k ? window.t('groupie.kommentare', { n: z.k }) : ''].filter(Boolean).join(', ');
 
 async function schaumZeichnen(){
   karteHoehe();
@@ -9353,7 +9357,8 @@ async function schaumZeichnen(){
   /* Legende: oben die Gruppen, ein Klick zoomt hinein; gezoomt die Untergruppen und der Weg zurück. */
   const summe = (zs, schl) => { const s = new Map(), n = new Map();
     for (const z of zs){ const k = z[schl] || '(ohne)'; s.set(k, (s.get(k) || 0) + +z.w); n.set(k, (n.get(k) || 0) + 1); } return [s, n]; };
-  const zeileHtml = (name, farbe, n, wert, knopf) => `<${knopf ? 'button type="button"' : 'span'} class="zeile"${knopf ? ` data-zoom="${esc(name)}" title="${esc(t('karte.zoom_gruppe'))}"` : ''}>`
+  /* data-areal: der Name der Daten (Schlüssel für Farbe und Lage) - das Plakat-Studio liest ihn neben dem gezeigten Namen (legendenEintraege) */
+  const zeileHtml = (name, farbe, n, wert, knopf, schl = name) => `<${knopf ? 'button type="button"' : 'span'} class="zeile" data-areal="${esc(schl)}"${knopf ? ` data-zoom="${esc(name)}" title="${esc(window.t('karte.zoom_gruppe'))}"` : ''}>`
     + `<i style="background:${farbe || '#5d6066'}"></i><span><b>${esc(gruppenAnzeige(name))}</b><br><small>${t('zahl.titel', { n })} · ${m.text(wert)}</small></span></${knopf ? 'button' : 'span'}>`;
   if (!schaumZoom){
     const [s, n] = summe(alleZeilen, 'gruppe');
@@ -9365,7 +9370,7 @@ async function schaumZeichnen(){
     $('schaumlegende').innerHTML = `<button type="button" class="zurueck" data-zoom="">${esc(t('schaum.alle_oben', { oben: gl.oben }))}</button>`
       + zeileHtml(schaumZoom, farbeVon(schaumZoom), zeilen.length, ges, false)
       + `<small>${esc(gl.unten)}</small><div class="lgrid" data-leg="schaum-unten">`
-      + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g === '(ohne)' ? t('schaum.ohne_angabe') : g, null, n.get(g), w, false)).join('') + '</div>';
+      + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g === '(ohne)' ? window.t('schaum.ohne_angabe') : g, null, n.get(g), w, false, g === '(ohne)' ? 'ohne Angabe' : g)).join('') + '</div>';
   }
   legendenBeobachten($('schaumlegende'));
   $('schaumlegende').querySelectorAll('[data-zoom]').forEach(b => b.onclick = () => schaumZoomen(b.dataset.zoom || null));
@@ -9409,8 +9414,8 @@ async function groupieZeichnen(){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   const m = GROUPIE_MASSE.find(x => x.id === groupieMass) || GROUPIE_MASSE[0], gl = groupieGl();
   groupieFarbwahlBauen();
-  wahlSetzen($('schaummass'), 'schaummass', GROUPIE_MASSE.map(x => ({ id: x.id, name: x.name, title: x.was })), m.id, { titel: 'Wonach sich die Fläche jeder Person richtet' });
-  wahlSetzen($('schaumgliederung'), 'schaumgliederung', GROUPIE_GLIEDERUNGEN.map(x => ({ id: x.id, name: x.name, title: x.was })), gl.id, { titel: 'Wonach die Personen in Areale geteilt werden' });
+  wahlSetzen($('schaummass'), 'schaummass', GROUPIE_MASSE.map(x => ({ id: x.id, name: x.name, title: x.was })), m.id, { titel: window.t('groupie.wahl.flaeche') });
+  wahlSetzen($('schaumgliederung'), 'schaumgliederung', GROUPIE_GLIEDERUNGEN.map(x => ({ id: x.id, name: x.name, title: x.was })), gl.id, { titel: window.t('groupie.wahl.glied') });
   if (gl.id === 'geschmack' && !karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
   $('schaumwas').textContent = [m.was, gl.was].filter(Boolean).join(' ');            /* Mass und Gliederung, je ein, zwei Saetze */
   $('schaumwerk').innerHTML = '';
@@ -9419,30 +9424,29 @@ async function groupieZeichnen(){
   if (raumJetzt !== 'groupies') return;
   const zeilen = groupieAuswahl(mitWert).zeilen;
   groupieZeigtSetzen(mitWert.length, zeilen.length);
-  schaumKurzSetzen([m.name, gl.name, zeilen.length < mitWert.length ? zeilen.length.toLocaleString('de-DE') + ' von ' + mitWert.length.toLocaleString('de-DE') : null]);
+  schaumKurzSetzen([m.name, gl.name, zeilen.length < mitWert.length ? window.t('zahl.von', { n: tZahl(zeilen.length), m: tZahl(mitWert.length) }) : null]);
   /* die Farben aus allen mit Wert (Ankunft zählt die Jahre durch), die Legende nur, was gezeigt ist */
   const klassen = new Set(zeilen.map(z => z.gruppe)), alleKlassen = new Set(mitWert.map(z => z.gruppe)), farbeVon = (n) => gl.farbe(n, alleKlassen);
-  $('schaumlegkurz').textContent = zeilen.length.toLocaleString('de-DE') + (zeilen.length === 1 ? ' Person · ' : ' Personen · ') + klassen.size + ' Areale';
+  $('schaumlegkurz').textContent = window.t('groupie.legkurz', { n: zeilen.length, z: tZahl(zeilen.length), a: klassen.size });
   $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small><div class="lgrid" data-leg="groupies">' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
     const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0), anzahl = zs.length;
-    return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(gruppenAnzeige(a))}</b><br><small>${anzahl.toLocaleString('de-DE')} ${anzahl === 1 ? 'Person' : 'Personen'}`
+    return `<span class="zeile" data-areal="${esc(a)}"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(gruppenAnzeige(a))}</b><br><small>${window.t('groupie.personen', { n: anzahl, z: tZahl(anzahl) })}`
       + `${zs.length ? ' · ' + m.text(summe) : ''}</small></span></span>`;
   }).join('') + '</div>';
   legendenBeobachten($('schaumlegende'));
   const gezeigt = zeilen.length, grossAreal = [...klassen].some(a => zeilen.filter(z => z.gruppe === a).length > 600);
-  fuss.textContent = `Groupieschaum: ${gezeigt.toLocaleString('de-DE')} Personen, die auf deine Titel reagiert haben, gegliedert nach ${gl.name}; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
+  fuss.textContent = window.t('groupie.fuss', { n: gezeigt.toLocaleString(localeTag()), glied: gl.name, mass: m.name })
     + groupieZeigtSatz(gezeigt, mitWert.length, m)
-    + (grossAreal ? 'Große Areale werden in Paketen gelegt; die Nähte dazwischen rechnet ein Reißverschluss weg – das dauert beim ersten Öffnen eines Maßes etwas, danach ist es gemerkt. ' : '')
-    + (schaumLeute.length > mitWert.length ? `${(schaumLeute.length - mitWert.length).toLocaleString('de-DE')} Personen haben bei ${m.name} null und fehlen. ` : '')
-    + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare (einmal von Suno geholt und hier abgelegt). `
-    + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
-  if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
+    + (grossAreal ? window.t('groupie.fuss.pakete') : '')
+    + (schaumLeute.length > mitWert.length ? window.t('groupie.fuss.null', { n: (schaumLeute.length - mitWert.length).toLocaleString(localeTag()), mass: m.name }) : '')
+    + window.t('groupie.fuss.quellen');
+  if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = window.t('groupie.leer'); return; }
   const j = await groupieAuftrag(m, schaumVerh(), gl), lage = j.lage, schluessel = lage + '|' + groupiePalette + '|' + klangraumPal().id;
   const fertig = schaumFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
   schaumLegen({ schluessel, zeilen: j.zeilen, ebenen: j.ebenen, W: j.W, H: j.H, seeds: j.seeds, lage, farbeVon, gezoomt: false, art: 'person',
     tipp: z => z.titel + ' · ' + groupieText(z) + (m.id === 'beides' || m.id === 'herzen' || m.id === 'kommentare' ? '' : ' · ' + m.text(+z.w)),
-    meldung: 'Deine Groupies werden aufgeschäumt' });
+    meldung: window.t('groupie.aufschaeumen') });
 }
 /* DAS KISSEN OBEN DRAUF (Caspar_D, 06.10.2026: „magst du das Cushioning noch oben drauf setzen"). Die
    Kissen-Beleuchtung der Engine (renderSVG, cushion) wirkte nicht mehr: ihre Hoehenkarte ist die Deckung
@@ -9756,7 +9760,7 @@ async function bilderBereit(art, zeilen, melde){
   if (!d || d.modelle === undefined){ bilderBereitOk.add(art); return 'bereit'; }     /* aelterer Server: wie bisher */
   if (!bilderFehlen(d, zeilen, art)){ schaumGesichterUebernehmen(d); bilderBereitOk.add(art); return 'bereit'; }
   if (!bilderHoerer.has(art)) bilderHoerer.set(art, new Set());
-  if (melde){ bilderHoerer.get(art).add(melde); melde('Bilder werden vorbereitet …'); }
+  if (melde){ bilderHoerer.get(art).add(melde); melde(window.t('schaum.bilder_vorbereiten')); }
   /* Ein Lauf je Art; laeuft auf dem Server gerade die andere Art (oder der Morgenlauf), wartet der Server und
      kommt danach zu dieser - darum nach dem Ende neu pruefen, hoechstens drei Runden. */
   if (!bilderLaeufe.has(art)) bilderLaeufe.set(art, (async () => {
@@ -9767,7 +9771,7 @@ async function bilderBereit(art, zeilen, melde){
         await new Promise(r => setTimeout(r, 1000));
         try { st = await (await fetch('/api/bilder/stand', { cache: 'no-store' })).json(); } catch (e) { st = null; }
         if (!st) continue;
-        const t = 'Bilder werden vorbereitet …' + (st.laeuft && st.art === art && st.von ? ` ${st.n} von ${st.von}` : '');
+        const t = window.t('schaum.bilder_vorbereiten') + (st.laeuft && st.art === art && st.von ? ' ' + window.t('zahl.von', { n: st.n, m: st.von }) : '');
         for (const h of bilderHoerer.get(art)) try { h(t); } catch (e) {}
         if (!st.laeuft) break;
       }
@@ -10564,7 +10568,7 @@ function schaumLageHolen(j, melde, ueberholbar){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.83').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.84').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
@@ -10582,7 +10586,7 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
     try {
       teile.schaum = null; zeigen();
       if (await bereitHolen() === 'morgenlauf'){
-        $('schaumbild').innerHTML = ''; schaumBildArt = null; stand.textContent = 'Schaum kommt mit dem nächsten Morgenlauf.'; return; }
+        $('schaumbild').innerHTML = ''; schaumBildArt = null; stand.textContent = window.t('plakat.stand.morgenlauf'); return; }
       teile.bilder = null;
       const { svg, ids, R, personen } = await schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art });
       const tipps = res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
@@ -10595,13 +10599,13 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
                   W: res.width, H: res.height };
       schaumFertig.set(schluessel, f);
       if (register === 'karte' && (raumJetzt === 'schaum' || raumJetzt === 'groupies')){ stand.textContent = ''; schaumZeichnen(); }
-    } catch (e){ stand.textContent = 'Der Schaum ließ sich nicht zeichnen.'; console.log('Klangschaum:', e); }
+    } catch (e){ stand.textContent = window.t('schaum.fehler.zeichnen'); console.log('Klangschaum:', e); }
   };
   /* Schon gelegt (etwa nur die Farben gewechselt): nur neu malen. */
   const gemerkt = schaumLagen.get(lage) || await lageLesen(lage);
   if (gemerkt){ bereitHolen(); malen(gemerkt); return; }
   if (schaumHinten && schaumHinten.lage === lage){
-    $('schaumbild').style.opacity = '0.3'; stand.textContent = meldung + ' … (wird schon vorgerechnet)'; schaumWartet = lage; return; }
+    $('schaumbild').style.opacity = '0.3'; stand.textContent = meldung + window.t('schaum.vorgerechnet'); schaumWartet = lage; return; }
   if (schaumArbeit && schaumArbeit.lage === lage) return;          /* wird schon gelegt; die Farben holt schaumZeichnen danach nach */
   if (schaumArbeit){ schaumArbeit.worker.terminate(); clearInterval(schaumArbeit.uhr); }
   teile.schaum = meldung + ' …'; zeigen();
@@ -10611,7 +10615,7 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
   $('schaumbild').style.opacity = '0.3';
   let worker;
   try { worker = new Worker('/klangschaum/worker.js', { type: 'module' }); }
-  catch (e){ stand.textContent = 'Dieser Browser kann den Schaum nicht im Hintergrund legen.'; return; }
+  catch (e){ stand.textContent = window.t('schaum.fehler.worker'); return; }
   /* Die Anzeige zaehlt Sekunden, nicht Schritte: die Engine meldet je Gefaess, und ein grosses
      Gefaess (351 Personen in „nur Herzen") braucht neun Zehntel der Zeit - „2 von 4" stand dort eine
      halbe Minute lang. */
@@ -10622,11 +10626,11 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
     const d = ev.data;
     if (d.type === 'progress') return;
     worker.terminate(); clearInterval(uhr); if (schaumArbeit && schaumArbeit.worker === worker) schaumArbeit = null;
-    if (d.type === 'error'){ stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', d.message); return; }
+    if (d.type === 'error'){ stand.textContent = window.t('plakat.stand.legen_fehler'); console.log('Klangschaum:', d.message); return; }
     lageMerken(lage, d.res);
     malen(d.res);
   };
-  worker.onerror = (e) => { clearInterval(uhr); stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', e.message); worker.terminate(); schaumArbeit = null; };
+  worker.onerror = (e) => { clearInterval(uhr); stand.textContent = window.t('plakat.stand.legen_fehler'); console.log('Klangschaum:', e.message); worker.terminate(); schaumArbeit = null; };
   worker.postMessage({ rows: zeilen, tree: { levels: [...ebenen, 'row'], weight: 'w', leafName: 'titel' },
                        layout: { width: W, height: H, method: 'foam', minArea: 0, minShare: 0, ...(seeds ? { seeds } : {}) } });
 }
@@ -15653,7 +15657,7 @@ async function profilKontingentFuellen(){
       <div class="fussnote" id="kontordnerstand"></div>
     </details>
     ${d.fehlen && d.fehlen.length ? `<div class="kontfehlt">${d.fehlen.slice(0, 12).map(f =>
-      `<a href="${f.link}" target="_blank" rel="noopener" title="Bei Suno öffnen — dort selbst herunterladen">
+      `<a href="${f.link}" target="_blank" rel="noopener" title="${window.t('profil.dl.bei_suno')}">
          ${esc(f.titel || f.id.slice(0, 8))}
          <span>${!f.mp3 && !f.wav ? t('profil.dl.nichts_da') : !f.wav ? t('profil.dl.nur_mp3') : t('profil.dl.nur_wav')}</span>
        </a>`).join('')}</div>
@@ -23235,13 +23239,13 @@ async function messStartZeigen(){
 
   if (sys && sys.verfuegbar){
     if (sys.stumm)
-      z.push('<p class="fwarn">✗ Die Systemausgabe ist <b>stummgeschaltet</b> — so kommt kein Prüfton heraus.</p>');
+      z.push('<p class="fwarn">' + window.t('mess.start.stumm') + '</p>');
     else if (sys.prozent >= 99)
-      z.push('<p>✓ Systemlautstärke <b>voll</b> (' + sys.prozent + ' %) — der Messlauf hat die ganze Reserve, die App-Prozente sind eine absolute Skala.</p>');
+      z.push('<p>' + window.t('mess.start.voll', { p: sys.prozent }) + '</p>');
     else
-      z.push('<p class="fwarn">⚠ Systemlautstärke steht auf <b>' + sys.prozent + ' %</b>. Für vergleichbare Messungen voll aufdrehen — die Lautstärke regelt danach allein der Messlauf.</p>');
+      z.push('<p class="fwarn">' + window.t('mess.start.nicht_voll', { p: sys.prozent }) + '</p>');
   } else {
-    z.push('<p>· Systemlautstärke nicht abfragbar — bitte selbst prüfen: <b>voll aufdrehen</b>, die Lautstärke regelt danach der Messlauf.</p>');
+    z.push('<p>' + window.t('mess.start.unbekannt') + '</p>');
   }
 
   const stoerer = [];
@@ -23254,17 +23258,14 @@ async function messStartZeigen(){
   if (typeof eqKerbe !== 'undefined' && eqKerbe && !stoerer.includes('Titel-Kerbe')) stoerer.push('Kerbe');
   if (typeof megaBassAn !== 'undefined' && megaBassAn) stoerer.push('MEGA BASS');
   if (stoerer.length)
-    z.push('<p class="fwarn">⚠ Aktiv und frequenzverbiegend: <b>' + stoerer.join(', ') + '</b>. '
-      + 'Der geführte Neutral-Durchgang umgeht das Tonstudio ohnehin; für alles Weitere gilt: '
-      + 'erst neutral stellen. <button class="knopf messknopfklein" onclick="messNeutralStellen()">Neutral stellen</button></p>');
+    z.push('<p class="fwarn">' + window.t('mess.start.stoerer', { was: stoerer.join(', ') })
+      + ' <button class="knopf messknopfklein" onclick="messNeutralStellen()">' + window.t('mess.start.neutral_knopf') + '</button></p>');
   else
-    z.push('<p>✓ Kette neutral — kein EQ, kein Kerbfilter, kein MEGA BASS verbiegt den Frequenzgang.</p>');
+    z.push('<p>' + window.t('mess.start.neutral') + '</p>');
 
   try {
     const a = await ausgabeGeraetInfo();
-    z.push('<p>· Ausgabe: <b>' + a.text + '</b>'
-      + (a.airplay ? ' — über AirPlay (rund 2 s Puffer); die Befunde gelten für dieses Gerät.'
-                   : ' — die Befunde gelten für dieses Gerät.') + '</p>');
+    z.push('<p>' + t(a.airplay ? 'mess.start.ausgabe_airplay' : 'mess.start.ausgabe', { was: a.text }) + '</p>');
   } catch (e) {}
 
   {
@@ -23272,14 +23273,11 @@ async function messStartZeigen(){
     const opt = w && w.selectedIndex >= 0 ? w.options[w.selectedIndex] : null;
     const name = opt && opt.textContent && opt.textContent.trim();
     z.push(name
-      ? '<p>· Mikrofon: <b>' + name + '</b></p>'
-      : '<p>· Mikrofon: <b>noch nicht gewählt</b> — beim ersten Start fragt der Browser um Erlaubnis; '
-        + 'danach unter „Einzelne Messungen von Hand" das echte Mikrofon wählen (das Standardgerät kann ein virtuelles sein, das den Raum nicht hört).</p>');
+      ? '<p>' + window.t('mess.start.mikro', { name }) + '</p>'
+      : '<p>' + window.t('mess.start.mikro_fehlt') + '</p>');
   }
 
-  z.push('<p class="fmatt">Es kann <b>sehr laut</b> werden — besonders beim Durchfahren der Lautstärke. '
-    + 'Nicht mit dem Ohr am Lautsprecher, Mikrofon nicht direkt davor. '
-    + 'Die Warntöne des Systems stellt der Messlauf selbst stumm und danach zurück.</p>');
+  z.push('<p class="fmatt">' + window.t('mess.start.laut') + '</p>');
   el.innerHTML = z.join('');
 }
 function messNeutralStellen(){
@@ -23309,7 +23307,7 @@ async function ausgabeGeraetInfo(){
     if (d && d.verfuegbar) name = d.name;
   } catch (e) {}
   return { airplay, name,
-    text: airplay ? 'AirPlay-Gerät' + (name ? ' (System: ' + name + ')' : '') : (name || 'unbekannt') };
+    text: airplay ? window.t('mess.geraet.airplay') + (name ? ' (System: ' + name + ')' : '') : (name || window.t('mess.geraet.unbekannt')) };
 }
 
 /* Warntoene stumm, solange gemessen wird - der Server merkt sich den
@@ -23568,15 +23566,15 @@ const MESS_VIRTUELL = /virtual|jingle|loopback|blackhole|soundflower|aggregat|mu
    taub ist, steht in beiden Messungen Rauschen, und die Differenz
    zweier Rauschwerte ist Zufall. Deshalb zaehlt der Tiefgang. */
 const MESS_GUETE = [
-  { m: /tonor|rode|r\u00f8de|blue |yeti|shure|audio-?technica|at2020|samson|behringer|focusrite|scarlett|zoom h|marantz|neumann|akg|sennheiser|umik|dayton/i, p: 100, was: 'Studiomikrofon am USB-Wandler' },
-  { m: /iphone|ipad/i,                         p: 60, was: 'Telefon per Continuity, mit Funkstrecke' },
-  { m: /built-?in|eingebaut|imac|macbook/i,    p: 40, was: 'eingebautes Array mit fester Störunterdrückung' },
-  { m: /obsbot|webcam|camera|kamera|tiny|logi/i, p: 20, was: 'Webcam-Mikrofon, auf Sprache getrimmt' },
+  { m: /tonor|rode|r\u00f8de|blue |yeti|shure|audio-?technica|at2020|samson|behringer|focusrite|scarlett|zoom h|marantz|neumann|akg|sennheiser|umik|dayton/i, p: 100, get was(){ return window.t('mess.mikro.studio'); } },
+  { m: /iphone|ipad/i,                         p: 60, get was(){ return window.t('mess.mikro.telefon'); } },
+  { m: /built-?in|eingebaut|imac|macbook/i,    p: 40, get was(){ return window.t('mess.mikro.eingebaut'); } },
+  { m: /obsbot|webcam|camera|kamera|tiny|logi/i, p: 20, get was(){ return window.t('mess.mikro.webcam'); } },
 ];
 function messMikroGuete(label){
-  if (MESS_VIRTUELL.test(label || '')) return { p: -1, was: 'virtuell, hört keinen Raum' };
+  if (MESS_VIRTUELL.test(label || '')) return { p: -1, was: window.t('mess.mikro.virtuell') };
   for (const g of MESS_GUETE) if (g.m.test(label || '')) return { p: g.p, was: g.was };
-  return { p: 50, was: 'unbekanntes Gerät' };
+  return { p: 50, was: window.t('mess.mikro.unbekannt') };
 }
 async function messMikrosLaden(){
   const sel = $('messmikro'); if (!sel) return;
@@ -23587,7 +23585,7 @@ async function messMikrosLaden(){
   const merk = localStorage.getItem('mysuno-messmikro');
   sel.innerHTML = '';
   if (!liste.length){
-    sel.innerHTML = '<option value="">Mikrofon — erst Erlaubnis erteilen</option>';
+    sel.innerHTML = '<option value="">' + window.t('mess.mikro.erlaubnis') + '</option>';
     return;
   }
   /* nach Güte sortiert: das beste steht oben und ist vorgewählt */
@@ -23596,7 +23594,7 @@ async function messMikrosLaden(){
   for (const e of bewertet){
     const o = document.createElement('option');
     o.value = e.g.deviceId;
-    o.textContent = (e.g.label || 'Gerät') + ' — ' + e.was;
+    o.textContent = (e.g.label || window.t('mess.mikro.geraet')) + ' — ' + e.was;
     if (e.p < 0) o.style.color = 'var(--schwach)';
     sel.appendChild(o);
   }
@@ -30502,6 +30500,10 @@ function spracheNachziehen(){
      der Haus-Code selbst schreibt — sonst bleibt nach dem Wechsel Gemisch. */
   filterMarkenZeichnen();
   raumLascheBenennen();
+  /* die nachgereichten Sortierungen (sortierungenAnbieten) neu beschriften, die Wahl bleibt */
+  { const sel = $('sortierung'); if (sel && sel.dataset.ergaenzt){ const v = sel.value; sel.querySelectorAll('[data-erg]').forEach(o => o.remove());
+    delete sel.dataset.ergaenzt; sortierungenAnbieten(); sel.value = v; } }
+  if (typeof eingefrorenAnwenden === 'function') eingefrorenAnwenden();
   spaltenAnwenden();
   if (typeof schaumFarbeSetzen === 'function') schaumFarbeSetzen(schaumFarbeAnteil);
   if (typeof studioQuelleZeigen === 'function') studioQuelleZeigen();
