@@ -423,25 +423,10 @@ const normiere = (xy) => {
 const U = normiere(xyUmap), Q = normiere(xyNmds);
 
 /* ---- Gruppen beschreiben ------------------------------------------------ */
-const UEBERSETZUNG = {
-  rock: 'Rock', metal: 'Metal', pop: 'Pop', electronic: 'Elektronik', alternative: 'Alternative', folk: 'Folk',
-  hiphop: 'Hip-Hop', rap: 'Rap', jazz: 'Jazz', classical: 'Klassik', ambient: 'Ambient', soundtrack: 'Soundtrack',
-  chanson: 'Chanson', country: 'Country', blues: 'Blues', reggae: 'Reggae', punkrock: 'Punkrock', hardrock: 'Hardrock',
-  heavymetal: 'Heavy Metal', singersongwriter: 'Singer-Songwriter', easylistening: 'Easy Listening', newage: 'New Age',
-  world: 'Weltmusik', latin: 'Latin', funk: 'Funk', soul: 'Soul', dance: 'Dance', techno: 'Techno', house: 'House',
-  trance: 'Trance', orchestral: 'Orchestral', instrumentalpop: 'Instrumental-Pop', poprock: 'Poprock', indie: 'Indie',
-  experimental: 'Experimentell', atmospheric: 'atmosphärisch', electropop: 'Electropop', acousticguitar: 'Akustikgitarre',
-  energetic: 'energisch', happy: 'fröhlich', heavy: 'schwer', love: 'Liebe', epic: 'episch', sad: 'traurig', dark: 'dunkel',
-  melancholic: 'melancholisch', relaxing: 'entspannt', calm: 'ruhig', emotional: 'emotional', dramatic: 'dramatisch',
-  romantic: 'romantisch', uplifting: 'aufbauend', hopeful: 'hoffnungsvoll', powerful: 'kraftvoll', fun: 'Spaß',
-  dream: 'Traum', film: 'Film', meditative: 'meditativ', melodic: 'melodisch', slow: 'langsam', fast: 'schnell',
-  soft: 'sanft', deep: 'tief', groovy: 'groovig', inspiring: 'inspirierend', motivational: 'motivierend', upbeat: 'beschwingt',
-  positive: 'positiv', party: 'Party', summer: 'Sommer', nature: 'Natur', christmas: 'Weihnachten', children: 'Kinder',
-  drums: 'Schlagzeug', bass: 'Bass', electricguitar: 'E-Gitarre', guitar: 'Gitarre', piano: 'Klavier', synthesizer: 'Synthesizer',
-  voice: 'Stimme', strings: 'Streicher', violin: 'Geige', keyboard: 'Keyboard', orchestra: 'Orchester', acousticbassguitar: 'Akustikbass',
-  drummachine: 'Drumcomputer', computer: 'Computer', beat: 'Beat', pad: 'Flächen', percussion: 'Perkussion', accordion: 'Akkordeon',
-  cello: 'Cello', flute: 'Flöte', trumpet: 'Trompete', saxophone: 'Saxofon', organ: 'Orgel', brass: 'Bläser', choir: 'Chor',
-};
+/* Die Tabelle steht in web/klang-woerter.js: dieselbe Datei braucht die Seite fuer den Rueckweg
+   (englische Oberflaeche zeigt wieder das Etikett des Modells). Eine Stelle, damit beide nie
+   auseinanderlaufen. */
+const UEBERSETZUNG = Object.fromEntries(require('../web/klang-woerter.js').map(([etikett, deutsch]) => [etikett, deutsch]));
 const de = t => UEBERSETZUNG[t] || t;
 const mittelListe = (mitglieder, feld) => {
   const summe = {};

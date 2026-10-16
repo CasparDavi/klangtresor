@@ -293,6 +293,7 @@
     ['karte.gruppen.voll', 'Die Gruppen wurden im vollen Vektorraum gebildet — nicht auf der Karte, die wegen der Flachheit des Bildschirms nur eine fehlerbehaftete Projektion darstellt. ', 'The groups were formed in the full vector space — not on the map, which, the screen being flat, is only a lossy projection. '],
     ['karte.gruppen.geschichten', 'Gruppennamen sind die Ortsbegriffe: Wörter aus den eigenen Liedern, die dort wohnen, wo die Gruppe liegt — eine Gruppe ohne klaren Ort heißt „(gemischte Gegend)". ', 'Group names are place-words: words from your own songs that live where the group sits — a group without a clear place is called “(mixed country)”. '],
     ['karte.gruppe.gemischt', '(gemischte Gegend)', '(mixed country)'],
+    ['gruppe.gemischt', 'gemischt', 'mixed'],
     ['karte.gruppen.klang', 'Gruppennamen wurden aus den häufigsten Genres und Stimmungen (MTG-Jamendo) abgeleitet, ', 'Group names were derived from the most frequent genres and moods (MTG-Jamendo), '],
     ['karte.titel_legende', '{n} Titel', '{n} titles'],
     ['karte.stilgruppen', 'Stilgruppen', 'Style groups'],

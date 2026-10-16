@@ -4587,6 +4587,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <script defer src="/fremd/butterchurnPresetsMD1.min.js"></script>
 
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
+<script src="/klang-woerter.js?v=1"></script>
 <script src="/ui-sprache.js?v=5"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js"></script>
@@ -7043,7 +7044,7 @@ async function studioPreset(art){
       if (!karteDaten) hinweis = 'Noch kein Klangraum — der Morgenlauf „Musikstil und Klangraum" rechnet ihn.';
       else if (!pK) hinweis = 'Dieser Titel ist noch nicht im Klangraum vermessen.';
       else if (!G || !G.profil) hinweis = 'Für diese Stilgruppe gibt es noch kein Klangprofil.';
-      else { ziel = G.profil; hinweis = `Stilgruppe „${G.name}“ (${G.anzahl} Titel): Klangprofil der Gruppe als Ziel, halbe Stärke.`; }
+      else { ziel = G.profil; hinweis = `Stilgruppe „${gruppenAnzeige(G.name)}“ (${G.anzahl} Titel): Klangprofil der Gruppe als Ziel, halbe Stärke.`; }
     }
     else if (art === 'referenz'){ ziel = eqProfil && eqProfil.songs[eqReferenz];
       if (!eqReferenz) hinweis = 'Erst eine Referenz merken: Titel abspielen, dann „Laufenden Titel als Referenz".'; }
@@ -8018,10 +8019,24 @@ const raumWas  = (k) => t('raum.was.' + k);
 let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
 if (!RAUM_NAME[raumJetzt]) raumJetzt = 'klang';   /* gemerkter Raum, den es nicht mehr gibt (lied) */
 const raumDaten = {};      /* je Raum die geladene Karte */
-/* Gruppennamen kommen vom Server (bin/ortsbegriffe.js) und bleiben dort
-   deutsch; der Name „(gemischte Gegend)“ wird dort nur erzeugt, nirgends
-   verglichen. Übersetzt wird er deshalb nur in der Anzeige. */
-function ortsName(n){ return n === '(gemischte Gegend)' ? t('karte.gruppe.gemischt') : n; }
+/* GRUPPENNAMEN IN DER ANZEIGE. Die Namen der Stil- und Themengruppen kommen aus
+   library/karte.json (bin/karte.js, bin/ortsbegriffe.js) und sind dort Schlüssel für
+   Farben, Zoom und Vergleiche - sie bleiben deutsch. Übersetzt wird nur, was man sieht:
+   Wort für Wort, die Trennzeichen · — › bleiben. Die Klang-Wörter gehen über
+   web/klang-woerter.js zurück auf das Etikett des Modells (dieselbe Tabelle, aus der
+   karte.js sie gebildet hat); Wörter ohne Modell-Herkunft über ui-sprache.js. Die
+   Ortsbegriffe des Geschichten-Raums sind Wörter aus den eigenen Liedern und bleiben. */
+const KLANG_EN = new Map((window.KLANG_WOERTER || []).map(([, de, en]) => [de, en]));
+const GRUPPE_GANZ = { '(gemischte Gegend)': 'karte.gruppe.gemischt', 'ohne Stilgruppe': 'schaum.glied.ohne_stil',
+  'gemischt': 'gruppe.gemischt', 'ohne Angabe': 'schaum.ohne_angabe' };
+function gruppenAnzeige(name){
+  if (name == null || sprache() !== 'en') return name;
+  const s = String(name);
+  if (GRUPPE_GANZ[s]) return t(GRUPPE_GANZ[s]);
+  const nr = s.match(/^Gruppe (\d+)$/);
+  if (nr) return t('schaum.glied.gruppe', { n: nr[1] });
+  return s.split(/( · | — | › )/).map((w, i) => i % 2 ? w : (KLANG_EN.get(w) || w)).join('');
+}
 let raumDa = null;         /* welche Räume gerechnet sind */
 
 /* Die Karte, die GERADE gezeigt wird. Alles, was mit Sternlagen zu tun
@@ -8989,7 +9004,8 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   const urls = new Map(zeilen.map(z => [z.id, artworkBild(z.id)]));
   /* die Auswahl selbst im Schluessel (die IDs), nicht nur Zahl und Summe: ein anderer Filter kann beides zufaellig gleich lassen */
   const schluessel = [m.id, t.id, gl.id, schaumZoom || '', W, H, bilderWahl.haengung, bilderWahl.rahmen, bilderWahl.kopf, bilderWahl.unter, karteVerf,
-    zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length, zeilen.map(z => z.id).join(',')].join('|');
+    zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length, zeilen.map(z => z.id).join(','),
+    ...(sprache() === 'en' ? ['en'] : [])].join('|');   /* englische Schilder sind anders breit - eigene Wand */
   const fertig = bilderFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; return bilderEinsetzen(fertig, farbe, m, zeilen); }
   /* Waehrend neu gehaengt wird (Fenster- oder Vollbildwechsel), bleibt die alte Wand stehen, auf das neue Feld gestreckt */
@@ -9011,7 +9027,7 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   const saat = schaumSaat(zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })), ['gruppe'], W, H), seeds = {};
   for (const g of gruppen) if (saat && saat[g.name]) seeds[g.name] = saat[g.name];
   const mess = document.createElement('canvas').getContext('2d'); mess.font = '12.5px ' + getComputedStyle(document.body).fontFamily;
-  const kopfBreite = Object.fromEntries(gruppen.map(g => [g.name, mess.measureText(g.name + '  ' + g.bilder.length + ' Titel').width + 4]));
+  const kopfBreite = Object.fromEntries(gruppen.map(g => [g.name, mess.measureText(gruppenAnzeige(g.name) + '  ' + window.t('zahl.titel', { n: g.bilder.length })).width + 4]));
   stand.textContent = 'Die Galerie wird aufgehängt …';                     /* Caspar_Ds Wortlaut, 11.10.2026 */
   const t0 = performance.now();
   const daten = { gruppen, seeds: Object.keys(seeds).length === gruppen.length ? seeds : null,
@@ -9050,7 +9066,7 @@ function bilderEinsetzen(r, farbe, m, zeilen){
   schaumBildArt = 'bilder'; schaumGezeigt = null; bild.style.opacity = '';
   let html = `<div class="bilderwand" style="width:${r.W}px;height:${r.H}px">`;
   for (const a of r.schilder || [])
-    html += `<div class="bwkopf" style="left:${a.x.toFixed(1)}px;top:${a.y.toFixed(1)}px;width:${a.w.toFixed(1)}px;color:${farbe(a.name)}">${esc(a.name)} <small>${r.bilder.filter(b => b.gruppe === a.name).length} Titel</small></div>`;
+    html += `<div class="bwkopf" style="left:${a.x.toFixed(1)}px;top:${a.y.toFixed(1)}px;width:${a.w.toFixed(1)}px;color:${farbe(a.name)}">${esc(gruppenAnzeige(a.name))} <small>${window.t('zahl.titel', { n: r.bilder.filter(b => b.gruppe === a.name).length })}</small></div>`;
   for (const b of r.bilder){
     const url = artworkBild(b.id), stufe = schaumStufe(Math.max(b.w, b.h) * dpr), z = roh.get(b.id);
     html += `<div class="bw${b.id === aktuellId ? ' laeuft' : ''}" data-id="${b.id}" style="left:${b.x.toFixed(1)}px;top:${b.y.toFixed(1)}px;width:${b.w.toFixed(1)}px;height:${b.h.toFixed(1)}px;--bwf:${farbe(b.gruppe)};--bwr:${(b.rahmen || 0).toFixed(1)}px"`
@@ -9338,7 +9354,7 @@ async function schaumZeichnen(){
   const summe = (zs, schl) => { const s = new Map(), n = new Map();
     for (const z of zs){ const k = z[schl] || '(ohne)'; s.set(k, (s.get(k) || 0) + +z.w); n.set(k, (n.get(k) || 0) + 1); } return [s, n]; };
   const zeileHtml = (name, farbe, n, wert, knopf) => `<${knopf ? 'button type="button"' : 'span'} class="zeile"${knopf ? ` data-zoom="${esc(name)}" title="${esc(t('karte.zoom_gruppe'))}"` : ''}>`
-    + `<i style="background:${farbe || '#5d6066'}"></i><span><b>${esc(name)}</b><br><small>${t('zahl.titel', { n })} · ${m.text(wert)}</small></span></${knopf ? 'button' : 'span'}>`;
+    + `<i style="background:${farbe || '#5d6066'}"></i><span><b>${esc(gruppenAnzeige(name))}</b><br><small>${t('zahl.titel', { n })} · ${m.text(wert)}</small></span></${knopf ? 'button' : 'span'}>`;
   if (!schaumZoom){
     const [s, n] = summe(alleZeilen, 'gruppe');
     $('schaumlegende').innerHTML = `<small>${esc(t('schaum.klick', { oben: gl.oben }))}</small><div class="lgrid" data-leg="schaum-oben">`
@@ -9363,7 +9379,7 @@ async function schaumZeichnen(){
       if (!z) w.innerHTML = `<small>${esc(t('schaum.laeuft'))}</small><br><b>${esc(s.titel || '')}</b><br><small>${esc(t('schaum.keine_flaeche', { mass: m.name }))}</small>`;
       else {
         const platz = 1 + alleZeilen.filter(x => +x.w > +z.w).length;
-        w.innerHTML = `<small>${esc(t('schaum.laeuft'))}</small><br><b>${esc(s.titel || '')}</b><br><small>${esc(z.gruppe)}${z.genre ? ' › ' + esc(z.genre) : ''}</small>`
+        w.innerHTML = `<small>${esc(t('schaum.laeuft'))}</small><br><b>${esc(s.titel || '')}</b><br><small>${esc(gruppenAnzeige(z.gruppe))}${z.genre ? ' › ' + esc(gruppenAnzeige(z.genre)) : ''}</small>`
           + `<br>${m.text(+z.w)} · ${esc(t('schaum.platz', { platz: tZahl(platz), n: tZahl(alleZeilen.length) }))}`;
       }
     } }
@@ -9409,7 +9425,7 @@ async function groupieZeichnen(){
   $('schaumlegkurz').textContent = zeilen.length.toLocaleString('de-DE') + (zeilen.length === 1 ? ' Person · ' : ' Personen · ') + klassen.size + ' Areale';
   $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small><div class="lgrid" data-leg="groupies">' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
     const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0), anzahl = zs.length;
-    return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(a)}</b><br><small>${anzahl.toLocaleString('de-DE')} ${anzahl === 1 ? 'Person' : 'Personen'}`
+    return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(gruppenAnzeige(a))}</b><br><small>${anzahl.toLocaleString('de-DE')} ${anzahl === 1 ? 'Person' : 'Personen'}`
       + `${zs.length ? ' · ' + m.text(summe) : ''}</small></span></span>`;
   }).join('') + '</div>';
   legendenBeobachten($('schaumlegende'));
@@ -11100,8 +11116,8 @@ async function karteZeichnen(){
     /* Ring am laufenden Stern nur bei Direkter Route - im Orbiter/Warp ist die Bahn das Highlight (Caspar_D, 21.08.) */
     return `<circle class="stern${p.id === aktuellId && schiffArt === 'direkt' ? ' laeuft' : ''}" data-id="${p.id}" data-g="${p.gruppe}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${((6 + 8 * p.dichte) * rk * tf).toFixed(1)}" fill="transparent"/>`; }
   ).join('') + ((karteSternbilder || []).map(({ t, i }) => { const [x, y] = karteSternbildLage.get(i) || [-99, -99];
-    return `<circle class="sternbild" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(14 * rk).toFixed(1)}" fill="transparent"><title>Sternbild ${t.name} (${t.art}) — erklärt ${Math.round((t.erklaert || 0) * 100)} % der Gruppentrennung, markiert „${(d.gruppen[t.markiert] || {}).name || '?'}“; ${t.songs} Titel</title></circle>`; }).join(''))
-  + (L.gruppen && karteLoecher ? L.gruppen.map((G, gi) => G ? `<circle class="loch" data-g="${gi}" cx="${(karteZoom.tx + karteZoom.k * G.p[0]).toFixed(1)}" cy="${(karteZoom.ty + karteZoom.k * G.p[1]).toFixed(1)}" r="${(12 * rk).toFixed(1)}" fill="transparent"><title>${ortsName(d.gruppen[gi].name)} — Massezentrum der Gruppe; Klick hebt sie hervor. Jet = Hauptachse (${Math.round((G.ger || 0) * 100)} % der Ausdehnung)</title></circle>` : '').join('') : '');
+    return `<circle class="sternbild" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(14 * rk).toFixed(1)}" fill="transparent"><title>Sternbild ${gruppenAnzeige(t.name)} (${t.art}) — erklärt ${Math.round((t.erklaert || 0) * 100)} % der Gruppentrennung, markiert „${gruppenAnzeige((d.gruppen[t.markiert] || {}).name) || '?'}“; ${t.songs} Titel</title></circle>`; }).join(''))
+  + (L.gruppen && karteLoecher ? L.gruppen.map((G, gi) => G ? `<circle class="loch" data-g="${gi}" cx="${(karteZoom.tx + karteZoom.k * G.p[0]).toFixed(1)}" cy="${(karteZoom.ty + karteZoom.k * G.p[1]).toFixed(1)}" r="${(12 * rk).toFixed(1)}" fill="transparent"><title>${gruppenAnzeige(d.gruppen[gi].name)} — Massezentrum der Gruppe; Klick hebt sie hervor. Jet = Hauptachse (${Math.round((G.ger || 0) * 100)} % der Ausdehnung)</title></circle>` : '').join('') : '');
   svg.querySelectorAll('.loch').forEach(c => c.onclick = () => { const g = +c.dataset.g; karteGruppeAn = karteGruppeAn === g ? null : g; karteZeichnen(); });
   svg.querySelectorAll('.sternbild').forEach(c => {
     c.onmouseenter = () => { const t = d.tags[+c.dataset.i], m = new Set(t.sterne || []); svg.querySelectorAll('.stern').forEach(o => o.classList.toggle('nachbar', m.has(o.dataset.id))); };
@@ -11123,7 +11139,7 @@ async function karteZeichnen(){
          schlicht leer, falls eine alte karte.json geladen wird. */
       e.mollAnteil != null && `${Math.round(e.mollAnteil * 100)} % Moll`, e.stimme && e.stimme].filter(Boolean).join(' · ');
     return `<div class="gruppe${karteGruppeAn === g.nr ? ' an' : ''}" data-g="${g.nr}"><span class="farbe" style="background:${karteFarbe(g.nr)}"></span>` +
-      `<span><b>${ortsName(g.name)}</b><small>${t('karte.titel_legende', { n: g.anzahl })}${erd ? ' — ' + erd : ''}</small></span></div>`;
+      `<span><b>${gruppenAnzeige(g.name)}</b><small>${t('karte.titel_legende', { n: g.anzahl })}${erd ? ' — ' + erd : ''}</small></span></div>`;
   }).join('') + `</div></div>` + karteLesarten() + `</div>`;
   /* Das Panel NUR neu bauen, wenn sich sein Zustand geaendert hat
      (Caspar_D, 22.08.: "irgendwas klaut den Mausfokus" - Nachlauf und
@@ -11182,7 +11198,7 @@ async function karteZeichnen(){
       const p = d.songs.find(x => x.id === c.dataset.id) || {};
       karteSpot = { id: p.id, nachbarn: (p.nachbarn || []).slice(0, 6), t: performance.now() };
       karteSteckbrief(s, p);
-      karteTipp(`${s.titel}<small>${p.stil ? p.stil.replace('---', ' · ') : ''}${p.stimmung ? ' — ' + p.stimmung : ''}</small>`, ev, [karteFarbe(p.gruppe), koronaFarbe(p.gruppe)]);
+      karteTipp(`${s.titel}<small>${p.stil ? p.stil.replace('---', ' · ') : ''}${p.stimmung ? ' — ' + gruppenAnzeige(p.stimmung) : ''}</small>`, ev, [karteFarbe(p.gruppe), koronaFarbe(p.gruppe)]);
     };
     c.onmousemove = (ev) => karteTipp(null, ev);
     c.onmouseleave = () => { karteTippWeg(); karteSpot = null; };
@@ -11218,7 +11234,7 @@ function karteSteckbrief(s, p){
        davon weg, Laenge = Wahrscheinlichkeit. */
     `<div class="saeulen">` + [[t('steck.genre'), p.genres], [t('steck.stimmung'), p.stimmungen], [t('steck.instrumente'), p.instrumente]].map(([titel, l]) =>
       `<div class="spalte"><h5>${esc(titel)}</h5>` + (l || []).map(([n, w]) =>
-        `<div class="begriff">${n}</div><div class="balken"><i style="width:${Math.round(w * 100)}%`
+        `<div class="begriff">${gruppenAnzeige(n)}</div><div class="balken"><i style="width:${Math.round(w * 100)}%`
         + `;background:${diaFlaeche('var(--akzent)')}`
         + `;box-shadow:inset 0 1px 0 ${diaTopline('var(--akzent)')}"></i>`
         + `<em>${Math.round(w * 100)} %</em></div>`).join('') + `</div>`).join('') + `</div>` +
@@ -13320,7 +13336,7 @@ function karteHimmel(d){
       g.font = `600 ${Math.max(9.5, 10.5 * Math.sqrt(karteZoom.k)).toFixed(1)}px -apple-system, Helvetica Neue, sans-serif`;
       g.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.9)`; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.shadowColor = '#000'; g.shadowBlur = 4;
-      g.fillText(t.name.toUpperCase(), x, y);
+      g.fillText(String(gruppenAnzeige(t.name)).toUpperCase(), x, y);
       g.shadowBlur = 0;
     }
     g.globalCompositeOperation = 'lighter';
@@ -16023,7 +16039,7 @@ async function profilLaengenFuellen(){
   const gruppeVon = new Map(), gruppenName = new Map();
   if (_karteFuerLaengen && _karteFuerLaengen.songs){
     for (const p of _karteFuerLaengen.songs) gruppeVon.set(p.id, p.gruppe);
-    for (const g of (_karteFuerLaengen.gruppen || [])) gruppenName.set(g.nr, g.name);
+    for (const g of (_karteFuerLaengen.gruppen || [])) gruppenName.set(g.nr, gruppenAnzeige(g.name));
   }
 
   /* Die drei Spalten. `ordnung` gibt die Reihenfolge der Lagen von unten
@@ -17130,7 +17146,7 @@ async function profilWoerterFuellen(){
   const gruppeVon = new Map(), gruppenName = new Map();
   if (_karteFuerLaengen && _karteFuerLaengen.songs){
     for (const p of _karteFuerLaengen.songs) gruppeVon.set(p.id, p.gruppe);
-    for (const g of (_karteFuerLaengen.gruppen || [])) gruppenName.set(g.nr, g.name);
+    for (const g of (_karteFuerLaengen.gruppen || [])) gruppenName.set(g.nr, gruppenAnzeige(g.name));
   }
 
   const worte = (s) => s.lyricsWorte || 0;
