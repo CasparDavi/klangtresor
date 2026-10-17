@@ -712,16 +712,16 @@
 <div class="karten-kopf" data-i18n="sa.karten.pegel">Pegel und Lautheit</div>
 <div class="grid g4">
   <div class="card"><div class="val" id="v-lufs">—</div><div class="lbl"><span data-i18n="sa.lbl.lufs">Wie laut insgesamt?</span> <i>LUFS</i></div></div>
-  <div class="card"><div class="val" id="v-lra">—</div><div class="lbl"><span data-i18n="sa.lbl.lra">Atmet der Song?</span> <i data-i18n="sa.lbl.lra.i">Schwankung LU</i></div></div>
-  <div class="card"><div class="val" id="v-tp">—</div><div class="lbl"><span data-i18n="sa.lbl.tp">Wie nah an der Decke?</span> <i data-i18n="sa.lbl.tp.i">True Peak dBTP</i></div></div>
-  <div class="card"><div class="val" id="v-plr">—</div><div class="lbl"><span data-i18n="sa.lbl.plr">Wie viel Luft zur Spitze?</span> <i data-i18n="sa.lbl.plr.i">Reserve PLR</i></div></div>
-  <div class="card"><div class="val" id="v-psr">—</div><div class="lbl"><span data-i18n="sa.lbl.psr">Luft an der lautesten Stelle</span> <i data-i18n="sa.lbl.psr.i">Reserve PSR</i></div></div>
-  <div class="card"><div class="val" id="v-check">—</div><div class="lbl"><span data-i18n="sa.lbl.check">Technisch sauber?</span> <i data-i18n="sa.lbl.check.i">Anschläge · Gleichspannung · Phase</i></div></div>
-  <div class="card"><div class="val" id="v-clip">—</div><div class="lbl"><span data-i18n="sa.lbl.clip">Werte am Anschlag</span> <i data-i18n="sa.lbl.clip.i">Kappung (Clipping)</i></div></div>
+  <div class="card"><div class="val" id="v-lra">—</div><div class="lbl"><span data-i18n="sa.lbl.lra">Atmet der Song?</span> <i data-i18n="sa.lbl.lra.i">Lautheitsumfang LU</i></div></div>
+  <div class="card"><div class="val" id="v-tp">—</div><div class="lbl"><span data-i18n="sa.lbl.tp">Wie nah am Vollpegel?</span> <i data-i18n="sa.lbl.tp.i">True Peak dBTP</i></div></div>
+  <div class="card" data-i18n-title="sa.lbl.plr.tipp"><div class="val" id="v-plr">—</div><div class="lbl"><span data-i18n="sa.lbl.plr">Wie weit ragen die Spitzen heraus?</span> <i data-i18n="sa.lbl.plr.i">über der Lautheit · dB</i></div></div>
+  <div class="card" data-i18n-title="sa.lbl.psr.tipp"><div class="val" id="v-psr">—</div><div class="lbl"><span data-i18n="sa.lbl.psr">… an der lautesten Stelle</span> <i data-i18n="sa.lbl.psr.i">dB</i></div></div>
+  <div class="card"><div class="val" id="v-check">—</div><div class="lbl"><span data-i18n="sa.lbl.check">Technisch sauber?</span> <i data-i18n="sa.lbl.check.i">Vollausschläge · Gleichspannung · Phase</i></div></div>
+  <div class="card"><div class="val" id="v-clip">—</div><div class="lbl"><span data-i18n="sa.lbl.clip">Vollausschläge</span> <i data-i18n="sa.lbl.clip.i">Kappung (Clipping)</i></div></div>
   <div class="card"><div class="val" id="v-dc">—</div><div class="lbl"><span data-i18n="sa.lbl.dc">Sitzt die Welle mittig?</span> <i data-i18n="sa.lbl.dc.i">Gleichspannung</i></div></div>
-  <div class="card"><div class="val" id="v-korr">—</div><div class="lbl"><span data-i18n="sa.lbl.korr">Stereo verträglich?</span> <i data-i18n="sa.lbl.korr.i">Phasenkorrelation</i></div></div>
+  <div class="card"><div class="val" id="v-korr">—</div><div class="lbl"><span data-i18n="sa.lbl.korr">Verträgt er Mono?</span> <i data-i18n="sa.lbl.korr.i">Korrelation</i></div></div>
   <div class="card"><div class="val" id="v-ende">—</div><div class="lbl"><span data-i18n="sa.lbl.ende">Endet er weich?</span> <i data-i18n="sa.lbl.ende.i">Ende</i></div></div>
-  <div class="card"><div class="val" id="v-grenz">—</div><div class="lbl"><span data-i18n="sa.lbl.grenz">Bis wohin reichen die Höhen?</span> <i data-i18n="sa.lbl.grenz.i">Tiefpasskante</i></div></div>
+  <div class="card"><div class="val" id="v-grenz">—</div><div class="lbl"><span data-i18n="sa.lbl.grenz">Bis wohin reichen die Höhen?</span> <i data-i18n="sa.lbl.grenz.i">obere Grenze</i></div></div>
 </div>
 </div>
 <div class="kartenblock">
@@ -729,7 +729,7 @@
 <div class="grid g4">
   <div class="card"><div class="val" id="v-dur">—</div><div class="lbl" data-i18n="sa.lbl.dauer">Dauer</div></div>
   <div class="card"><div class="val" id="v-loud">—</div><div class="lbl"><span data-i18n="sa.lbl.loud">Wie kräftig im Schnitt?</span> <i>dB</i></div><div class="gauge" id="g-loud"><div class="gauge-track"></div><div class="gauge-marker" id="gm-loud"></div></div></div>
-  <div class="card"><div class="val" id="v-dyn">—</div><div class="lbl"><span data-i18n="sa.lbl.dyn">Laut-leise-Abstand</span> <i data-i18n="sa.lbl.dyn.i">Dynamik dB</i></div><div class="gauge" id="g-dyn"><div class="gauge-track"></div><div class="gauge-marker" id="gm-dyn"></div></div></div>
+  <div class="card"><div class="val" id="v-dyn">—</div><div class="lbl"><span data-i18n="sa.lbl.dyn">Spitze über dem Schnitt</span> <i data-i18n="sa.lbl.dyn.i">über dem Schnitt · dB</i></div><div class="gauge" id="g-dyn"><div class="gauge-track"></div><div class="gauge-marker" id="gm-dyn"></div></div></div>
 </div>
 <div class="grid g4">
   <div class="card"><div class="val" id="v-stereo">—</div><div class="lbl"><span data-i18n="sa.lbl.stereo">Wie breit ist das Stereo?</span> <i data-i18n="sa.lbl.stereo.i">Breite</i></div><div class="gauge" id="g-stereo"><div class="gauge-track"></div><div class="gauge-marker" id="gm-stereo"></div></div></div>
@@ -738,11 +738,11 @@
   <div class="card"><div class="val" id="v-key">—</div><div class="lbl" data-i18n="sa.lbl.key">Welche Tonart?</div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-entropy">—</div><div class="lbl"><span data-i18n="sa.lbl.entropy">Dicht oder aufgeräumt?</span> <i data-i18n="sa.lbl.entropy.i">Spektr. Entropie</i></div><div class="gauge" id="g-entropy"><div class="gauge-track"></div><div class="gauge-marker" id="gm-entropy"></div></div></div>
+  <div class="card"><div class="val" id="v-entropy">—</div><div class="lbl"><span data-i18n="sa.lbl.entropy">Dicht oder aufgeräumt?</span> <i data-i18n="sa.lbl.entropy.i">wie rauschig</i></div><div class="gauge" id="g-entropy"><div class="gauge-track"></div><div class="gauge-marker" id="gm-entropy"></div></div></div>
 </div>
 <div class="grid g4">
   <div class="card"><div class="val" id="v-symmetry">—</div><div class="lbl"><span data-i18n="sa.lbl.symmetry">Wohin entwickelt er sich?</span> <i data-i18n="sa.lbl.symmetry.i">Energie-Form</i></div></div>
-  <div class="card"><div class="val" id="v-vocal" style="font-size:13px">—</div><div class="lbl"><span data-i18n="sa.lbl.vocal">Welche Stimmlage?</span> <i data-i18n="sa.lbl.vocal.i">Stimme</i></div></div>
+  <div class="card"><div class="val" id="v-vocal" style="font-size:13px">—</div><div class="lbl"><span data-i18n="sa.lbl.vocal">Frauen- oder Männerstimme?</span> <i data-i18n="sa.lbl.vocal.i">Stimme</i></div></div>
 </div>
 </div>
 <div class="kartenblock">
@@ -969,7 +969,7 @@
 
 <div class="section"><div class="slbl"><span><span class="nam" data-i18n="sa.flux.nam">Klangveränderung (Spektrale Fluktuation)</span> — <span class="erkl" data-i18n="sa.flux.erkl">Helligkeit = Änderungsrate pro Frequenzband · Bass unten · Höhen oben</span></span></div>
   <div class="chart-outer"><canvas id="flux-canvas" style="height:160px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-flux"></div></div>
-  <div class="chart-text" data-i18n="sa.essay.flux">Momentane Änderung des Spektrums, aufgelöst nach Frequenzbändern. Helle Stellen bedeuten Bewegung, dunkle Stillstand: Ein liegender Akkord erscheint dunkel, ein Trommelwirbel hell. Die Abbildung zeigt also nicht, was lange klingt oder still ist, sondern in welchem Frequenzband sich etwas stark ändert. Die acht Bänder sind am linken Rand beschriftet und reichen von 20–40 Hz ganz unten bis 2500–20000 Hz ganz oben; jedes ist auf sein eigenes 95. Perzentil normiert, sodass auch leise Bänder ihre Bewegung zeigen.</div>
+  <div class="chart-text" data-i18n="sa.essay.flux">Momentane Änderung des Spektrums, aufgelöst nach Frequenzbändern. Helle Stellen bedeuten Bewegung, dunkle Stillstand: Ein liegender Akkord erscheint dunkel, ein Trommelwirbel hell. Die Abbildung zeigt also nicht, was lange klingt oder still ist, sondern in welchem Frequenzband sich etwas stark ändert. Die acht Bänder sind am linken Rand beschriftet und reichen von 20–40 Hz ganz unten bis 2500–20000 Hz ganz oben; jedes wird an seinen eigenen lautesten fünf Prozent gemessen, sodass auch leise Bänder ihre Bewegung zeigen.</div>
 </div>
 
 
@@ -1003,18 +1003,7 @@
          steht sie darunter, damit die Oberkante beider Bilder auf gleicher
          Höhe bleibt und beim Umschalten nichts hüpft. -->
     <div class="chart-outer" style="height:11px;margin-top:4px"><div id="taktrasterspur-canvas" class="spur-flaeche" style="height:11px"></div></div>
-    <div class="chart-text" data-i18n="sa.essay.chroma.takt">Nicht je Rechenfenster gemittelt, sondern je Notenzone
-    zwischen zwei Schlägen — der Anschlag am Zonenanfang bleibt ausgespart, weil dort der Ton noch
-    nicht steht. Wo sich der Toninhalt innerhalb einer Zone ändert, wird sie halbiert und nötigenfalls
-    geviertelt; bleibt er gleich, bleibt das lange Fenster, und das ist zugleich das genauere. Die
-    Prozentangaben im Titel beziehen sich auf Taktschläge, nicht auf Zonen — ein geviertelter Schlag
-    ergibt vier Zonen und ein ganzer eine, was die feine Teilung sonst um den Faktor vier
-    überzeichnet.
-    Statt tausender verschmierter Spalten steht so je Note ein Block. Vor allem aber wird hier nicht
-    ein lineares Rechenraster auf die Halbtöne gerundet, sondern direkt bei jeder Halbtonfrequenz
-    gemessen — mit einer Fensterlänge, die sich nach der Frequenz richtet: tiefe Töne über rund
-    260 Millisekunden, hohe über acht. Gemessen wird in beiden Kanälen, und addiert werden die Beträge — nicht die Signale, denn gegenphasige Anteile würden sich beim Mischen auslöschen. Im Bass ist das der ganze Unterschied, denn dort deckt ein
-    Rechenfenster der alten Auflösung elf Halbtöne auf einmal ab.</div>
+    <div class="chart-text" data-i18n="sa.essay.chroma.takt">Nicht je Rechenfenster gemittelt, sondern je Notenzone zwischen zwei Schlägen — der Anschlag am Zonenanfang bleibt ausgespart, weil dort der Ton noch nicht steht. Wo sich der Toninhalt innerhalb einer Zone ändert, wird sie halbiert und nötigenfalls geviertelt; bleibt er gleich, bleibt das lange Fenster, und das ist zugleich das genauere. Die Prozentangaben im Titel beziehen sich auf Taktschläge, nicht auf Zonen — ein geviertelter Schlag ergibt vier Zonen und ein ganzer eine, was die feine Teilung sonst um den Faktor vier überzeichnet. Statt tausender verschmierter Spalten steht so je Note ein Block. Vor allem aber wird hier nicht ein lineares Rechenraster auf die Halbtöne gerundet, sondern direkt bei jeder Halbtonfrequenz gemessen — mit einer Fensterlänge, die sich nach der Frequenz richtet: tiefe Töne über rund 260 Millisekunden, hohe über acht. Gemessen wird in beiden Kanälen, und addiert werden die Beträge — nicht die Signale, denn gegenphasige Anteile würden sich beim Mischen auslöschen. Im Bass ist das der ganze Unterschied, denn dort deckt ein Rechenfenster der alten Auflösung elf Halbtöne auf einmal ab.</div>
   </div>
 
   <div id="spur-chroma" style="display:none">
@@ -1047,7 +1036,7 @@
      Nebenbei kann so nichts huepfen: Beide Bilder haben dieselbe Hoehe
      und stehen an derselben Stelle. -->
 <div class="section" id="spur-spektro">
-  <div class="slbl"><span class="spur-titel"><span class="nam" data-i18n="sa.spektro.nam">Spektrogramm</span> — <span class="erkl" data-i18n="sa.spektro.l">lokal Z-normiert · dunkel=Stille · hell=Signal</span></span></div>
+  <div class="slbl"><span class="spur-titel"><span class="nam" data-i18n="sa.spektro.nam">Spektrogramm</span> — <span class="erkl" data-i18n="sa.spektro.l">linker Kanal · an der Umgebung gemessen · dunkel=Stille · hell=Signal</span></span></div>
   <div class="bf-register" id="spektro-register">
     <button type="button" data-spektro="l" class="an">FFT(L)</button>
     <button type="button" data-spektro="r">FFT(R)</button>
@@ -4373,8 +4362,8 @@
           + (SPUR_TEXT[s.id] ? '<div class="chart-text" data-i18n="'+SPUR_TEXT[s.id]+'">'+T(SPUR_TEXT[s.id])+'</div>' : '')
           + '<div class="spur-wahl">'
           + profilKnoepfe(s.id)
-          + '<select class="spur-fenster" data-fuer="'+s.id+'" title="'+T('sa.fenster.titel')+'" data-i18n-title="sa.fenster.titel">'
-          + '<option value="0" data-i18n="sa.fenster.ohne">'+T('sa.fenster.ohne')+'</option><option value="50">50 ms</option>'
+          + '<select class="spur-fenster" data-fuer="'+s.id+'" title="Fensterlänge in Millisekunden" data-i18n-title="sa.fenster.titel">'
+          + '<option value="0" data-i18n="sa.fenster.ohne">ohne</option><option value="50">50 ms</option>'
           + '<option value="100">100 ms</option><option value="200">200 ms</option>'
           + '<option value="400" selected>400 ms</option><option value="1000">1 s</option>'
           + '<option value="3000">3 s</option></select>'
@@ -6995,7 +6984,7 @@
           + '<span>' + feld('#000000') + T('sa.spektrum.deckung')+'</span>'
           + '<span style="color:#6e6e73">'+T('sa.spektrum.lr')+'</span>'
           + (ERKLAEREN ? '<button type="button" class="sa-info" id="sa-kette-info"'
-              + ' title="'+T('sa.spektrum.kette')+'" data-i18n-title="sa.spektrum.kette">'
+              + ' title="Wie die Audiokette aufgebaut ist und wo gemessen wird" data-i18n-title="sa.spektrum.kette">'
               + '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">'
               + '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>'
               + '<path d="M12 11v5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'

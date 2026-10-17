@@ -9276,3 +9276,27 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
 - ~85 deutsche Reste im Englischen (Liste scratchpad/pr10-pruefung/enrest1.txt), Plakat-Studio (Plakatsprache = Sprache der
   Oberfläche, „Caspar_D’s Picture Wall“), Groupieschaum-Fußnote – vorübersetzen, Jörg geht die Texte wieder auf der Abnahme-Seite durch.
 - Später, mit Tarja abstimmen: Effektclip-Studio, Einrichtung, Server-Meldungen, Update-Skript, englische START-HIER.
+
+## 102. 17.10.2026: 1.0.84 – Englisch Runde 2, Begriffsbuch, Tonstudio in Klartext, Fluchtlinie
+- **Englisch Runde 2:** deutsche Reste, Groupieschaum-Fußnote, Bilderschau, Plakat-Studio samt allem Gedruckten (Plakatsprache = Sprache
+  der Oberfläche), Skizzenbuch mit den Etiketten des Modells (Ausnahme Schlagwerk → percussion); Datum englisch immer britisch (en-GB).
+- **Begriffsbuch** `docs/haus/BEGRIFFE.md` (37 Kernwörter des Tonstudios, von Jörg abgenommen) und **Hausregeln 25a** (jede Meldung
+  nennt den Ausweg) und **25b** (für interessierte Laien, keine Fachsprache-Biotope). Wichtigste Festlegungen: Spielraum (statt Luft/
+  Reserve), Vollpegel (statt Dach/Obergrenze), Vollausschlag (Wert am Vollpegel; „Anschlag“ nur musikalisch), Kappung (das Abschneiden;
+  Lampe KAPPUNG/CLIP), Überschreien (statt übersteuern; EN overdrive), Lautheitsumfang (statt Spanne/Schwankung; Einmessen: Streuung),
+  Anheben (statt Aufholen; EN Lift), Frequenzprofil (statt Klang-/Bandprofil), Wirkungsgrad (statt Ausbeute), Ghettoblaster (DE)/
+  Boombox (EN), Kubus/Cube (Palette Borg).
+- **Tonstudio-Texte** nach Begriffsbuch umgeschrieben (scratchpad/tonstudio-final.json, 197 Stellen, Skript einbau-tonstudio.js).
+  135 davon hat Jörg noch NICHT gesehen – auf der Abnahme-Seite orange markiert („NOCH NICHT VON DIR GESEHEN“); er schaut sie in der App an.
+  Vorläufig von Claude entschieden (Jörg kann umsteuern): Bänder im Spielraum-Satz mit Frequenz statt Namen (Namen-Schlüssel
+  studio.band.* gelöscht), Analyse-Urteil nur „gekappt“, „Mikrofon überschreit“ bleibt.
+- **Meldungen mit Ausweg** A01–A43 eingebaut (Jörgs Entscheidungen); „Wand zu klein“/„Blatt zu klein“ mit Ausweg.
+- **Bilderschau Hängung Achse:** Umschaltpille „Fluchtlinie“ (Vorgabe aus), Achse in der optischen Mitte (45 %).
+- **Altfehler behoben:** Plakat nach Groupie- → Klangschaum aus dem Zwischenspeicher („Bitte den Schaum einmal anzeigen lassen“).
+- **Plakat = Wanddekoration:** keine Meldungen/Aufforderungen im Druck (Memory plakat-ist-wanddekoration).
+### Offen / Wiedervorlage
+- Effektclip-Studio zweisprachig auf Zweig effektclip-englisch (scratchpad/wt-ec, Commit 764bb95, 1103 Schlüssel) → **1.0.85**, vorher
+  Browserprobe. Deutsch dort NICHT ändern: Befunde E01–E35 liegen als Zwischenstand auf der Abnahme-Seite, Jörg fasst sie später an.
+  Testbild-Schrift wird beim 10-s-Export eingebrannt (Frage A/B an Jörg offen); Altfehler kbPunkteSatz (T undefiniert).
+- Server-Schrittnamen (Klangprofil, stehende Töne, Kerbfilter) und Messdokument (~6000 Zeilen, nur deutsch) noch nicht nach Begriffsbuch.
+- Stilgruppe „chillout“ klein (fehlt in klang-woerter) – Backlog.
