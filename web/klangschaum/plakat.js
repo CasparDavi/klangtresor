@@ -218,7 +218,7 @@ function bilderAmSchirm(){
   const bg = typeof bilderGezeigt !== 'undefined' ? bilderGezeigt : null, d = bg && bg.r && bg.r.daten;
   if (!d || !d.wahl) return { fehlt: 'Bitte die Bilderschau einmal anzeigen lassen, dann das Plakat öffnen.' };
   const w = d.wahl, jetzt = { mass: schaumMass, trafo: bilderWahl.trafo, gliederung: schaumGliederung, zoom: schaumZoom || '', haengung: bilderWahl.haengung,
-    rahmen: !!bilderWahl.rahmen, kopf: !!bilderWahl.kopf, unter: !!bilderWahl.unter, verf: typeof karteVerf !== 'undefined' ? karteVerf : '', filter: typeof titelFilterSchluessel === 'function' ? titelFilterSchluessel() : '' };
+    flucht: bilderWahl.haengung === 'achse' && !!bilderWahl.flucht, rahmen: !!bilderWahl.rahmen, kopf: !!bilderWahl.kopf, unter: !!bilderWahl.unter, verf: typeof karteVerf !== 'undefined' ? karteVerf : '', filter: typeof titelFilterSchluessel === 'function' ? titelFilterSchluessel() : '' };
   /* hängt sie noch neu, wartet das Studio auf das Ereignis „bilderschau-gehaengt" (index.html bilderEinsetzen) und zeichnet dann von selbst
      neu (wandWartet) - bis 1.0.79 stand hier „das Plakat bitte gleich noch einmal öffnen", und die Meldung blieb stehen */
   if (Object.keys(jetzt).some(k => String(w[k]) !== String(jetzt[k]))) return { fehlt: 'Die Bilderschau wird am Schirm neu gehängt – das Plakat folgt gleich.', neu: true };
@@ -1985,7 +1985,8 @@ function bilderteilSetzen(){
   wahlSetzen(el('ps-btrafo'), 'ps-btrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), bilderWahl.trafo, { titel: 'Wie aus dem Wert die Fläche des Bildes wird' });
   wahlSetzen(el('ps-bgliederung'), 'ps-bgliederung', glieder.map(x => ({ id: x.id, name: x.name })), schaumGliederung, { titel: 'Wonach die Bilder in Areale geteilt werden' });
   wahlSetzen(el('ps-bhaengung'), 'ps-bhaengung', BILDER_HAENGUNGEN, bilderWahl.haengung, { titel: 'Wie die Bilder in ihren Arealen hängen' });
-  for (const [id, k] of [['ps-brahmen', 'rahmen'], ['ps-bkopf', 'kopf'], ['ps-bunter', 'unter']]){ const b = el(id); b.classList.toggle('an', !!bilderWahl[k]); b.setAttribute('aria-pressed', bilderWahl[k] ? 'true' : 'false'); }
+  el('ps-bfluchtzeile').hidden = bilderWahl.haengung !== 'achse';
+  for (const [id, k] of [['ps-brahmen', 'rahmen'], ['ps-bkopf', 'kopf'], ['ps-bunter', 'unter'], ['ps-bflucht', 'flucht']]){ const b = el(id); b.classList.toggle('an', !!bilderWahl[k]); b.setAttribute('aria-pressed', bilderWahl[k] ? 'true' : 'false'); }
   const aus = !bilderschau(), t = el('ps-bilderteil');
   t.classList.toggle('ps-grau', aus); t.title = aus ? 'Nur in der Bilderschau.' : '';
   t.querySelectorAll('input,button,select').forEach(f => { f.disabled = aus; });
@@ -2049,6 +2050,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
     <div class="ps-wzeile"><span>Skalen&shy;transformation</span><span id="ps-btrafo"></span></div>
     <div class="ps-wzeile"><span>Gegliedert nach</span><span id="ps-bgliederung"></span></div>
     <div class="ps-wzeile"><span>Hängung</span><span id="ps-bhaengung"></span></div>
+    <div class="ps-pillen" id="ps-bfluchtzeile" style="margin-top:5px" hidden><button type="button" class="ps-schalt" id="ps-bflucht" title="Eine waagerechte Fuge: Die Bilder darüber stehen mit der Unterkante auf ihr, die darunter hängen mit der Oberkante an ihr.">Fluchtlinie</button></div>
     <div class="ps-pillen" style="margin-top:7px"><button type="button" class="ps-schalt" id="ps-brahmen">Rahmen</button><button type="button" class="ps-schalt" id="ps-bkopf">Überschriften der Gruppen</button><button type="button" class="ps-schalt" id="ps-bunter">Bildunterschriften</button></div>
     <p class="ps-leise" id="ps-bilder-text">Dieselben Einstellungen wie in der Ansicht: was hier gewählt wird, gilt auch dort.</p>
   </div>
@@ -2136,7 +2138,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   wahlTun['ps-btrafo'] = ansicht(v => bilderschauWahl('trafo', v));
   wahlTun['ps-bgliederung'] = ansicht(v => schaumGliederungWaehlen(v));
   wahlTun['ps-bhaengung'] = ansicht(v => bilderschauWahl('haengung', v));
-  for (const [id, k] of [['ps-brahmen', 'rahmen'], ['ps-bkopf', 'kopf'], ['ps-bunter', 'unter']]) el(id).onclick = () => ansicht(() => bilderschauWahl(k, !bilderWahl[k]))();
+  for (const [id, k] of [['ps-brahmen', 'rahmen'], ['ps-bkopf', 'kopf'], ['ps-bunter', 'unter'], ['ps-bflucht', 'flucht']]) el(id).onclick = () => ansicht(() => bilderschauWahl(k, !bilderWahl[k]))();
   document.addEventListener('bilderschau-gehaengt', () => { if (!wandWartet || !studio || studio.hidden || !bilderschau()) return;
     wandWartet = false; felderSetzen(); zeichnen(true); });
   el('ps-pdf').onclick = () => pdf();

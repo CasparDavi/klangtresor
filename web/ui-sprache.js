@@ -135,6 +135,8 @@
     ['schaum.gegliedert', 'Gegliedert nach', 'Grouped by'],
     ['schaum.skala', 'Skalen&shy;transformation', 'Scale transform'],
     ['schaum.haengung', 'Hängung', 'Hang'],
+    ['schaum.flucht', 'Fluchtlinie', 'Datum line'],
+    ['schaum.flucht.titel', 'Eine waagerechte Fuge: Die Bilder darüber stehen mit der Unterkante auf ihr, die darunter hängen mit der Oberkante an ihr.', 'One horizontal joint: pictures above stand on it with their bottom edge, pictures below hang from it with their top edge.'],
     ['schaum.zeigen', 'Zeigen', 'Show'],
     ['schaum.farben', 'Farben', 'Colours'],
     ['schaum.farbe_ueber', 'Farbe über den Bildern', 'Colour over the pictures'],
