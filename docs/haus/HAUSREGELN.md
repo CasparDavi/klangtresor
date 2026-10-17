@@ -151,10 +151,25 @@ Auszeichnungssprache des Boten.
     „das Zeug gehört dem Song" (kein dein/mein), Formen statt
     Eigennamen (Glockenstuhl, Decke, Kuller). Umbenennungen mit
     Taufnotiz in der Doku festhalten.
+25a. **Jede Meldung nennt den Ausweg.** Sagt eine Meldung, dass etwas
+    nicht geht, fehlt oder misslang, steht im selben Satz, was man tun
+    kann: „Für so viele Bilder ist die Wand zu klein. Zieh das Fenster
+    größer, nimm das Vollbild oder zeig weniger Titel (Filter oben)."
+    Gibt es keinen Ausweg, ist das ein Bauauftrag: erst den Weg
+    schaffen, dann melden. Gilt für beide Sprachen. Caspar_D,
+    17.10.2026: *„Immer, aber wirklich immer eine Lösung anbieten; gibt
+    es keine, müssen wir uns Gedanken machen, wie wir eine schaffen
+    können."*
 
 ### Taufnotizen
 
 Regel 25 verlangt, Umbenennungen festzuhalten. Hier stehen sie.
+
+**Englisch (17.10.2026, Version 1.0.84).** *Überschreien* heißt englisch **overdrive** (nicht „shouting over"); *übersteuern*
+bleibt **clip**, die Unterscheidung aus Regel 25 gilt in beiden Sprachen. Die harte Grenze des Limiters heißt deutsch
+**Kappung** (nicht „Kappe"), englisch **hard clip**. Die Farbpalette des Borgschiffs heißt in der Oberfläche **Kubus**/**Cube**
+wie die Gestalt (im Code bleibt `borg`). Hörer-Reaktionen bleiben **reaction**; *response* nur technisch (frequency
+response). Datumsangaben im Englischen immer britisch (`en-GB`).
 
 **„Medien" — die Marke auf der Kachel (14.09.2026).** Hieß erst `Cap`, dann `Text` beziehungsweise
 `Notiz`, kurz `Media`, jetzt **Medien**. Dahinter liegen Notiz, Titelbild, Bewegtbild, Tonfassung
