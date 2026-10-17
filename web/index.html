@@ -4001,7 +4001,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="spur"><div class="fuell" id="morgenfuell"></div></div>
       <div class="unter"><span id="morgenschritt"></span><span id="morgenrest"></span></div>
     </div>
-    <h2>Was hat sich geändert?</h2>
+    <h2 data-i18n="morgen.geaendert.kopf">Was hat sich geändert?</h2>
     <!-- Die Datensaetze, die der Katalogbau verarbeitet ("zwei warteten,
          beide beruecksichtigt") - nur waehrend und nach dem Lauf. -->
     <div id="morgendaten" style="display:none"></div>
@@ -15242,7 +15242,7 @@ async function profilCommunityFuellen(){
       z.appendChild(wer);
       z.appendChild(document.createTextNode(
         (e.art === 'comment_like' ? t('profil.auswaerts.herz') : t('profil.auswaerts.antwort')) +
-        ' unter „' + (e.songTitel || '?') + '"' + (e.text ? ' — „' + e.text.slice(0,50) + (e.text.length>50?'…':'') + '"' : '') +
+        window.t('profil.auswaerts.unter', { titel: e.songTitel || '?' }) + (e.text ? window.t('profil.auswaerts.zitat', { text: e.text.slice(0,50) + (e.text.length>50?'…':'') }) : '') +
         ' · ' + reaktZeit(e.am).slice(0,8)));
       w.appendChild(z);
     }
