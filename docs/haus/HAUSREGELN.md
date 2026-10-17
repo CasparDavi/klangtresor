@@ -173,6 +173,8 @@ Auszeichnungssprache des Boten.
     unmöglich – das muss und das darf nicht sein. … oft ist es nicht
     mal schwer. Das ist so ein Gatekeeper-Ding, und nichts hasse ich
     mehr."*
+    Die Kernwörter des Tonstudios stehen mit genau einer Bedeutung in
+    [BEGRIFFE.md](BEGRIFFE.md) – vor jeder Textarbeit lesen.
 
 ### Taufnotizen
 
