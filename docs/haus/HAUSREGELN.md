@@ -169,7 +169,8 @@ Regel 25 verlangt, Umbenennungen festzuhalten. Hier stehen sie.
 bleibt **clip**, die Unterscheidung aus Regel 25 gilt in beiden Sprachen. Die harte Grenze des Limiters heißt deutsch
 **Kappung** (nicht „Kappe"), englisch **hard clip**. Die Farbpalette des Borgschiffs heißt in der Oberfläche **Kubus**/**Cube**
 wie die Gestalt (im Code bleibt `borg`). Hörer-Reaktionen bleiben **reaction**; *response* nur technisch (frequency
-response). Datumsangaben im Englischen immer britisch (`en-GB`).
+response). Datumsangaben im Englischen immer britisch (`en-GB`). Das Effektgerät heißt deutsch **Ghettoblaster** (überall, auch
+Echo und MEGA BASS; Caspar_D: „find ich cooler und dort ist es auch nicht problematisch belegt“), englisch **Boombox**.
 
 **„Medien" — die Marke auf der Kachel (14.09.2026).** Hieß erst `Cap`, dann `Text` beziehungsweise
 `Notiz`, kurz `Media`, jetzt **Medien**. Dahinter liegen Notiz, Titelbild, Bewegtbild, Tonfassung
