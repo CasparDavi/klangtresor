@@ -3315,9 +3315,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <option value="wav" data-i18n="studio.quelle.wav">Quelle: WAV</option>
       </select>
       <!-- Reihenfolge = die Kette (Caspar_D, 23.08.): EQ -> Kompressor -> Effekte -->
-      <button id="bypeq" class="pille an" title="Die EQ-Stufe (Bänder/Glockenstuhl) hörbar oder stumm — die Einstellungen bleiben" data-i18n-title="studio.byp.eq">EQ</button>
-      <button id="bypkomp" class="pille an" title="Die Kompressor-Stufe (Kompressor/Gradationskompressor) hörbar oder stumm — die Kennlinie bleibt" data-i18n-title="studio.byp.komp" data-i18n="studio.byp.komp.knopf">Kompressor</button>
-      <button id="bypfx" class="pille an" title="Die Effekt-Stufe (Breite, Hall, Echo, Tempo) hörbar oder stumm — die Regler bleiben" data-i18n-title="studio.byp.fx" data-i18n="studio.byp.fx.knopf">Effekte</button>
+      <button id="bypeq" class="pille an" title="Die EQ-Stufe (Bänder/Glockenstuhl) wirkt oder wirkt nicht – der Ton läuft in beiden Fällen weiter, die Einstellungen bleiben" data-i18n-title="studio.byp.eq">EQ</button>
+      <button id="bypkomp" class="pille an" title="Die Kompressor-Stufe (Kompressor/Gradationskompressor) wirkt oder wirkt nicht – der Ton läuft in beiden Fällen weiter, die Kennlinie bleibt" data-i18n-title="studio.byp.komp" data-i18n="studio.byp.komp.knopf">Kompressor</button>
+      <button id="bypfx" class="pille an" title="Die Effekt-Stufe (Breite, Hall, Echo, Tempo) wirkt oder wirkt nicht – der Ton läuft in beiden Fällen weiter, die Regler bleiben" data-i18n-title="studio.byp.fx" data-i18n="studio.byp.fx.knopf">Effekte</button>
       <!-- Das (i) hinter den drei Stufenschaltern: Sie SIND die Kette,
            und hier steht, wie sie zusammenhaengt und wo gemessen wird
            (Caspar_D, 26.08.2026: "auch vom tonstudio aus muß unsere
@@ -3338,7 +3338,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
     <div class="sseite" data-seite="eq">
       <div id="studiopresetzeile">
-        <select id="eqmodus" title="Equalizer: die acht festen Bänder. Glockenstuhl: dieselben Filter frei — die sechs Glocken hängen an Frequenz, Höhe und Güte (vollparametrisch), die beiden Shelves außen an Frequenz und Höhe. Es gilt immer genau einer." data-i18n-title="studio.eqmodus">
+        <select id="eqmodus" title="Equalizer: die acht festen Bänder. Glockenstuhl: dieselben Filter frei — die sechs Glocken hängen an Frequenz, Höhe und Güte (Breite der Glocke), die beiden Randfilter heben oder senken alles unterhalb bzw. oberhalb ihrer Frequenz. Es gilt immer genau einer." data-i18n-title="studio.eqmodus">
           <option value="band" data-i18n="studio.reg.eq">Equalizer</option>
           <option value="freq" data-i18n="studio.eq.glockenstuhl">Glockenstuhl</option>
         </select>
@@ -3356,11 +3356,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <option value="bass" data-i18n="studio.ghetto.bass">Bass +</option>
             <option value="hoehen" data-i18n="studio.ghetto.hoehen">Höhen +</option>
             <option value="stimme" data-i18n="studio.ghetto.stimme">Stimme frei</option>
-            <option value="nacht" data-i18n="studio.ghetto.nacht">Nacht (leise hören)</option>
+            <option value="nacht" data-i18n="studio.ghetto.nacht" title="Nimmt tiefe und hohe Frequenzen zurück – vor allem die tiefen dringen durch Wände und können die Nachbarn stören." data-i18n-title="studio.ghetto.nacht.titel">Nacht (Nachbarn schonen)</option>
           </optgroup>
         </select>
         <button id="studioref" title="Merkt den laufenden Titel als Klangvorbild. Die Startwerte „Wie der Referenztitel" gleichen dann jeden anderen Titel an dessen Frequenzprofil an." data-i18n-title="studio.ref.titel" data-i18n="studio.ref.knopf">Laufenden Titel als Referenz</button>
-        <button id="eqdeckel" class="pille" title="Alle Bänder bleiben unter der grauen Grenze des Titels — beim Einschalten, beim Ziehen und bei den Startwerten. MEGA BASS kommt als Aufsatz obendrauf und kennt die Grenze nicht — dafür gibt es die Lampe KAPPUNG" data-i18n-title="studio.deckel.titel" data-i18n="studio.deckel">Kein Übersteuern</button>
+        <button id="eqdeckel" class="pille" title="Alle Bänder bleiben unter der grauen Decke des Titels — beim Einschalten, beim Ziehen und bei den Startwerten. MEGA BASS kommt als Aufsatz obendrauf und kennt die Decke nicht — dafür gibt es die Lampe KAPPUNG" data-i18n-title="studio.deckel.titel" data-i18n="studio.deckel">Kein Überschreien</button>
       </div>
       <!-- EIN editierbares Diagramm statt Slider + Chart - "eine
            lebende Lehrbuchabbildung" (Caspar_D, 20.08.2026). Die roten
@@ -3448,7 +3448,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <span class="lampe" id="lpEcho"></span><b>ECHO</b>
         <span class="lampe" id="lpTempo"></span><b>TEMPO</b>
         <span class="lampe" id="lpBass"></span><b>MEGA BASS</b>
-        <span class="lampe" id="lpClip" title="Der Ton stößt oben an und wird gekappt. Nimm etwas zurück – EQ, Breite, Hall und Echo addieren sich." data-i18n-title="studio.clip.titel"></span><b data-i18n="studio.lampe.clip">KAPPUNG</b>
+        <span class="lampe" id="lpClip" title="Der Ton erreicht den Vollpegel und wird gekappt. Nimm etwas zurück – EQ, Breite, Hall und Echo addieren sich." data-i18n-title="studio.clip.titel"></span><b data-i18n="studio.lampe.clip">KAPPUNG</b>
       </div>
       <!-- Aufgeraeumt (Caspar_D, 23.08.2026): zwei Panels wie im Kompressor-Register -
            links Stereo und Raum, rechts Tempo und der Spassknopf. -->
@@ -3456,12 +3456,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <div class="fxpanel" id="fxraum">
           <div class="prokopf" data-i18n="studio.fx.stereo">Stereo und Raum</div>
           <label><span data-i18n="studio.fx.breite">Stereo-Breite</span> <input type="range" class="zustand" id="eqbreite" min="0" max="200" step="5" value="100" list="eqbreiteticks"
-            title="Mitte/Seite-Matrix: 0 % = mono, 100 % = wie aufgenommen, 200 % = Seiten verdoppelt" data-i18n-title="studio.breite.titel"><span id="eqbreitev">100 %</span>
+            title="Stereo-Breite: 0 % = mono (links und rechts gleich), 100 % = wie aufgenommen, 200 % = der Unterschied zwischen links und rechts verdoppelt" data-i18n-title="studio.breite.titel"><span id="eqbreitev">100 %</span>
             <small data-i18n="studio.fx.breite.skala">mono · original · doppelt</small></label>
           <datalist id="eqbreiteticks"><option value="0"><option value="50"><option value="100"><option value="150"><option value="200"></datalist>
-          <div class="fxpille"><button type="button" id="eqbreitevor" class="pille" title="Zwei Schulen: aus = Breite hinter dem Kompressor, als Klangentscheidung nach der Regelung — dann aber auch hinter dem Limiter, der sie nicht mehr fängt. An = Breite vor dem Kompressor: er sieht das fertige Stereobild und hält auch verdoppelte Seiten unter der Decke (so macht es das Mastering). Hall und Echo greifen in beiden Fällen hinter dem Kompressor ab." data-i18n-title="studio.breite.vor.titel" data-i18n="studio.breite.vor">vor dem Kompressor</button></div>
+          <div class="fxpille"><button type="button" id="eqbreitevor" class="pille" title="Zwei Schulen: aus = Breite hinter dem Kompressor, als Klangentscheidung nach der Regelung — dann aber auch hinter dem Limiter, der sie nicht mehr fängt. An = Breite vor dem Kompressor: er sieht das fertige Stereobild und hält auch verdoppelte Seiten unter dem Vollpegel (so macht es das Mastering, der letzte Arbeitsschritt im Tonstudio). Hall und Echo greifen in beiden Fällen hinter dem Kompressor ab." data-i18n-title="studio.breite.vor.titel" data-i18n="studio.breite.vor">vor dem Kompressor</button></div>
           <label><span data-i18n="studio.fx.hall">Hall (nur dazu)</span> <input type="range" id="eqhall" min="0" max="100" step="2" value="0" list="eqhallticks"
-            title="Faltungshall, 2 s Abklingzeit — Hall ENTFERNEN kann kein Equalizer" data-i18n-title="studio.hall.titel"><span id="eqhallv">aus</span>
+            title="Hall eines großen Raums, klingt 2 s nach — Hall ENTFERNEN kann kein Equalizer" data-i18n-title="studio.hall.titel"><span id="eqhallv">aus</span>
             <small data-i18n="studio.fx.hall.skala">trocken · halb nass</small></label>
           <datalist id="eqhallticks"><option value="0"><option value="25"><option value="50"><option value="75"><option value="100"></datalist>
           <label><span data-i18n="studio.fx.echo">Echo</span> <input type="range" id="eqecho" min="0" max="100" step="2" value="0" list="eqhallticks"
@@ -3474,12 +3474,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <div class="fxpanel" id="fxband">
           <div class="prokopf" data-i18n="studio.fx.tempo">Tempo</div>
           <label><span data-i18n="studio.fx.tempo">Tempo</span> <input type="range" class="zustand" id="eqtempo" min="50" max="200" step="5" value="100" list="eqtempoticks"
-            title="Wiedergabegeschwindigkeit — wirkt auch auf das, was die Analyser hören" data-i18n-title="studio.tempo.titel"><span id="eqtempov">100 %</span>
+            title="Wiedergabegeschwindigkeit — wirkt auch auf das, was die Messanzeigen hören" data-i18n-title="studio.tempo.titel"><span id="eqtempov">100 %</span>
             <small data-i18n="studio.fx.tempo.skala">halb · normal · doppelt</small></label>
           <datalist id="eqtempoticks"><option value="50"><option value="75"><option value="100"><option value="150"><option value="200"></datalist>
           <div class="fxpille" id="fxtempozelle">
             <button id="eqpitch" class="pille an" title="Bei Tempoänderung die Tonhöhe halten (aus = Chipmunk/Schleppe)" data-i18n-title="studio.pitch.titel" data-i18n="studio.pitch">Tonhöhe halten</button>
-            <span id="fxtempohinweis" class="fussnote" style="margin:0;display:none" data-i18n="studio.fx.tempo_hinweis">Tempo ≠ 100 % — wirkt auch auf Analyser und Karaoke-Takt.</span>
+            <span id="fxtempohinweis" class="fussnote" style="margin:0;display:none" data-i18n="studio.fx.tempo_hinweis">Tempo ≠ 100 % — wirkt auch auf die Messanzeigen und den Karaoke-Takt.</span>
           </div>
           <div class="prokopf fxkopf2" data-i18n="studio.fx.spass">Spaßknopf</div>
           <div class="fxmega"><button id="megabass" title="MEGA BASS — der Knopf vom Ghettoblaster" data-i18n-title="studio.megabass.titel">MEGA<br>BASS</button>
@@ -3537,18 +3537,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="messeinleitung" id="messeinleitung">
         <h5 data-i18n="mess.wozu.titel">Wozu sollte die Hörumgebung eingemessen werden?</h5>
         <div class="messwozu">
-        <p data-i18n="mess.wozu.1">Was aus den Lautsprechern kommt, weicht immer von dem ab, was der Rechner
-        losgeschickt hat. Zwischen Musikdatei und Ohr liegen der Lautsprecher, der Raum und
-        dein Platz darin. Ein Regler, den du um 6 dB hochziehst, kann am Ohr mit 2 dB
-        ankommen — oder mit 8, wenn eine stehende Welle mitmischt.</p>
-        <p data-i18n="mess.wozu.2">Diese Messung findet heraus, welche Anteile des akustischen Signals tatsächlich bei
-        dir ankommen. Dafür läuft ein (nervtötender) Ton über deine Lautsprecher, und das
-        Mikrofon, was du konfiguriert hast, hört zu. Das passiert einmal neutral in den
-        Standardeinstellungen und dann mit Variationen in den Einstellungen. Was beide Male
-        gleich ist, kürzt sich heraus; übrig bleibt die Wahrheit über deinen Hörplatz.</p>
-        <p data-i18n="mess.wozu.3">Der Ablauf führt durch verschiedene Schritte. Die Einstellungen nehme ich vor, du
-        bestimmst nur, wann es still genug ist und ohne Störungen möglich ist, zu messen. Kein
-        Schritt beginnt ungefragt, und jeder läßt sich wiederholen.</p>
+        <p data-i18n="mess.wozu.1">Was aus den Lautsprechern kommt, weicht immer von dem ab, was der Rechner losgeschickt hat. Zwischen Musikdatei und Ohr liegen der Lautsprecher, der Raum und dein Platz darin. Ein Regler, den du um 6 dB hochziehst, kann am Ohr mit 2 dB ankommen — oder mit 8, wenn eine stehende Welle mitmischt.</p>
+        <p data-i18n="mess.wozu.2">Diese Messung findet heraus, welche Anteile des akustischen Signals tatsächlich bei dir ankommen. Dafür läuft ein (nervtötender) Ton über deine Lautsprecher, und das Mikrofon, was du konfiguriert hast, hört zu. Das passiert einmal neutral in den Standardeinstellungen und dann mit Variationen in den Einstellungen. Was beide Male gleich ist, kürzt sich heraus; übrig bleibt die Wahrheit über deinen Hörplatz.</p>
+        <p data-i18n="mess.wozu.3">Der Ablauf führt durch verschiedene Schritte. Die Einstellungen nehme ich vor, du bestimmst nur, wann es still genug ist und ohne Störungen möglich ist, zu messen. Kein Schritt beginnt ungefragt, und jeder läßt sich wiederholen.</p>
         </div>
         <!-- STARTBEDINGUNGEN, LIVE (Caspar_D, 29.08.2026: "kannst du die
              systemlautstaerke abfragen vorher? / Auch darf kein EQ aktiv
@@ -3569,11 +3560,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
       <div class="messwerkzeug" id="messwerkzeug" hidden>
       <div class="messkopf">
-        <select id="messsignal" onchange="messDauerZeigen()" title="Womit gemessen wird. Der Sweep ist der Standard der Raumakustik: Er trägt seine Energie nacheinander statt gleichzeitig und ist deshalb auch in einem halligen Raum auswertbar." data-i18n-title="mess.signal">
+        <select id="messsignal" onchange="messDauerZeigen()" title="Womit gemessen wird. Der Sweep – ein Ton, der von tief nach hoch gleitet – ist das übliche Messsignal für Räume. Ausgewertet wird hier bisher nur, wie laut jede Frequenz ankommt; direkten Schall und Nachhall trennt das noch nicht." data-i18n-title="mess.signal">
           <option value="sweep" data-i18n="mess.signal.sweep">Sweep · 20 Hz – 20 kHz</option>
           <option value="rosa" data-i18n="mess.signal.rosa">Rosa Rauschen</option>
           <option value="weiss" data-i18n="mess.signal.weiss">Weißes Rauschen</option>
-          <option value="baender" data-i18n="mess.signal.band">Bandtöne · die acht EQ-Frequenzen</option>
+          <option value="baender" data-i18n="mess.signal.band">Ein Ton je Equalizer-Band · auf der Mitte jedes der acht Bänder</option>
         </select>
         <span class="messdauer" id="messdauer">4 s</span>
         <!-- WELCHES MIKROFON (Caspar_D, 27.08.2026: "welches mikro
@@ -3596,7 +3587,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <!-- Die Kette in Stufen durchfahren: zeigt, ab wann etwas
              auf dem Weg begrenzt. -->
         <button class="knopf" id="messpegelreihe" onclick="pegelReihe()"
-          title="Fährt die Lautstärke in Stufen durch und mißt jedesmal. Zeigt, ob die Kette linear bleibt oder ab einem Punkt zurückregelt." data-i18n-title="mess.rampe.titel" data-i18n="mess.rampe">Lautstärke durchfahren</button>
+          title="Fährt die Lautstärke in Stufen durch und misst jedes Mal. Zeigt, ob alles gleichmäßig mitwächst oder ab einem Punkt gebremst wird." data-i18n-title="mess.rampe.titel" data-i18n="mess.rampe">Lautstärke durchfahren</button>
         <button class="knopf messabbruch" id="messabbruch" onclick="messAbbrechen()" hidden
           title="Bricht die laufende Messung ab. Ein Geräusch im Raum verdirbt sie ohnehin." data-i18n-title="mess.abbrechen.titel" data-i18n="mess.abbrechen">Abbrechen</button>
         <button class="knopf" id="messleeren" onclick="messReiheLeeren()"
@@ -3715,11 +3706,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
           <h5>Was dabei herauskommt</h5>
           <p>Ein Mikrofon nimmt immer das Produkt aus vier Dingen auf: Signal,
             Lautsprecher, Raum und Mikrofon. Die lassen sich ohne Meßmikrofon nicht
-            trennen — <b>eine einzelne Messung ist deshalb keine Eichung</b>, sondern
+            trennen — <b>eine einzelne Messung zeigt deshalb nicht den Raum allein</b>, sondern
             ein Abbild dieser ganzen Kette.</p>
           <p>In der <b>Differenz</b> zweier Durchgänge kürzen sie sich heraus: Mikrofon,
             Lautsprecher und Raum sind in beiden dieselben. Übrig bleibt, was das
-            Tonstudio an deinem Hörplatz wirklich bewirkt — Raummoden und Reflexionen
+            Tonstudio an deinem Hörplatz wirklich bewirkt — stehende Wellen und Reflexionen
             inbegriffen.</p>
           <p class="leise">Der Prüfton geht über den normalen Ausgang, auch über AirPlay.</p>
         </div>
@@ -3731,27 +3722,28 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <div class="hgkoerper" hidden>
           <div>
             <h6>Welches Signal wofür</h6>
-            <p><b>Sweep.</b> Ein Ton, der von 20 Hz bis 20 kHz hochläuft. Er trägt seine Energie
-            <i>nacheinander</i> durch die Bänder. Weil zu jedem Zeitpunkt nur eine Frequenz im Raum
-            steht, lassen sich Direktschall und Nachhall zeitlich trennen — deshalb ist er der
-            Standard der Raumakustik. Der Preis: jedes Terzband bekommt nur einen Bruchteil der
+            <p><b>Sweep.</b> Ein Ton, der von 20 Hz bis 20 kHz hochgleitet. Er trägt seine Energie
+            <i>nacheinander</i> durch die Frequenzen. Weil zu jedem Zeitpunkt nur eine Frequenz im Raum
+            steht, ließen sich damit direkter Schall und Nachhall zeitlich trennen — deshalb ist er das
+            übliche Messsignal für Räume; ausgewertet wird hier bisher aber nur, wie laut jede Frequenz ankommt.
+            Der Preis: jedes der schmalen Messbänder (Terzband) bekommt nur einen Bruchteil der
             Meßzeit, bei vier Sekunden gut hundert Millisekunden. Wenig Zeit heißt wenig Mittelung,
             und die Kurve zappelt.</p>
-            <p><b>Rosa Rauschen.</b> Regt alle Bänder <i>zugleich</i> an, mit gleicher Energie je
-            Oktave. Jedes Band bekommt die volle Meßzeit, die Kurve wird glatt. Dafür vermischen
+            <p><b>Rosa Rauschen.</b> Regt alle Frequenzen <i>zugleich</i> an, mit gleicher Energie je
+            Oktave. Jede Frequenz bekommt die volle Meßzeit, die Kurve wird glatt. Dafür vermischen
             sich Direktschall und Nachhall untrennbar. Für einen ruhigen Frequenzgang das bessere
             Signal, für Raumakustik das schlechtere.</p>
             <p><b>Weißes Rauschen.</b> Gleiche Energie je <i>Hertz</i> statt je Oktave — klingt
             deshalb hell und belastet die Hochtöner. Für Messungen an Geräten sinnvoll, im Raum
             selten.</p>
-            <p><b>Bandtöne.</b> Auf jeder der acht Equalizer-Frequenzen steht nacheinander ein
+            <p><b>Bandtöne.</b> Auf der Mitte jedes der acht Equalizer-Bänder steht nacheinander ein
             reiner Ton. Damit läßt sich Band für Band ablesen, was ein einzelner Regler bewirkt —
             ohne daß die Nachbarn hineinreden.</p>
 
             <h6>Warum zwei Durchgänge</h6>
             <p>Ein Mikrofon nimmt immer das Produkt aus vier Dingen auf: Signal, Lautsprecher, Raum
-            und Mikrofon. Die lassen sich ohne Referenz nicht trennen, und ein Mikrofon ohne
-            bekannte Kennlinie macht daraus keine Eichung. In der <b>Differenz</b> zweier Durchgänge
+            und Mikrofon. Die lassen sich ohne Referenz nicht trennen, und ein Mikrofon, dessen eigener
+            Frequenzgang unbekannt ist, kann sie nicht herausrechnen. In der <b>Differenz</b> zweier Durchgänge
             kürzen sich Mikrofon, Lautsprecher und Raum aber heraus — sie sind in beiden Messungen
             dieselben. Übrig bleibt, was das Tonstudio wirklich bewirkt. Alles, was dieses Fenster
             berechnet, kommt aus solchen Differenzen.</p>
@@ -3760,10 +3752,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <p><b>Störabstand.</b> Wieviel lauter das Signal war als das Grundgeräusch. Unter 20 dB
             ist eine Differenz mehr Zufall als Messung. „Raum abhören" hilft, eine ruhigere Stelle
             zu finden.</p>
-            <p><b>Ausbeute.</b> Die Steigung der Ausgleichsgeraden durch den Ursprung: gemessen =
-            k · eingestellt. Bei 100 % kommt an, was am Regler steht. Durch den Ursprung, weil
-            „nichts eingestellt" auch „nichts gemessen" heißen muß.</p>
-            <p><b>Bestimmtheitsmaß.</b> Trennt zwei Ursachen: Ist die Abweichung überall gleich
+            <p><b>Wirkungsgrad.</b> Welcher Anteil einer Equalizer-Einstellung am Hörplatz tatsächlich
+            ankommt: bei 100 % genau das Eingestellte, bei 50 % die Hälfte. Eingestellt null heißt
+            dabei immer auch gemessen null.</p>
+            <p><b>Gleichmäßigkeit</b> (Bestimmtheitsmaß). Trennt zwei Ursachen: Ist die Abweichung überall gleich
             groß, dämpft der Lautsprecher gleichmäßig. Bricht sie in einzelnen Bändern aus, ist es
             der Raum.</p>
             <p><b>Laufzeit.</b> Wie lange der Ton vom Rechner bis zum Hörplatz braucht. Über AirPlay
@@ -3772,35 +3764,35 @@ h3 .infoknopf .ico{width:14px;height:14px}
           </div>
           <div>
             <h6>Was Toningenieure messen</h6>
-            <p>Fast alles davon kommt aus einer einzigen Größe: der <b>Impulsantwort</b>. Man
-            schickt einen logarithmischen Sweep, nimmt ihn auf und faltet die Aufnahme mit dem
-            zeitinversen Sweep. Heraus fällt, was der Raum aus einem einzigen Knall machen würde.
+            <p>Fast alles davon kommt aus einer einzigen Größe: der <b>Antwort des Raums auf einen
+            einzelnen Knall</b> (Impulsantwort). Man schickt einen Sweep, nimmt ihn auf und rechnet den
+            gesendeten Ton aus der Aufnahme wieder heraus. Übrig bleibt, was der Raum aus einem einzigen Knall machen würde.
             Daraus folgen dann:</p>
             <ul>
               <li><b>Frequenzgang</b> — was dieses Fenster schon zeigt.</li>
-              <li><b>Nachhallzeit RT60</b>, je Terzband: wie lange der Raum nachklingt.</li>
-              <li><b>Klarheit C50/C80</b> — Verhältnis von frühem zu spätem Schall. Sagt, ob Sprache
+              <li><b>Nachhallzeit</b> (RT60), für jeden schmalen Frequenzbereich: wie lange der Raum nachklingt.</li>
+              <li><b>Klarheit</b> – wie viel Schall früh ankommt im Verhältnis zum Nachhall. Sagt, ob Sprache
               verständlich und Musik durchhörbar bleibt.</li>
               <li><b>Erstreflexionen</b> — wann die erste Wand zurückschlägt und wie stark.</li>
-              <li><b>Klirrfaktor</b> — beim log-Sweep trennen sich die Verzerrungsprodukte zeitlich
-              von der Hauptantwort und erscheinen als eigene Impulse davor.</li>
+              <li><b>Verzerrung</b> (Klirrfaktor) — beim Sweep kommen die Verzerrungen zeitlich getrennt vom
+              eigentlichen Ton an und lassen sich einzeln ablesen.</li>
             </ul>
-            <p class="messhgnoch">Die Zutaten dafür liegen hier bereits vor: der log-Sweep, die rohe
-            Aufnahme und die Kenntnis des gesendeten Signals. Es fehlt die Entfaltung — eine
-            FFT-Division. <b>Noch nicht gebaut.</b></p>
+            <p class="messhgnoch">Die Zutaten dafür liegen hier bereits vor: der Sweep, die rohe
+            Aufnahme und die Kenntnis des gesendeten Signals. Es fehlt nur noch der Rechenschritt, der aus
+            der Aufnahme die Antwort des Raums auf einen einzelnen Knall macht. <b>Noch nicht gebaut.</b></p>
 
             <h6>Stehende Welle und Auslöschung</h6>
             <p>Beide entstehen daraus, daß Schall von den Wänden zurückkommt und sich mit dem
             direkten überlagert. Beide betreffen einzelne Frequenzen. Und sie verlangen genau
             entgegengesetztes Handeln — deshalb lohnt es, sie auseinanderzuhalten.</p>
-            <p>Eine <b>stehende Welle</b> macht eine Frequenz an deinem Platz <i>lauter</i>.
-            Direktschall und Reflexion addieren sich; der Baß dröhnt. Sie ist nichts, was man
+            <p>Eine <b>stehende Welle</b> macht eine Frequenz je nach Sitzplatz <i>lauter</i> oder leiser.
+            Wo sie lauter macht, addieren sich Direktschall und Reflexion; der Baß dröhnt. Sie ist nichts, was man
             übertönen müßte, um sie zu hören — man hört sie zu deutlich. Sie gehört
             <b>gedämpft</b>, und das funktioniert: ein Regler nach unten nimmt die zusätzliche
             Energie wieder weg.</p>
-            <p>Eine <b>Auslöschung</b> ist der umgekehrte Fall: Direktschall und Reflexion
-            treffen gegenphasig ein und heben sich auf, die Frequenz fehlt. Sie läßt sich
-            <b>nicht</b> übertönen. Was man an Pegel nachlegt, wird genauso ausgelöscht — man
+            <p>Eine <b>Auslöschung</b> ist der umgekehrte Fall: ein Loch entsteht dort, wo die stehende Welle
+            leiser macht, oder wenn der Schall von der Wand so versetzt ankommt, dass er den direkten auslöscht —
+            die Frequenz fehlt. Sie läßt sich <b>nicht</b> übertönen. Was man an Pegel nachlegt, wird genauso ausgelöscht — man
             leuchtet gegen den eigenen Schatten an. Dagegen hilft, den Lautsprecher oder den
             Sitzplatz zu verrücken, nicht der Equalizer.</p>
             <p class="messhgnoch">Im Diagramm sehen beide gleich aus: ein Ausschlag nach oben
@@ -3814,30 +3806,30 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <p><b>Überhöhungen darf man dämpfen.</b> Eine stehende Welle lädt Energie in ein Band;
             ein Regler nimmt sie wieder weg. Das funktioniert und ist Standardpraxis.</p>
             <p><b>Einbrüche darf man nicht auffüllen.</b> Ein Loch im Frequenzgang kommt meist von
-            einer Auslöschung: Direktschall und Reflexion treffen gegenphasig ein und heben sich
-            auf. Mehr Pegel wird genauso ausgelöscht — man verheizt Leistung und Kopfraum, ohne daß
+            einer Auslöschung: der Schall von der Wand kommt so versetzt an, dass er den direkten auslöscht.
+            Mehr Pegel wird genauso ausgelöscht — man verheizt Leistung und Spielraum, ohne daß
             am Hörplatz etwas ankommt. Dagegen hilft ein anderer Platz, kein Regler.</p>
-            <p><b>Fehlende Ausbeute darf man nur hochrechnen, wenn nichts begrenzt.</b> Regelt der
+            <p><b>Einen zu kleinen Wirkungsgrad darf man nur hochrechnen, wenn nichts begrenzt.</b> Regelt der
             Lautsprecher oben zurück, macht mehr Pegel es schlimmer statt besser. Deshalb ist
             „Lautstärke durchfahren" die Bedingung dafür und nicht die Zierde: erst wenn die
             Kennlinie gerade bleibt, ist eine Hochrechnung ehrlich.</p>
             <p>Was hier <b>nicht</b> gerechnet wird, ist eine Korrektur des absoluten Frequenzgangs.
-            Die bräuchte ein Mikrofon mit bekannter Kennlinie — sonst hebt man Bässe an, um ein
+            Die bräuchte ein Mikrofon mit bekanntem Frequenzgang — sonst hebt man Bässe an, um ein
             Loch auszugleichen, das im Mikrofon sitzt.</p>
 
             <h6>Warum das Mikrofon zählt</h6>
             <p>Die Auswahl ist nach Eignung für <i>Raummessung</i> sortiert, nicht nach Eignung für
-            Sprache. Ein USB-Kondensator hört unten weit hinunter und arbeitet ohne
-            Nachbearbeitung. Ein eingebautes Array rechnet Beamforming und Störunterdrückung mit,
-            die sich nicht abschalten lassen. Ein Webcam-Mikrofon ist auf Sprache getrimmt:
-            Hochpaß, Kompressor, Rauschfilter, alles fest verdrahtet. Virtuelle Geräte hören gar
+            Sprache. Ein Studiomikrofon am USB-Anschluss hört tiefe Töne gut und verändert nichts.
+            Eingebaute Mikrofone richten sich auf den Sprecher aus und unterdrücken Geräusche – abschalten lässt
+            sich das nicht. Ein Webcam-Mikrofon ist auf Sprache getrimmt: es schneidet den Bass ab, gleicht die
+            Lautstärke an und filtert Rauschen, alles fest eingebaut. Virtuelle Geräte hören gar
             keinen Raum, sondern schleifen Ton im Rechner durch.</p>
-            <p>Für die Differenz kürzt sich die Kennlinie zwar heraus — aber nur dort, wo das
+            <p>Für die Differenz kürzt sich der Frequenzgang des Mikrofons zwar heraus — aber nur dort, wo das
             Mikrofon überhaupt etwas hört. Wo es taub ist, steht in beiden Messungen Rauschen, und
             die Differenz zweier Rauschwerte ist Zufall. Deshalb zählt der Tiefgang.</p>
             <p class="messhgnoch">Mehrere Mikrofone <b>gleichzeitig</b> aufzunehmen wäre möglich und
-            nützlich — weniger zum Mitteln (die Kammfiltermuster verschiedener Orte addieren sich
-            zu neuem Unsinn) als zur <b>Unterscheidung</b>: Zeigen drei Mikrofone an drei Orten
+            nützlich — weniger zum Mitteln (die Muster aus Löchern und Spitzen sind an jedem Ort andere und
+            ergeben zusammen neuen Unsinn) als zur <b>Unterscheidung</b>: Zeigen drei Mikrofone an drei Orten
             dasselbe Loch, ist es der Lautsprecher. Zeigen sie drei verschiedene, ist es der Raum.
             Das kann eine Einzelmessung grundsätzlich nicht trennen. <b>Noch nicht gebaut.</b></p>
           </div>
@@ -3851,7 +3843,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
            Sigmoidal, EIN Tone-Regler - die Bedienung von HAECKEL). Der
            Vergleich beider Bilder (Diptychon) nur im Gradationsmodus. -->
       <div id="kompmoduszeile">
-        <select id="kompmodus" title="Kompressor: die klassische Knickkurve (Schwelle, Verhältnis, Aufholen, Limiter). Gradationskompressor: Leise-/Lautpunkt (Schwarz-/Weißpunkt des Grafikers), Gamma oder Sigmoidal mit einem Regler — wie ein Grafikprogramm am Ton. Es gilt immer genau einer; die Werte des anderen bleiben gemerkt." data-i18n-title="komp.modus">
+        <select id="kompmodus" title="Kompressor: die klassische Knickkurve (Schwelle, Verhältnis, Anheben, Limiter). Gradationskompressor: Leise-/Lautpunkt (Schwarz-/Weißpunkt des Grafikers), Gamma oder Sigmoidal mit einem Regler — wie ein Grafikprogramm am Ton. Es gilt immer genau einer; die Werte des anderen bleiben gemerkt." data-i18n-title="komp.modus">
           <option value="klassisch" data-i18n="komp.kompressor">Kompressor</option>
           <option value="gradation" data-i18n="komp.gradation">Gradationskompressor</option>
         </select>
@@ -3880,23 +3872,23 @@ h3 .infoknopf .ico{width:14px;height:14px}
           <div id="gradseite">
       <div id="prokomp">
         <div class="prokopf"><span class="nurklassisch" data-i18n="komp.kompressor">Kompressor</span><span class="nurgradation" data-i18n="komp.gedaechtnis">Gedächtnis</span>
-          <button id="komplimit" class="pille nurklassisch" title="Limiter: Schwelle −3 dB, 20:1, Attack 3 ms. Der Regler hält dann die Spitzen (nicht das Mittel), schaut einen Block voraus und kappt als letzte Sicherheit hart am Dach — Sicherheitsnetz statt Klangfarbe" data-i18n-title="komp.limiter.titel">Limiter</button>
+          <button id="komplimit" class="pille nurklassisch" title="Limiter: Schwelle −3 dB, 20:1. Der Regler hält dann die Spitzen (nicht das Mittel): Spitzen fängt er sofort, die Lautheit mit 3 ms Anlauf (Attack). Er schaut einen Block voraus und kappt als letzte Sicherheit hart an der Oberkante der Kennlinie — Sicherheitsnetz statt Klangfarbe" data-i18n-title="komp.limiter.titel">Limiter</button>
           <span id="kompgr" title="Wegregelung — was der Kompressor gerade wegnimmt (−) oder dazugibt (+)" data-i18n-title="komp.gr.titel"></span>
         </div>
         <div id="kompregler">
-          <label class="nurklassisch" title="Schwelle: ab diesem Eingangspegel knickt die Kennlinie — darunter passiert nichts" data-i18n-title="komp.schwelle.titel"><span data-i18n="komp.schwelle">Schwelle</span> <input type="range" id="kompthr" min="-60" max="0" step="1" value="0" list="kompthrticks">
+          <label class="nurklassisch" title="Schwelle: ab dieser Lautheit am Eingang knickt die Kennlinie — darunter bleibt alles unverändert" data-i18n-title="komp.schwelle.titel"><span data-i18n="komp.schwelle">Schwelle</span> <input type="range" id="kompthr" min="-60" max="0" step="1" value="0" list="kompthrticks">
             <span id="kompthrv">aus</span></label>
           <datalist id="kompthrticks"><option value="-60"><option value="-40"><option value="-20"><option value="0"></datalist>
           <label class="nurklassisch" title="Verhältnis: Steigung über der Schwelle — bei 4:1 wird aus 4 dB mehr Eingang 1 dB mehr Ausgang" data-i18n-title="komp.verhaeltnis.titel"><span data-i18n="komp.verhaeltnis">Verhältnis</span> <input type="range" id="kompratio" min="1" max="20" step="0.5" value="1" list="kompratioticks">
             <span id="kompratiov">1:1</span></label>
           <datalist id="kompratioticks"><option value="1"><option value="4"><option value="10"><option value="20"></datalist>
-          <label title="Attack: Adaptionszeit der Belichtungsautomatik nach oben — wie schnell der Kompressor zupackt (im Limiter-Fall sofort)" data-i18n-title="komp.attack.titel"><span data-i18n="komp.attack">Attack</span> <input type="range" id="kompatt" min="1" max="300" step="1" value="10" list="kompattticks">
+          <label title="Attack: wie schnell der Kompressor zupackt, wenn es lauter wird — wie eine Belichtungsautomatik, die sich an helleres Licht gewöhnt (im Limiter-Fall: Spitzen sofort, die Lautheit mit 3 ms Anlauf)" data-i18n-title="komp.attack.titel"><span data-i18n="komp.attack">Attack</span> <input type="range" id="kompatt" min="1" max="300" step="1" value="10" list="kompattticks">
             <span id="kompattv">10 ms</span></label>
           <datalist id="kompattticks"><option value="1"><option value="10"><option value="100"><option value="300"></datalist>
-          <label title="Release: Adaptionszeit nach unten — wie schnell er wieder loslässt" data-i18n-title="komp.release.titel"><span data-i18n="komp.release">Release</span> <input type="range" id="komprel" min="50" max="1000" step="10" value="250" list="komprelticks">
+          <label title="Release: wie schnell er wieder loslässt, wenn es leiser wird — die Belichtungsautomatik gewöhnt sich wieder ans Dunkel" data-i18n-title="komp.release.titel"><span data-i18n="komp.release">Release</span> <input type="range" id="komprel" min="50" max="1000" step="10" value="250" list="komprelticks">
             <span id="komprelv">250 ms</span></label>
           <datalist id="komprelticks"><option value="50"><option value="250"><option value="500"><option value="1000"></datalist>
-          <label class="nurklassisch" title="Aufholen: hebt die ganze Kennlinie — bis ans Dach bei 0 dB; was darüber läge, wird flach" data-i18n-title="komp.aufholen.titel"><span data-i18n="komp.aufholen">Aufholen</span> <input type="range" id="kompauf" min="0" max="12" step="0.5" value="0" list="kompaufticks">
+          <label class="nurklassisch" title="Anheben: gleicht aus, was der Kompressor an Lautstärke weggenommen hat – hebt alles gleich viel an, bis zum Vollpegel bei 0 dB; was darüber läge, wird flach." data-i18n-title="komp.aufholen.titel"><span data-i18n="komp.aufholen">Anheben</span> <input type="range" id="kompauf" min="0" max="12" step="0.5" value="0" list="kompaufticks">
             <span id="kompaufv">0 dB</span></label>
           <datalist id="kompaufticks"><option value="0"><option value="3"><option value="6"><option value="12"></datalist>
         </div>
@@ -5311,10 +5303,10 @@ async function kerbeZeigen(){
   const lied = typeof song === 'function' ? song(aktuellId) : null;
   if (lied && lied.fremd) h = '<span>fremder Titel — kein Scan (nur eigene Titel liegen als Datei vor)</span>';
   else if (liste === undefined){
-    h = archivEingefroren() ? '<span>Archiv eingefroren — kein Scan</span>'
+    h = archivEingefroren() ? '<span>Eingefrorene Kopie — hier wird nicht gescannt; neue Ergebnisse kommen mit einem neuen Export vom Rechner, auf dem KlangTresor läuft</span>'
       : kerbeZeigen.laeuft
       ? `<span>Scan läuft … ${kerbeZeigen.laeuft}</span>`
-      : `<button type="button" class="pille" id="stoerscan" title="Rechnet erst diesen Titel, dann alle anderen (bin/stoerfrequenz.js, ~5–10 s je Titel, im Hintergrund)">Scan dieses und aller anderen Titel starten</button>`;
+      : `<button type="button" class="pille" id="stoerscan" title="Rechnet erst diesen Titel, dann alle anderen (~5–10 s je Titel, im Hintergrund)">Scan dieses und aller anderen Titel starten</button>`;
   } else if (!liste.length) h = '<span>keine gefunden — sauber</span>';
   else h = liste.map(c => `<span class="pille" style="cursor:default" title="${esc(c.art)} · ${c.hz} Hz (${esc(c.note)} ${c.cent >= 0 ? '+' : ''}${c.cent} Cent) · ${c.db} dB über der Nachbarschaft · in ${Math.round(c.dauer * 100)} % des Titels · ${c.breiteHz} Hz breit${c.linien ? ` · ${c.linien} Linien ${hzText(c.vonHz)}–${hzText(c.bisHz)} (ein Band, die stärkste vertritt es)` : ''} — Griffe am Tick im Bild: ♪ allein hören, ⊘ Kerbfilter">${hzText(c.hz)} · ${esc(c.art).replace('Stoerton', 'Störton')}${c.linien ? ` · ${c.linien} Linien` : ''}</span>`).join('')
     + (eqKerbe ? `<span class="kerbewert" title="Der Kerbfilter ist ein Punkt im Bild wie die Bänder: senkrecht ziehen = Tiefe, seitlich = Frequenz, Scrollen = Güte, Doppelklick löst ihn">Kerbfilter ${hzText(eqKerbe.hz)} · ${String(eqKerbe.db).replace('.', ',')} dB · Q ${eqKerbe.q}</span>` : '');
@@ -6194,7 +6186,7 @@ function studioFluechtig(){
   const teile = [];
   if (eqAus) teile.push('Original (A/B)');
   if (eqSoloWirkmenge()) teile.push('Solo');
-  if (!anEq) teile.push('Equalizer stumm'); if (!anFx) teile.push('Effekte stumm'); if (!anKomp) teile.push('Kompressor stumm');
+  if (!anEq) teile.push('Equalizer aus'); if (!anFx) teile.push('Effekte aus'); if (!anKomp) teile.push('Kompressor aus');
   if (megaBassAn) teile.push('MEGA BASS');
   if (eqStoerHoeren) teile.push('Störton allein (' + Math.round(eqStoerHoeren) + ' Hz)');
   if (Math.abs((audio.playbackRate || 1) - 1) > 0.001) teile.push('Tempo ' + Math.round(audio.playbackRate * 100) + ' %');
@@ -6990,7 +6982,8 @@ function studioZeichnen(){
   const spielraum = $('eqspielraum');
   if (spielraum){
     if (decke){
-      const namen = ['sub', 'bass', 'tiefmitten', 'mitten', 'hochmitten', 'praesenz', 'brillanz', 'hoehen'].map(k => window.t('studio.band.' + k));
+      /* die Baender mit ihrer Frequenz wie an den Reglern, nicht mit Namen (Caspar_D 17.10.2026: die Namen lagen an falschen Frequenzen) */
+      const namen = EQ_FREQ_STD.map(f => f >= 1000 ? dezimal((f / 1000).toFixed(1)) + ' kHz' : Math.round(f) + ' Hz');
       let eng = 0, weit = 0;
       decke.forEach((d, i) => { if (d < decke[eng]) eng = i; if (d > decke[weit]) weit = i; });
       const db = (v) => (v >= 0 ? '+' : '') + dezimal(v.toFixed(1)) + ' dB';
@@ -23747,7 +23740,7 @@ async function messLauf(neutral, opt){
        seinen eigenen Fehler. */
     const signalPruef = messSignalPruefen(signal, sr, art);
     if (!signalPruef.ok){
-      sagen('Signal fällt durch die Prüfung: ' + signalPruef.text + ' — nicht gesendet.');
+      sagen('Signal fällt durch die Prüfung: ' + signalPruef.text + ' — nicht gesendet. Nochmal drücken; kommt die Meldung wieder, starte KlangTresor neu.');
       return { ok: false, grund: 'signal', signalPruef };
     }
     const ganz = new Float32Array(Math.round(sr * (AUF + 1)));
@@ -23918,7 +23911,7 @@ async function messLauf(neutral, opt){
       knoten.disconnect(); quelle.disconnect();
       try { schau.disconnect(); } catch (e5) {}
       messLiveEnde(); URL.revokeObjectURL(url);
-      sagen(messStoerung ? 'abgebrochen: ' + messStoerung : 'abgebrochen — nichts gemessen');
+      sagen(messStoerung ? 'abgebrochen: ' + messStoerung : 'abgebrochen — nichts gemessen; starte die Messung neu, sobald es still ist');
       return messStoerung
         ? { ok: false, grund: 'einstreuung', text: messStoerung }
         : { ok: false, grund: 'abbruch' };
@@ -24226,16 +24219,16 @@ async function messLauf(neutral, opt){
           + (messErgebnis.restrauschen !== undefined && messErgebnis.restrauschen !== null
               ? ', Restrauschen ' + messErgebnis.restrauschen.toFixed(2).replace('.', ',') + ' dB' : '')
         : '')
-      + ' · Mikrofon ' + kopfraum.toFixed(0) + ' dB unter Vollaussteuerung'
-      + (abstandGilt < 20 ? ' — zu leise für eine belastbare Messung' : '')
+      + ' · Mikrofon ' + kopfraum.toFixed(0) + ' dB Spielraum bis zum Vollpegel'
+      + (abstandGilt < 20 ? ' — zu leise für eine belastbare Messung: Mikrofon näher zum Lautsprecher oder seinen Pegelregler höher, dann wiederholen' : '')
       + (anteilVoll > 0.0001
-          ? ' — ACHTUNG: das Mikrofon übersteuert, die Messung ist nicht verwertbar'
-          : (kopfraum < 6 ? ' — knapp, das Mikrofon ist nahe an seiner Grenze' : '')));
+          ? ' — ACHTUNG: das Mikrofon überschreit, seine Aufnahme erreicht den Vollpegel; die Messung ist nicht verwertbar. Pegelregler am Mikrofon zurück oder Mikrofon weiter weg, dann wiederholen'
+          : (kopfraum < 6 ? ' — knapp, das Mikrofon hat kaum noch Spielraum' : '')));
     return { ok: true, kurve, lang, ruheKurve, abstand: abstandGilt, breit: abstand,
       laufzeit: laufzeitMs, diagnose: messErgebnis.diagnose,
       sr, genutzt, mikro: mikroName, signalPruef };
   } catch (e) {
-    sagen('ging nicht: ' + (e && e.message ? e.message : e));
+    sagen('ging nicht: ' + (e && e.message ? e.message : e) + ' — meist fehlt der Mikrofonzugriff: im Browser erlauben und nochmal drücken.');
     return { ok: false, grund: (e && e.message ? e.message : String(e)) };
   } finally {
     if (neutral && merkEqAus !== null){
@@ -24633,7 +24626,7 @@ async function raumAbhoeren(){
     raumCtx.__bild = requestAnimationFrame(male);
     sagen('höre den Raum ab — Mikrofon bewegen, um eine ruhige Stelle zu finden. Nochmal drücken beendet.');
   } catch (e){
-    sagen('ging nicht: ' + (e && e.message ? e.message : e));
+    sagen('ging nicht: ' + (e && e.message ? e.message : e) + ' — meist fehlt der Mikrofonzugriff: im Browser erlauben und nochmal drücken.');
     raumAus();
   }
 }
@@ -24847,7 +24840,7 @@ const DOK_SIGNAL = {
   rosa:     { name: 'Rosa Rauschen',      farbe: '#ff6bf0', dauer: 13,
     erklaert: 'Gleiche Energie je Oktave — es klingt tiefenbetont, regt aber alle Frequenzen ordentlich an. Der Klassiker der Raummessung.' },
   blau:     { name: 'Blaues Rauschen',    farbe: '#5b8cff', dauer: 13,
-    erklaert: 'Das Gegenteil von rosa: die Energie sitzt in den Höhen. Unterhalb von etwa 150 Hz regt es kaum an — die Raumkurve ist dort mit Vorsicht zu lesen. Und es trägt bauartbedingt rund 6 dB weniger Energie als die anderen Signale (seine Spitzen erlauben nicht mehr, ohne zu übersteuern) — der Störabstand fällt entsprechend kleiner aus. Genau dafür steht es im Vergleich: als Gegenprobe.' },
+    erklaert: 'Das Gegenteil von rosa: die Energie sitzt in den Höhen. Unterhalb von etwa 150 Hz regt es kaum an — die Raumkurve ist dort mit Vorsicht zu lesen. Und es trägt bauartbedingt rund 6 dB weniger Energie als die anderen Signale (seine Spitzen erlauben nicht mehr, ohne zu überschreien) — der Störabstand fällt entsprechend kleiner aus. Genau dafür steht es im Vergleich: als Gegenprobe.' },
   sweep:    { name: 'Sweep · logarithmisch', farbe: '#3fd4e8', dauer: 13,
     erklaert: 'Ein Ton, der von 20 Hz bis 20 kHz hochläuft, jede Oktave gleich lang. Der Standard der Raumakustik: seine ganze Energie steckt zu jedem Zeitpunkt in einer Frequenz.' },
   sweeplin: { name: 'Sweep · linear',     farbe: '#ffa03d', dauer: 13,
@@ -25193,7 +25186,7 @@ async function dokKopfZeigen(){
   z.push('<p>' + new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' })
     + ' · vollständiger Messgang · App-Pegel: <b>' + dok.messPegel + ' %</b> (stellt die App selbst und hebt an, bis der Piep trägt)'
     + (dok.versatz !== null ? ' · geeichter Versatz: <b>' + dok.versatz + ' ms</b>'
-        + (dok.eich ? ' (Spanne ' + dok.eich.spanne + ' ms, ' + dok.eich.ueberRuhe + ' dB über Ruhe)' : '')
+        + (dok.eich ? ' (Laufzeit streut um ' + dok.eich.spanne + ' ms, ' + dok.eich.ueberRuhe + ' dB über Ruhe)' : '')
       : ' · Versatz: folgt in Schritt 3') + '</p>');
   z.push('<p>Mikrofon: ' + (mikros.length
       ? wahl('dokmikro', mikros, dok.mikroId, null)
@@ -25207,13 +25200,13 @@ async function dokKopfZeigen(){
 
   z.push('<div class="dokampeln">');
   if (sys && sys.verfuegbar){
-    if (sys.stumm) z.push('<p class="dokwarn">✗ Systemausgabe stummgeschaltet — so kommt kein Ton heraus.</p>');
-    else if (sys.prozent >= 99) z.push('<p>● Systemlautstärke voll (' + sys.prozent + ' %) — die App-Prozente sind eine absolute Skala.</p>');
+    if (sys.stumm) z.push('<p class="dokwarn">✗ Systemausgabe stummgeschaltet — so kommt kein Ton heraus. Schalte den Ton am Rechner wieder ein.</p>');
+    else if (sys.prozent >= 99) z.push('<p>● Systemlautstärke voll (' + sys.prozent + ' %) — die Prozente in der App bedeuten immer dasselbe.</p>');
     else z.push('<p class="dokwarn">⚠ Systemlautstärke ' + sys.prozent + ' % — für vergleichbare Messungen voll aufdrehen; leise macht es danach allein die App.</p>');
   } else z.push('<p>· Systemlautstärke nicht abfragbar — bitte selbst voll aufdrehen.</p>');
   z.push(stoerer.length
     ? '<p class="dokwarn">⚠ Frequenzverbiegend aktiv: <b>' + stoerer.join(', ') + '</b> — die Messläufe umgehen das Tonstudio ohnehin; fürs Musikhören danach gilt die Einstellung weiter.</p>'
-    : '<p>● Wiedergabekette neutral — kein EQ, kein Kerbfilter verbiegt den Frequenzgang.</p>');
+    : '<p>● Wiedergabekette neutral — kein EQ, keine Kerbe gegen Störfrequenzen verbiegt den Frequenzgang.</p>');
   z.push(dok.mikroFrei
     ? '<p>● Mikrofonzugriff gewährt.</p>'
     : '<p>· Mikrofonzugriff noch nicht erteilt — ohne ihn bleiben die Gerätenamen leer und keine Messung kann hören.'
@@ -25511,9 +25504,9 @@ function dokPiepFehlerText(r){
   if (r && r.grund === 'signal' && r.signalPruef)
     return '<p class="dokwarn"><b>Das erzeugte Signal fiel durch die Prüfung</b> — '
       + r.signalPruef.text + '. Es wurde nicht gesendet; das ist ein Fehler in der Tonerzeugung, '
-      + 'keine Raumfrage.</p>';
+      + 'keine Raumfrage. Wiederhole den Schritt; kommt die Meldung wieder, starte KlangTresor neu.</p>';
   if (r && r.grund !== 'stumm')
-    return '<p class="dokwarn">Ging nicht: ' + (r && r.grund || '?') + '</p>';
+    return '<p class="dokwarn">Ging nicht: ' + (r && r.grund || '?') + ' — wiederhole den Schritt; hilft das nicht, Mikrofonzugriff und Lautsprecher im Kopf (Schritt 0) prüfen.</p>';
   /* "stumm" hat zwei Gesichter: gar nichts - oder zu leise fuer die
      Erkennung. Die Zahlen unterscheiden sie. */
   const ueber = typeof d.ueber_ruhe_dB === 'number' ? d.ueber_ruhe_dB : null;
@@ -25760,7 +25753,7 @@ function dokSpringen(i){
   dok.schritt = i;
   dokInhaltZeigen();
   dokSchritt(DOK_GANG[i]).catch(e => {
-    dokBlock('g' + i, '<p class="dokwarn">Schritt fehlgeschlagen: ' + ((e && e.message) || e) + '</p>');
+    dokBlock('g' + i, '<p class="dokwarn">Schritt fehlgeschlagen: ' + ((e && e.message) || e) + ' — wähl den Schritt im Inhaltsverzeichnis noch einmal an.</p>');
   });
 }
 
@@ -25979,7 +25972,7 @@ async function dokPiepeichLos(id){
     (r.signalPruef ? '<p class="dokfein">' + r.signalPruef.text + '</p>' : '')
     + dokPfeil('Signal gespielt', 'Signal gehört', dok.versatz + ' ms')
     + '<p class="dokbew">Zwei Pieps, Latenz konstant: ' + r.laufzeit + ' und ' + r2.laufzeit
-    + ' ms (Spanne ' + dok.eich.spanne + ' ms) — der Versatz von <b>' + dok.versatz + ' ms</b> eicht ab '
+    + ' ms (streut um ' + dok.eich.spanne + ' ms) — der Versatz von <b>' + dok.versatz + ' ms</b> eicht ab '
     + 'jetzt das Meßfenster jedes Schritts. Der Piep kam <b>' + dok.eich.ueberRuhe + ' dB</b> über der '
     + 'Raumruhe an, bei Eichpegel <b>' + dok.messPegel + ' %</b>'
     + (dok.messPegel > 50 ? ' (von der App eingemessen)' : '') + '. '
@@ -25987,7 +25980,7 @@ async function dokPiepeichLos(id){
     + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Paßt — weiter</button>'
     + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">Wiederholen</button>'));
   dokKopfZeigen();
-  dokAutoDann('ok', 'Versatz ' + dok.versatz + ' ms (Spanne ' + dok.eich.spanne + ' ms), Rauschprobe ' + Math.round(rp.abstand) + ' dB');
+  dokAutoDann('ok', 'Versatz ' + dok.versatz + ' ms (streut um ' + dok.eich.spanne + ' ms), Rauschprobe ' + Math.round(rp.abstand) + ' dB');
 }
 
 /* Das Ergebnisbild der Eichung: Tick - Pfeil mit der Laufzeit - Tick
@@ -26117,9 +26110,9 @@ async function dokMessungTon(id, schritt, standBleibt, latenzNochmal){
     + '<p class="dokbew">Störabstand <b>' + r.abstand.toFixed(0) + ' dB</b> je Band'
     + ' · Laufzeit ' + r.laufzeit + ' ms'
     + (Math.abs(r.laufzeit - dok.versatz) > 700 ? ' <span class="dokwarn">(weit weg von der Eichung — Schritt besser wiederholen)</span>' : '')
-    + (r.diagnose && r.diagnose.anteil_nah_voll > 0.01 ? ' · <span class="dokwarn">Mikrofon übersteuert!</span>'
-       : (r.diagnose ? ' · Mikrofon ' + Math.round(r.diagnose.kopfraum_dB) + ' dB unter Vollaussteuerung' : ''))
-    + (r.abstand < 20 ? ' · <span class="dokwarn">unter 20 dB Störabstand ist die Kurve mehr Zufall als Messung</span>' : '')
+    + (r.diagnose && r.diagnose.anteil_nah_voll > 0.01 ? ' · <span class="dokwarn">Mikrofon überschreit — Pegelregler am Mikrofon zurück und Schritt wiederholen!</span>'
+       : (r.diagnose ? ' · Mikrofon ' + Math.round(r.diagnose.kopfraum_dB) + ' dB Spielraum bis zum Vollpegel' : ''))
+    + (r.abstand < 20 ? ' · <span class="dokwarn">unter 20 dB Störabstand ist die Kurve mehr Zufall als Messung — Mikrofon näher oder seinen Pegelregler höher und wiederholen</span>' : '')
     + '.' + zweifel
     + ' Oben: die superfeine Messkurve, Eingangssignal gestrichelt, Stille punktiert unterlegt. '
     + 'Unten: die Differenz — <b>die Raumkurve selbst</b>, gefüllt gegen die Nulllinie.</p>'
@@ -26452,21 +26445,21 @@ async function dokSchrittZusammen(id){
   const z = [];
   z.push('<h6><span class="doknr">' + dokNr() + '</span>ZUSAMMENFASSUNG &amp; STECKBRIEF</h6>');
   z.push('<p><b>Steckbrief des Systems</b><br>'
-    + '· Stille des Raumes: Terzmittel ' + (stM !== null ? stM.toFixed(0) + ' dB (relativ)' : '—')
+    + '· Stille des Raumes: im Mittel ' + (stM !== null ? stM.toFixed(0) + ' dB (relativ)' : '—')
     + ' — der Stilletest oben trägt die Nadeln samt Deutung<br>'
-    + '· Latenz: <b>' + (dok.versatz !== null ? dok.versatz + ' ms</b> (Spanne ' + (dok.eich ? dok.eich.spanne : '—') + ' ms, Eichpegel '
+    + '· Latenz: <b>' + (dok.versatz !== null ? dok.versatz + ' ms</b> (streut um ' + (dok.eich ? dok.eich.spanne : '—') + ' ms, Eichpegel '
     + (dok.eich ? dok.eich.pegel : dok.messPegel) + ' %)' : '—</b>')
     + '<br>· Kette: ' + (rampeW ? (maxTreu === 100 && (fehlt100 === null || fehlt100 < 1.5)
         ? 'linear bis 100 % (Pegelfehlbetrag ' + (fehlt100 === null ? '—' : String(fehlt100).replace('.', ',')) + ' dB)'
         : 'formtreu bis ' + maxTreu + ' %' + (fehlt100 !== null ? ', Pegelfehlbetrag bei Vollgas ' + String(fehlt100).replace('.', ',') + ' dB' : ''))
       : 'keine Rampe gefahren')
-    + '<br>· Meßgüte: bester Störabstand ' + Math.round(bestesA) + ' dB je Band — nach ISO 3382-1 reicht das '
-    + (bestesA >= 45 ? 'für T20 und T30' : (bestesA >= 35 ? 'für eine T20-Nachhallauswertung (35 dB nötig), nicht für T30 (45)' : 'weder für T20 noch T30'))
-    + ' <span class="dokfein">(gilt oberhalb der Schroeder-Frequenz, in Wohnräumen ~100–200 Hz — '
-    + 'darunter zählen die Moden einzeln; der Nachhall selbst braucht noch die Entfaltung)</span></p>');
-  z.push('<p class="dokfein"><b>Was nach Stand der Technik noch fehlt</b> (Recherche 28.08., BACKLOG): '
-    + 'die Entfaltung des exponentiellen Sweeps zur Impulsantwort — daraus fielen Nachhall (EDT/T20/T30 '
-    + 'nach Schroeder), Klarheit C50/C80, Klirr je Harmonische und Reflexionen mit Laufzeit an, aus '
+    + '<br>· Meßgüte: bester Störabstand ' + Math.round(bestesA) + ' dB je Band — das reicht '
+    + (bestesA >= 45 ? 'auch für eine genaue Messung der Nachhallzeit' : (bestesA >= 35 ? 'für eine einfache Messung der Nachhallzeit (35 dB nötig), nicht für die genaue (45 dB)' : 'noch nicht für eine Messung der Nachhallzeit (mindestens 35 dB nötig) — Mikrofon näher oder seinen Pegelregler höher'))
+    + ' <span class="dokfein">(gilt oberhalb von etwa 100–200 Hz; darunter zählen in Wohnräumen die stehenden Wellen einzeln, '
+    + 'und für den Nachhall fehlt noch ein Rechenschritt)</span></p>');
+  z.push('<p class="dokfein"><b>Was nach Stand der Technik noch fehlt</b> (Recherche 28.08.): '
+    + 'der Rechenschritt, der aus der Sweep-Aufnahme die Antwort des Raums auf einen einzelnen Knall macht — daraus fielen Nachhallzeit, '
+    + 'Klarheit, Verzerrung je Oberton und Reflexionen mit Laufzeit an, aus '
     + 'denselben Aufnahmen, ohne neuen Ton.</p>');
   z.push('<p><b>Alle Raumkurven</b> — voll gezeichnet im <b>vergleichbaren Bereich '
     + (band ? hz(band.von) + ' bis ' + hz(band.bis) : '—') + '</b> (dort tragen mindestens 60 % der tauglichen '
@@ -26516,7 +26509,7 @@ async function dokSchrittZusammen(id){
     + (fehlt100 !== null
       ? (fehlt100 < 1.5
         ? 'Die Kette nimmt auf dem Weg zum Vollpegel nur ' + String(fehlt100).replace('.', ',') + ' dB — sie komprimiert praktisch nicht. Der Studio-Kompressor muß nichts ausgleichen; was er tut, ist Klanggestaltung, keine Reparatur.'
-        : 'Die Kette nimmt bis Vollpegel ' + String(fehlt100).replace('.', ',') + ' dB weg — sie komprimiert selbst. Empfehlung: den Studio-Kompressor entsprechend sanfter fahren (Ratio Richtung 1:1), sonst komprimiert es doppelt.')
+        : 'Die Kette nimmt bis Vollpegel ' + String(fehlt100).replace('.', ',') + ' dB weg — sie komprimiert selbst. Empfehlung: den Studio-Kompressor entsprechend sanfter fahren (Verhältnis Richtung 1:1), sonst komprimiert es doppelt.')
       : 'Ohne Rampe keine Aussage über die Ketten-Kompression.')
     + '</p></div>'
     + '<div id="' + id + 'komphoer" hidden><p class="dokbew">'
@@ -28198,8 +28191,8 @@ function messFazitZeigen(){
         for (const [x, y] of paare){ ssr += Math.pow(y - k * x, 2); sst += Math.pow(y - ym, 2); }
         const r2 = sst > 0 ? Math.max(0, 1 - ssr / sst) : 0;
         ausbeuten.push({ l, k, r2, paare: paare.length });
-        satz += '. Davon kommen <b class="fzahl">' + Math.round(k * 100) + ' %</b> dessen an, '
-          + 'was der Equalizer rechnet';
+        satz += '. Wirkungsgrad <b class="fzahl">' + Math.round(k * 100) + ' %</b> — so viel von dem, '
+          + 'was der Equalizer rechnet, kommt bei dir an';
       }
     }
     z.push(satz + '.</p>');
@@ -28220,11 +28213,11 @@ function messFazitZeigen(){
       + 'war es die Begrenzung.';
     else deutung = 'Es kommt <b>kaum etwas</b> an. Entweder begrenzt der Lautsprecher stark, oder er '
       + 'kann in diesem Bereich nicht mehr. Beides läßt sich mit dem Equalizer nicht überstimmen.';
-    z.push('<p>' + (ausbeuten.length > 1 ? 'Über alle Durchgänge gemittelt kommen <b>'
-      + Math.round(kM * 100) + ' %</b> an. ' : '') + deutung + '</p>');
+    z.push('<p>' + (ausbeuten.length > 1 ? 'Wirkungsgrad über alle Durchgänge: <b>'
+      + Math.round(kM * 100) + ' %</b>. ' : '') + deutung + '</p>');
 
     if (r2M < 0.5 && ausbeuten.some(a => a.paare >= 5)){
-      z.push('<p class="fmatt">Die Abweichung verteilt sich ungleichmäßig (Bestimmtheitsmaß '
+      z.push('<p class="fmatt">Die Abweichung verteilt sich ungleichmäßig (Gleichmäßigkeit nur '
         + r2M.toFixed(2).replace('.', ',') + '): manche Bänder folgen der Einstellung, andere gar '
         + 'nicht. Das spricht weniger für eine gleichmäßige Dämpfung als für den Raum — stehende '
         + 'Wellen heben und löschen einzelne Frequenzen, unabhängig von jeder Einstellung.</p>');
@@ -28411,7 +28404,7 @@ function messKorrekturZeigen(){
       + 'ein Regler soll eine Spitze brechen, nicht den Raum umbauen. '
       + 'Und nur Überhöhungen — <b>Einbrüche werden nicht aufgefüllt</b>. Ein Loch im '
       + 'Frequenzgang ist meist eine Auslöschung zwischen Direktschall und Reflexion; '
-      + 'mehr Pegel wird genauso ausgelöscht und verheizt nur Kopfraum.</p>');
+      + 'mehr Pegel wird genauso ausgelöscht und verheizt nur Spielraum.</p>');
     z.push('<p><button class="knopf" onclick="messKorrekturAnwenden()">'
       + 'Diese Korrektur auf die Regler legen</button></p>');
   }
