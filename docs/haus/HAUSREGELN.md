@@ -171,6 +171,8 @@ bleibt **clip**, die Unterscheidung aus Regel 25 gilt in beiden Sprachen. Die ha
 wie die Gestalt (im Code bleibt `borg`). Hörer-Reaktionen bleiben **reaction**; *response* nur technisch (frequency
 response). Datumsangaben im Englischen immer britisch (`en-GB`). Das Effektgerät heißt deutsch **Ghettoblaster** (überall, auch
 Echo und MEGA BASS; Caspar_D: „find ich cooler und dort ist es auch nicht problematisch belegt“), englisch **Boombox**.
+Clipping heißt deutsch **Kappung** (Fachwort höchstens in Klammern: „Kappung (Clipping)“), auch die Warnlampe im Ghettoblaster
+(„KAPPUNG“, englisch „CLIP“). Allgemein: deutscher Begriff, wo es ihn gibt; der englische Fachterminus nur in Klammern dahinter.
 
 **„Medien" — die Marke auf der Kachel (14.09.2026).** Hieß erst `Cap`, dann `Text` beziehungsweise
 `Notiz`, kurz `Media`, jetzt **Medien**. Dahinter liegen Notiz, Titelbild, Bewegtbild, Tonfassung

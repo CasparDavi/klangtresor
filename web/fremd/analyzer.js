@@ -717,7 +717,7 @@
   <div class="card"><div class="val" id="v-plr">—</div><div class="lbl"><span data-i18n="sa.lbl.plr">Wie viel Luft zur Spitze?</span> <i data-i18n="sa.lbl.plr.i">Reserve PLR</i></div></div>
   <div class="card"><div class="val" id="v-psr">—</div><div class="lbl"><span data-i18n="sa.lbl.psr">Luft an der lautesten Stelle</span> <i data-i18n="sa.lbl.psr.i">Reserve PSR</i></div></div>
   <div class="card"><div class="val" id="v-check">—</div><div class="lbl"><span data-i18n="sa.lbl.check">Technisch sauber?</span> <i data-i18n="sa.lbl.check.i">Anschläge · Gleichspannung · Phase</i></div></div>
-  <div class="card"><div class="val" id="v-clip">—</div><div class="lbl"><span data-i18n="sa.lbl.clip">Werte am Anschlag</span> <i data-i18n="sa.lbl.clip.i">Clipping</i></div></div>
+  <div class="card"><div class="val" id="v-clip">—</div><div class="lbl"><span data-i18n="sa.lbl.clip">Werte am Anschlag</span> <i data-i18n="sa.lbl.clip.i">Kappung (Clipping)</i></div></div>
   <div class="card"><div class="val" id="v-dc">—</div><div class="lbl"><span data-i18n="sa.lbl.dc">Sitzt die Welle mittig?</span> <i data-i18n="sa.lbl.dc.i">Gleichspannung</i></div></div>
   <div class="card"><div class="val" id="v-korr">—</div><div class="lbl"><span data-i18n="sa.lbl.korr">Stereo verträglich?</span> <i data-i18n="sa.lbl.korr.i">Phasenkorrelation</i></div></div>
   <div class="card"><div class="val" id="v-ende">—</div><div class="lbl"><span data-i18n="sa.lbl.ende">Endet er weich?</span> <i data-i18n="sa.lbl.ende.i">Ende</i></div></div>

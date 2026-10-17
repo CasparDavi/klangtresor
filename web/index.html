@@ -3360,7 +3360,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
           </optgroup>
         </select>
         <button id="studioref" title="Merkt den laufenden Titel als Klangvorbild. Die Startwerte „Wie der Referenztitel" gleichen dann jeden anderen Titel an dessen Frequenzprofil an." data-i18n-title="studio.ref.titel" data-i18n="studio.ref.knopf">Laufenden Titel als Referenz</button>
-        <button id="eqdeckel" class="pille" title="Alle Bänder bleiben unter der grauen Grenze des Titels — beim Einschalten, beim Ziehen und bei den Startwerten. MEGA BASS kommt als Aufsatz obendrauf und kennt die Grenze nicht — dafür gibt es die CLIP-Lampe" data-i18n-title="studio.deckel.titel" data-i18n="studio.deckel">Kein Übersteuern</button>
+        <button id="eqdeckel" class="pille" title="Alle Bänder bleiben unter der grauen Grenze des Titels — beim Einschalten, beim Ziehen und bei den Startwerten. MEGA BASS kommt als Aufsatz obendrauf und kennt die Grenze nicht — dafür gibt es die Lampe KAPPUNG" data-i18n-title="studio.deckel.titel" data-i18n="studio.deckel">Kein Übersteuern</button>
       </div>
       <!-- EIN editierbares Diagramm statt Slider + Chart - "eine
            lebende Lehrbuchabbildung" (Caspar_D, 20.08.2026). Die roten
@@ -3448,7 +3448,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <span class="lampe" id="lpEcho"></span><b>ECHO</b>
         <span class="lampe" id="lpTempo"></span><b>TEMPO</b>
         <span class="lampe" id="lpBass"></span><b>MEGA BASS</b>
-        <span class="lampe" id="lpClip" title="Ausgang hat 0 dBFS erreicht — Gain-Staging prüfen (EQ, Breite, Hall/Echo addieren sich)" data-i18n-title="studio.clip.titel"></span><b>CLIP</b>
+        <span class="lampe" id="lpClip" title="Ausgang hat 0 dBFS erreicht, es wird gekappt (Clipping) — Pegelkette (Gain-Staging) prüfen: EQ, Breite, Hall und Echo addieren sich" data-i18n-title="studio.clip.titel"></span><b data-i18n="studio.lampe.clip">KAPPUNG</b>
       </div>
       <!-- Aufgeraeumt (Caspar_D, 23.08.2026): zwei Panels wie im Kompressor-Register -
            links Stereo und Raum, rechts Tempo und der Spassknopf. -->
@@ -3487,7 +3487,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         </div>
       </div>
       <div class="fussnote" style="margin-top:16px" data-i18n="studio.fx.lampen" data-i18n-html>
-        Die Lampen zünden nur, wenn ihr Effekt wirklich eingreift — CLIP ist die
+        Die Lampen zünden nur, wenn ihr Effekt wirklich eingreift — KAPPUNG ist die
         Ausnahme: sie warnt, wenn der Ausgang 0 dBFS berührt (EQ, Breite, Hall und
         Echo addieren sich). Stereo-Breite und Tempo sind <b>Zustände, keine
         Mengen</b>: ihre Schieber füllen sich nicht, die Mitte ist die Heimat.
@@ -3951,9 +3951,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
               darüber wird Voll. Der Regler hält die Spitzen, weil er im Limiter-Fall die Spitze
               regelt, nicht das Mittel — mit einem Block Vorausschau und harter Kappung am Dach.</p>
               <p data-i18n="komp.hg.5" data-i18n-html>Die Messwerte in der Zeile darüber erklären sich per Tooltip. Lautheit, Spanne,
-              True Peak, Korrelation und Clipping sind vorgerechnet (Klanganalyse); nur
+              True Peak, Korrelation und Kappungen (Clipping) sind vorgerechnet (Klanganalyse); nur
               <i>Ausgang Spitze</i> ist live — erreicht sie 0 dBFS, zündet im Ghettoblaster die
-              CLIP-Lampe.</p>
+              Lampe KAPPUNG.</p>
             </div>
           </div>
         </div>
@@ -6328,7 +6328,7 @@ function studioMesswerte(){
     w(window.t('komp.mw.truepeak'), a.truePeak, ' dBTP', window.t('komp.mw.truepeak.titel')) +
     w(window.t('komp.mw.korrelation'), a.korrelation, '', window.t('komp.mw.korrelation.titel')) +
     w(window.t('komp.mw.tempo'), a.bpm, ' BPM', window.t('komp.mw.tempo.titel')) +
-    (a.clip ? `<span class="mw" title="${window.t('komp.mw.clip.titel')}">Clipping<b>${a.clip}×</b></span>` : '') +
+    (a.clip ? `<span class="mw" title="${window.t('komp.mw.clip.titel')}">${window.t('komp.mw.clip')}<b>${a.clip}×</b></span>` : '') +
     `<span class="mw" title="${window.t('komp.mw.ausgang.titel')}">${window.t('komp.mw.ausgang')}<b id="studioausgang">—</b></span>`;
 }
 
