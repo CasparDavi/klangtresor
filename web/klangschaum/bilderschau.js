@@ -114,6 +114,16 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
     if (p) schilder.push({ name: a.name, ...p }); }
   const sperren = (o.sperren || []).filter(r => r && r.w > 0 && r.h > 0).map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h }));
   const mitte = alle[alle.length >> 1].wert;
+  /* DIE FLUCHT DER ACHSE (Caspar_D, 17.10.2026: „muß die Achse nicht ein horizontaler Durchschuss sein, an dem sich die Unterkanten
+     der Bilder darüber und die Oberkanten der Bilder darunter ausrichten müssen?" – „es gibt nur eine Fluchtlinie, die anderen Abstände
+     wie heute"). Eine waagrechte Fuge in Breite der Luft, ihre Mitte bei yA: die Bilder darüber stehen mit der Unterkante ihres Blocks
+     (Rahmen und Schild eingeschlossen) auf ihr, die darunter hängen mit der Oberkante an ihr; kein Bild überquert sie. yA liegt in der
+     Wandmitte, es sei denn, ein Gruppenschild oder eine gesperrte Wand läge darauf - dann die nächste Höhe, an der nichts im Weg ist.
+     Bisher zog die Achse nur die Bildmitten zur Mittellinie (Kosten ey + 0,18 ex). */
+  const achse = art === 'achse';
+  let yA = H / 2;
+  if (achse){ const feste = schilder.concat(sperren), frei = (y) => feste.every(p => p.y > y + 14 || p.y + p.h < y - 14);
+    for (let d = 0; d < H / 2; d += 2){ if (frei(H / 2 + d)){ yA = H / 2 + d; break; } if (frei(H / 2 - d)){ yA = H / 2 - d; break; } } }
   let fehl = null, grenzeBei = null;                       /* die Gruppe, die keinen Platz mehr fand */
   const versuch = (s) => {
     const luft = o.luft ?? Math.max(3, Math.min(12, Math.sqrt(s * mitte) / 7));
@@ -123,8 +133,10 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
     const eintragen = (r) => { for (let i = Math.floor(r.x / zelle); i <= Math.floor((r.x + r.w) / zelle); i++)
       for (let j = Math.floor(r.y / zelle); j <= Math.floor((r.y + r.h) / zelle); j++){ const k = schluessel(i, j); if (!netz.has(k)) netz.set(k, []); netz.get(k).push(r); } };
     const [rL, rO, rR, rU] = raender(luft);
+    const fT = yA - luft / 2, fB = yA + luft / 2;                    /* die Fuge: Ober- und Unterkante */
     const frei = (x, y, w, h) => {
       if (x < rL || y < rO || x + w > W - rR || y + h > H - rU) return false;
+      if (achse && y < fB - 0.01 && y + h > fT + 0.01) return false;  /* kein Bild über die Fuge */
       for (let i = Math.floor((x - luft) / zelle); i <= Math.floor((x + w + luft) / zelle); i++)
         for (let j = Math.floor((y - luft) / zelle); j <= Math.floor((y + h + luft) / zelle); j++){
           const l = netz.get(schluessel(i, j)); if (!l) continue;
@@ -160,22 +172,24 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
            Rechtecklayout optimieren, wirklich die Ecken ausfüllen"): die Haengung waechst im Format der Wand, eine Spur
            Kreisabstand entscheidet nur zwischen gleich weiten Stellen. Gemessen (1400 x 860, Wurzel): mit 0,35 Kreisanteil
            waren die Ecken (je 15 % x 15 % der Wand) zu 25 % belegt, rein rechteckig zu 36 %, innen gleich dicht. */
-        const ex = Math.abs(cx - W / 2) / W, ey = Math.abs(cy - H / 2) / H;
+        const anFuge = achse && (Math.abs(y + h - fT) < 0.01 || Math.abs(y - fB) < 0.01);
+        const ex = Math.abs(cx - W / 2) / W, ey = anFuge ? 0 : Math.abs(cy - yA) / H;
         if (k >= kx.length){ const n = k * 2; kx = wachsen(kx, n); ky = wachsen(ky, n); kk = wachsen(kk, n); }
         kx[k] = x; ky[k] = y;
         kk[k++] = art === 'salon' ? Math.max(ex, ey) + 0.002 * Math.hypot(ex, ey)
-          : art === 'achse' ? ey + 0.18 * ex                         /* erst entlang der Achse, dann nach oben und unten */
+          : achse ? ey + 0.18 * ex                                   /* erst entlang der Fuge, dann nach oben und unten */
           : (cy - h / 2) * 4 + (cx - w / 2) * 0.05 + Math.hypot(cx - mx, cy - my) * 0.2;
       };
       dazu(W / 2 - w / 2, H / 2 - r - bh / 2); dazu(ar.nah[0] - w / 2, ar.nah[1] - h / 2); dazu(mx - w / 2, my - h / 2);
-      if (art === 'achse') dazu(ar.nah[0] - w / 2, H / 2 - r - bh / 2);
+      if (achse) for (const x of [W / 2 - w / 2, ar.nah[0] - w / 2, mx - w / 2]){ dazu(x, fT - h); dazu(x, fB); }
       for (const p of gelegt){
         if (p.x > bx[2] + luft || p.x + p.w < bx[0] - w - luft || p.y > bx[3] + luft || p.y + p.h < bx[1] - h - luft) continue;   /* zu weit vom Areal */
         const rechts = p.x + p.w + luft, links = p.x - luft - w, unten = p.y + p.h + luft, oben = p.y - luft - h;
         const y1 = p.y, y2 = p.y + p.h - h, y3 = p.y + (p.h - h) / 2, x1 = p.x, x2 = p.x + p.w - w, x3 = p.x + (p.w - w) / 2;
         dazu(rechts, y1); dazu(rechts, y2); dazu(rechts, y3); dazu(links, y1); dazu(links, y2); dazu(links, y3);
         dazu(x1, unten); dazu(x2, unten); dazu(x3, unten); dazu(x1, oben); dazu(x2, oben); dazu(x3, oben);
-        if (art === 'achse'){ const ya = H / 2 - r - bh / 2; dazu(rechts, ya); dazu(links, ya); }   /* Bildmitte genau auf der Achse */
+        if (achse){ dazu(rechts, fT - h); dazu(links, fT - h); dazu(rechts, fB); dazu(links, fB);   /* auf der Fuge stehend, an ihr hängend */
+          dazu(x1, fT - h); dazu(x2, fT - h); dazu(x1, fB); dazu(x2, fB); }
       }
       /* Heap ueber die Indizes, kleinste Kosten oben */
       const hp = heapIdx.length >= k ? heapIdx : (heapIdx = new Uint32Array(k * 2));
@@ -216,11 +230,14 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
       const reihe = B.map((q, i) => i).sort((i, j) => (senk ? Math.abs(B[i].y + B[i].h / 2 - H / 2) - Math.abs(B[j].y + B[j].h / 2 - H / 2)
                                                           : Math.abs(B[i].x + B[i].w / 2 - W / 2) - Math.abs(B[j].x + B[j].w / 2 - W / 2)));
       let bewegt = 0;
+      const fT = yA - luft / 2, fB = yA + luft / 2;
       for (const i of reihe){
-        const q = B[i], mitte = senk ? q.y + q.h / 2 - H / 2 : q.x + q.w / 2 - W / 2;
+        const q = B[i];
+        /* mit Fuge: senkrecht nur bis an die Fuge; wer an ihr liegt, bleibt dort und rückt nur noch waagrecht */
+        const mitte = senk ? (achse ? (q.y + q.h <= fT + 0.01 ? q.y + q.h - fT : q.y - fB) : q.y + q.h / 2 - H / 2) : q.x + q.w / 2 - W / 2;
         if (Math.abs(mitte) < 0.5) continue;
         const dir = mitte > 0 ? -1 : 1;
-        let frei = Math.abs(mitte);                                    /* hoechstens bis zur Mittellinie */
+        let frei = Math.abs(mitte);                                    /* hoechstens bis zur Mittellinie (zur Fuge) */
         const sperre = (p) => {
           if (senk){ if (p.x >= q.x + q.w + luft || q.x >= p.x + p.w + luft) return;
             const d = dir < 0 ? q.y - (p.y + p.h + luft) : p.y - (q.y + q.h + luft); if (d >= -0.01) frei = Math.min(frei, d); }
@@ -251,7 +268,7 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
     for (const b of lage){ const q = b.block; x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x + q.w); y1 = Math.max(y1, q.y + q.h); }
     if (bs) return aufziehenBis(lage, x0, y0, x1, y1);   /* die Gruppenschilder bleiben stehen - dort gelten sie als gesperrte Wand */
     for (const sc of schilder){ x0 = Math.min(x0, sc.x); y0 = Math.min(y0, sc.y); x1 = Math.max(x1, sc.x + sc.w); y1 = Math.max(y1, sc.y + sc.h); }
-    const cx = W / 2, cy = H / 2;
+    const cx = W / 2, cy = yA;                             /* um die Fuge aufgezogen, so bleibt sie, wo sie ist, und wächst mit der Luft */
     const kMax = Math.min((cx - rand) / Math.max(1e-6, cx - x0), (W - rand - cx) / Math.max(1e-6, x1 - cx),
                           (cy - rand) / Math.max(1e-6, cy - y0), (H - rand - cy) / Math.max(1e-6, y1 - cy));
     if (!(kMax > 1.001)) return;
@@ -286,7 +303,8 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
       return drin(areal.get(b.gruppe).poly, x + w / 2, y + r + b.h * k / 2)
         && feste.every(p => !(x < p.x + p.w + l && p.x < x + w + l && y < p.y + p.h + l && p.y < y + h + l)); });
     const versuche = (k) => { if (k <= 1) return null;
-      const xs = fenster(k, x0, x1, bs.l, bs.r, W, kx), ys = fenster(k, y0, y1, bs.o, bs.u, H, ky); if (!xs || !ys) return null;
+      const xs = fenster(k, x0, x1, bs.l, bs.r, W, kx); let ys = fenster(k, y0, y1, bs.o, bs.u, H, ky); if (!xs || !ys) return null;
+      if (achse){ if (yA < Math.min(...ys) - 1e-6 || yA > Math.max(...ys) + 1e-6) return null; ys = [yA]; }   /* die Fuge bleibt stehen */
       for (const px of xs) for (const py of ys) if (geht(k, px, py)) return [px, py];
       return null; };
     /* das größte k, bei dem die Fenster nicht leer sind: je Achse (Länge - Beschnitte) / (Ausdehnung + 2 Luft) */
@@ -309,7 +327,8 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
   if (!best) return null;
   if (o.verdichten !== false) verdichten(best); else { aufziehen(best); for (const b of best){ b.x = b.block.x + b.rahmen; b.y = b.block.y + b.rahmen; delete b.block; } }
   /* luft: der Bilderabstand nach dem Aufziehen (die Lage traegt ihn als Eigenschaft, die der Worker nicht mitschickt) - fuer eckeFuellen */
-  return { W, H, massstab: bestS * (best.faktor || 1) ** 2, grenze: grenzeBei, bilder: best, luft: (best.luft || 0) * (best.faktor || 1), schilder, sperren, areale, belegt: best.reduce((s, b) => s + b.w * b.h, 0) / (W * H) };
+  return { W, H, massstab: bestS * (best.faktor || 1) ** 2, grenze: grenzeBei, bilder: best, luft: (best.luft || 0) * (best.faktor || 1), schilder, sperren, areale,
+    fuge: achse ? { y: yA, luft: (best.luft || 0) * (best.faktor || 1) } : null, belegt: best.reduce((s, b) => s + b.w * b.h, 0) / (W * H) };
 }
 
 /* Areale und Haengung zusammen: legeAreale(gewichte: Map Name -> Gewicht) -> [{ name, poly }]. Erst nach der Summe der
