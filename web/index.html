@@ -4582,7 +4582,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
-<script src="/ui-sprache.js?v=9"></script>
+<script src="/ui-sprache.js?v=10"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.85"></script>
 <script>
@@ -4764,26 +4764,20 @@ function tonHinweis(){
   const alt = $('tonfehlt'); if (alt) alt.remove();
   const box = document.createElement('div'); box.id = 'tonfehlt';
   box.innerHTML = `<div class="tf">
-    <h2>Deine ${alle.length} Titel sind da — der Ton noch nicht.</h2>
-    <p>Bilder, Texte und Zahlen hat KlangTresor geholt. Die Audiodateien gibt Suno seit dem
-       03.09.2026 nicht mehr über Links heraus. Zwei Wege führen sie herein, und der erste kostet nichts.</p>
-    <div class="weg"><b>1 · Was du schon hast.</b>
-      <p>Hast du deine Lieder früher bei Suno heruntergeladen? <span class="ohne-container">In deinen <b>Download- und
-         Musikordnern</b> sehe ich von selbst nach. Liegen sie woanders, nenn den Ordner</span><span class="nur-container"
-         style="display:none">Wähle den Ordner, in dem sie liegen</span> — ich
-         erkenne Suno-Dateien am Inhalt, auch umbenannte, auch in Unterordnern, und ordne sie
-         deinen Titeln zu. Deine übrige Musik fasse ich nicht an, nichts wird verschoben oder gelöscht.</p>
-      <div class="tfk"><button onclick="ordnerWaehlerAuf('tfbrowser','tfordner')">Ordner wählen …</button>
+    <h2>${t('ton.hinweis.kopf', { n: alle.length })}</h2>
+    <p>${t('ton.hinweis.text')}</p>
+    <div class="weg"><b>${t('ton.weg1')}</b>
+      <p>${t('ton.weg1.frage')} <span class="ohne-container">${t('ton.weg1.selbst')}</span><span class="nur-container"
+         style="display:none">${t('ton.weg1.waehle')}</span> — ${t('ton.weg1.erkenne')}</p>
+      <div class="tfk"><button onclick="ordnerWaehlerAuf('tfbrowser','tfordner')">${t('ton.ordner_waehlen')}</button>
         <span id="tfordner" class="tfs" style="margin:0;align-self:center"></span></div>
       <div id="tfbrowser" class="ordnerbrowser" hidden></div>
-      <div class="tfk"><button class="los" onclick="tonEinlesen()">Einlesen</button>
-        <button class="ohne-container" onclick="tonEinlesen(true)">Nur in Download- und Musikordnern nachsehen</button></div>
+      <div class="tfk"><button class="los" onclick="tonEinlesen()">${t('ton.einlesen')}</button>
+        <button class="ohne-container" onclick="tonEinlesen(true)">${t('ton.nur_downloads')}</button></div>
       <div class="tfs" id="tfstand"></div></div>
-    <div class="weg"><b>2 · Was dir fehlt.</b>
-      <p>Was du nicht hast, schaltest du bei Suno einmal frei (Drei Punkte → Download → „Unlock and
-         Download", kostet ein Guthaben). Das Lesezeichen holt es dann von selbst — es sitzt unter dem
-         roten Knopf für den täglichen Abgleich und braucht Chrome.</p></div>
-    <div class="tfk"><button onclick="tonHinweisWeg()">Später</button></div>
+    <div class="weg"><b>${t('ton.weg2')}</b>
+      <p>${t('ton.weg2.text')}</p></div>
+    <div class="tfk"><button onclick="tonHinweisWeg()">${t('ton.spaeter')}</button></div>
   </div>`;
   document.body.appendChild(box);
   ordnerContainerTexte();
@@ -4838,25 +4832,25 @@ async function ordnerWaehlerAuf(boxId, anzeigeId){
   if (!k.fenster && !(k.laufwerke > 0)){ geraetWaehlen(anzeigeId); return; }
   box.hidden = false; box.innerHTML = '';
   if (!k.fenster) return ordnerWege(box, anzeigeId, k.grund || '');
-  box.innerHTML = '<div class="fussnote">Ein Fenster geht auf — wähle den Ordner dort.</div>';
+  box.innerHTML = '<div class="fussnote">' + t('ton.fenster_auf') + '</div>';
   let d = null;
   try { d = await (await fetch('/api/ordner/dialog', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titel: 'Wo liegen deine Suno-Dateien?' }) })).json(); } catch (e) {}
+      body: JSON.stringify({ titel: t('ton.dialog_titel') }) })).json(); } catch (e) {}
   if (d && d.pfad){ ordnerWahl(anzeigeId, d.pfad); box.hidden = true; return; }
   ordnerWege(box, anzeigeId, d && d.ging === false
-    ? 'Das Fenster ging nicht auf' + (d.grund ? ' (' + d.grund + ')' : '') + '.'
-    : 'Kein Ordner gewählt.');
+    ? t('ton.fenster_nicht', { grund: d.grund ? ' (' + d.grund + ')' : '' })
+    : t('ton.kein_ordner'));
 }
 /* Die beiden anderen Wege untereinander: das Fenster des Browsers, und -
    wenn der Server Laufwerke sieht - der Ordnerbrowser in der Seite. */
 function ordnerWege(box, anzeigeId, hinweis){
   box.innerHTML = '';
   if (hinweis) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: hinweis }));
-  const knopf = Object.assign(document.createElement('button'), { className: 'pille an', textContent: 'Von diesem Gerät wählen …' });
+  const knopf = Object.assign(document.createElement('button'), { className: 'pille an', textContent: t('ton.geraet_waehlen') });
   knopf.onclick = () => { box.hidden = true; geraetWaehlen(anzeigeId); };
   box.appendChild(knopf);
   if (ordnerKann && ordnerKann.laufwerke > 0){
-    box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Oder auf dem Rechner mit KlangTresor suchen:' }));
+    box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: t('ton.rechner_suchen') }));
     ordnerBrowser(box, anzeigeId, '');
   }
 }
@@ -4886,11 +4880,11 @@ async function geraetPruefen(anzeigeId, dateien){
   const a = { dateien: [], schonDa: 0, nichtImKatalog: 0, ohneKennung: 0, doppelt: 0,
               m4a: echt.filter(f => /\.m4a$/i.test(f.name)).length, fertig: false };
   geraetAuswahl[anzeigeId] = a;
-  if (anzeige){ anzeige.dataset.pfad = ''; anzeige.textContent = (ordner ? ordner + ' · ' : '') + 'von diesem Gerät'; }
+  if (anzeige){ anzeige.dataset.pfad = ''; anzeige.textContent = (ordner ? ordner + ' · ' : '') + t('ton.geraet'); }
   const gesehen = new Set();
   for (let i = 0; i < ton.length; i++){
     if (geraetAuswahl[anzeigeId] !== a) return;          /* inzwischen anders gewählt */
-    if (stand) stand.textContent = `Lese ${i + 1}/${ton.length} …`;
+    if (stand) stand.textContent = t('ton.lese', { i: i + 1, n: ton.length });
     const datei = ton[i], format = /\.wav$/i.test(datei.name) ? 'wav' : 'mp3';
     let d = null;
     try { d = await (await fetch('/api/ton/kennung?format=' + format, { method: 'POST',
@@ -4907,34 +4901,34 @@ async function geraetPruefen(anzeigeId, dateien){
   if (stand) stand.textContent = geraetSatz(a);
 }
 function geraetSatz(a){
-  const n = a.dateien.length, z = (k, ein, viele) => k === 1 ? ein : viele;
-  const liegen = [a.ohneKennung ? `${a.ohneKennung} ohne Suno-Kennung` : '', a.m4a ? `${a.m4a} M4A` : ''].filter(Boolean).join(', ');
-  return (n ? `${n} Datei${z(n, '', 'en')} ${z(n, 'gehört', 'gehören')} zu deinen Titeln und ${z(n, 'fehlt', 'fehlen')} hier — „Einlesen“ übernimmt sie.`
-            : 'Nichts dabei, was zu deinen Titeln gehört und hier fehlt.')
-    + (a.schonDa ? ` ${a.schonDa} ${z(a.schonDa, 'ist', 'sind')} schon da.` : '')
-    + (a.doppelt ? ` ${a.doppelt} doppelt.` : '')
-    + (a.nichtImKatalog ? ` ${a.nichtImKatalog} ${z(a.nichtImKatalog, 'gehört', 'gehören')} zu Titeln, die der Katalog noch nicht kennt.` : '')
-    + (liegen ? ` ${liegen} — nicht angefasst.` : '')
-    + ' Ein Ordner von diesem Gerät wird nicht gemerkt; der tägliche Abgleich sieht dort nicht von selbst nach.';
+  const n = a.dateien.length;
+  const liegen = [a.ohneKennung ? t('ton.satz.ohne_kennung', { n: a.ohneKennung }) : '', a.m4a ? `${a.m4a} M4A` : ''].filter(Boolean).join(', ');
+  return (n ? t('ton.satz.fehlen', { n })
+            : t('ton.satz.nichts'))
+    + (a.schonDa ? ' ' + t('ton.satz.schon', { n: a.schonDa }) : '')
+    + (a.doppelt ? ' ' + t('ton.satz.doppelt', { n: a.doppelt }) : '')
+    + (a.nichtImKatalog ? ' ' + t('ton.satz.katalog', { n: a.nichtImKatalog }) : '')
+    + (liegen ? ' ' + t('ton.satz.liegen', { liste: liegen }) : '')
+    + ' ' + t('ton.satz.geraet');
 }
 async function geraetEinlesen(anzeigeId){
   const a = geraetAuswahl[anzeigeId], stand = $(ORDNER_STAND[anzeigeId]);
-  if (!a.fertig){ stand.textContent = 'Einen Moment — die Dateien werden noch gelesen.'; return; }
+  if (!a.fertig){ stand.textContent = t('ton.moment'); return; }
   if (!a.dateien.length){ stand.textContent = geraetSatz(a); return; }
   let n = 0, mb = 0; const daneben = [];
   for (let i = 0; i < a.dateien.length; i++){
     const e = a.dateien[i];
-    stand.textContent = `Übernehme ${i + 1}/${a.dateien.length} — ${e.titel} (${e.format}, ${(e.datei.size / 1048576).toFixed(0)} MB) …`;
+    stand.textContent = t('ton.uebernehme', { i: i + 1, n: a.dateien.length, titel: e.titel, format: e.format, mb: (e.datei.size / 1048576).toFixed(0) });
     let d = null;
     try { d = await (await fetch('/api/ton/datei?format=' + e.format, { method: 'POST',
         headers: { 'Content-Type': 'application/octet-stream' }, body: e.datei })).json(); } catch (x) {}
     if (d && d.angenommen){ n++; mb += e.datei.size / 1048576; }
-    else daneben.push((d && (d.grund || d.fehler)) || 'keine Antwort');
+    else daneben.push((d && (d.grund || d.fehler)) || t('ton.keine_antwort'));
   }
   delete geraetAuswahl[anzeigeId];
-  stand.textContent = (n ? `${n} Datei${n === 1 ? '' : 'en'} übernommen (${mb.toFixed(0)} MB).` : 'Nichts übernommen.')
-    + (daneben.length ? ` ${daneben.length} nicht (${[...new Set(daneben)].slice(0, 3).join(', ')}).` : '')
-    + (n ? ' Die Seite lädt gleich neu.' : '');
+  stand.textContent = (n ? t('ton.uebernommen', { n, mb: mb.toFixed(0) }) : t('ton.nichts'))
+    + (daneben.length ? ' ' + t('ton.nicht', { n: daneben.length, gruende: [...new Set(daneben)].slice(0, 3).join(', ') }) : '')
+    + (n ? ' ' + t('ton.neu_laden') : '');
   if (n) setTimeout(() => location.reload(), 2500);
 }
 async function ordnerBrowser(box, anzeigeId, pfad){
@@ -4944,23 +4938,23 @@ async function ordnerBrowser(box, anzeigeId, pfad){
      Ordner nehmen" rutschte aus dem Bild. */
   let liste = box.querySelector('.ordnerliste');
   if (!liste){ liste = document.createElement('div'); liste.className = 'ordnerliste'; box.appendChild(liste); }
-  liste.innerHTML = '<div class="fussnote">Lese …</div>';
+  liste.innerHTML = '<div class="fussnote">' + t('ton.lese_kurz') + '</div>';
   let d; try { d = await (await fetch('/api/ordner' + (pfad ? '?pfad=' + encodeURIComponent(pfad) : ''), { cache: 'no-store' })).json(); }
-  catch (e) { liste.innerHTML = '<div class="fussnote">Server antwortet nicht.</div>'; return; }
+  catch (e) { liste.innerHTML = '<div class="fussnote">' + t('ton.server_kurz') + '</div>'; return; }
   liste.innerHTML = '';
   if (!pfad){
-    const k = document.createElement('div'); k.className = 'fussnote'; k.textContent = 'Ein Laufwerk wählen:'; liste.appendChild(k);
+    const k = document.createElement('div'); k.className = 'fussnote'; k.textContent = t('ton.laufwerk'); liste.appendChild(k);
     for (const l of (d.laufwerke || [])){
       const z = document.createElement('button'); z.className = 'ordnerzeile'; z.innerHTML = `<b>${esc(l.name)}</b>`;
       z.onclick = () => ordnerBrowser(box, anzeigeId, l.pfad); liste.appendChild(z);
     }
-    if (!(d.laufwerke || []).length) k.textContent = 'Der Rechner mit KlangTresor zeigt hier keine Laufwerke.';
+    if (!(d.laufwerke || []).length) k.textContent = t('ton.keine_laufwerke');
     return;
   }
   const kopf = document.createElement('div'); kopf.className = 'ordnerkopf';
-  const zurueck = document.createElement('button'); zurueck.className = 'pille'; zurueck.textContent = d.eltern ? '↑ eine Ebene' : '↑ Laufwerke';
+  const zurueck = document.createElement('button'); zurueck.className = 'pille'; zurueck.textContent = d.eltern ? t('ton.ebene') : t('ton.laufwerke');
   zurueck.onclick = () => ordnerBrowser(box, anzeigeId, d.eltern || '');
-  const hier = document.createElement('button'); hier.className = 'pille an'; hier.textContent = 'Diesen Ordner nehmen';
+  const hier = document.createElement('button'); hier.className = 'pille an'; hier.textContent = t('ton.ordner_nehmen');
   hier.onclick = () => { ordnerWahl(anzeigeId, d.pfad); box.hidden = true; };
   const wo = document.createElement('span'); wo.className = 'fussnote'; wo.style.margin = '0'; wo.textContent = d.pfad;
   kopf.append(zurueck, hier, wo); liste.appendChild(kopf);
@@ -4968,7 +4962,7 @@ async function ordnerBrowser(box, anzeigeId, pfad){
     const z = document.createElement('button'); z.className = 'ordnerzeile'; z.innerHTML = `<b>${esc(o.name)}</b>`;
     z.onclick = () => ordnerBrowser(box, anzeigeId, o.pfad); liste.appendChild(z);
   }
-  if (!(d.ordner || []).length) liste.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Keine Unterordner.' }));
+  if (!(d.ordner || []).length) liste.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: t('ton.keine_unterordner') }));
 }
 
 /* Der feste Platz in der Profilkachel: derselbe Weg wie im Overlay. */
@@ -4976,35 +4970,35 @@ async function ordnerEinlesen(){
   if (geraetAuswahl.kontordnerfeld) return geraetEinlesen('kontordnerfeld');
   const feld = $('kontordnerfeld'), stand = $('kontordnerstand');
   const ordner = (feld.dataset.pfad || '').trim();
-  if (!ordner){ stand.textContent = 'Erst den Ordner nennen.'; return; }
-  stand.textContent = 'Sehe nach und ordne zu …';
+  if (!ordner){ stand.textContent = t('ton.ordner_nennen'); return; }
+  stand.textContent = t('ton.sehe');
   let d = null;
   try { d = await (await fetch('/api/downloads', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ordner }) })).json(); }
-  catch (e) { stand.textContent = 'Der Server antwortet nicht.'; return; }
-  if (d.fehler){ stand.textContent = 'Das ging nicht: ' + d.fehler; return; }
+  catch (e) { stand.textContent = t('ton.server'); return; }
+  if (d.fehler){ stand.textContent = t('ton.ging_nicht', { fehler: d.fehler }); return; }
   const n = parseInt(d.uebernommen, 10) || 0;
-  stand.textContent = (n ? `${n} Datei${n === 1 ? '' : 'en'} übernommen — der Ordner ist gemerkt.` : 'Nichts gefunden, was zu deinen Titeln gehört — der Ordner ist trotzdem gemerkt.')
-    + (d.nichtImKatalog > 0 ? ` ${d.nichtImKatalog} gehören zu Titeln, die der Katalog noch nicht kennt.` : '')
-    + (d.ohneSignatur > 0 ? ` ${d.ohneSignatur} ohne Suno-Kennung, nicht angefasst.` : '');
+  stand.textContent = (n ? t('ton.uebernommen_gemerkt', { n }) : t('ton.nichts_gemerkt'))
+    + (d.nichtImKatalog > 0 ? ' ' + t('ton.katalog_mehr', { n: d.nichtImKatalog }) : '')
+    + (d.ohneSignatur > 0 ? ' ' + t('ton.ohne_kennung', { n: d.ohneSignatur }) : '');
   if (n) setTimeout(() => location.reload(), 2500);
 }
 async function tonEinlesen(nurDownloads){
   if (!nurDownloads && geraetAuswahl.tfordner) return geraetEinlesen('tfordner');
   const stand = $('tfstand'); const feld = $('tfordner');
   const ordner = nurDownloads ? '' : (feld.dataset.pfad || '').trim();
-  if (!nurDownloads && !ordner){ stand.textContent = 'Erst den Ordner nennen — oder nur in Download- und Musikordnern nachsehen.'; return; }
-  stand.textContent = 'Sehe nach und ordne zu … das kann bei vielen Dateien ein paar Minuten dauern.';
+  if (!nurDownloads && !ordner){ stand.textContent = t('ton.ordner_oder'); return; }
+  stand.textContent = t('ton.sehe_lang');
   let d = null;
   try { d = await (await fetch('/api/downloads', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ordner ? { ordner } : {}) })).json(); }
-  catch (e) { stand.textContent = 'Der Server antwortet nicht.'; return; }
-  if (d.fehler){ stand.textContent = 'Das ging nicht: ' + d.fehler; return; }
+  catch (e) { stand.textContent = t('ton.server'); return; }
+  if (d.fehler){ stand.textContent = t('ton.ging_nicht', { fehler: d.fehler }); return; }
   const n = parseInt(d.uebernommen, 10) || 0;
-  stand.textContent = (n ? `${n} Datei${n === 1 ? '' : 'en'} übernommen.` : 'Nichts gefunden, was zu deinen Titeln gehört.')
-    + (d.nichtImKatalog > 0 ? ` ${d.nichtImKatalog} gehören zu Titeln, die der Katalog noch nicht kennt — vermutlich deine unveröffentlichten. Nach dem ersten Lauf des Lesezeichens kommen sie von selbst; der Ordner ist gemerkt.` : '')
-    + (d.ohneSignatur > 0 ? ` ${d.ohneSignatur} ohne Suno-Kennung, nicht angefasst.` : '')
-    + (n ? ' Die Seite lädt gleich neu.' : ' Ist es ein anderer Ordner? Unterordner werden mitdurchsucht, sechs Ebenen tief.');
+  stand.textContent = (n ? t('ton.uebernommen_kurz', { n }) : t('ton.nichts_kurz'))
+    + (d.nichtImKatalog > 0 ? ' ' + t('ton.katalog_unveroeff', { n: d.nichtImKatalog }) : '')
+    + (d.ohneSignatur > 0 ? ' ' + t('ton.ohne_kennung', { n: d.ohneSignatur }) : '')
+    + ' ' + (n ? t('ton.neu_laden') : t('ton.anderer_ordner'));
   if (n) setTimeout(() => location.reload(), 2500);
 }
 
@@ -5212,14 +5206,12 @@ function songEqAnzeigen(){
   const e = eqJeSong[aktuellId];
   const teile = [];
   if (e && e.gains && e.gains.some(g => g)) teile.push('EQ');
-  if (e && e.kerbe) teile.push('Kerbfilter');
+  if (e && e.kerbe) teile.push(t('studio.songeq.kerbe'));
   p.hidden = !teile.length;
   if (!teile.length) return;
-  p.textContent = 'Titel-' + teile.join('+') + (songEqAn ? '' : ' aus');
+  p.textContent = t(songEqAn ? 'studio.titel_eq' : 'studio.titel_eq_aus', { teile: teile.join('+') });
   p.classList.toggle('aus', !songEqAn);
-  p.title = songEqAn
-    ? 'Dieser Titel läuft mit eigenem ' + teile.join(' und ') + '. Klick schaltet titeleigene Klangeingriffe ab — überall, bis zum nächsten Klick.'
-    : 'Dieser Titel hätte eigenen ' + teile.join(' und ') + ', aber titeleigene Klangeingriffe sind abgeschaltet. Klick schaltet sie wieder ein.';
+  p.title = t(songEqAn ? 'studio.songeq.an' : 'studio.songeq.aus', { teile: teile.join(t('studio.songeq.und')) });
 }
 
 function songEqUmschalten(){
@@ -5298,23 +5290,23 @@ async function kerbeZeigen(){
   if (!stoerfrequenzen){ try { stoerfrequenzen = await (await fetch('/api/stoerfrequenzen', { cache: 'no-store' })).json(); } catch (e) { stoerfrequenzen = { songs: {} }; } }
   const liste = (stoerfrequenzen.songs || {})[aktuellId];
   const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  const hzText = (hz) => hz >= 1000 ? (hz / 1000).toFixed(2).replace('.', ',') + ' kHz' : hz + ' Hz';
+  const hzText = (hz) => hz >= 1000 ? dezimal((hz / 1000).toFixed(2)) + ' kHz' : hz + ' Hz';
   let h = '';
   const lied = typeof song === 'function' ? song(aktuellId) : null;
-  if (lied && lied.fremd) h = '<span>fremder Titel — kein Scan (nur eigene Titel liegen als Datei vor)</span>';
+  if (lied && lied.fremd) h = '<span>' + t('studio.kerbe.fremd') + '</span>';
   else if (liste === undefined){
-    h = archivEingefroren() ? '<span>Eingefrorene Kopie — hier wird nicht gescannt; neue Ergebnisse kommen mit einem neuen Export vom Rechner, auf dem KlangTresor läuft</span>'
+    h = archivEingefroren() ? '<span>' + t('studio.kerbe.eingefroren') + '</span>'
       : kerbeZeigen.laeuft
-      ? `<span>Scan läuft … ${kerbeZeigen.laeuft}</span>`
-      : `<button type="button" class="pille" id="stoerscan" title="Rechnet erst diesen Titel, dann alle anderen (~5–10 s je Titel, im Hintergrund)">Scan dieses und aller anderen Titel starten</button>`;
-  } else if (!liste.length) h = '<span>keine gefunden — sauber</span>';
-  else h = liste.map(c => `<span class="pille" style="cursor:default" title="${esc(c.art)} · ${c.hz} Hz (${esc(c.note)} ${c.cent >= 0 ? '+' : ''}${c.cent} Cent) · ${c.db} dB über der Nachbarschaft · in ${Math.round(c.dauer * 100)} % des Titels · ${c.breiteHz} Hz breit${c.linien ? ` · ${c.linien} Linien ${hzText(c.vonHz)}–${hzText(c.bisHz)} (ein Band, die stärkste vertritt es)` : ''} — Griffe am Tick im Bild: ♪ allein hören, ⊘ Kerbfilter">${hzText(c.hz)} · ${esc(c.art).replace('Stoerton', 'Störton')}${c.linien ? ` · ${c.linien} Linien` : ''}</span>`).join('')
-    + (eqKerbe ? `<span class="kerbewert" title="Der Kerbfilter ist ein Punkt im Bild wie die Bänder: senkrecht ziehen = Tiefe, seitlich = Frequenz, Scrollen = Güte, Doppelklick löst ihn">Kerbfilter ${hzText(eqKerbe.hz)} · ${String(eqKerbe.db).replace('.', ',')} dB · Q ${eqKerbe.q}</span>` : '');
+      ? `<span>${t('studio.kerbe.laeuft', { was: t('studio.kerbe.zuerst') })}</span>`
+      : `<button type="button" class="pille" id="stoerscan" title="${esc(t('studio.scan.titel'))}">${t('studio.scan.start')}</button>`;
+  } else if (!liste.length) h = '<span>' + t('studio.kerbe.keine') + '</span>';
+  else h = liste.map(c => `<span class="pille" style="cursor:default" title="${esc(t('studio.kerbe.tipp', { art: c.art, hz: c.hz, note: c.note, cent: (c.cent >= 0 ? '+' : '') + c.cent, db: c.db, anteil: Math.round(c.dauer * 100), breite: c.breiteHz, linien: c.linien ? ' · ' + t('studio.kerbe.linien_lang', { n: c.linien, von: hzText(c.vonHz), bis: hzText(c.bisHz) }) : '' }))}">${hzText(c.hz)} · ${esc(c.art).replace('Stoerton', 'Störton')}${c.linien ? ' · ' + t('studio.kerbe.linien', { n: c.linien }) : ''}</span>`).join('')
+    + (eqKerbe ? `<span class="kerbewert" title="${esc(t('studio.kerbe.wert.titel'))}">${t('studio.kerbe.wert', { hz: hzText(eqKerbe.hz), db: dezimal(String(eqKerbe.db)), q: eqKerbe.q })}</span>` : '');
   z.innerHTML = h;
   const sc = $('stoerscan'); if (sc) sc.onclick = async () => {
-    sc.disabled = true; sc.textContent = 'Scan läuft …';
+    sc.disabled = true; sc.textContent = t('studio.scan.laeuft');
     try { await fetch('/api/stoerfrequenz/start', { method: 'POST', body: JSON.stringify({ id: aktuellId }) }); } catch (e) {}
-    kerbeZeigen.laeuft = 'dieser Titel zuerst';
+    kerbeZeigen.laeuft = true;   /* Anzeige: „Scan läuft … dieser Titel zuerst“ */
     const id = aktuellId;
     let versuche = 0;
     const warte = async () => { try { stoerfrequenzen = await (await fetch('/api/stoerfrequenzen', { cache: 'no-store' })).json(); } catch (e) {}
@@ -5722,13 +5714,13 @@ function kompKurveZeichnen(){
          (Review 22.08.2026: der Stab "Spitze heute" lief durch eine
          RMS-Kurve). Landet sie ueber Voll, wird das gefuellt markiert -
          dasselbe Versprechen wie die Ueberschreitungsflaeche des EQ. */
-      const istSpitze = m.txt === 'Spitze heute' && a && a.lufs != null;
+      const istSpitze = m.txt === window.t('komp.marke.spitze') && a && a.lufs != null;
       const ausDb = istSpitze ? m.db + (tabWert(+a.lufs) - +a.lufs) : tabWert(m.db);
       const ueber = istSpitze && ausDb > 0;
       const farbe = ueber ? 'var(--akzent)' : m.farbe;
       const yOut = nachY(Math.min(0, ausDb));
       if (ueber) inhalt += `<rect x="${(L2 - 4).toFixed(1)}" y="${(yOut - 6).toFixed(1)}" width="${(m.x - L2 + 4).toFixed(1)}" height="6" fill="var(--akzent)" opacity="0.35"/>`
-                         + `<text x="${(L2 + 12).toFixed(1)}" y="${(yOut - 9).toFixed(1)}" font-size="10.5" fill="var(--akzent)">Spitze ${ausDb.toFixed(1).replace('.', ',')} dB über Voll</text>`;
+                         + `<text x="${(L2 + 12).toFixed(1)}" y="${(yOut - 9).toFixed(1)}" font-size="10.5" fill="var(--akzent)">${window.t('komp.spitze_ueber', { db: dezimal(ausDb.toFixed(1)) })}</text>`;
       inhalt += `<line x1="${m.x.toFixed(1)}" y1="${oben.toFixed(1)}" x2="${m.x.toFixed(1)}" y2="${yOut.toFixed(1)}" stroke="${farbe}" stroke-width="1" stroke-dasharray="2 4" opacity="0.6"/>`
               + `<line x1="${m.x.toFixed(1)}" y1="${yOut.toFixed(1)}" x2="${(L2 + 10).toFixed(1)}" y2="${yOut.toFixed(1)}" stroke="${farbe}" stroke-width="1" stroke-dasharray="2 4" opacity="0.6"/>`
               + `<line x1="${L2 - 4}" y1="${yOut.toFixed(1)}" x2="${L2 + 8}" y2="${yOut.toFixed(1)}" stroke="${farbe}" stroke-width="2"/>`;
@@ -6184,12 +6176,12 @@ function studioZu(){ $('studio').style.display = 'none'; blasterLcd(false);
    Tempo 150 % hatten bei geschlossenem Panel keine sichtbare Spur"). */
 function studioFluechtig(){
   const teile = [];
-  if (eqAus) teile.push('Original (A/B)');
-  if (eqSoloWirkmenge()) teile.push('Solo');
-  if (!anEq) teile.push('Equalizer aus'); if (!anFx) teile.push('Effekte aus'); if (!anKomp) teile.push('Kompressor aus');
+  if (eqAus) teile.push(t('studio.fl.original'));
+  if (eqSoloWirkmenge()) teile.push(t('studio.fl.solo'));
+  if (!anEq) teile.push(t('studio.fl.eq_aus')); if (!anFx) teile.push(t('studio.fl.fx_aus')); if (!anKomp) teile.push(t('studio.fl.komp_aus'));
   if (megaBassAn) teile.push('MEGA BASS');
-  if (eqStoerHoeren) teile.push('Störton allein (' + Math.round(eqStoerHoeren) + ' Hz)');
-  if (Math.abs((audio.playbackRate || 1) - 1) > 0.001) teile.push('Tempo ' + Math.round(audio.playbackRate * 100) + ' %');
+  if (eqStoerHoeren) teile.push(t('studio.fl.stoer', { hz: Math.round(eqStoerHoeren) }));
+  if (Math.abs((audio.playbackRate || 1) - 1) > 0.001) teile.push(t('studio.fl.tempo', { p: Math.round(audio.playbackRate * 100) }));
   return teile;
 }
 function studioMarke(){
@@ -6565,9 +6557,9 @@ function parZeichnen(){
         const farbe = stoer ? 'var(--akzent)' : '#8b8b90', gesetzt = eqKerbe && Math.abs(eqKerbe.hz - c.hz) < 1, hoert = eqStoerHoeren && Math.abs(eqStoerHoeren - c.hz) < 1;
         const yL = yO + Math.round(PLOT * 0.2) + i * 34, rechts = x > W - R2 - 80, dx = rechts ? -66 : 5;
         inhalt += `<line x1="${x.toFixed(1)}" y1="${yO}" x2="${x.toFixed(1)}" y2="${yU}" stroke="${farbe}" stroke-width="${gesetzt ? 2 : 1}" stroke-dasharray="${gesetzt ? '' : '3 4'}" opacity="${stoer ? 0.85 : 0.5}"/>`
-                + `<text x="${(x + dx).toFixed(1)}" y="${yL.toFixed(1)}" font-size="10.5" fill="${farbe}">${c.hz >= 1000 ? (c.hz / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(c.hz) + ' Hz'}${stoer ? '' : ' · ' + (c.art === 'wahrscheinlich Musik' ? 'Musik?' : c.note)}${c.linien ? ' ·' + c.linien : ''}</text>`
-                + `<g class="stoergriff ${hoert ? 'an' : ''}" data-was="hoeren" data-hz="${c.hz}"><title>diesen Ton allein hören (Bandpass) — noch ein Klick: wieder alles</title><circle cx="${(x + dx + 9).toFixed(1)}" cy="${(yL + 15).toFixed(1)}" r="10"/><text x="${(x + dx + 9).toFixed(1)}" y="${(yL + 20).toFixed(1)}">♪</text></g>`
-                + `<g class="stoergriff ${gesetzt ? 'an' : ''}" data-was="kerbe" data-hz="${c.hz}"><title>Kerbfilter setzen (−12 dB, Güte 30) — danach ein Punkt wie die Bänder: ziehen, scrollen, Doppelklick löst</title><circle cx="${(x + dx + 33).toFixed(1)}" cy="${(yL + 15).toFixed(1)}" r="10"/><text x="${(x + dx + 33).toFixed(1)}" y="${(yL + 20).toFixed(1)}">⊘</text></g>`;
+                + `<text x="${(x + dx).toFixed(1)}" y="${yL.toFixed(1)}" font-size="10.5" fill="${farbe}">${c.hz >= 1000 ? dezimal((c.hz / 1000).toFixed(1)) + ' kHz' : Math.round(c.hz) + ' Hz'}${stoer ? '' : ' · ' + (c.art === 'wahrscheinlich Musik' ? window.t('studio.kerbe.musik') : c.note)}${c.linien ? ' ·' + c.linien : ''}</text>`
+                + `<g class="stoergriff ${hoert ? 'an' : ''}" data-was="hoeren" data-hz="${c.hz}"><title>${window.t('studio.kerbe.hoeren')}</title><circle cx="${(x + dx + 9).toFixed(1)}" cy="${(yL + 15).toFixed(1)}" r="10"/><text x="${(x + dx + 9).toFixed(1)}" y="${(yL + 20).toFixed(1)}">♪</text></g>`
+                + `<g class="stoergriff ${gesetzt ? 'an' : ''}" data-was="kerbe" data-hz="${c.hz}"><title>${window.t('studio.kerbe.setzen')}</title><circle cx="${(x + dx + 33).toFixed(1)}" cy="${(yL + 15).toFixed(1)}" r="10"/><text x="${(x + dx + 33).toFixed(1)}" y="${(yL + 20).toFixed(1)}">⊘</text></g>`;
       });
     }
     /* Die gesetzte Kerbe ist ein PUNKT wie die acht Baender (Caspar_D, 23.08.:
@@ -7097,7 +7089,7 @@ function studioEffekte(){
        Korrelation des Songs (aus der Analyse) -> WIDE in Warnfarbe, Tooltip sagt warum */
     { const ls = $('lpStereo'), sK = songVonId.get(aktuellId), kor = sK && sK.analyse && sK.analyse.korrelation;
       const gefahr = !stumm && +b.value > 100 && kor != null && +kor < 0.3;
-      if (ls){ ls.classList.toggle('warn', gefahr); ls.title = gefahr ? `Korrelation ${String(kor).replace('.', ',')} — bei dieser Breite auf Mono prüfen (Auslöschungsgefahr)` : ''; } }
+      if (ls){ ls.classList.toggle('warn', gefahr); ls.title = gefahr ? window.t('studio.korrelation.warn', { k: dezimal(String(kor)) }) : ''; } }
     lampe('lpHall',   +h.value > 0);
     lampe('lpEcho',   +e.value > 0);
     lampe('lpTempo',  +t.value !== 100);
@@ -7226,7 +7218,7 @@ async function zeitVergleichAuf(id){
     const e = await (await fetch('/api/lyrik/' + id)).json();
     if (e && e.zeilen && e.zeilen.length) rein = e.zeilen.filter(z => z && z.text && z.text.trim())
       .map(z => [z.von || 0, (z.bis > z.von) ? z.bis : (z.von || 0) + 1, String(z.text).replace(/\s+$/, '') + '\n']);
-    else if (e && e.zurueckgestellt) reinGrund = 'zurückgestellt — ' + (e.grund || 'zu wenig gedeckt');
+    else if (e && e.zurueckgestellt) reinGrund = t('zvgl.zurueckgestellt', { grund: e.grund || t('zvgl.zu_wenig') });
   } catch (e) {}
   /* Fehlt eine Quelle noch (v3 rechnet bei Suno, Whisper laeuft in der
      Nacht), fragt das Fenster alle 30 s selbst nach - nicht der Mensch. */
@@ -7237,12 +7229,12 @@ async function zeitVergleichAuf(id){
      zweizeilig Modelltyp und Anwendung"). Drei Felder lassen sich
      untereinander setzen und rechtsbuendig ausrichten; ein Satz nicht. */
   const QUELLEN = [
-    { k:'v2', name:'Suno v2', typ:'aligned_lyrics/v2', zweck:'im Archiv',       worte: d.v2 },
-    { k:'v3', name:'Suno v3', typ:'aligned_lyrics/v3', zweck:'Zeitprobe',       worte: d.v3 },
-    { k:'wh', name:'Whisper', typ:'large-v3',          zweck:'Text als Prompt', worte: d.whisper },
-    { k:'rein', name:'bereinigte Lyrik', typ:'lyrik.json', zweck:'Zeilen, nicht Wörter', worte: rein },
+    { k:'v2', name:'Suno v2', typ:'aligned_lyrics/v2', zweck:t('zvgl.v2.zweck'),   worte: d.v2 },
+    { k:'v3', name:'Suno v3', typ:'aligned_lyrics/v3', zweck:t('zvgl.v3.zweck'),   worte: d.v3 },
+    { k:'wh', name:'Whisper', typ:'large-v3',          zweck:t('zvgl.wh.zweck'),   worte: d.whisper },
+    { k:'rein', name:t('zvgl.rein.name'), typ:'lyrik.json', zweck:t('zvgl.rein.zweck'), worte: rein },
   ];
-  $('zvgltitel').textContent = 'Zeitmarken-Vergleich · ' + (d.titel || id);
+  $('zvgltitel').textContent = t('zvgl.titel', { titel: d.titel || id });
   const feld = $('zvglzeilen'); feld.innerHTML = '';
   const kenn = zvglKennfarben(song(id));
   /* DIE ZEILEN DES TEXTES. Die Worte tragen den Umbruch in sich: ein Wort,
@@ -7270,11 +7262,10 @@ async function zeitVergleichAuf(id){
       zeilen.push({ q, el: w, zz: zuZeilen(q.worte), n: -1 });
     } else {
       w.className = 'qleer';
-      w.textContent = q.k === 'v3' ? (d.v3lauft ? 'Suno rechnet noch — das Fenster fragt alle 30 s nach; ein neuer Lesezeichen-Klick holt das Ergebnis'
-                                                  : 'noch keine Zeitprobe — Lesezeichen mit „Zeitmarken-Probe" laufen lassen')
-                    : q.k === 'wh' ? 'noch nicht gerechnet — node bin/whisper.js ' + id
-                    : q.k === 'rein' ? (reinGrund || 'noch nicht abgeglichen — Lauf „Bereinigte Lyrik"')
-                    : 'keine Zeitmarken im Archiv';
+      w.textContent = q.k === 'v3' ? (d.v3lauft ? t('zvgl.v3.rechnet') : t('zvgl.v3.keine'))
+                    : q.k === 'wh' ? t('zvgl.wh.keine', { id })
+                    : q.k === 'rein' ? (reinGrund || t('zvgl.rein.keine'))
+                    : t('zvgl.keine');
     }
     z.append(n, w); feld.appendChild(z);
   }
@@ -7301,8 +7292,8 @@ async function zeitVergleichAuf(id){
     }
     if (ds.length > 10){
       ds.sort((x, y) => x - y);
-      const ms = (v) => v >= 1 ? v.toFixed(1).replace('.', ',') + ' s' : (v * 1000).toFixed(0) + ' ms';
-      fuss.push(`${q.name} gegen v2: Median ${ms(ds[ds.length >> 1])}, 95 % unter ${ms(ds[Math.floor(ds.length * .95)])} (${ds.length} Wortpaare)`);
+      const ms = (v) => v >= 1 ? dezimal(v.toFixed(1)) + ' s' : (v * 1000).toFixed(0) + ' ms';
+      fuss.push(t('zvgl.fuss', { name: q.name, median: ms(ds[ds.length >> 1]), p95: ms(ds[Math.floor(ds.length * .95)]), n: ds.length }));
     }
   }
   $('zvglfuss').textContent = fuss.join(' · ');
@@ -8104,7 +8095,7 @@ function klangraumFarbenWaehlen(id){
 }
 function klangraumFarbwahlHtml(){
   const chips = (p) => p.f.slice(0, 6).map(c => `<i style="background:${c}"></i>`).join(''), p = klangraumPal();
-  if (p.gestalt) return `<button type="button" class="fw-knopf" disabled title="${p.gestalt === 'kubus' ? 'Der Kubus' : 'Der Rabe'} fliegt in eigenen Farben – die freie Wahl gilt wieder mit dem Schiff.">${chips(p)}<span>${p.name}</span></button>`;
+  if (p.gestalt) return `<button type="button" class="fw-knopf" disabled title="${esc(t('karte.farbe.gestalt', { wer: t(p.gestalt === 'kubus' ? 'karte.farbe.kubus' : 'karte.farbe.rabe') }))}">${chips(p)}<span>${p.name}</span></button>`;
   return `<button type="button" class="fw-knopf" onclick="this.parentElement.classList.toggle('auf')">${chips(p)}<span>${p.name}</span><b>▾</b></button>`
     + '<span class="fw-liste">' + KLANGRAUM_PALETTEN.filter(q => !q.gestalt).map(q => `<button type="button" class="fw-wahl${q.id === p.id ? ' an' : ''}" onclick="klangraumFarbenWaehlen('${q.id}')">${chips(q)}<span>${q.name}</span></button>`).join('') + '</span>';
 }
@@ -11098,7 +11089,7 @@ async function karteZeichnen(){
       return zeichnen();
     }
     catch (e) {
-      leg.innerHTML = '<h3>Räume</h3><p class="fussnote">Noch kein Klang-Raum — der Morgenlauf „Musikstil und Musik-Karte“ rechnet ihn.</p>';
+      leg.innerHTML = '<h3>' + window.t('register.raeume') + '</h3><p class="fussnote">' + window.t('karte.leer') + '</p>';
       svg.innerHTML = ''; return;
     }
   }
@@ -11121,8 +11112,8 @@ async function karteZeichnen(){
     /* Ring am laufenden Stern nur bei Direkter Route - im Orbiter/Warp ist die Bahn das Highlight (Caspar_D, 21.08.) */
     return `<circle class="stern${p.id === aktuellId && schiffArt === 'direkt' ? ' laeuft' : ''}" data-id="${p.id}" data-g="${p.gruppe}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${((6 + 8 * p.dichte) * rk * tf).toFixed(1)}" fill="transparent"/>`; }
   ).join('') + ((karteSternbilder || []).map(({ t, i }) => { const [x, y] = karteSternbildLage.get(i) || [-99, -99];
-    return `<circle class="sternbild" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(14 * rk).toFixed(1)}" fill="transparent"><title>Sternbild ${gruppenAnzeige(t.name)} (${t.art}) — erklärt ${Math.round((t.erklaert || 0) * 100)} % der Gruppentrennung, markiert „${gruppenAnzeige((d.gruppen[t.markiert] || {}).name) || '?'}“; ${t.songs} Titel</title></circle>`; }).join(''))
-  + (L.gruppen && karteLoecher ? L.gruppen.map((G, gi) => G ? `<circle class="loch" data-g="${gi}" cx="${(karteZoom.tx + karteZoom.k * G.p[0]).toFixed(1)}" cy="${(karteZoom.ty + karteZoom.k * G.p[1]).toFixed(1)}" r="${(12 * rk).toFixed(1)}" fill="transparent"><title>${gruppenAnzeige(d.gruppen[gi].name)} — Massezentrum der Gruppe; Klick hebt sie hervor. Jet = Hauptachse (${Math.round((G.ger || 0) * 100)} % der Ausdehnung)</title></circle>` : '').join('') : '');
+    return `<circle class="sternbild" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(14 * rk).toFixed(1)}" fill="transparent"><title>${window.t('karte.sternbild.tipp', { name: gruppenAnzeige(t.name), art: t.art, p: Math.round((t.erklaert || 0) * 100), gruppe: gruppenAnzeige((d.gruppen[t.markiert] || {}).name) || '?', n: t.songs })}</title></circle>`; }).join(''))
+  + (L.gruppen && karteLoecher ? L.gruppen.map((G, gi) => G ? `<circle class="loch" data-g="${gi}" cx="${(karteZoom.tx + karteZoom.k * G.p[0]).toFixed(1)}" cy="${(karteZoom.ty + karteZoom.k * G.p[1]).toFixed(1)}" r="${(12 * rk).toFixed(1)}" fill="transparent"><title>${window.t('karte.loch.tipp', { name: gruppenAnzeige(d.gruppen[gi].name), p: Math.round((G.ger || 0) * 100) })}</title></circle>` : '').join('') : '');
   svg.querySelectorAll('.loch').forEach(c => c.onclick = () => { const g = +c.dataset.g; karteGruppeAn = karteGruppeAn === g ? null : g; karteZeichnen(); });
   svg.querySelectorAll('.sternbild').forEach(c => {
     c.onmouseenter = () => { const t = d.tags[+c.dataset.i], m = new Set(t.sterne || []); svg.querySelectorAll('.stern').forEach(o => o.classList.toggle('nachbar', m.has(o.dataset.id))); };
@@ -12630,7 +12621,7 @@ function karteSchiffFrame(){
       g.beginPath(); g.moveTo(A[0], A[1]); g.quadraticCurveTo(C[0], C[1], B[0], B[1]); g.stroke();
       g.strokeStyle = akz; g.globalAlpha = 0.75; g.beginPath(); g.moveTo(A[0], A[1]);
       for (let u = 0.02; u <= e + 1e-6; u += 0.02){ const q = bz(u); g.lineTo(q[0], q[1]); } g.lineTo(P[0], P[1]); g.stroke(); g.globalAlpha = 1;
-      zielmarke(B); zeichneSchiff(P, ang, 0); zeichneLabel(P, 'Kurs auf ' + ((song(zielId) || {}).titel || '?'));
+      zielmarke(B); zeichneSchiff(P, ang, 0); zeichneLabel(P, window.t('karte.schiff.kurs', { titel: (song(zielId) || {}).titel || '?' }));
     } else {
       /* ---- Orbiter nach bahn.html (Caspar_D, 21.08.2026, "so machen wir das") ----
          KREISBAHN, konstante Bahngeschwindigkeit. Eintritt auf dem engen
@@ -13060,7 +13051,7 @@ function karteSchiffFrame(){
           schweif(pts); }
         /* Zielkreis nicht mehr zeichnen (22.08.) */
         karteSchiffFrame.ankunft = { th: ab.thZiel, sinn: ab.sinnNeu, rel: [ab.T[0] - B[0], ab.T[1] - B[1]], dir: [ab.T[0] - ab.P[0], ab.T[1] - ab.P[1]], tempo: tempoT, tempoRoh: tempoT / pxZiel, abRoh: ab.kurve ? ab.kurve(0.98) : ab.P.roh };
-        zeichneSchiff(P, ang, 0, 1); g = gVorn; zeichneLabel(P, 'Kurs auf ' + ((song(zielId) || {}).titel || '?') + ' · ' + Math.ceil(rest) + ' s');
+        zeichneSchiff(P, ang, 0, 1); g = gVorn; zeichneLabel(P, window.t('karte.schiff.kurs', { titel: (song(zielId) || {}).titel || '?' }) + ' · ' + Math.ceil(rest) + ' s');
       } else {
         const a = lage(zeit); let dir = tangente(zeit);
         let P = a.P;
@@ -13203,7 +13194,7 @@ function karteSchiffFrame(){
         Object.assign(karteSchiffFrame.diag, { P: [P[0], P[1]], roh: P.roh, einfang: !!(bahn.vonFang && bahn.einRel && zeit < tEinfang) });
         zeichneSchiff(P, ang, glut, schub);
         g.globalAlpha = 1; g = gVorn;                                   // Transponder immer vorn (lesbar)
-        zeichneLabel(P, glut > 0 ? 'Warpkern lädt … ' + Math.ceil(rest) + ' s' : schub > 0 ? 'Schub · Absprung in ' + Math.ceil(tAb - zeit) + ' s' : (kubus ? 'Assimilation · ' : gestalt === 'rabe' ? 'Rundflug · ' : 'im Orbit · ') + mmss(zeit) + (a.rp < Rmax - 0.5 ? ' · spiralt' : ''));
+        zeichneLabel(P, glut > 0 ? window.t('karte.schiff.warp', { s: Math.ceil(rest) }) : schub > 0 ? window.t('karte.schiff.schub', { s: Math.ceil(tAb - zeit) }) : window.t(kubus ? 'karte.schiff.assimilation' : gestalt === 'rabe' ? 'karte.schiff.rundflug' : 'karte.schiff.orbit') + mmss(zeit) + (a.rp < Rmax - 0.5 ? window.t('karte.schiff.spiralt') : ''));
       }
     }
   }
@@ -13527,7 +13518,7 @@ function zeichnePlaylistUebersicht(){
   sichtbar = [];                                // hier gibt es nichts abzuspielen
 
   const r = $('raster');
-  if (!l.length){ r.innerHTML = '<div class="leer">Kein Album gefunden.</div>'; return; }
+  if (!l.length){ r.innerHTML = '<div class="leer">' + t('album.keins') + '</div>'; return; }
 
   r.innerHTML = l.map(p => {
     const fremd = p.eintraege.filter(e => !e.eigen).length;
@@ -13535,12 +13526,12 @@ function zeichnePlaylistUebersicht(){
     <div class="karte plkarte" data-pl="${p.id}" onclick="playlistAuf('${p.id}')">
       <div class="bild plbild">
         <img loading="lazy" src="/playlistbild/${p.id}.jpg" alt="">
-        ${p.oeffentlich ? '' : '<span class="privatmarke" title="nicht öffentlich auf Suno">privat</span>'}
+        ${p.oeffentlich ? '' : '<span class="privatmarke" title="' + esc(t('album.privat.titel')) + '">' + t('kachel.privat') + '</span>'}
       </div>
       <div class="titel">${esc(p.name)}</div>
       <div class="unter">
-        <span>${p.eintraege.length} Titel</span>
-        ${fremd ? `<span title="Titel anderer Urheber - werden übers Netz abgespielt">${fremd} aus dem Netz</span>` : ''}
+        <span>${t('zahl.titel', { n: p.eintraege.length })}</span>
+        ${fremd ? `<span title="${esc(t('album.fremd.titel'))}">${t('album.fremd', { n: fremd })}</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -13594,7 +13585,7 @@ function zeichnePlaylistInhalt(){
              ${s.fremd ? '' : `onerror="this.src='${artworkBild(s.id)}'"`}>
         <span class="posmarke">${eintraege[i]?.position ?? i+1}</span>
         ${s.fremd
-          ? `<span class="remotemarke" title="von ${esc(s.anzeigename||s.handle||'')} — kommt übers Netz">aus dem Netz</span>`
+          ? `<span class="remotemarke" title="${esc(t('album.netz.titel', { wer: s.anzeigename||s.handle||'' }))}">${t('album.netz')}</span>`
           : (s.oeffentlich ? '' : `<span class="privatmarke" title="${t('kachel.privat.titel')}">${t('kachel.privat')}</span>`)}
       </div>
       <div class="titel">${esc(s.titel)}${imText(s) ? ' <i class="imtext" title="' + t('kachel.imtext') + '">' + SYM('lyrics') + '</i>' : ''}</div>
@@ -14053,9 +14044,9 @@ function anschlussEinsAb(takt, t){
 /** Das Regelwerk: aus zwei Songs wird ein Plan - oder eine Begruendung,
     warum nur die Notblende bleibt. */
 function anschlussRechnen(A, B){
-  if (!A.takt || !B.takt) return { fall: 0, grund: 'kein Taktraster' };
-  if (A.takt.streuung > 0.09 || B.takt.streuung > 0.09) return { fall: 0, grund: 'Takt zu unruhig' };
-  if (!A.rand || !B.rand) return { fall: 0, grund: 'keine Huellkurve' };
+  if (!A.takt || !B.takt) return { fall: 0, grund: t('player.anschluss.grund.raster') };
+  if (A.takt.streuung > 0.09 || B.takt.streuung > 0.09) return { fall: 0, grund: t('player.anschluss.grund.unruhig') };
+  if (!A.rand || !B.rand) return { fall: 0, grund: t('player.anschluss.grund.huelle') };
   /* Halbes, doppeltes und Dreiviertel-Tempo passen taktweise auch - den
      guenstigsten Bezug suchen, nicht stur 1:1 vergleichen. */
   const roh = B.takt.bpm / A.takt.bpm;
@@ -14066,13 +14057,13 @@ function anschlussRechnen(A, B){
   }
   const v = roh / bezug, abstand = Math.abs(v - 1);
   let rateA = 1, rateB = 1, traeger;
-  if (abstand <= 0.04){ rateB = 1 / v; traeger = 'der Neue allein'; }
-  else if (abstand <= 0.08){ const m = Math.sqrt(v); rateA = m; rateB = m / v; traeger = 'beide je zur Hälfte'; }
+  if (abstand <= 0.04){ rateB = 1 / v; traeger = 'allein'; }          /* der Neue allein; Anzeige: player.anschluss.traeger.* */
+  else if (abstand <= 0.08){ const m = Math.sqrt(v); rateA = m; rateB = m / v; traeger = 'haelfte'; }   /* beide je zur Haelfte */
   else traeger = null;
   const hartE = A.rand.ende === 'hart', hartA = B.rand.anfang === 'hart';
   const fall = hartE && hartA ? 1 : (!hartE && !hartA ? 2 : (!hartE && hartA ? 3 : 4));
   const NAMEN = { 1: 'Fortsetzen', 2: 'Ineinander', 3: 'Eintakten', 4: 'Anschlagen' };
-  if (!traeger) return { fall: 0, grund: `Tempi ${(abstand * 100).toFixed(1).replace('.', ',')} % auseinander`,
+  if (!traeger) return { fall: 0, grund: t('player.anschluss.grund.tempi', { p: dezimal((abstand * 100).toFixed(1)) }),
                          bpmA: A.takt.bpm, bpmB: B.takt.bpm };
   /* Der Zeitpunkt IM LAUFENDEN SONG, an dem der Neue seinen Einsatz hat. */
   let ziel, vorlaufB = 0;
@@ -14344,9 +14335,11 @@ function anschlussLampe(){
   k.title = !anAnschluss ? t('player.anschluss.aus')
     : !n ? t('player.anschluss.an')
     : !n.fall ? t('player.anschluss.blende', { grund: n.grund })
-    : `${n.name}: ${n.randA === 'hart' ? 'hartes Ende' : 'Ausklang'} trifft ${n.randB === 'hart' ? 'harten Anfang' : 'Einblendung'}`
-      + ` · ${Math.round(n.bpmA)} → ${Math.round(n.bpmB)} BPM, Treffpunkt ${Math.round(n.treffpunkt)}`
-      + ` (${n.traeger}) · nächster: ${n.b.titel}`;
+    : t('player.anschluss.naht', { name: t('player.anschluss.fall.' + n.fall),
+        a: t(n.randA === 'hart' ? 'player.anschluss.hart_ende' : 'player.anschluss.ausklang'),
+        b: t(n.randB === 'hart' ? 'player.anschluss.hart_anfang' : 'player.anschluss.einblendung'),
+        bpmA: Math.round(n.bpmA), bpmB: Math.round(n.bpmB), treff: Math.round(n.treffpunkt),
+        traeger: t('player.anschluss.traeger.' + n.traeger), titel: n.b.titel });
   /* Der Zwilling im Bühnenpult trägt dasselbe (23.08.2026). */
   const b = $('banschluss');
   if (b){ b.classList.toggle('an', !!anAnschluss); b.classList.toggle('arbeitet', !!bereit);
@@ -14879,7 +14872,7 @@ async function detailAuf(id){
           <h2>${esc(s.titel)}</h2>
           <div class="chips">
             ${s.modell ? `<span class="chip">${esc(s.modell)}</span>`
-              : (s.modellRoh ? `<span class="chip">Modell: ${esc(s.modellRoh)}</span>`:'')}
+              : (s.modellRoh ? `<span class="chip">${t('detail.modell', { m: esc(s.modellRoh) })}</span>`:'')}
             <span class="chip">${(s.erstellt||'').slice(0,10)}</span>
             <span class="chip">${dauer}</span>
             <span class="chip">${SYM('plays')}${s.plays||0}</span>
@@ -14890,28 +14883,26 @@ async function detailAuf(id){
           <div class="chips">${tags.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
           <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
             <button class="chip" onclick="detailZu();spielenNachId('${s.id}');buehneAuf('${s.id}')"
-              style="cursor:pointer">${SYM('buehne')} Bühne${s.hatTiming?' · Text läuft mit':''}</button>
-            <a class="chip" href="${s.link}" target="_blank" rel="noopener">Auf Suno ansehen ↗</a>
+              style="cursor:pointer">${SYM('buehne')} ${t('player.buehne')}${s.hatTiming?' · ' + t('detail.text_mit'):''}</button>
+            <a class="chip" href="${s.link}" target="_blank" rel="noopener">${t('detail.suno')}</a>
           </p>
         </div>
       </div>
 
-      ${s.lyrics ? `<div class="block"><h3>Lyrics</h3><pre class="text">${esc(s.lyrics)}</pre></div>`:''}
-      ${s.stilPrompt ? `<div class="block"><h3>Stil-Prompt</h3><pre class="text">${esc(s.stilPrompt)}</pre></div>`:''}
-      ${s.stilAusschluss ? `<div class="block"><h3>Ausgeschlossene Stile</h3><pre class="text">${esc(s.stilAusschluss)}</pre></div>`:''}
-      ${hatBewegtbild(s) ? `<div class="block"><h3>${istEigenesBewegtbild(s) ? 'Dein Bewegtbild — selbst zugeordnet' : 'Dein Bewegtbild'}</h3>
+      ${s.lyrics ? `<div class="block"><h3>${t('player.lyrics')}</h3><pre class="text">${esc(s.lyrics)}</pre></div>`:''}
+      ${s.stilPrompt ? `<div class="block"><h3>${t('detail.stilprompt')}</h3><pre class="text">${esc(s.stilPrompt)}</pre></div>`:''}
+      ${s.stilAusschluss ? `<div class="block"><h3>${t('detail.ausschluss')}</h3><pre class="text">${esc(s.stilAusschluss)}</pre></div>`:''}
+      ${hatBewegtbild(s) ? `<div class="block"><h3>${istEigenesBewegtbild(s) ? t('detail.bewegt.eigen') : t('detail.bewegt')}</h3>
          <video controls loop playsinline preload="metadata"
            poster="${artworkBild(s.id)}" src="${artworkVideo(s.id)}"></video></div>`:''}
-      ${s.videoUrl ? `<div class="block"><h3>Lyric-Video von Suno</h3>
+      ${s.videoUrl ? `<div class="block"><h3>${t('detail.lyricvideo')}</h3>
          <p style="color:var(--schwach);font-size:13px;line-height:1.6">
-           Nicht mitarchiviert — die Bühne kann dasselbe wortgenau statt
-           zeilenweise. Liegt weiter auf Sunos CDN und ist mit
-           <code>node bin/laden.js --mit-lyricvideo</code> nachladbar.<br>
+           ${t('detail.lyricvideo.text')}<br>
            <a href="${s.videoUrl}" target="_blank" rel="noopener"
-              style="color:var(--akzent)">Direkt ansehen ↗</a>
+              style="color:var(--akzent)">${t('detail.direkt')}</a>
          </p></div>`:''}
-      ${(s.zaehlerVerlauf&&s.zaehlerVerlauf.length>1) ? `<div class="block"><h3>Entwicklung</h3>
-         <pre class="text">${s.zaehlerVerlauf.map(v=>`${v.stand}   ${v.plays} Abrufe   ${v.likes} Herzen   ${v.kommentare} Kommentare`).join('\n')}</pre></div>`:''}
+      ${(s.zaehlerVerlauf&&s.zaehlerVerlauf.length>1) ? `<div class="block"><h3>${t('detail.entwicklung')}</h3>
+         <pre class="text">${s.zaehlerVerlauf.map(v=>t('detail.verlauf', { stand: v.stand, plays: v.plays, likes: v.likes, kommentare: v.kommentare })).join('\n')}</pre></div>`:''}
     </div>`;
 
   $('detail').classList.add('auf');
@@ -15480,7 +15471,7 @@ function kuriosSeiten(eigene){
            Stoss. */
         const z = mitDatum.map(s => ({ t: +new Date(s.erstellt), s }))
                           .filter(x => !isNaN(x.t)).sort((a, b) => a.t - b.t);
-        if (z.length < 3) throw new Error('zu wenige Titel mit Datum');
+        if (z.length < 3) throw new Error(window.t('profil.kurios.f.datum'));
         let best = { n: 0, i: 0, j: 0 };
         for (let i = 0, j = 0; i < z.length; i++){
           while (z[i].t - z[j].t > 3600000) j++;
@@ -15506,7 +15497,7 @@ function kuriosSeiten(eigene){
            Stunde waere Zufall. */
         const st = Array(24).fill(0); let n = 0;
         for (const s of mitDatum){ const d = new Date(s.erstellt); if (isNaN(d)) continue; st[d.getHours()]++; n++; }
-        if (!n) throw new Error('keine Zeitstempel');
+        if (!n) throw new Error(window.t('profil.kurios.f.zeit'));
         let leer = { n: Infinity, ab: 0 };
         for (let a = 0; a < 24; a++){
           let sum = 0; for (let k = 0; k < 6; k++) sum += st[(a + k) % 24];
@@ -15529,7 +15520,7 @@ function kuriosSeiten(eigene){
         const mit = eigene.filter(s => s.hatLyrics && s.lyricsWorte > 0 && s.dauer > 30)
                           .map(s => ({ s, d: s.lyricsWorte / (s.dauer / 60) }))
                           .sort((a, b) => b.d - a.d);
-        if (mit.length < 5) throw new Error('zu wenige Titel mit Text');
+        if (mit.length < 5) throw new Error(window.t('profil.kurios.f.text'));
         const m = mit[Math.floor(mit.length / 2)];
         const box = document.createElement('div');
         box.appendChild(satz(t('profil.kurios.dichte.satz', { n: Math.round(m.d) })));
@@ -15563,7 +15554,7 @@ function kuriosSeiten(eigene){
            wie schmal die Auswahl ist. Warum sie schmal ist, steht
            ausdruecklich nicht da - das waere Deutung. */
         const mit = eigene.filter(s => s.analyse && s.analyse.tonart && s.analyse.tonart.grund);
-        if (mit.length < 12) throw new Error('zu wenige gemessene Tonarten');
+        if (mit.length < 12) throw new Error(window.t('profil.kurios.f.tonart'));
         const z = new Map();
         /* Der Analyse-Index fuehrt Grundton und Tongeschlecht getrennt
            (grund, art) und kennt kein fertiges Namensfeld - bei 55 von
@@ -17597,41 +17588,41 @@ async function profilExportFuellen(){
     exportSchauen(false);
   };
   const ordnerZeigen = async (pfad) => {
-    const box = $('exportbrowser'); box.hidden = false; box.innerHTML = '<div class="fussnote">Lese …</div>';
+    const box = $('exportbrowser'); box.hidden = false; box.innerHTML = '<div class="fussnote">' + t('ton.lese_kurz') + '</div>';
     let d; try { d = await (await fetch('/api/ordner' + (pfad ? '?pfad=' + encodeURIComponent(pfad) : ''), { cache: 'no-store' })).json(); }
-    catch (e) { box.innerHTML = '<div class="fussnote">Server antwortet nicht.</div>'; return; }
+    catch (e) { box.innerHTML = '<div class="fussnote">' + t('ton.server_kurz') + '</div>'; return; }
     box.innerHTML = '';
     const bedarf = bedarfJetzt();
-    const platz = (o) => o.frei == null ? '' : ` · ${exportGroesse(o.frei)} frei` + (o.gesamt ? ` von ${exportGroesse(o.gesamt)}` : '') + (o.frei < bedarf ? ' — zu wenig' : '');
+    const platz = (o) => o.frei == null ? '' : ' · ' + t('export.o.frei', { g: exportGroesse(o.frei) }) + (o.gesamt ? ' ' + t('export.o.von', { g: exportGroesse(o.gesamt) }) : '') + (o.frei < bedarf ? ' — ' + t('export.o.zu_wenig') : '');
     if (!pfad){
-      const k = document.createElement('div'); k.className = 'fussnote'; k.textContent = 'Wohin? Ein Laufwerk wählen:'; box.appendChild(k);
+      const k = document.createElement('div'); k.className = 'fussnote'; k.textContent = t('export.o.wohin'); box.appendChild(k);
       for (const l of (d.laufwerke || [])){
         const z = document.createElement('button'); z.className = 'ordnerzeile' + (l.system ? ' system' : '') + (l.frei != null && l.frei < bedarf ? ' knapp' : '');
-        z.innerHTML = `<b>${esc(l.name)}</b><small>${esc(exportDateisystem(l.dateisystem))}${platz(l)}${l.system ? ' · Systemplatte' : ''}${l.netz ? ' · Netz' : ''}</small>`;
+        z.innerHTML = `<b>${esc(l.name)}</b><small>${esc(exportDateisystem(l.dateisystem))}${platz(l)}${l.system ? ' · ' + t('export.o.system') : ''}${l.netz ? ' · ' + t('export.o.netz') : ''}</small>`;
         z.onclick = () => ordnerZeigen(l.pfad);
         box.appendChild(z);
       }
-      if (!(d.laufwerke || []).length) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Kein Laufwerk gefunden — steckt der Stick?' }));
+      if (!(d.laufwerke || []).length) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: t('export.o.kein_laufwerk') }));
       return;
     }
     const kopf = document.createElement('div'); kopf.className = 'ordnerkopf';
-    const zurueck = document.createElement('button'); zurueck.className = 'pille'; zurueck.textContent = d.eltern ? '↑ eine Ebene' : '↑ Laufwerke';
+    const zurueck = document.createElement('button'); zurueck.className = 'pille'; zurueck.textContent = d.eltern ? t('ton.ebene') : t('ton.laufwerke');
     zurueck.onclick = () => ordnerZeigen(d.eltern || '');
     const hier = document.createElement('button'); hier.className = 'pille an';
     const zielHier = d.hatArchiv ? d.pfad : (d.pfad.replace(/[\\/]+$/, '') + (d.pfad.endsWith('/') || d.pfad.endsWith('\\') ? '' : '/') + 'KlangTresor');
-    hier.textContent = d.hatArchiv ? 'Dieses Archiv auffrischen' : 'Hierher: ' + zielHier;
+    hier.textContent = d.hatArchiv ? t('export.o.auffrischen') : t('export.o.hierher', { pfad: zielHier });
     hier.title = zielHier;
     hier.onclick = () => zielSetzen(zielHier);
     const wo = document.createElement('span'); wo.className = 'fussnote'; wo.style.margin = '0';
     wo.textContent = d.pfad + platz(d);
     kopf.append(zurueck, hier, wo); box.appendChild(kopf);
-    if (d.frei != null && d.frei < bedarf){ const w = document.createElement('div'); w.className = 'fussnote schlecht'; w.textContent = `Zu wenig Platz: gebraucht werden etwa ${exportGroesse(bedarf)}.`; box.appendChild(w); }
+    if (d.frei != null && d.frei < bedarf){ const w = document.createElement('div'); w.className = 'fussnote schlecht'; w.textContent = t('export.o.zu_wenig_platz', { g: exportGroesse(bedarf) }); box.appendChild(w); }
     for (const o of (d.ordner || [])){
       const z = document.createElement('button'); z.className = 'ordnerzeile'; z.innerHTML = `<b>${esc(o.name)}</b>`;
       z.onclick = () => ordnerZeigen(o.pfad);
       box.appendChild(z);
     }
-    if (!(d.ordner || []).length) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Keine Unterordner.' }));
+    if (!(d.ordner || []).length) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: t('ton.keine_unterordner') }));
   };
   $('exportwaehlen').onclick = () => { const b = $('exportbrowser'); if (!b.hidden){ b.hidden = true; return; } ordnerZeigen(''); };
   /* Die Stems-Pille aendert den Bedarf - Diagramm und Piktogramm ziehen
@@ -17642,14 +17633,14 @@ async function profilExportFuellen(){
   const startKnopf = $('exportstart');
   startKnopf.onclick = async () => {
     const z = $('exportziel').value.trim();
-    if (!z){ $('exportstand').textContent = 'Wohin? Erst ein Ziel wählen.'; ordnerZeigen(''); return; }
-    startKnopf.disabled = true; startKnopf.textContent = 'Startet …';
+    if (!z){ $('exportstand').textContent = t('export.st.ziel_erst'); ordnerZeigen(''); return; }
+    startKnopf.disabled = true; startKnopf.textContent = t('export.st.startet');
     let a = null;
     try { a = await (await fetch('/api/export/start', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stems: exportStemsAn(), ziel: z }) })).json(); }
-    catch (e) { a = { ok: false, grund: 'Server antwortet nicht: ' + e.message }; }
-    if (!a || !a.ok){ $('exportstand').textContent = '✗ ' + ((a && a.grund) || 'Start fehlgeschlagen');
-                      startKnopf.disabled = false; startKnopf.textContent = 'Export starten'; return; }
+    catch (e) { a = { ok: false, grund: t('export.st.server', { fehler: e.message }) }; }
+    if (!a || !a.ok){ $('exportstand').textContent = '✗ ' + ((a && a.grund) || t('export.st.start_fehl'));
+                      startKnopf.disabled = false; startKnopf.textContent = t('export.start'); return; }
     exportSchauen(true);
   };
   const hk = $('himmelsuno'); if (hk) hk.onclick = () => sternenhimmelAusgeben(hk);
@@ -17662,12 +17653,12 @@ async function profilExportFuellen(){
      Message hin, dass man warten soll, bis es gruen wird"). */
   const ak = $('exportanhalten');
   if (ak) ak.onclick = async () => {
-    ak.disabled = true; ak.textContent = 'Hält an …';
+    ak.disabled = true; ak.textContent = t('export.st.haelt');
     _exportAnhalten = true;
-    const st = $('exportstand'); st.className = 'fussnote warnung'; st.textContent = 'Hält an: die laufende Datei wird fertig, dann steht der Stand — den Stick jetzt NICHT abziehen, bis hier Grün steht.';
+    const st = $('exportstand'); st.className = 'fussnote warnung'; st.textContent = t('export.st.haelt_lang');
     let a = null;
     try { a = await (await fetch('/api/export/stop', { method: 'POST' })).json(); } catch (e) { a = { ok: false, grund: e.message }; }
-    if (!a || !a.ok){ _exportAnhalten = false; ak.disabled = false; ak.textContent = 'Anhalten'; st.className = 'fussnote'; st.textContent = '✗ ' + ((a && a.grund) || 'Anhalten fehlgeschlagen'); }
+    if (!a || !a.ok){ _exportAnhalten = false; ak.disabled = false; ak.textContent = t('export.anhalten'); st.className = 'fussnote'; st.textContent = '✗ ' + ((a && a.grund) || t('export.st.anhalten_fehl')); }
   };
   exportSchauen(false);
 }
@@ -17680,7 +17671,7 @@ async function exportSchauen(gleich){
     if (!$('exportlauf')){ clearInterval(_exportUhr); _exportUhr = null; return; }   /* Register zu */
     let d = null;
     try { d = await (await fetch('/api/export/stand', { cache: 'no-store' })).json(); }
-    catch (e) { $('exportstand').textContent = 'Server antwortet nicht.'; return; }
+    catch (e) { $('exportstand').textContent = t('ton.server_kurz'); return; }
     exportZeichnen(d || {});
     if (!(d && d.laeuft)){ clearInterval(_exportUhr); _exportUhr = null; }
   };
@@ -17703,9 +17694,9 @@ function exportZeichnen(d){
      eingehaengt, alter Server ohne das Feld) ist nichts gesperrt. */
   const passt = exportPlatzZeichnen(d);
   exportFortschrittZeichnen(d);
-  if (knopf){ knopf.disabled = laeuft || !passt; knopf.textContent = laeuft ? 'Läuft …' : 'Export starten'; }
+  if (knopf){ knopf.disabled = laeuft || !passt; knopf.textContent = laeuft ? t('export.st.laeuft') : t('export.start'); }
   const ak = $('exportanhalten');
-  if (ak){ ak.hidden = !laeuft; if (!laeuft){ ak.disabled = false; ak.textContent = 'Anhalten'; } }
+  if (ak){ ak.hidden = !laeuft; if (!laeuft){ ak.disabled = false; ak.textContent = t('export.anhalten'); } }
 
   /* Der letzte Stand vom Stick - oder warum es keinen gibt. */
   const st = d.letzter || null;            /* so nennt es der Server: export-stand.json vom Stick */
@@ -17715,25 +17706,25 @@ function exportZeichnen(d){
      09.09.2026: "obwohl der Export laeuft, steht noch immer ein Status
      da"). */
   const seitUhr = (iso) => { const x = iso ? new Date(iso) : null;
-    return x && !isNaN(x) ? x.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : ''; };
+    return x && !isNaN(x) ? x.toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' }) : ''; };
   const erg = d.ergebnis || null;
-  const stufeText = (s) => s ? `Stufe ${s.nr} von ${s.von}` : '';
+  const stufeText = (s) => s ? t('export.lauf.stufe', { nr: s.nr, von: s.von }) : '';
   /* Farbe der Standzeile: rot-orange, solange es anhaelt (nicht ziehen!),
      gruen, wenn angehalten oder fertig (sicher zu trennen), sonst neutral. */
   if (!laeuft) _exportAnhalten = false;
   stand.className = 'fussnote' + (laeuft && _exportAnhalten ? ' warnung' : (!laeuft && ((erg && erg.angehalten) || d.fertig)) ? ' gut' : '');
-  if (!d.ziel) stand.textContent = 'Noch kein Ziel gewählt.';
-  else if (d.zielEingehaengt === false) stand.textContent = `Medium nicht eingehängt (${d.ziel}).`;
-  else if (laeuft && _exportAnhalten) stand.textContent = 'Hält an: die laufende Datei wird fertig, dann steht der Stand — den Stick jetzt NICHT abziehen, bis hier Grün steht.';
-  else if (laeuft) stand.textContent = `Export läuft seit ${seitUhr(d.seit) || 'eben'}` + (d.stufe ? ` · ${stufeText(d.stufe)}` : '') + ' …';
+  if (!d.ziel) stand.textContent = t('export.lauf.kein_ziel');
+  else if (d.zielEingehaengt === false) stand.textContent = t('export.lauf.nicht_eingehaengt', { ziel: d.ziel });
+  else if (laeuft && _exportAnhalten) stand.textContent = t('export.st.haelt_lang');
+  else if (laeuft) stand.textContent = t('export.lauf.seit', { zeit: seitUhr(d.seit) || t('export.lauf.eben') }) + (d.stufe ? ` · ${stufeText(d.stufe)}` : '') + ' …';
   else if (erg && erg.angehalten && (!st || st.teilkopie))
-    stand.textContent = `✓ Angehalten nach ${stufeText(erg.stufe) || 'dem Start'}: ${Number(erg.titel || 0).toLocaleString('de-DE')} Titel spielbar — der Stick kann jetzt sicher ausgeworfen werden (Finder: Auswerfen). Erneut starten setzt fort.`;
+    stand.textContent = t('export.lauf.angehalten', { stufe: stufeText(erg.stufe) || t('export.lauf.dem_start'), n: tZahl(Number(erg.titel || 0)) });
   else if (st && st.teilkopie)
-    stand.textContent = `Teilkopie vom ${exportTag(st.exportiertAm)}, ${stufeText(st.stufe)}, ${Number(st.titel || 0).toLocaleString('de-DE')} von ${Number(st.titelZuHause || 0).toLocaleString('de-DE')} Titeln spielbar. Erneut starten setzt fort.`;
+    stand.textContent = t('export.lauf.teilkopie', { tag: exportTag(st.exportiertAm), stufe: stufeText(st.stufe), n: tZahl(Number(st.titel || 0)), m: tZahl(Number(st.titelZuHause || 0)) });
   else if (st && st.exportiertAm)
-    stand.textContent = (d.fertig ? '✓ Fertig — der Stick kann sicher ausgeworfen werden. ' : '') + `Stand vom ${exportTag(st.exportiertAm)}, ${Number(st.dateien || 0).toLocaleString('de-DE')} Dateien, ${exportGroesse(st.bytes)}`
-      + (st.titel ? `, ${Number(st.titel).toLocaleString('de-DE')} Titel` : '') + (st.mitStems ? ', mit Stems' : '') + (st.probestart ? `, Probestart ${st.probestart}` : '') + '.';
-  else stand.textContent = `Noch kein Export auf ${d.ziel} — bereit.`;
+    stand.textContent = (d.fertig ? t('export.lauf.fertig') + ' ' : '') + t('export.lauf.stand', { tag: exportTag(st.exportiertAm), n: tZahl(Number(st.dateien || 0)), g: exportGroesse(st.bytes) })
+      + (st.titel ? ', ' + t('export.lauf.titel', { n: Number(st.titel), z: tZahl(Number(st.titel)) }) : '') + (st.mitStems ? ', ' + t('export.lauf.mit_stems') : '') + (st.probestart ? ', ' + t('export.lauf.probestart', { x: st.probestart }) : '') + '.';
+  else stand.textContent = t('export.lauf.bereit', { ziel: d.ziel });
 
   /* Der Lauf als EIN Abschnitt, nachgefuehrt statt neu gebaut: Wer die
      Zeilen aufgeklappt hat, soll sie nicht alle zwei Sekunden wieder
@@ -17744,7 +17735,7 @@ function exportZeichnen(d){
     feld.innerHTML = '';
     el = document.createElement('div'); el.className = 'ms';
     el.innerHTML = '<div class="msym"></div><div class="mname"></div><div class="mdauer"></div>'
-      + '<div class="mkurz"></div><details><summary>Einzelheiten</summary><pre></pre></details>';
+      + '<div class="mkurz"></div><details><summary>' + t('export.lauf.einzelheiten') + '</summary><pre></pre></details>';
     feld.appendChild(el);
   }
   const status = d.fehler ? 'fehler' : laeuft ? 'laeuft' : d.fertig ? 'fertig' : (d.ergebnis && d.ergebnis.angehalten) ? 'angehalten' : 'wartet';
@@ -17752,8 +17743,8 @@ function exportZeichnen(d){
   el.className = 'ms ' + status; el.dataset.status = status;
   el.querySelector('.msym').textContent = { fertig: '✓', fehler: '✗', laeuft: '▸', angehalten: '■' }[status] || '·';
   /* Mit Zeit, damit ein alter Lauf nie wie ein frischer aussieht. */
-  const wann = d.seit ? ' vom ' + new Date(d.seit).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-  el.querySelector('.mname').textContent = (d.schritt && laeuft) ? d.schritt : (laeuft ? 'Export läuft' : d.fertig ? 'Export fertig' + wann : d.fehler ? 'Export abgebrochen' + wann : status === 'angehalten' ? 'Export angehalten' + wann : 'Export');
+  const wann = d.seit ? ' ' + t('export.lauf.vom', { datum: new Date(d.seit).toLocaleString(localeTag(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }) : '';
+  el.querySelector('.mname').textContent = (d.schritt && laeuft) ? d.schritt : (laeuft ? t('export.lauf.laeuft') : d.fertig ? t('export.lauf.fertig_kurz') + wann : d.fehler ? t('export.lauf.abgebrochen') + wann : status === 'angehalten' ? t('export.lauf.angehalten_kurz') + wann : 'Export');
   const seit = exportMs(d.seit);
   el.querySelector('.mdauer').textContent =
     erg && erg.dauerS != null ? morgenDauerText(erg.dauerS * 1000)
@@ -17775,10 +17766,10 @@ function exportZeichnen(d){
     if (!w){ w = document.createElement('div'); w.className = 'werte'; feld.appendChild(w); }
     const ps = String(erg.probestart || '');
     const ok = ps === 'ok';
-    w.innerHTML = `<div class="wert"><b>${Number(erg.dateien || 0).toLocaleString('de-DE')}</b><span>Dateien</span></div>
-      <div class="wert"><b>${esc(exportGroesse(erg.bytes))}</b><span>Größe</span></div>
-      <div class="wert"><b>${esc(morgenDauerText((erg.dauerS || 0) * 1000))}</b><span>Dauer</span></div>
-      <div class="wert ${ps ? (ok ? 'gut' : 'schlecht') : ''}" title="${esc(ps)}"><b>${ps ? (ok ? '✓ ok' : '✗') : '–'}</b><span>Probestart${ps && !ok ? '<br>' + esc(ps.replace(/^fehlgeschlagen:?\s*/, '')) : ''}</span></div>`;
+    w.innerHTML = `<div class="wert"><b>${tZahl(Number(erg.dateien || 0))}</b><span>${t('export.lauf.dateien')}</span></div>
+      <div class="wert"><b>${esc(exportGroesse(erg.bytes))}</b><span>${t('export.lauf.groesse')}</span></div>
+      <div class="wert"><b>${esc(morgenDauerText((erg.dauerS || 0) * 1000))}</b><span>${t('export.lauf.dauer')}</span></div>
+      <div class="wert ${ps ? (ok ? 'gut' : 'schlecht') : ''}" title="${esc(ps)}"><b>${ps ? (ok ? '✓ ok' : '✗') : '–'}</b><span>${t('export.lauf.probestart_kurz')}${ps && !ok ? '<br>' + esc(ps.replace(/^fehlgeschlagen:?\s*/, '')) : ''}</span></div>`;
   } else if (w) w.remove();
 }
 
@@ -17789,18 +17780,20 @@ function exportZeichnen(d){
    bin/export.js); Programm, Texte und Katalog und Node sind zusammen ein
    halbes Gigabyte - drei Farben fuer nichts, deshalb EIN Teil, die
    Einzelwerte stehen im Tooltip. */
+/* Name und Kurzname je Teil stehen in ui-sprache.js (export.teil.<schluessel>[.kurz]). */
 const EXPORT_TEILE = [
-  ['mp3',      'MP3',                          'MP3',              ['mp3']],
-  ['bilder',   'Titelbilder und Bewegtbilder', 'Bilder',           ['bilder']],
-  ['analyse',  'Analyse',                      'Analyse',          ['analyse']],
-  ['programm', 'Programm & Texte',             'Programm & Texte', ['programm', 'texte', 'node']],
-  ['musik',    'Musik-Ordner',                 'Musik/',           ['musik']],
-  ['stems',    'Instrumentspuren (Stems)',     'Stems',            ['stems']],
+  ['mp3',      ['mp3']],
+  ['bilder',   ['bilder']],
+  ['analyse',  ['analyse']],
+  ['programm', ['programm', 'texte', 'node']],
+  ['musik',    ['musik']],
+  ['stems',    ['stems']],
 ];
 function exportTeileZusammen(b, mitStems){
   const quelle = b && Array.isArray(b.teile) ? b.teile : null;
   const farben = exportPalette();
-  return EXPORT_TEILE.filter(([k]) => k !== 'stems' || mitStems).map(([k, name, kurz, aus]) => {
+  return EXPORT_TEILE.filter(([k]) => k !== 'stems' || mitStems).map(([k, aus]) => {
+    const name = t('export.teil.' + k), kurz = t('export.teil.' + k + '.kurz');
     const st = quelle ? quelle.filter(x => x && aus.includes(x.schluessel)) : [];
     const bytes = quelle ? st.reduce((s, x) => s + (Number(x.bytes) || 0), 0) : null;
     const dateien = quelle && st.some(x => x.dateien != null) ? st.reduce((s, x) => s + (Number(x.dateien) || 0), 0) : null;
@@ -17908,13 +17901,13 @@ function exportPiktogrammZeichnen(b){
   const Y0 = c1 - h[0] / 2;
   const Y1 = Y0 + h.reduce((s, x) => s + x, 0) + LUECKE * (n - 1);
   const H = Math.ceil(Y1 + FUSS + 1);
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Der Datenbestand auf dem Medium">`
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(window.t('export.pikto.aria'))}">`
     + `<rect x="${SX + 20}" y="1" width="26" height="14" rx="3" fill="var(--flaeche2)" stroke="var(--rand)"/>`
     + `<rect x="${SX}" y="12" width="${SB}" height="${H - 13}" rx="8" fill="rgba(0,0,0,.72)"/>`;
   let y = Y0;
   for (let i = 0; i < n; i++){
     const t = bloecke[i], hh = h[i];
-    const groesse = t.bytes == null ? '' : exportGroesse(t.bytes) + (t.schluessel === 'mp3' && t.dateien ? ` · ${Number(t.dateien).toLocaleString('de-DE')} Titel` : '');
+    const groesse = t.bytes == null ? '' : exportGroesse(t.bytes) + (t.schluessel === 'mp3' && t.dateien ? ' · ' + window.t('export.lauf.titel', { n: Number(t.dateien), z: tZahl(Number(t.dateien)) }) : '');
     const mitte = y + hh / 2;
     /* Der Block: Flaeche gedaempft, Topline oben (Hausform). Die Topline
        endet innerhalb der runden Ecken, sonst ragt sie ueber. */
@@ -17958,11 +17951,11 @@ function exportMediumZeichnen(d){
   const m = d && d.medium;
   zeile.innerHTML = ''; if (hinweis) hinweis.textContent = '';
   if (!m || !(m.gesamt > 0)){
-    if (d && d.ziel && d.zielEingehaengt === false) zeile.textContent = 'nicht eingehängt';
+    if (d && d.ziel && d.zielEingehaengt === false) zeile.textContent = window.t('export.medium.nicht');
     return;
   }
   const t = document.createElement('span');
-  t.textContent = `${m.name || m.pfad || '–'} · ${exportDateisystem(m.dateisystem)} · ${exportGroesse(m.gesamt)}, ${exportGroesse(m.frei)} frei`;
+  t.textContent = `${m.name || m.pfad || '–'} · ${exportDateisystem(m.dateisystem)} · ${exportGroesse(m.gesamt)}, ` + window.t('export.o.frei', { g: exportGroesse(m.frei) });
   zeile.appendChild(t);
   const k = m.kompatibel || {};
   for (const [schluessel, name] of [['mac', 'Mac'], ['windows', 'Windows'], ['linux', 'Linux']]){
@@ -17970,7 +17963,7 @@ function exportMediumZeichnen(d){
     const marke = document.createElement('span');
     marke.className = 'platzmarke ' + (wert === true ? 'gut' : wert === false ? 'schlecht' : '');
     marke.textContent = (wert === true ? '✓ ' : wert === false ? '✗ ' : '') + name + (typeof wert === 'string' ? ' · ' + wert : '');
-    marke.title = wert === true ? `${name} kann das Medium lesen und schreiben` : wert === false ? `${name} kann das Medium nicht lesen` : typeof wert === 'string' ? `${name}: ${wert}` : 'unbekannt';
+    marke.title = wert === true ? window.t('export.medium.rw', { name }) : wert === false ? window.t('export.medium.nicht_lesen', { name }) : typeof wert === 'string' ? `${name}: ${wert}` : window.t('export.medium.unbekannt');
     zeile.appendChild(marke);
   }
   if (hinweis && k.hinweis) hinweis.textContent = k.hinweis;
@@ -18033,7 +18026,7 @@ function exportPlatzZeichnen(d){
 
   box.innerHTML = '';
   box.hidden = false;
-  box.appendChild(diaTitel(`Belegung von ${m.name || m.pfad || 'dem Medium'} nach Datentransfer`));
+  box.appendChild(diaTitel(t('export.platz.titel', { name: m.name || m.pfad || t('export.platz.dem_medium') })));
   const balken = document.createElement('div'); balken.className = 'platzbalken';
   const segment = (bytes, farbe, deckung, titel) => {
     if (!(bytes > 0)) return;
@@ -18046,11 +18039,11 @@ function exportPlatzZeichnen(d){
   };
   const GRAU = '#8b8b90';
   /* Zahl und Verb: "1,4 GB kommen", aber "1 GB kommt" (Caspar_D, 09.09.2026). */
-  const kommen = (bytes) => /^1 /.test(exportGroesse(bytes)) ? 'kommt' : 'kommen';
-  segment(anderes, GRAU, SPUR_DECKUNG, `Anderes auf dem Medium: ${exportGroesse(anderes)}`);
+  const kommen = (bytes) => /^1 /.test(exportGroesse(bytes)) ? '1' : 'n';   /* Schluessel-Endung: _1 oder _n */
+  segment(anderes, GRAU, SPUR_DECKUNG, t('export.platz.anderes', { g: exportGroesse(anderes) }));
   for (const x of stueck){
-    segment(x.da, x.t.farbe, SPUR_DECKUNG, `${x.t.name}: ${exportGroesse(x.da)} schon drauf`);
-    segment(x.dazu, x.t.farbe, 0.22, `${x.t.name}: ${exportGroesse(x.dazu)} ${kommen(x.dazu)} noch`);
+    segment(x.da, x.t.farbe, SPUR_DECKUNG, t('export.platz.seg_da', { name: x.t.name, g: exportGroesse(x.da) }));
+    segment(x.dazu, x.t.farbe, 0.22, t('export.platz.seg_noch_' + kommen(x.dazu), { name: x.t.name, g: exportGroesse(x.dazu) }));
   }
   box.appendChild(balken);
 
@@ -18067,15 +18060,15 @@ function exportPlatzZeichnen(d){
     s.append(i, n, document.createTextNode(wert));
     legende.appendChild(s);
   };
-  if (anderes > 0) eintrag(GRAU, SPUR_DECKUNG, 'Anderes belegt', exportGroesse(anderes));
+  if (anderes > 0) eintrag(GRAU, SPUR_DECKUNG, t('export.platz.anderes_kurz'), exportGroesse(anderes));
   for (const x of stueck){
     const t = x.t;
-    const wert = exportGroesse(Number(t.bytes) || 0) + (t.dateien != null ? ` · ${Number(t.dateien).toLocaleString('de-DE')} ${Number(t.dateien) === 1 ? 'Datei' : 'Dateien'}` : '')
-      + (archiv ? (x.dazu > 0 ? (x.da > 0 ? ` · ${exportGroesse(x.da)} drauf, ${exportGroesse(x.dazu)} ${kommen(x.dazu)}` : ` · ${exportGroesse(x.dazu)} ${kommen(x.dazu)} noch`) : ' · drauf') : '');
+    const wert = exportGroesse(Number(t.bytes) || 0) + (t.dateien != null ? ' · ' + window.t('export.platz.dateien', { n: Number(t.dateien), z: tZahl(Number(t.dateien)) }) : '')
+      + (archiv ? ' · ' + (x.dazu > 0 ? (x.da > 0 ? window.t('export.platz.w_beides_' + kommen(x.dazu), { da: exportGroesse(x.da), dazu: exportGroesse(x.dazu) }) : window.t('export.platz.w_noch_' + kommen(x.dazu), { dazu: exportGroesse(x.dazu) })) : window.t('export.platz.w_drauf')) : '');
     eintrag(t.farbe, SPUR_DECKUNG, t.name, wert, t.einzeln);
   }
   const f = document.createElement('span'); const fi = document.createElement('i'); fi.style.background = 'rgba(0,0,0,.72)';
-  const fn = document.createElement('b'); fn.textContent = 'Frei danach'; fn.style.color = 'var(--schwach)';
+  const fn = document.createElement('b'); fn.textContent = t('export.platz.frei_danach'); fn.style.color = 'var(--schwach)';
   f.append(fi, fn, document.createTextNode(exportGroesse(freiDanach))); legende.appendChild(f);
   box.appendChild(legende);
   /* Die Behaelter, wie sie auf dem Medium liegen - und ob sich Ballast
@@ -18083,18 +18076,18 @@ function exportPlatzZeichnen(d){
   const bh = m.archiv && m.archiv.behaelter;
   if (bh && bh.volumen > 0){
     const h = document.createElement('div'); h.className = 'platzhinweis';
-    h.textContent = `Behälter auf dem Medium: ${bh.volumen} ${bh.volumen === 1 ? 'Stück' : 'Stücke'}, ${exportGroesse(bh.stuecke)}, ${Number(bh.dateien).toLocaleString('de-DE')} Einträge`
-      + (bh.ballast > 50 * 1048576 ? ` · ${exportGroesse(bh.ballast)} Ballast (wird ab einem Viertel verdichtet)` : '');
+    h.textContent = t('export.platz.behaelter', { n: bh.volumen, g: exportGroesse(bh.stuecke), e: tZahl(Number(bh.dateien)) })
+      + (bh.ballast > 50 * 1048576 ? ' · ' + t('export.platz.ballast', { g: exportGroesse(bh.ballast) }) : '');
     box.appendChild(h);
   } else if (archivBytes > 0){
     const h = document.createElement('div'); h.className = 'platzhinweis';
-    h.textContent = `Davon liegen schon ${exportGroesse(daSumme)} auf dem Medium — der Export frischt nur auf, was sich geändert hat.`;
+    h.textContent = t('export.platz.schon', { g: exportGroesse(daSumme) });
     box.appendChild(h);
   }
   if (!passt){
     const r = document.createElement('div'); r.className = 'platzfehlt';
-    r.textContent = `Passt nicht: der Export braucht ${exportGroesse(dazuSumme)}, frei sind ${exportGroesse(frei)} — es fehlen ${exportGroesse(dazuSumme - frei)}.`
-      + (stemsHaken ? ' Ohne Stems wird es kleiner.' : '');
+    r.textContent = t('export.platz.passt_nicht', { a: exportGroesse(dazuSumme), b: exportGroesse(frei), c: exportGroesse(dazuSumme - frei) })
+      + (stemsHaken ? ' ' + t('export.platz.ohne_stems') : '');
     box.appendChild(r);
   }
   return passt;
@@ -18153,7 +18146,7 @@ function exportFortschrittZeichnen(d){
           e.appendChild(v); balken.appendChild(e);
           if (i > 0){ const grenze = document.createElement('b'); grenze.className = 'grenze'; grenze.style.left = links.toFixed(2) + '%'; balken.appendChild(grenze); }
           const n = document.createElement('span'); n.style.left = links.toFixed(2) + '%'; n.style.width = anteil.toFixed(2) + '%';
-          n.textContent = String(s.nr); n.title = `Stufe ${s.nr}: ${s.name} · ${exportGroesse(s.bytes)}`;
+          n.textContent = String(s.nr); n.title = t('export.fort.stufe_titel', { nr: s.nr, name: s.name, g: exportGroesse(s.bytes) });
           n.style.color = lesbarAuf(farbe, '#161618', 4.5);
           if (anteil < 3) n.classList.add('schmal');
           zeile.appendChild(n);
@@ -18184,18 +18177,18 @@ function exportFortschrittZeichnen(d){
        Lauf, dann die Stufe, was gerade kopiert wird, wie schnell, wie
        lange noch - fuer den ganzen Lauf. */
     const stuecke = [];
-    if (d.stufe) stuecke.push(`Stufe ${d.stufe.nr} von ${d.stufe.von}` + (f.was ? `, ${f.was}` : ''));
+    if (d.stufe) stuecke.push(t('export.lauf.stufe', { nr: d.stufe.nr, von: d.stufe.von }) + (f.was ? `, ${f.was}` : ''));
     else if (f.was) stuecke.push(f.was);
-    if (g) stuecke.push(`${exportGroesse(g.fertig)} von ${exportGroesse(g.bytes)}`);
-    else if (f.bytesGesamt > 0) stuecke.push(`${exportGroesse(f.bytesFertig || 0)} von ${exportGroesse(f.bytesGesamt)}`);
+    if (g) stuecke.push(t('zahl.von', { n: exportGroesse(g.fertig), m: exportGroesse(g.bytes) }));
+    else if (f.bytesGesamt > 0) stuecke.push(t('zahl.von', { n: exportGroesse(f.bytesFertig || 0), m: exportGroesse(f.bytesGesamt) }));
     else stuecke.push(`${Math.round(prozent)} %`);
     const tempo = g ? g.bytesProSekunde : f.bytesProSekunde, rest = g ? g.restS : f.restS;
     if (tempo > 0){
-      stuecke.push((tempo / 1e6).toFixed(tempo < 1e7 ? 1 : 0).replace('.', ',') + ' MB/s');
-      if (rest != null && rest >= 0) stuecke.push('noch etwa ' + morgenDauerText(rest * 1000));
-    } else if ((g && g.bytes > 0) || f.bytesGesamt > 0) stuecke.push('misst …');
+      stuecke.push(dezimal((tempo / 1e6).toFixed(tempo < 1e7 ? 1 : 0)) + ' MB/s');
+      if (rest != null && rest >= 0) stuecke.push(t('export.fort.rest', { dauer: morgenDauerText(rest * 1000) }));
+    } else if ((g && g.bytes > 0) || f.bytesGesamt > 0) stuecke.push(t('export.fort.misst'));
     const ft = box.querySelector('.forttext'); ft.textContent = '';
-    const bb = document.createElement('b'); bb.textContent = g ? 'Fortschritt des ganzen Laufs' : 'Fortschritt' + (d.stufe ? ` der Stufe ${d.stufe.nr}` : ''); ft.appendChild(bb);
+    const bb = document.createElement('b'); bb.textContent = g ? t('export.fort.ganz') : (d.stufe ? t('export.fort.der_stufe', { nr: d.stufe.nr }) : t('export.fort.fortschritt')); ft.appendChild(bb);
     ft.appendChild(document.createTextNode(' · ' + stuecke.join(' · ')));
   }
 }
@@ -18218,7 +18211,7 @@ async function sternenhimmelAusgeben(knopf){
   try {
     const j = await (await fetch('/api/himmel-export', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ relativ: false }) })).json();
-    if (!j || !j.ok) throw new Error((j && (j.grund || j.meldung || j.fehler)) || 'fehlgeschlagen');
+    if (!j || !j.ok) throw new Error((j && (j.grund || j.meldung || j.fehler)) || t('export.fehlgeschlagen'));
     const w = window.open(j.url, '_blank');
     if (stand) stand.innerHTML = `${w ? t('export.geoeffnet') : t('export.erzeugt')} — <a href="${esc(j.url)}" target="_blank" rel="noopener" style="color:var(--text)">${esc(j.url)} ↗</a>`;
   } catch (e) { if (stand) stand.textContent = '✗ ' + e.message; }
@@ -20916,26 +20909,26 @@ async function aliasZeigen(){
   const esc = (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   let k = {}; try { k = await (await fetch('/api/konfig', { cache: 'no-store' })).json(); } catch (e) {}
   if (k.handle && !el.dataset.bearbeiten){
-    el.innerHTML = `Sammlung von <b style="color:var(--text)">@${esc(k.handle)}</b> · <a href="#" id="aliasaendern" style="color:var(--schwach)">ändern</a>`;
+    el.innerHTML = window.t('profil.alias.sammlung', { wer: `<b style="color:var(--text)">@${esc(k.handle)}</b>` }) + ` · <a href="#" id="aliasaendern" style="color:var(--schwach)">${window.t('profil.alias.aendern')}</a>`;
     $('aliasaendern').onclick = (e) => { e.preventDefault(); el.dataset.bearbeiten = '1'; aliasZeigen(); };
     return;
   }
   const vor = k.handle || k.vorschlag || '';
-  el.innerHTML = `<b style="color:var(--text)">Wie heißt du bei Suno?</b> Der Alias bestimmt, wessen Daten hier gesammelt werden.<br>
+  el.innerHTML = `<b style="color:var(--text)">${window.t('profil.alias.frage')}</b> ${window.t('profil.alias.erkl')}<br>
     <span style="display:inline-flex;gap:8px;align-items:center;margin-top:6px">@<input id="aliasfeld" value="${esc(vor)}" spellcheck="false"
       style="width:170px;background:var(--flaeche2);border:1px solid var(--rand);color:var(--text);border-radius:6px;padding:3px 6px;font-size:12px">
-    <button class="pille" id="aliaspruefen">Prüfen</button>${k.handle ? ' <button class="pille" id="aliasabbruch">Abbrechen</button>' : ''}</span>
+    <button class="pille" id="aliaspruefen">${window.t('profil.alias.pruefen')}</button>${k.handle ? ' <button class="pille" id="aliasabbruch">' + window.t('profil.alias.abbrechen') + '</button>' : ''}</span>
     <div id="aliasbefund" style="margin-top:6px"></div>`;
   if ($('aliasabbruch')) $('aliasabbruch').onclick = () => { delete el.dataset.bearbeiten; aliasZeigen(); };
   const pruefen = async () => {
     const h = $('aliasfeld').value.trim().replace(/^@/, '');
     if (!h) return;
-    $('aliasbefund').textContent = 'Frage Suno …';
+    $('aliasbefund').textContent = window.t('profil.alias.frage_suno');
     let pr = {}; try { pr = await (await fetch('/api/profil-pruefen?handle=' + encodeURIComponent(h))).json(); } catch (e) {}
-    if (!pr.ok){ $('aliasbefund').textContent = pr.status === 404 ? `@${h} gibt es bei Suno nicht.` : 'Suno antwortet nicht (' + (pr.status || pr.fehler || '?') + ').'; return; }
+    if (!pr.ok){ $('aliasbefund').textContent = pr.status === 404 ? window.t('profil.alias.gibt_nicht', { h }) : window.t('profil.alias.suno_weg', { grund: pr.status || pr.fehler || '?' }); return; }
     $('aliasbefund').innerHTML = `${pr.avatar ? `<img src="${esc(pr.avatar)}" style="width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:8px">` : ''}
-      <b style="color:var(--text)">${esc(pr.name || pr.handle)}</b> · ${pr.songs ?? '?'} Titel · ${pr.follower ?? '?'} Beobachter
-      <button class="pille an" id="aliasja" style="margin-left:10px">Das bin ich</button>`;
+      <b style="color:var(--text)">${esc(pr.name || pr.handle)}</b> · ${window.t('profil.alias.zahlen', { songs: pr.songs ?? '?', follower: pr.follower ?? '?' })}
+      <button class="pille an" id="aliasja" style="margin-left:10px">${window.t('profil.alias.ja')}</button>`;
     $('aliasja').onclick = async () => {
       await fetch('/api/konfig', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ handle: pr.handle }) });
       delete el.dataset.bearbeiten; aliasZeigen();
@@ -21524,7 +21517,7 @@ async function analyzerAufbauen(){
     toene:  (() => {
       const t = (toeneDaten && toeneDaten.songs && toeneDaten.songs[bSong.id]) || null;
       if (!t || !istInstrumental(bSong)) return t;
-      return { ...t, stimme: { lage: 'instrumental', grund: 'als instrumental geführt' } };
+      return { ...t, stimme: { lage: 'instrumental', grund: window.t('lyrik.instrumental') } };
     })(),
     stehendeToene: (stoerfrequenzen && stoerfrequenzen.songs && stoerfrequenzen.songs[bSong.id]) || null });
 
@@ -21713,15 +21706,15 @@ async function promptKopieren(knopf){
   const vorher = knopf.innerHTML, titel = knopf.title;
   try {
     await navigator.clipboard.writeText(text);
-    knopf.innerHTML = SYM('haken'); knopf.title = 'kopiert';
+    knopf.innerHTML = SYM('haken'); knopf.title = t('lyrik.kopiert');
   } catch (e) {
     /* Ohne Zwischenablage-Recht wenigstens markieren - dann genuegt
        ein Tastendruck, statt dass nichts geschieht. */
     try {
       const r = document.createRange(); r.selectNodeContents(feld);
       const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
-      knopf.innerHTML = SYM('haken'); knopf.title = 'markiert — jetzt ⌘C';
-    } catch (e2) { knopf.title = 'ging nicht'; }
+      knopf.innerHTML = SYM('haken'); knopf.title = t('lyrik.markiert');
+    } catch (e2) { knopf.title = t('lyrik.ging_nicht'); }
   }
   knopf.classList.add('fertig');
   setTimeout(() => { knopf.innerHTML = vorher; knopf.title = titel;
@@ -21777,17 +21770,14 @@ async function lyrikEinsetzen(id){
 
   if (!d || !d.zeilen || !d.zeilen.length){
     knopf.title = d && d.grund
-      ? 'Nicht gereinigt: ' + d.grund
-      : 'Noch nicht gerechnet — node bin/lyrik.js --tun';
+      ? t('lyrik.nicht_gereinigt', { grund: d.grund })
+      : t('lyrik.nicht_gerechnet');
     return;
   }
 
   const proz = Math.round((d.deckung || 0) * 100);
-  const her = 'Sunos Liedtext, zurückgeschnitten auf das, was Whisper im Ton wiederfindet: '
-            + esc(String(d.worte)) + ' Wörter, ' + proz + ' % des Textes gedeckt'
-            + (d.gestrichen ? ', ' + d.gestrichen + ' Zeile' + (d.gestrichen === 1 ? '' : 'n') + ' gestrichen' : '')
-            + '. Regieanweisungen, Vorrede und zweite Sprachfassung stehen nicht mehr darin; '
-            + 'die Lasche „Lyrics" zeigt den eingereichten Text unverändert.';
+  const her = t('lyrik.her', { worte: esc(String(d.worte)), proz,
+              gestrichen: d.gestrichen ? ', ' + t('lyrik.gestrichen', { n: d.gestrichen }) : '' });
 
   /* DIE ZEITEN BLEIBEN, ZU SEHEN SIND SIE NICHT (Caspar_D, 07.09.2026:
      „die Zeiten sollen nicht gezeigt werden aber trotzdem erhalten
@@ -21811,7 +21801,7 @@ async function lyrikEinsetzen(id){
   seite.innerHTML = '<div class="herkunft">' + her + '</div>'
                   + '<div class="prompt">' + text + '</div>';
   knopf.disabled = false;
-  knopf.title = 'Der gesungene Text mit Zeitmarken aus Whisper';
+  knopf.title = t('lyrik.rein.titel');
   kopierknoepfeSetzen();
 }
 
@@ -21833,8 +21823,7 @@ async function whisperEinsetzen(id){
   const kv = document.querySelector('#promptregz .preg[data-preg="vergleich"]');
 
   if (!w || !w.text){
-    const grund = 'Für dieses Stück liegt kein Whisper-Lauf vor'
-                + ' — die Instrumentalstücke sind bewusst ausgenommen.';
+    const grund = t('lyrik.kein_whisper');
     kt.title = grund; kv.title = grund;
     return;
   }
@@ -21845,11 +21834,9 @@ async function whisperEinsetzen(id){
      (-l), sie wird nicht von Whisper bestimmt. Der Unterschied ist
      nicht akademisch - stand dort faelschlich "en", uebersetzt das
      Modell den deutschen Text, statt ihn zu hoeren. */
-  const her = 'Gehört von Whisper ' + esc(w.modell || '')
-            + (w.sprache ? ', Sprache ' + (w.sprache === 'de' ? 'Deutsch'
-                : w.sprache === 'en' ? 'Englisch' : esc(w.sprache)) : '')
-            + '. Suno kennt den Text und richtet ihn aus, Whisper hört ihn nur —'
-            + ' verzerrte Gitarren, Chöre und schnelle Silben verhört es.';
+  const her = t('lyrik.gehoert', { modell: esc(w.modell || ''),
+              sprache: w.sprache ? t('lyrik.sprache', { s: w.sprache === 'de' ? t('lyrik.sprache.de')
+                : w.sprache === 'en' ? t('lyrik.sprache.en') : esc(w.sprache) }) : '' });
   tk.innerHTML = '<div class="herkunft">' + her + '</div>'
                + '<div class="prompt">'
                + esc(absaetzeInGehoertes(w.text, bSong.lyrics)) + '</div>';
@@ -21866,10 +21853,7 @@ async function whisperEinsetzen(id){
                       .getPropertyValue('--akzent').trim();
   $('bprompts').style.setProperty('--vakzent', lesbarAuf(akzent, bGrundEcht, 4.5));
 
-  vg.innerHTML = '<div class="herkunft">Oben die Zeile, wie sie geschrieben steht;'
-               + ' darunter, was Whisper daraus gehört hat. Zugeordnet über die'
-               + ' längste gemeinsame Wortfolge, nicht über die Zeilennummer —'
-               + ' Whisper fasst Zeilen anders zusammen.</div>'
+  vg.innerHTML = '<div class="herkunft">' + t('lyrik.vergleich') + '</div>'
                + vergleichBauen(bSong.lyrics, w.text);
   kt.disabled = false; kv.disabled = false;
   /* Die beiden neuen Felder brauchen ihr Kopiersymbol auch. */
@@ -22210,8 +22194,8 @@ function vergleichBauen(lyrics, gehoert){
     const z = zeilen[nr];
     if (nr < vorspann){
       if (!z.text) continue;
-      if (nr === 0) teile.push('<div class="vmarke">Vorspann im Textfeld'
-        + ' <span class="vnichts">— steht bei den Lyrics, wird nicht gesungen</span></div>');
+      if (nr === 0) teile.push('<div class="vmarke">' + t('lyrik.vorspann')
+        + ' <span class="vnichts">' + t('lyrik.vorspann.nicht') + '</span></div>');
       teile.push('<div class="vpaar"><div class="vorig vvorspann">' + esc(z.text) + '</div></div>');
       continue;
     }
@@ -22224,7 +22208,7 @@ function vergleichBauen(lyrics, gehoert){
          Luecke: hier hat Whisper etwas anderes gehoert oder nichts.
          Kommt auch dort vor, wo im Lyricsfeld gar kein Gesang steht,
          sondern ein Vorspann (Playlist-Hinweis, Verweise). */
-      hoer = '<div class="vhoer vnichts">nicht wiedererkannt</div>';
+      hoer = '<div class="vhoer vnichts">' + t('lyrik.nicht_erkannt') + '</div>';
     } else {
       hoer = '<div class="vhoer">' + esc(wo.slice(zeiger, z.grenze + 1).join(' ')) + '</div>';
       zeiger = z.grenze + 1;
@@ -22233,7 +22217,7 @@ function vergleichBauen(lyrics, gehoert){
   }
   /* Was am Ende uebrig bleibt, faellt nicht unter den Tisch. */
   if (zeiger < wo.length){
-    teile.push('<div class="vpaar"><div class="vorig vnichts">— nur gehört —</div>'
+    teile.push('<div class="vpaar"><div class="vorig vnichts">' + t('lyrik.nur_gehoert') + '</div>'
       + '<div class="vhoer">' + esc(wo.slice(zeiger).join(' ')) + '</div></div>');
   }
   return teile.join('');
@@ -22368,7 +22352,7 @@ function buehnenTextAufbauen(){
   } else {
     // Kein Timing vorhanden: Text trotzdem zeigen, er wandert dann
     // gleichmäßig mit dem Fortschritt.
-    const zeilen = (bSong.lyrics||'(kein Text hinterlegt)').split('\n');
+    const zeilen = (bSong.lyrics||t('buehne.kein_text')).split('\n');
     let leer = false;
     $('btext').innerHTML = zeilen.map(z=>{
       if (!z.trim()){ leer = true; return ''; }        /* Leerzeile: als Abstand, nicht als Zeile */
@@ -22656,11 +22640,11 @@ function bewegtLeisteZeigen(dauer = 2000){
 function bewegtLeiste(kasten, liste, i){
   if (liste.length < 2) return;             /* nur, wenn es etwas zu waehlen gibt */
   const l = document.createElement('div'); l.id = 'bbewegt';
-  l.innerHTML = `<button type="button" data-tu="-1" title="voriges Bewegtbild">‹</button>`
+  l.innerHTML = `<button type="button" data-tu="-1" title="${esc(t('buehne.bewegt.vor'))}">‹</button>`
     + `<span class="bbname">${esc(liste[i].name)} · ${i + 1}/${liste.length}</span>`
-    + `<button type="button" data-tu="1" title="nächstes Bewegtbild">›</button>`
-    + `<span class="bbmodus"><button type="button" data-modus="eines" class="${bBewegtModus === 'eines' ? 'on' : ''}" title="nur dieses, endlos">eines</button>`
-    + `<button type="button" data-modus="alle" class="${bBewegtModus === 'alle' ? 'on' : ''}" title="alle nacheinander — Wechsel an den Abschnittsgrenzen des Lieds">alle</button></span>`;
+    + `<button type="button" data-tu="1" title="${esc(t('buehne.bewegt.nach'))}">›</button>`
+    + `<span class="bbmodus"><button type="button" data-modus="eines" class="${bBewegtModus === 'eines' ? 'on' : ''}" title="${esc(t('buehne.bewegt.eines.titel'))}">${t('buehne.bewegt.eines')}</button>`
+    + `<button type="button" data-modus="alle" class="${bBewegtModus === 'alle' ? 'on' : ''}" title="${esc(t('buehne.bewegt.alle.titel'))}">${t('buehne.bewegt.alle')}</button></span>`;
   l.querySelectorAll('[data-tu]').forEach(b => b.onclick = (ev) => { ev.stopPropagation();
     const n = liste.length; bBewegtModus = 'eines'; bBewegtWahl = liste[(i + (+b.dataset.tu) + n) % n].k;
     darstellungAufbauen(); bewegtLeisteZeigen(); });
@@ -22880,11 +22864,11 @@ async function buehneAuf(id){
        keine bereinigte Lyrik hat - und man konnte nicht unterscheiden, ob die Software kaputt ist oder der Titel
        nichts hergibt. Jetzt steht er grau da und sagt den Grund (Hausregel 3, "Nichts darf luegen"). */
     if (e && e.zeilen && e.zeilen.length){ bLyrik = e; bLyrikGrund = ''; }
-    else if (e && e.zurueckgestellt) bLyrikGrund = 'zur\u00fcckgestellt, ' + (e.grund || 'zu wenig gedeckt');
-    else bLyrikGrund = 'f\u00fcr diesen Titel nicht bereinigt';
+    else if (e && e.zurueckgestellt) bLyrikGrund = t('buehne.lyrik.zurueck', { grund: e.grund || t('zvgl.zu_wenig') });
+    else bLyrikGrund = t('buehne.lyrik.nicht');
     bedienungAufbauen();
     if (bMarkenQuelle === 'rein' && bLyrik){ buehnenTextAufbauen(); textEbeneAnwenden(); }
-  }).catch(() => { if (bSong && bSong.id === markenFuer){ bLyrikGrund = 'nicht erreichbar'; bedienungAufbauen(); } });
+  }).catch(() => { if (bSong && bSong.id === markenFuer){ bLyrikGrund = t('buehne.lyrik.weg'); bedienungAufbauen(); } });
   if (!bSong.fremd) fetch('/api/zeitprobe/' + markenFuer).then(r => r.json()).then(d => {
     if (!bSong || bSong.id !== markenFuer) return;      // Buehne zeigt inzwischen einen anderen Song
     bMarken = d;
@@ -29202,7 +29186,7 @@ async function latenzMessen(){
 
   let strom = null, ctx = null, merkQuelle = null, merkStelle = 0;
   try {
-    sagen('Mikrofon…');
+    sagen(t('player.latenz.mikro'));
     /* Auch die Latenzmessung nimmt das gewaehlte Geraet - sonst misst
        sie den Weg zu einem anderen Mikrofon als die Einmessung. */
     const wunschL = ($('messmikro') || { value: '' }).value;
@@ -29324,7 +29308,7 @@ async function latenzMessen(){
     await new Promise((f,x) => { klick.oncanplaythrough = f;
       klick.onerror = () => x(new Error('Prüfton nicht ladbar')); klick.load(); });
 
-    sagen('messe…');
+    sagen(t('player.latenz.messe'));
     await new Promise(r => setTimeout(r, VOR_MS));
     await klick.play();
 
@@ -29360,7 +29344,7 @@ async function latenzMessen(){
     const deutlich = mittel > 0 ? best / mittel : 0;
 
     if (bestI < 0 || deutlich < 4){
-      sagen('nichts gehört');
+      sagen(t('player.latenz.nichts'));
       console.warn('Latenzmessung: kein Chirp gefunden (Deutlichkeit '
         + deutlich.toFixed(1) + '). Lautsprecher an? Mikrofon frei? Bei Kopfhörern geht es nicht.');
     } else {
@@ -29369,7 +29353,7 @@ async function latenzMessen(){
       console.log('Latenzmessung: ' + ms + ' ms (Deutlichkeit ' + deutlich.toFixed(1) + ')');
     }
   } catch (e){
-    sagen('ging nicht');
+    sagen(t('player.latenz.fehler'));
     console.warn('Latenzmessung fehlgeschlagen:', e.message);
   } finally {
     /* Die Musik zurueck an ihre Stelle - erst die Quelle, dann die
@@ -29825,7 +29809,7 @@ function hirschBild(werte, h, wort){
   sv += `${zahl()} x="${(bx - 7)}" y="${(by + bh).toFixed(1)}" text-anchor="end">0</text>`;
   sv += `${zahl()} x="${x(h).toFixed(1)}" y="${H - 9}" text-anchor="middle" fill="${f1}">${h}</text>`;
   sv += `${zahl()} x="${x(G).toFixed(1)}" y="${H - 9}" text-anchor="end">${G}</text>`;
-  sv += `<text font-size="11" fill="#6c6c72" x="${bx}" y="${H - 9}">Platz</text>`;
+  sv += `<text font-size="11" fill="#6c6c72" x="${bx}" y="${H - 9}">${t('hirsch.info.platz')}</text>`;
   sv += '</svg>';
   return sv;
 }
@@ -29841,13 +29825,11 @@ function hirschZu(){ document.getElementById('hirschinfo').classList.remove('auf
    der Analyzer ueber den Rueckruf, den er beim Aufbau bekommt, das
    Tonstudio unmittelbar. */
 function audioketteErklaeren(){
-  erklaerkastenAuf('Die Audiokette — und wo gemessen wird',
-        '<h4>Der Weg des Tons</h4>'
-      + '<p>Jedes Stück läuft durch dieselbe Kette. Sie beginnt bei den beiden '
-      + 'Abspieldecks und den sechs Instrumentspuren, die alle in eine Summe laufen — '
-      + 'und endet an den Lautsprechern:</p>'
+  erklaerkastenAuf(t('kette.titel'),
+        '<h4>' + t('kette.weg_h') + '</h4>'
+      + '<p>' + t('kette.weg') + '</p>'
       + '<svg class="kettebild" viewBox="0 0 560 470" width="100%" role="img" '
-      +   'aria-label="Signalweg von der Sound-Datei über das Tonstudio zu den Lautsprechern, mit beiden Meßpunkten">'
+      +   'aria-label="' + esc(t('kette.bild.aria')) + '">'
       /* Reine Vektorformen - Rechtecke, Linien, Kreise. Keine
          gezeichneten Geraete: Ein abgebildeter Lautsprecher oder
          Drehregler saehe aus wie Zierat und sagte nichts, was die
@@ -29863,16 +29845,16 @@ function audioketteErklaeren(){
          nur"). Wieviele Abspielwege intern zusammenlaufen, gehoert
          nicht in ein Bild, das erklaert, WO gemessen wird. */
       +   '<g class="q"><rect x="60" y="16" width="336" height="34" rx="5"/>'
-      +   '<text x="228" y="38">in den Dateien gespeicherte Signalinformation</text></g>'
+      +   '<text x="228" y="38">' + t('kette.bild.quelle') + '</text></g>'
       +   '<line x1="228" y1="50" x2="228" y2="76" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       +   '<g class="k"><rect x="158" y="80" width="140" height="32" rx="5"/>'
-      +   '<text x="228" y="100">Summe</text></g>'
+      +   '<text x="228" y="100">' + t('kette.bild.summe') + '</text></g>'
       /* Abgriff 1 */
       +   '<line x1="298" y1="96" x2="392" y2="96" stroke="#f97b14" stroke-width="1.4" '
       +   'stroke-dasharray="4 3" marker-end="url(#kpf)"/>'
       +   '<g class="mess"><circle cx="418" cy="96" r="13"/><text x="418" y="101">1</text></g>'
-      +   '<text class="ml" x="440" y="90">Signal aus der</text>'
-      +   '<text class="ml" x="440" y="104">Sound-Datei</text>'
+      +   '<text class="ml" x="440" y="90">' + t('kette.bild.signal1') + '</text>'
+      +   '<text class="ml" x="440" y="104">' + t('kette.bild.signal2') + '</text>'
       +   '<line x1="228" y1="112" x2="228" y2="134" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       /* Tonstudio */
       /* Der Rahmen umfasst ALLE Stufen des Tonstudios - auch Breite,
@@ -29880,79 +29862,56 @@ function audioketteErklaeren(){
          standen zuerst ausserhalb, und das war schlicht falsch. */
       +   '<rect x="12" y="138" width="432" height="200" rx="8" fill="none" stroke="#f97b14" '
       +   'stroke-width="1" stroke-dasharray="5 4" opacity="0.55"/>'
-      +   '<text class="gr" x="28" y="156">Tonstudio</text>'
+      +   '<text class="gr" x="28" y="156">' + t('kette.bild.tonstudio') + '</text>'
       +   '<g class="k">'
-      +   '<rect x="150" y="164" width="156" height="26" rx="4"/><text x="228" y="181">Equalizer</text>'
-      +   '<rect x="150" y="194" width="156" height="26" rx="4"/><text x="228" y="211">Abhör-Solo</text>'
-      +   '<rect x="150" y="224" width="156" height="26" rx="4"/><text x="228" y="241">Kerbfilter</text>'
-      +   '<rect x="150" y="254" width="156" height="26" rx="4"/><text x="228" y="271">Kompressor</text>'
+      +   '<rect x="150" y="164" width="156" height="26" rx="4"/><text x="228" y="181">' + t('kette.bild.eq') + '</text>'
+      +   '<rect x="150" y="194" width="156" height="26" rx="4"/><text x="228" y="211">' + t('kette.bild.solo') + '</text>'
+      +   '<rect x="150" y="224" width="156" height="26" rx="4"/><text x="228" y="241">' + t('kette.bild.kerbe') + '</text>'
+      +   '<rect x="150" y="254" width="156" height="26" rx="4"/><text x="228" y="271">' + t('kette.bild.komp') + '</text>'
       +   '</g>'
       +   '<path d="M228 190v4M228 220v4M228 250v4" stroke="#4a4a50" stroke-width="1.2"/>'
       +   '<line x1="228" y1="280" x2="228" y2="298" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       /* Breite, Hall, Echo */
       +   '<g class="k">'
-      +   '<rect x="150" y="302" width="156" height="26" rx="4"/><text x="228" y="319">Stereobreite</text>'
-      +   '<rect x="20" y="302" width="104" height="26" rx="4"/><text x="72" y="319">Hall</text>'
-      +   '<rect x="332" y="302" width="104" height="26" rx="4"/><text x="384" y="319">Echo</text>'
+      +   '<rect x="150" y="302" width="156" height="26" rx="4"/><text x="228" y="319">' + t('kette.bild.breite') + '</text>'
+      +   '<rect x="20" y="302" width="104" height="26" rx="4"/><text x="72" y="319">' + t('kette.bild.hall') + '</text>'
+      +   '<rect x="332" y="302" width="104" height="26" rx="4"/><text x="384" y="319">' + t('kette.bild.echo') + '</text>'
       +   '</g>'
       +   '<path d="M72 328v18h312v-18M228 328v18" stroke="#4a4a50" stroke-width="1.2" fill="none"/>'
       +   '<line x1="228" y1="346" x2="228" y2="358" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       /* Summe 2 + Abgriff 2 */
       +   '<g class="k"><rect x="158" y="362" width="140" height="32" rx="5"/>'
-      +   '<text x="228" y="382">Summe</text></g>'
+      +   '<text x="228" y="382">' + t('kette.bild.summe') + '</text></g>'
       +   '<line x1="298" y1="378" x2="392" y2="378" stroke="#f97b14" stroke-width="1.4" '
       +   'stroke-dasharray="4 3" marker-end="url(#kpf)"/>'
       +   '<g class="mess"><circle cx="418" cy="378" r="13"/><text x="418" y="383">2</text></g>'
-      +   '<text class="ml" x="440" y="372">Anpassung im</text>'
-      +   '<text class="ml" x="440" y="386">Tonstudio</text>'
+      +   '<text class="ml" x="440" y="372">' + t('kette.bild.anpassung') + '</text>'
+      +   '<text class="ml" x="440" y="386">' + t('kette.bild.tonstudio') + '</text>'
       +   '<line x1="228" y1="394" x2="228" y2="410" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       /* Lautstaerke und Ausgang */
       +   '<g class="k"><rect x="150" y="414" width="156" height="28" rx="5"/>'
-      +   '<text x="228" y="433">Lautstärke</text></g>'
+      +   '<text x="228" y="433">' + t('kette.bild.laut') + '</text></g>'
       +   '<line x1="306" y1="428" x2="352" y2="428" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
-      +   '<text class="gr" x="362" y="432">Lautsprecher</text>'
+      +   '<text class="gr" x="362" y="432">' + t('kette.bild.lautsprecher') + '</text>'
       +   '</svg>'
 
-      + '<h4>Alles dazwischen ist das Tonstudio</h4>'
-      + '<div class="regel">Was zwischen ① und ② steht, ist genau das, was im '
-      + '<b>Tonstudio</b> eingestellt wird: der <b>Equalizer</b> samt Glockenstuhl, das '
-      + '<b>Abhör-Solo</b>, der <b>Kerbfilter</b>, der <b>Kompressor</b> und im '
-      + '<b>Ghettoblaster</b> Stereobreite, Hall und Echo.</div>'
-      + '<p>Es öffnet der Knopf <b>EQ</b> — er steht in der Abspielleiste unten und in der '
-      + 'Leiste der Bühne. Das Fenster darf dabei offen stehen bleiben: Hinter ihm läßt sich '
-      + 'scrollen, so daß Regler und Spektrum gleichzeitig sichtbar sind.</p>'
-      + '<p>Damit ist dieses Bild das Gegenstück zum Tonstudio: Jeder Regler dort verändert '
-      + 'den Abstand zwischen den beiden Kurven hier. Zieht man einen Filter hoch, wächst an '
-      + 'seiner Frequenz der farbige Saum über der Linie — man sieht sofort, ob er trifft, was '
-      + 'er treffen soll.</p>'
+      + '<h4>' + t('kette.studio_h') + '</h4>'
+      + '<div class="regel">' + t('kette.studio_regel') + '</div>'
+      + '<p>' + t('kette.studio_p1') + '</p>'
+      + '<p>' + t('kette.studio_p2') + '</p>'
 
-      + '<h4>Warum genau an diesen zwei Stellen</h4>'
-      + '<div class="regel"><b>①</b> ist das <b>Signal aus der Sound-Datei</b>: das Stück, wie es '
-      + 'dort liegt, vor jedem Eingriff.</div>'
-      + '<p><b>②</b> ist die <b>Anpassung im Tonstudio</b>: hinter allem, was dort eingestellt wird, aber <b>vor der '
-      + 'Abhörlautstärke</b>. Das ist die entscheidende Feinheit: Läge der Abgriff dahinter, '
-      + 'zeigte der Vergleich den Lautstärkeregler statt der Bearbeitung — bei 30 % läge das '
-      + 'zweite Kurve zehn Dezibel tiefer, und es sähe aus, als nähme das Tonstudio etwas weg.</p>'
+      + '<h4>' + t('kette.warum_h') + '</h4>'
+      + '<div class="regel">' + t('kette.warum1') + '</div>'
+      + '<p>' + t('kette.warum2') + '</p>'
 
-      + '<h4>Wo die Lautstärke sitzt</h4>'
-      + '<p>Die Abhörlautstärke steht <b>hinter</b> der gesamten Kette, unmittelbar vor den '
-      + 'Lautsprechern. Das ist keine Nebensache: Der Kompressor arbeitet mit einer '
-      + '<b>absoluten</b> Kennlinie von −60 bis 0 dB — er mißt den Momentanpegel in LUFS und '
-      + 'schlägt darin nach, welcher Ausgangspegel gelten soll. Käme das Material in '
-      + 'wechselnder Höhe bei ihm an, schlüge er jedesmal an anderer Stelle nach, und leise '
-      + 'gehört klänge nicht nur leiser, sondern anders komprimiert.</p>'
-      + '<div class="regel">Weil die Lautstärke am Ende steht, sieht der Kompressor immer '
-      + 'denselben Pegel. Wie laut du hörst, ändert nichts daran, <b>was</b> du hörst.</div>'
-      + '<p class="leise">Der Equalizer wäre davon ohnehin nicht betroffen: Lineare Filter in '
-      + 'Fließkomma-Arithmetik verlieren nichts, wenn das Signal leiser ankommt. Es trifft nur, '
-      + 'was eine absolute Pegelschwelle kennt.</p>'
+      + '<h4>' + t('kette.laut_h') + '</h4>'
+      + '<p>' + t('kette.laut_p') + '</p>'
+      + '<div class="regel">' + t('kette.laut_regel') + '</div>'
+      + '<p class="leise">' + t('kette.laut_leise') + '</p>'
 
-      + '<h4>Was die Messung nicht sieht</h4>'
-      + '<p>Systemlautstärke, Klangregelung des Betriebssystems und AirPlay liegen <b>hinter</b> '
-      + 'den Lautsprechern und sind für den Browser unsichtbar. Die Linie „was KlangTresor daraus '
-      + 'macht" ist deshalb genau die Linie, an der die Messung ohnehin endet.</p>'
-      + '<div class="fuss">Beide Abgriffe sind Sackgassen: Sie hören zu, ohne etwas zu '
-      + 'verändern. Am Klang ändert die Anzeige nichts.</div>');
+      + '<h4>' + t('kette.nicht_h') + '</h4>'
+      + '<p>' + t('kette.nicht_p') + '</p>'
+      + '<div class="fuss">' + t('kette.fuss') + '</div>');
 }
 
 function erklaerkastenAuf(titel, html){
@@ -30042,7 +30001,7 @@ function hirschRechnen(art){
 }
 
 function hirschAuf(art){
-  const wort = art === 'likes' ? 'Herzen' : art === 'plays' ? 'Abrufe' : 'Kommentare';
+  const wort = t('hirsch.info.wort.' + (art === 'likes' ? 'likes' : art === 'plays' ? 'plays' : 'kommentare'));
   const { h, werte, titel: eigene, privat } = hirschRechnen(art);
   const privatSumme = privat.reduce((a, s) => a + (s[art] || 0), 0);
 
@@ -30056,66 +30015,37 @@ function hirschAuf(art){
     zeile += `<td${dran ? ' class="dran"' : ''}>${werte[p - 1]}</td>`;
   }
   const summe = werte.reduce((a, b) => a + b, 0);
-  const zahl = (n) => n.toLocaleString('de-DE');
+  const zahl = (n) => tZahl(n);
 
-  document.getElementById('hirschtitel').textContent = 'Der Hirschfaktor';
+  document.getElementById('hirschtitel').textContent = t('hirsch.titel');
   document.getElementById('hirschinhalt').innerHTML = `
-    <h4>Was er ist</h4>
-    <div class="regel">Der Hirschfaktor ist die größte Zahl <b>h</b>, für die gilt:
-      <b>h</b> Titel haben jeweils mindestens <b>h</b> ${wort}.</div>
-    <p>Mehr ist es nicht. Man sortiert alle Titel nach ${wort} absteigend und geht
-      die Liste hinunter, bis die Platznummer die Zahl überholt. Der letzte Platz
-      davor ist der Wert.</p>
+    <h4>${t('hirsch.info.was_h')}</h4>
+    <div class="regel">${t('hirsch.info.regel', { wort })}</div>
+    <p>${t('hirsch.info.p1', { wort })}</p>
 
-    <h4>An deinem Bestand</h4>
-    <p class="leise">${zahl(eigene.length)} öffentliche Titel, ${zahl(summe)} ${wort} zusammen,
-      der beste Titel hat ${zahl(werte[0] || 0)}.${privat.length
-        ? ` Dazu ${zahl(privat.length)} private Titel mit ${zahl(privatSumme)} ${wort}, die Suno nicht zeigt — sie zählen hier nicht mit, wie bei den Nachbarn.`
-        : ''} Die Plätze ${von} bis ${bis}:</p>
-    <table><tr><th>Platz</th>${kopf}</tr><tr><td>${wort}</td>${zeile}</tr></table>
-    <p>Auf Platz ${h} stehen noch ${zahl(werte[h - 1] || 0)} ${wort} — es gibt also
-      ${h} Titel mit mindestens ${h}. Weiter unten bricht die Bedingung.
-      <b>Hirschfaktor ${h}.</b></p>
+    <h4>${t('hirsch.info.bestand_h')}</h4>
+    <p class="leise">${t('hirsch.info.bestand', { n: zahl(eigene.length), summe: zahl(summe), wort, best: zahl(werte[0] || 0) })}${privat.length
+        ? ' ' + t('hirsch.info.privat', { n: zahl(privat.length), summe: zahl(privatSumme), wort })
+        : ''} ${t('hirsch.info.plaetze', { von, bis })}</p>
+    <table><tr><th>${t('hirsch.info.platz')}</th>${kopf}</tr><tr><td>${wort}</td>${zeile}</tr></table>
+    <p>${t('hirsch.info.ergebnis', { h, wert: zahl(werte[h - 1] || 0), wort })}</p>
 
-    <h4>Als Bild</h4>
+    <h4>${t('hirsch.info.bild_h')}</h4>
     ${hirschBild(werte, h, wort)}
-    <p class="leise">Die Titel stehen nach ${wort} sortiert nebeneinander, der beste links.
-      Die Diagonale ist die Linie „so viele ${wort} wie Platznummer". Wo die Säulen unter
-      sie fallen, ist Schluss — das eingefasste Quadrat ist ${h} × ${h}, und seine
-      Kantenlänge ist der Hirschfaktor. Ein einzelner sehr hoher Balken macht das Quadrat
-      nicht größer; nur wenn viele zugleich wachsen, passt ein größeres hinein.</p>
+    <p class="leise">${t('hirsch.info.bild', { wort, h })}</p>
 
-    <h4>Wofür er gut ist</h4>
-    <p>Die beiden naheliegenden Kennzahlen taugen beide nicht.</p>
-    <p><b>Die Summe</b> belohnt Masse. Wer dreihundert Titel mit je fünf ${wort} hat,
-      steht besser da als jemand mit zwanzig zu je fünfzig — obwohl das Zweite die
-      größere Leistung ist.</p>
-    <p><b>Der Bestwert</b> belohnt Glück. Ein Titel, der einschlägt, sagt nichts darüber,
-      ob der nächste auch trägt. Ein Treffer unter dreihundert Fehlschlägen sieht aus
-      wie Erfolg.</p>
-    <p>Der Hirschfaktor verlangt <b>beides zugleich: Breite und Tiefe.</b> Er steigt nur,
-      wenn viele Titel gleichzeitig überzeugen. Das macht ihn unempfindlich gegen
-      Ausreißer in beide Richtungen: Ein Titel mit tausend ${wort} hebt die ${h} nicht um
-      einen einzigen Punkt — er ist nur einer von ${h}. Umgekehrt zieht auch kein
-      Reinfall den Wert nach unten, denn was unterhalb von Platz ${h} steht, zählt gar
-      nicht mit. Um auf ${h + 1} zu kommen, braucht es ${h + 1} Titel mit je
-      ${h + 1} ${wort}.</p>
+    <h4>${t('hirsch.info.gut_h')}</h4>
+    <p>${t('hirsch.info.gut1')}</p>
+    <p>${t('hirsch.info.gut2', { wort })}</p>
+    <p>${t('hirsch.info.gut3')}</p>
+    <p>${t('hirsch.info.gut4', { wort, h, h1: h + 1 })}</p>
 
-    <h4>Was er nicht kann</h4>
-    <p>Er ist <b>nach oben durch die Anzahl der Werke begrenzt.</b> Wer zehn Titel hat,
-      kommt höchstens auf zehn, selbst bei tausend ${wort} je Titel. Er bevorzugt damit,
-      wer lange dabei ist — in der Wissenschaft ist das die bekannteste Kritik an ihm.</p>
-    <p>Er <b>wächst träge.</b> Das ist gewollt, macht ihn aber als Fortschrittsanzeige
-      unbrauchbar; dafür stehen die Bewegungszahlen weiter unten auf dieser Seite.</p>
-    <p>Und er ist <b>nur innerhalb einer Größe vergleichbar.</b> Der Wert für Abrufe und
-      der für Herzen sagen nichts über ein Verhältnis aus — Abrufe sind schlicht viel
-      häufiger. Auch zwischen zwei Personen vergleicht man ihn besser nur bei ähnlich
-      großem Katalog.</p>
+    <h4>${t('hirsch.info.nicht_h')}</h4>
+    <p>${t('hirsch.info.nicht1', { wort })}</p>
+    <p>${t('hirsch.info.nicht2')}</p>
+    <p>${t('hirsch.info.nicht3')}</p>
 
-    <div class="fuss">Der Hirschfaktor ist der <i>h-Index</i> aus der Wissenschaft, auf
-      Musik übertragen. Dort misst er, wie oft die Arbeiten eines Forschers zitiert
-      werden; Jorge E. Hirsch schlug ihn 2005 vor, und der deutsche Name ist zugleich
-      sein eigener.</div>`;
+    <div class="fuss">${t('hirsch.info.fuss')}</div>`;
   document.getElementById('hirschinfo').classList.add('auf');
 }
 /* Esc schliesst - wie ueberall im Haus. */
