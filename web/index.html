@@ -3611,7 +3611,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
            Ende laesst es sich als Textdatei speichern. -->
       <div class="messproto" id="messproto" hidden></div>
 
-      <div class="messstand" id="messstand">bereit</div>
+      <div class="messstand" id="messstand" data-i18n="mess.bereit">bereit</div>
 
       <div class="messergebnis" id="messergebnisteil" hidden>
       <!-- Das Kurvenbild gehoert zu den Durchgaengen mit Ton. Solange
@@ -3622,24 +3622,24 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <canvas id="messbild" height="260"></canvas>
 
       <div class="messleg" id="messleg">
-        <span><i style="background:#8b8b90"></i>neutral</span>
-        <span><i style="background:#f97b14"></i>mit Einstellung</span>
-        <span><i class="bal" style="background:#f9143c"></i>Tonstudio hebt an</span>
-        <span><i class="bal" style="background:#f9b414"></i>Tonstudio nimmt weg</span>
+        <span><i style="background:#8b8b90"></i><span data-i18n="mess.leg.neutral">neutral</span></span>
+        <span><i style="background:#f97b14"></i><span data-i18n="mess.leg.mit">mit Einstellung</span></span>
+        <span><i class="bal" style="background:#f9143c"></i><span data-i18n="mess.leg.hebt">Tonstudio hebt an</span></span>
+        <span><i class="bal" style="background:#f9b414"></i><span data-i18n="mess.leg.nimmt">Tonstudio nimmt weg</span></span>
       </div>
       </div>
 
       <!-- WAS DER RAUM VON SICH AUS MACHT: das bleibende Bild zu
            Schritt 1, mit feiner FFT und markierten Störlinien. -->
       <div class="messblock" hidden>
-        <h6 id="messraumtitel">Was der Raum von sich aus macht</h6>
+        <h6 id="messraumtitel" data-i18n="mess.raum.titel">Was der Raum von sich aus macht</h6>
         <canvas id="messraumbild" height="220"></canvas>
       </div>
 
       <!-- DER RAUM UNTER DER LUPE: die lange FFT der Bezugsmessung,
            mit Raummoden und ihrer Güte. -->
       <div class="messblock" hidden>
-        <h6>Der Raum im Baß — Moden und ihre Güte</h6>
+        <h6 data-i18n="mess.blk.lupe">Der Raum im Baß — Moden und ihre Güte</h6>
         <canvas id="messlupe" height="260"></canvas>
       </div>
       <div class="messfazit" id="messkamm" hidden></div>
@@ -3647,7 +3647,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <!-- RIDGE PLOT: dieselben Daten über die Zeit gestapelt. Zeigt,
            ob eine Störung dauerhaft war oder nur einmal aufblitzte. -->
       <div class="messblock" hidden>
-        <h6>Wann war es laut — Zeitverlauf</h6>
+        <h6 data-i18n="mess.blk.ridge">Wann war es laut — Zeitverlauf</h6>
         <canvas id="messridge" height="340"></canvas>
       </div>
 
@@ -3655,20 +3655,20 @@ h3 .infoknopf .ico{width:14px;height:14px}
            nicht in Pegeln - erst dadurch ist die Messung mit der
            Einstellung vergleichbar. -->
       <div class="messblock" hidden>
-        <h6>Was eingestellt war und was ankam</h6>
+        <h6 data-i18n="mess.blk.wirkung">Was eingestellt war und was ankam</h6>
         <canvas id="messwirkung" height="200"></canvas>
       </div>
 
       <!-- LAUTSTAERKEKENNLINIE: wieviel vom Regler ankommt, Stufe für Stufe. -->
       <div class="messblock" hidden>
-        <h6>Wie die Kette auf Lautstärke reagiert</h6>
+        <h6 data-i18n="mess.blk.pegel">Wie die Kette auf Lautstärke reagiert</h6>
         <canvas id="messpegel" height="200"></canvas>
       </div>
 
       <!-- UND WO sie zupackt: die Frequenzgänge der Stufen übereinander,
            auf gleichen Pegel gebracht. -->
       <div class="messblock" hidden>
-        <h6>Welche Frequenzen bei welcher Lautstärke nachgeben</h6>
+        <h6 data-i18n="mess.blk.pegelbaender">Welche Frequenzen bei welcher Lautstärke nachgeben</h6>
         <canvas id="messpegelbaender" height="200"></canvas>
       </div>
 
@@ -3694,140 +3694,140 @@ h3 .infoknopf .ico{width:14px;height:14px}
            messen will. -->
       <div class="messspalten" id="messspalten" hidden>
         <div class="messwie">
-          <h5>So geht es</h5>
+          <h5 data-i18n="mess.wie.titel">So geht es</h5>
           <ol>
-            <li>Lautsprecher, nicht Kopfhörer — das Mikrofon muß hören können.</li>
-            <li><b>1 · Neutral</b> messen. Das Tonstudio wird dabei umgangen.</li>
-            <li>Einstellen, was du hören willst.</li>
-            <li><b>2 · Mit Einstellung</b> messen — vom selben Platz aus.</li>
+            <li data-i18n="mess.wie.1">Lautsprecher, nicht Kopfhörer — das Mikrofon muß hören können.</li>
+            <li data-i18n="mess.wie.2" data-i18n-html><b>1 · Neutral</b> messen. Das Tonstudio wird dabei umgangen.</li>
+            <li data-i18n="mess.wie.3">Einstellen, was du hören willst.</li>
+            <li data-i18n="mess.wie.4" data-i18n-html><b>2 · Mit Einstellung</b> messen — vom selben Platz aus.</li>
           </ol>
         </div>
         <div class="messwarum">
-          <h5>Was dabei herauskommt</h5>
-          <p>Ein Mikrofon nimmt immer das Produkt aus vier Dingen auf: Signal,
+          <h5 data-i18n="mess.warum.titel">Was dabei herauskommt</h5>
+          <p data-i18n="mess.warum.1" data-i18n-html>Ein Mikrofon nimmt immer das Produkt aus vier Dingen auf: Signal,
             Lautsprecher, Raum und Mikrofon. Die lassen sich ohne Meßmikrofon nicht
             trennen — <b>eine einzelne Messung zeigt deshalb nicht den Raum allein</b>, sondern
             ein Abbild dieser ganzen Kette.</p>
-          <p>In der <b>Differenz</b> zweier Durchgänge kürzen sie sich heraus: Mikrofon,
+          <p data-i18n="mess.warum.2" data-i18n-html>In der <b>Differenz</b> zweier Durchgänge kürzen sie sich heraus: Mikrofon,
             Lautsprecher und Raum sind in beiden dieselben. Übrig bleibt, was das
             Tonstudio an deinem Hörplatz wirklich bewirkt — stehende Wellen und Reflexionen
             inbegriffen.</p>
-          <p class="leise">Der Prüfton geht über den normalen Ausgang, auch über AirPlay.</p>
+          <p class="leise" data-i18n="mess.warum.3">Der Prüfton geht über den normalen Ausgang, auch über AirPlay.</p>
         </div>
       </div>
     </div>
 
       <div class="hintergrund messhg" id="messhintergrund" hidden>
-        <button type="button" class="hgkopf" id="messhgkopf" title="Hintergrund auf- und zuklappen" data-i18n-title="mess.hg"><span class="hgpfeil">▸</span> Hintergrund — <b>Was hier gemessen wird, was Toningenieure messen, und was man mit dem Ergebnis tun darf.</b></button>
+        <button type="button" class="hgkopf" id="messhgkopf" title="Hintergrund auf- und zuklappen" data-i18n-title="mess.hg"><span class="hgpfeil">▸</span> <span data-i18n="mess.hg.kopf" data-i18n-html>Hintergrund — <b>Was hier gemessen wird, was Toningenieure messen, und was man mit dem Ergebnis tun darf.</b></span></button>
         <div class="hgkoerper" hidden>
           <div>
-            <h6>Welches Signal wofür</h6>
-            <p><b>Sweep.</b> Ein Ton, der von 20 Hz bis 20 kHz hochgleitet. Er trägt seine Energie
+            <h6 data-i18n="mess.hg.signal">Welches Signal wofür</h6>
+            <p data-i18n="mess.hg.sweep" data-i18n-html><b>Sweep.</b> Ein Ton, der von 20 Hz bis 20 kHz hochgleitet. Er trägt seine Energie
             <i>nacheinander</i> durch die Frequenzen. Weil zu jedem Zeitpunkt nur eine Frequenz im Raum
             steht, ließen sich damit direkter Schall und Nachhall zeitlich trennen — deshalb ist er das
             übliche Messsignal für Räume; ausgewertet wird hier bisher aber nur, wie laut jede Frequenz ankommt.
             Der Preis: jedes der schmalen Messbänder (Terzband) bekommt nur einen Bruchteil der
             Meßzeit, bei vier Sekunden gut hundert Millisekunden. Wenig Zeit heißt wenig Mittelung,
             und die Kurve zappelt.</p>
-            <p><b>Rosa Rauschen.</b> Regt alle Frequenzen <i>zugleich</i> an, mit gleicher Energie je
+            <p data-i18n="mess.hg.rosa" data-i18n-html><b>Rosa Rauschen.</b> Regt alle Frequenzen <i>zugleich</i> an, mit gleicher Energie je
             Oktave. Jede Frequenz bekommt die volle Meßzeit, die Kurve wird glatt. Dafür vermischen
             sich Direktschall und Nachhall untrennbar. Für einen ruhigen Frequenzgang das bessere
             Signal, für Raumakustik das schlechtere.</p>
-            <p><b>Weißes Rauschen.</b> Gleiche Energie je <i>Hertz</i> statt je Oktave — klingt
+            <p data-i18n="mess.hg.weiss" data-i18n-html><b>Weißes Rauschen.</b> Gleiche Energie je <i>Hertz</i> statt je Oktave — klingt
             deshalb hell und belastet die Hochtöner. Für Messungen an Geräten sinnvoll, im Raum
             selten.</p>
-            <p><b>Bandtöne.</b> Auf der Mitte jedes der acht Equalizer-Bänder steht nacheinander ein
+            <p data-i18n="mess.hg.baender" data-i18n-html><b>Bandtöne.</b> Auf der Mitte jedes der acht Equalizer-Bänder steht nacheinander ein
             reiner Ton. Damit läßt sich Band für Band ablesen, was ein einzelner Regler bewirkt —
             ohne daß die Nachbarn hineinreden.</p>
 
-            <h6>Warum zwei Durchgänge</h6>
-            <p>Ein Mikrofon nimmt immer das Produkt aus vier Dingen auf: Signal, Lautsprecher, Raum
+            <h6 data-i18n="mess.hg.zwei">Warum zwei Durchgänge</h6>
+            <p data-i18n="mess.hg.zwei.1" data-i18n-html>Ein Mikrofon nimmt immer das Produkt aus vier Dingen auf: Signal, Lautsprecher, Raum
             und Mikrofon. Die lassen sich ohne Referenz nicht trennen, und ein Mikrofon, dessen eigener
             Frequenzgang unbekannt ist, kann sie nicht herausrechnen. In der <b>Differenz</b> zweier Durchgänge
             kürzen sich Mikrofon, Lautsprecher und Raum aber heraus — sie sind in beiden Messungen
             dieselben. Übrig bleibt, was das Tonstudio wirklich bewirkt. Alles, was dieses Fenster
             berechnet, kommt aus solchen Differenzen.</p>
 
-            <h6>Was die Zahlen bedeuten</h6>
-            <p><b>Störabstand.</b> Wieviel lauter das Signal war als das Grundgeräusch. Unter 20 dB
+            <h6 data-i18n="mess.hg.zahlen">Was die Zahlen bedeuten</h6>
+            <p data-i18n="mess.hg.abstand" data-i18n-html><b>Störabstand.</b> Wieviel lauter das Signal war als das Grundgeräusch. Unter 20 dB
             ist eine Differenz mehr Zufall als Messung. „Raum abhören" hilft, eine ruhigere Stelle
             zu finden.</p>
-            <p><b>Wirkungsgrad.</b> Welcher Anteil einer Equalizer-Einstellung am Hörplatz tatsächlich
+            <p data-i18n="mess.hg.wirkungsgrad" data-i18n-html><b>Wirkungsgrad.</b> Welcher Anteil einer Equalizer-Einstellung am Hörplatz tatsächlich
             ankommt: bei 100 % genau das Eingestellte, bei 50 % die Hälfte. Eingestellt null heißt
             dabei immer auch gemessen null.</p>
-            <p><b>Gleichmäßigkeit</b> (Bestimmtheitsmaß). Trennt zwei Ursachen: Ist die Abweichung überall gleich
+            <p data-i18n="mess.hg.gleich" data-i18n-html><b>Gleichmäßigkeit</b> (Bestimmtheitsmaß). Trennt zwei Ursachen: Ist die Abweichung überall gleich
             groß, dämpft der Lautsprecher gleichmäßig. Bricht sie in einzelnen Bändern aus, ist es
             der Raum.</p>
-            <p><b>Laufzeit.</b> Wie lange der Ton vom Rechner bis zum Hörplatz braucht. Über AirPlay
+            <p data-i18n="mess.hg.laufzeit" data-i18n-html><b>Laufzeit.</b> Wie lange der Ton vom Rechner bis zum Hörplatz braucht. Über AirPlay
             sind das zwei Sekunden, absichtlich — so bleiben mehrere Lautsprecher zusammen. Derselbe
             Betrag gehört als Versatz an den mitlaufenden Text.</p>
           </div>
           <div>
-            <h6>Was Toningenieure messen</h6>
-            <p>Fast alles davon kommt aus einer einzigen Größe: der <b>Antwort des Raums auf einen
+            <h6 data-i18n="mess.hg.inge">Was Toningenieure messen</h6>
+            <p data-i18n="mess.hg.inge.1" data-i18n-html>Fast alles davon kommt aus einer einzigen Größe: der <b>Antwort des Raums auf einen
             einzelnen Knall</b> (Impulsantwort). Man schickt einen Sweep, nimmt ihn auf und rechnet den
             gesendeten Ton aus der Aufnahme wieder heraus. Übrig bleibt, was der Raum aus einem einzigen Knall machen würde.
             Daraus folgen dann:</p>
             <ul>
-              <li><b>Frequenzgang</b> — was dieses Fenster schon zeigt.</li>
-              <li><b>Nachhallzeit</b> (RT60), für jeden schmalen Frequenzbereich: wie lange der Raum nachklingt.</li>
-              <li><b>Klarheit</b> – wie viel Schall früh ankommt im Verhältnis zum Nachhall. Sagt, ob Sprache
+              <li data-i18n="mess.hg.inge.fg" data-i18n-html><b>Frequenzgang</b> — was dieses Fenster schon zeigt.</li>
+              <li data-i18n="mess.hg.inge.rt" data-i18n-html><b>Nachhallzeit</b> (RT60), für jeden schmalen Frequenzbereich: wie lange der Raum nachklingt.</li>
+              <li data-i18n="mess.hg.inge.klar" data-i18n-html><b>Klarheit</b> – wie viel Schall früh ankommt im Verhältnis zum Nachhall. Sagt, ob Sprache
               verständlich und Musik durchhörbar bleibt.</li>
-              <li><b>Erstreflexionen</b> — wann die erste Wand zurückschlägt und wie stark.</li>
-              <li><b>Verzerrung</b> (Klirrfaktor) — beim Sweep kommen die Verzerrungen zeitlich getrennt vom
+              <li data-i18n="mess.hg.inge.erst" data-i18n-html><b>Erstreflexionen</b> — wann die erste Wand zurückschlägt und wie stark.</li>
+              <li data-i18n="mess.hg.inge.klirr" data-i18n-html><b>Verzerrung</b> (Klirrfaktor) — beim Sweep kommen die Verzerrungen zeitlich getrennt vom
               eigentlichen Ton an und lassen sich einzeln ablesen.</li>
             </ul>
-            <p class="messhgnoch">Die Zutaten dafür liegen hier bereits vor: der Sweep, die rohe
+            <p class="messhgnoch" data-i18n="mess.hg.inge.noch" data-i18n-html>Die Zutaten dafür liegen hier bereits vor: der Sweep, die rohe
             Aufnahme und die Kenntnis des gesendeten Signals. Es fehlt nur noch der Rechenschritt, der aus
             der Aufnahme die Antwort des Raums auf einen einzelnen Knall macht. <b>Noch nicht gebaut.</b></p>
 
-            <h6>Stehende Welle und Auslöschung</h6>
-            <p>Beide entstehen daraus, daß Schall von den Wänden zurückkommt und sich mit dem
+            <h6 data-i18n="mess.hg.welle">Stehende Welle und Auslöschung</h6>
+            <p data-i18n="mess.hg.welle.1">Beide entstehen daraus, daß Schall von den Wänden zurückkommt und sich mit dem
             direkten überlagert. Beide betreffen einzelne Frequenzen. Und sie verlangen genau
             entgegengesetztes Handeln — deshalb lohnt es, sie auseinanderzuhalten.</p>
-            <p>Eine <b>stehende Welle</b> macht eine Frequenz je nach Sitzplatz <i>lauter</i> oder leiser.
+            <p data-i18n="mess.hg.welle.2" data-i18n-html>Eine <b>stehende Welle</b> macht eine Frequenz je nach Sitzplatz <i>lauter</i> oder leiser.
             Wo sie lauter macht, addieren sich Direktschall und Reflexion; der Baß dröhnt. Sie ist nichts, was man
             übertönen müßte, um sie zu hören — man hört sie zu deutlich. Sie gehört
             <b>gedämpft</b>, und das funktioniert: ein Regler nach unten nimmt die zusätzliche
             Energie wieder weg.</p>
-            <p>Eine <b>Auslöschung</b> ist der umgekehrte Fall: ein Loch entsteht dort, wo die stehende Welle
+            <p data-i18n="mess.hg.welle.3" data-i18n-html>Eine <b>Auslöschung</b> ist der umgekehrte Fall: ein Loch entsteht dort, wo die stehende Welle
             leiser macht, oder wenn der Schall von der Wand so versetzt ankommt, dass er den direkten auslöscht —
             die Frequenz fehlt. Sie läßt sich <b>nicht</b> übertönen. Was man an Pegel nachlegt, wird genauso ausgelöscht — man
             leuchtet gegen den eigenen Schatten an. Dagegen hilft, den Lautsprecher oder den
             Sitzplatz zu verrücken, nicht der Equalizer.</p>
-            <p class="messhgnoch">Im Diagramm sehen beide gleich aus: ein Ausschlag nach oben
+            <p class="messhgnoch" data-i18n="mess.hg.welle.4">Im Diagramm sehen beide gleich aus: ein Ausschlag nach oben
             oder unten. Der Unterschied ist nur das Vorzeichen — und daran hängt, ob ein Eingriff
             hilft oder Leistung verheizt. Deshalb dämpft der Korrekturvorschlag ausschließlich
             Überhöhungen und läßt Löcher stehen.</p>
 
-            <h6>Was man mit dem Ergebnis tun darf</h6>
-            <p>Hier ist Vorsicht am Platz, denn zwei Dinge sehen in der Messung gleich aus und
+            <h6 data-i18n="mess.hg.darf">Was man mit dem Ergebnis tun darf</h6>
+            <p data-i18n="mess.hg.darf.1">Hier ist Vorsicht am Platz, denn zwei Dinge sehen in der Messung gleich aus und
             müssen verschieden behandelt werden.</p>
-            <p><b>Überhöhungen darf man dämpfen.</b> Eine stehende Welle lädt Energie in ein Band;
+            <p data-i18n="mess.hg.darf.2" data-i18n-html><b>Überhöhungen darf man dämpfen.</b> Eine stehende Welle lädt Energie in ein Band;
             ein Regler nimmt sie wieder weg. Das funktioniert und ist Standardpraxis.</p>
-            <p><b>Einbrüche darf man nicht auffüllen.</b> Ein Loch im Frequenzgang kommt meist von
+            <p data-i18n="mess.hg.darf.3" data-i18n-html><b>Einbrüche darf man nicht auffüllen.</b> Ein Loch im Frequenzgang kommt meist von
             einer Auslöschung: der Schall von der Wand kommt so versetzt an, dass er den direkten auslöscht.
             Mehr Pegel wird genauso ausgelöscht — man verheizt Leistung und Spielraum, ohne daß
             am Hörplatz etwas ankommt. Dagegen hilft ein anderer Platz, kein Regler.</p>
-            <p><b>Einen zu kleinen Wirkungsgrad darf man nur hochrechnen, wenn nichts begrenzt.</b> Regelt der
+            <p data-i18n="mess.hg.darf.4" data-i18n-html><b>Einen zu kleinen Wirkungsgrad darf man nur hochrechnen, wenn nichts begrenzt.</b> Regelt der
             Lautsprecher oben zurück, macht mehr Pegel es schlimmer statt besser. Deshalb ist
             „Lautstärke durchfahren" die Bedingung dafür und nicht die Zierde: erst wenn die
             Kennlinie gerade bleibt, ist eine Hochrechnung ehrlich.</p>
-            <p>Was hier <b>nicht</b> gerechnet wird, ist eine Korrektur des absoluten Frequenzgangs.
+            <p data-i18n="mess.hg.darf.5" data-i18n-html>Was hier <b>nicht</b> gerechnet wird, ist eine Korrektur des absoluten Frequenzgangs.
             Die bräuchte ein Mikrofon mit bekanntem Frequenzgang — sonst hebt man Bässe an, um ein
             Loch auszugleichen, das im Mikrofon sitzt.</p>
 
-            <h6>Warum das Mikrofon zählt</h6>
-            <p>Die Auswahl ist nach Eignung für <i>Raummessung</i> sortiert, nicht nach Eignung für
+            <h6 data-i18n="mess.hg.mikro">Warum das Mikrofon zählt</h6>
+            <p data-i18n="mess.hg.mikro.1" data-i18n-html>Die Auswahl ist nach Eignung für <i>Raummessung</i> sortiert, nicht nach Eignung für
             Sprache. Ein Studiomikrofon am USB-Anschluss hört tiefe Töne gut und verändert nichts.
             Eingebaute Mikrofone richten sich auf den Sprecher aus und unterdrücken Geräusche – abschalten lässt
             sich das nicht. Ein Webcam-Mikrofon ist auf Sprache getrimmt: es schneidet den Bass ab, gleicht die
             Lautstärke an und filtert Rauschen, alles fest eingebaut. Virtuelle Geräte hören gar
             keinen Raum, sondern schleifen Ton im Rechner durch.</p>
-            <p>Für die Differenz kürzt sich der Frequenzgang des Mikrofons zwar heraus — aber nur dort, wo das
+            <p data-i18n="mess.hg.mikro.2">Für die Differenz kürzt sich der Frequenzgang des Mikrofons zwar heraus — aber nur dort, wo das
             Mikrofon überhaupt etwas hört. Wo es taub ist, steht in beiden Messungen Rauschen, und
             die Differenz zweier Rauschwerte ist Zufall. Deshalb zählt der Tiefgang.</p>
-            <p class="messhgnoch">Mehrere Mikrofone <b>gleichzeitig</b> aufzunehmen wäre möglich und
+            <p class="messhgnoch" data-i18n="mess.hg.mikro.3" data-i18n-html>Mehrere Mikrofone <b>gleichzeitig</b> aufzunehmen wäre möglich und
             nützlich — weniger zum Mitteln (die Muster aus Löchern und Spitzen sind an jedem Ort andere und
             ergeben zusammen neuen Unsinn) als zur <b>Unterscheidung</b>: Zeigen drei Mikrofone an drei Orten
             dasselbe Loch, ist es der Lautsprecher. Zeigen sie drei verschiedene, ist es der Raum.
@@ -4582,7 +4582,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
-<script src="/ui-sprache.js?v=10"></script>
+<script src="/ui-sprache.js?v=11"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.85"></script>
 <script>
@@ -23203,9 +23203,9 @@ function messSignalPruefen(signal, sr, art){
   const ok = spitze > 0.1 && !luecken;
   return { ok, spitzeDb: +(20 * Math.log10(Math.max(1e-9, spitze))).toFixed(1),
     rmsDb: +rmsDb.toFixed(1), sekunden: +(signal.length / sr).toFixed(1), lueckeMs,
-    text: 'Signal geprüft: ' + (signal.length / sr).toFixed(1).replace('.', ',') + ' s, Spitze '
-      + (20 * Math.log10(Math.max(1e-9, spitze))).toFixed(1).replace('.', ',') + ' dBFS'
-      + (art === 'baender' ? ', Pausen gewollt' : (lueckeMs > 120 ? ', LÜCKE ' + lueckeMs + ' ms!' : ', lückenlos')) };
+    text: window.t('mess.sig.geprueft', { s: dezimal((signal.length / sr).toFixed(1)),
+        db: dezimal((20 * Math.log10(Math.max(1e-9, spitze))).toFixed(1)) })
+      + (art === 'baender' ? window.t('mess.sig.pausen') : (lueckeMs > 120 ? window.t('mess.sig.luecke', { ms: lueckeMs }) : window.t('mess.sig.lueckenlos'))) };
 }
 
 async function einmessen(neutral){ return messLauf(!!neutral); }
@@ -23249,7 +23249,9 @@ async function messStartZeigen(){
   if (typeof eqKerbe !== 'undefined' && eqKerbe && !stoerer.includes('Titel-Kerbe')) stoerer.push('Kerbe');
   if (typeof megaBassAn !== 'undefined' && megaBassAn) stoerer.push('MEGA BASS');
   if (stoerer.length)
-    z.push('<p class="fwarn">' + window.t('mess.start.stoerer', { was: stoerer.join(', ') })
+    z.push('<p class="fwarn">' + window.t('mess.start.stoerer', { was: stoerer.map(s => ({ 'Titel-EQ': window.t('mess.start.st.titeleq'),
+        'Titel-Kerbe': window.t('mess.start.st.titelkerbe'), 'EQ-Regler': window.t('mess.start.st.eqregler'),
+        'Kerbe': window.t('mess.start.st.kerbe') })[s] || s).join(', ') })
       + ' <button class="knopf messknopfklein" onclick="messNeutralStellen()">' + window.t('mess.start.neutral_knopf') + '</button></p>');
   else
     z.push('<p>' + window.t('mess.start.neutral') + '</p>');
@@ -23370,7 +23372,7 @@ async function messKulisseCheck(){
       setTimeout(res, 3200);
     });
     try { sp.disconnect(); q.disconnect(); leise.disconnect(); } catch (e) {}
-    if (schreib < sr * 0.8) return { ok: false, fehler: 'zu kurze Aufnahme' };
+    if (schreib < sr * 0.8) return { ok: false, fehler: window.t('mess.kul.kurz') };
     const kurve = messSpektrum(puffer.subarray(0, schreib), sr);
     let drift = null;
     if (messErgebnis.ruheBezug && messErgebnis.ruheBezug.length === kurve.length){
@@ -23386,7 +23388,7 @@ async function messKulisseCheck(){
     }
     return { ok: true, drift, kurve };
   } catch (e) {
-    return { ok: false, fehler: e && e.message || 'Mikrofon nicht zu öffnen' };
+    return { ok: false, fehler: e && e.message || window.t('mess.kul.mikro') };
   } finally {
     if (strom) strom.getTracks().forEach(t => t.stop());
     if (ctx) { try { await ctx.close(); } catch (e) {} }
@@ -23454,14 +23456,14 @@ function protoDia(kurven, marken){
       + '" stroke-width="2.5"' + (k.dash ? ' stroke-dasharray="6 5"' : '') + ' stroke-linejoin="round"/>';
   }
   svg += '<text x="' + R + '" y="11" fill="#8a93a3" font-size="10.5">'
-    + String(hi).replace('.', ',') + ' … ' + String(lo).replace('.', ',') + ' dB · 25 Hz – 20 kHz</text></svg>';
+    + dezimal(String(hi)) + ' … ' + dezimal(String(lo)) + ' dB · 25 Hz – 20 kHz</text></svg>';
   return svg;
 }
 function protoExport(){
   const el = $('messproto'); if (!el || !el.childNodes.length) return;
-  const kopf = 'KlangTresor · Einmess-Protokoll · ' + new Date().toLocaleString('de-DE')
-    + (messErgebnis.mikro ? '\nMikrofon: ' + messErgebnis.mikro : '')
-    + (messErgebnis.ausgabe ? '\nAusgabe: ' + messErgebnis.ausgabe : '')
+  const kopf = window.t('mess.proto.kopf') + new Date().toLocaleString(localeTag())
+    + (messErgebnis.mikro ? '\n' + window.t('mess.proto.mikro') + messErgebnis.mikro : '')
+    + (messErgebnis.ausgabe ? '\n' + window.t('mess.proto.ausgabe') + messErgebnis.ausgabe : '')
     + '\n\n';
   const blob = new Blob([kopf + el.innerText], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
@@ -23635,16 +23637,14 @@ async function messLauf(neutral, opt){
     {
       const artN = opt.art || ($('messsignal') || { value: 'sweep' }).value;
       const konv = (artN === 'rosa' || artN === 'weiss' || artN === 'blau');
-      sagen('Bitte jetzt Ruhe — '
-        + (konv ? 'die Messung läuft rund fünfzehn Sekunden — so lange braucht die '
-                + 'Auflösung, um Raummoden im Baß auseinanderzuhalten.'
-                : 'die Messung läuft ' + Math.round((artN === 'baender' ? 8 : 4) + 8.1)
-                  + ' Sekunden.')
-        + ' Jedes Geräusch im Raum steht nachher in der Kurve.');
+      sagen(window.t('mess.lauf.ruhe')
+        + (konv ? window.t('mess.lauf.ruhe_konv')
+                : window.t('mess.lauf.ruhe_sek', { n: Math.round((artN === 'baender' ? 8 : 4) + 8.1) }))
+        + window.t('mess.lauf.ruhe_kurve'));
     }
     await new Promise(r => setTimeout(r, 900));   /* damit man es lesen kann */
     stilleSetzen(true);                            /* Warntoene stumm, solange gemessen wird */
-    sagen('Mikrofon …');
+    sagen(window.t('mess.lauf.mikro'));
     /* Das GEWAEHLTE Geraet, nicht das Standardgeraet: das kann ein
        virtueller Durchschleifer sein, der den Raum gar nicht hoert. */
     const wunsch = ($('messmikro') || { value: '' }).value;
@@ -23730,7 +23730,7 @@ async function messLauf(neutral, opt){
        seinen eigenen Fehler. */
     const signalPruef = messSignalPruefen(signal, sr, art);
     if (!signalPruef.ok){
-      sagen('Signal fällt durch die Prüfung: ' + signalPruef.text + ' — nicht gesendet. Nochmal drücken; kommt die Meldung wieder, starte KlangTresor neu.');
+      sagen(window.t('mess.lauf.signal_durch', { text: signalPruef.text }));
       return { ok: false, grund: 'signal', signalPruef };
     }
     const ganz = new Float32Array(Math.round(sr * (AUF + 1)));
@@ -23795,7 +23795,7 @@ async function messLauf(neutral, opt){
     messLaeuft = true;              /* jetzt liegt ein Messton im Player, kein Lied */
     audio.src = url;
     await new Promise((f, x) => { audio.oncanplaythrough = f; audio.onerror = x; audio.load(); });
-    sagen(neutral ? 'messe neutral …' : 'messe …');
+    sagen(neutral ? window.t('mess.lauf.messe_neutral') : window.t('mess.lauf.messe'));
     /* Haengt das Abspielelement am Tonstudio-Graphen, geht sein Ton NUR
        durch dessen AudioContext - steht der auf "suspended", spielt
        play() fehlerfrei in die Stille. Deshalb wird der Graph hier
@@ -23843,8 +23843,8 @@ async function messLauf(neutral, opt){
     const messSrc = audio.src;
     const waechter = setInterval(() => {
       if (messStoerung) return;
-      if (audio.src !== messSrc) messStoerung = 'Ein anderes Stück hat das Meß-Signal aus dem Abspielelement verdrängt';
-      else if (audio.paused) messStoerung = 'Die Wiedergabe wurde von außen angehalten';
+      if (audio.src !== messSrc) messStoerung = window.t('mess.lauf.stoer_stueck');
+      else if (audio.paused) messStoerung = window.t('mess.lauf.stoer_pause');
       if (messStoerung) messAbbruch = true;
     }, 250);
     /* Notbremse, falls der Audio-Thread stockt: doppelte Aufnahmezeit.
@@ -23901,7 +23901,7 @@ async function messLauf(neutral, opt){
       knoten.disconnect(); quelle.disconnect();
       try { schau.disconnect(); } catch (e5) {}
       messLiveEnde(); URL.revokeObjectURL(url);
-      sagen(messStoerung ? 'abgebrochen: ' + messStoerung : 'abgebrochen — nichts gemessen; starte die Messung neu, sobald es still ist');
+      sagen(messStoerung ? window.t('mess.lauf.abgebrochen_wegen', { was: messStoerung }) : window.t('mess.lauf.abgebrochen'));
       return messStoerung
         ? { ok: false, grund: 'einstreuung', text: messStoerung }
         : { ok: false, grund: 'abbruch' };
@@ -24082,10 +24082,8 @@ async function messLauf(neutral, opt){
     };
 
     if (anBlock < 0){
-      sagen('kein Signal gehört (' + mikroName + ') · Ruhe ' + dB(ruhe)
-        + ' dB, lautester Moment ' + dB(hMax) + ' dB — nur '
-        + messErgebnis.diagnose.ueber_ruhe_dB + ' dB darüber. Lauter stellen, '
-        + 'Ausgabegerät prüfen oder ein anderes Mikrofon wählen.');
+      sagen(window.t('mess.lauf.stumm', { mikro: mikroName, ruhe: dB(ruhe), max: dB(hMax),
+        ueber: messErgebnis.diagnose.ueber_ruhe_dB }));
       return { ok: false, grund: 'stumm', diagnose: messErgebnis.diagnose, mikro: mikroName };
     }
 
@@ -24200,25 +24198,25 @@ async function messLauf(neutral, opt){
     messPegelZeichnen();
     messFazitZeigen();
     const laut = kurve.reduce((a, b) => a + b.db, 0) / kurve.length;
-    sagen((neutral ? 'neutraler Durchgang steht' : 'gemessen')
-      + ' · ' + laut.toFixed(0) + ' dB im Mittel'
-      + ' · Störabstand ' + abstandGilt.toFixed(0) + ' dB je Band'
-      + (abstandBand !== null ? ' (' + abstand.toFixed(0) + ' dB breitbandig)' : '')
-      + ' · Laufzeit ' + laufzeitMs + ' ms'
-      + (konvergiert ? ' · ' + genutzt.toFixed(1).replace('.', ',') + ' s gemessen'
+    sagen((neutral ? window.t('mess.lauf.neutral_steht') : window.t('mess.lauf.gemessen'))
+      + window.t('mess.lauf.mittel', { db: laut.toFixed(0) })
+      + window.t('mess.lauf.abstand', { db: abstandGilt.toFixed(0) })
+      + (abstandBand !== null ? window.t('mess.lauf.breit', { db: abstand.toFixed(0) }) : '')
+      + window.t('mess.lauf.laufzeit', { ms: laufzeitMs })
+      + (konvergiert ? window.t('mess.lauf.sek', { s: dezimal(genutzt.toFixed(1)) })
           + (messErgebnis.restrauschen !== undefined && messErgebnis.restrauschen !== null
-              ? ', Restrauschen ' + messErgebnis.restrauschen.toFixed(2).replace('.', ',') + ' dB' : '')
+              ? window.t('mess.lauf.rest', { db: dezimal(messErgebnis.restrauschen.toFixed(2)) }) : '')
         : '')
-      + ' · Mikrofon ' + kopfraum.toFixed(0) + ' dB Spielraum bis zum Vollpegel'
-      + (abstandGilt < 20 ? ' — zu leise für eine belastbare Messung: Mikrofon näher zum Lautsprecher oder seinen Pegelregler höher, dann wiederholen' : '')
+      + window.t('mess.lauf.kopfraum', { db: kopfraum.toFixed(0) })
+      + (abstandGilt < 20 ? window.t('mess.lauf.zu_leise') : '')
       + (anteilVoll > 0.0001
-          ? ' — ACHTUNG: das Mikrofon überschreit, seine Aufnahme erreicht den Vollpegel; die Messung ist nicht verwertbar. Pegelregler am Mikrofon zurück oder Mikrofon weiter weg, dann wiederholen'
-          : (kopfraum < 6 ? ' — knapp, das Mikrofon hat kaum noch Spielraum' : '')));
+          ? window.t('mess.lauf.ueberschreit')
+          : (kopfraum < 6 ? window.t('mess.lauf.knapp') : '')));
     return { ok: true, kurve, lang, ruheKurve, abstand: abstandGilt, breit: abstand,
       laufzeit: laufzeitMs, diagnose: messErgebnis.diagnose,
       sr, genutzt, mikro: mikroName, signalPruef };
   } catch (e) {
-    sagen('ging nicht: ' + (e && e.message ? e.message : e) + ' — meist fehlt der Mikrofonzugriff: im Browser erlauben und nochmal drücken.');
+    sagen(window.t('mess.lauf.ging_nicht', { was: (e && e.message ? e.message : e) }));
     return { ok: false, grund: (e && e.message ? e.message : String(e)) };
   } finally {
     if (neutral && merkEqAus !== null){
@@ -24259,7 +24257,7 @@ function messAbbruchKnopf(an){
 }
 function messAbbrechen(){
   messAbbruch = true;
-  const e = $('messstand'); if (e) e.textContent = 'breche ab …';
+  const e = $('messstand'); if (e) e.textContent = window.t('mess.lauf.breche_ab');
 }
 
 /* DAS BILD. Zwei Kurven, wenn beide Durchgaenge da sind, und dazwischen
@@ -24470,11 +24468,11 @@ let raumStrom = null, raumCtx = null;
 async function raumAbhoeren(){
   const k = $('messraum'), sagen = (t) => { const e = $('messstand'); if (e) e.textContent = t; };
   if (raumStrom){                      /* laeuft schon - dann aus */
-    raumAus(); sagen('bereit');
+    raumAus(); sagen(window.t('mess.bereit'));
     return;
   }
   try {
-    k.classList.add('an'); sagen('höre …');
+    k.classList.add('an'); sagen(window.t('mess.raum.hoere'));
     const wunsch = ($('messmikro') || { value: '' }).value;
     const bed = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
     if (wunsch) bed.deviceId = { exact: wunsch };
@@ -24614,9 +24612,9 @@ async function raumAbhoeren(){
     const male = () => { if (!messLive || !messLive.raum) return;
       messLiveZeichnen(); raumCtx.__bild = requestAnimationFrame(male); };
     raumCtx.__bild = requestAnimationFrame(male);
-    sagen('höre den Raum ab — Mikrofon bewegen, um eine ruhige Stelle zu finden. Nochmal drücken beendet.');
+    sagen(window.t('mess.raum.hoere_ab'));
   } catch (e){
-    sagen('ging nicht: ' + (e && e.message ? e.message : e) + ' — meist fehlt der Mikrofonzugriff: im Browser erlauben und nochmal drücken.');
+    sagen(window.t('mess.lauf.ging_nicht', { was: (e && e.message ? e.message : e) }));
     raumAus();
   }
 }
@@ -24792,11 +24790,11 @@ function messStoerlinien(fein, n, df){
 function messStoerdeutung(f){
   for (let k = 1; k <= 8; k++){
     if (Math.abs(f - 50 * k) / (50 * k) < 0.04)
-      return k === 1 ? 'Netzbrummen' : 'Netz, ' + k + '. Oberwelle';
+      return k === 1 ? window.t('mess.stoer.netz') : window.t('mess.stoer.oberwelle', { k });
   }
-  if (f < 120) return 'Lüfter oder Motor';
-  if (f > 8000) return 'Schaltnetzteil oder Bildschirm';
-  if (f > 2000) return 'elektronisches Pfeifen';
+  if (f < 120) return window.t('mess.stoer.luefter');
+  if (f > 8000) return window.t('mess.stoer.netzteil');
+  if (f > 2000) return window.t('mess.stoer.pfeifen');
   return null;
 }
 
@@ -24825,16 +24823,16 @@ function messStoerdeutung(f){
    ====================================================================== */
 
 const DOK_SIGNAL = {
-  weiss:    { name: 'Weißes Rauschen',    farbe: '#e8edf4', dauer: 13,
-    erklaert: 'Gleiche Energie auf jeder Frequenz. Die Kurve dieses Rauschens ist die gerade Bezugslinie unter den Rauscharten.' },
-  rosa:     { name: 'Rosa Rauschen',      farbe: '#ff6bf0', dauer: 13,
-    erklaert: 'Gleiche Energie je Oktave — es klingt tiefenbetont, regt aber alle Frequenzen ordentlich an. Der Klassiker der Raummessung.' },
-  blau:     { name: 'Blaues Rauschen',    farbe: '#5b8cff', dauer: 13,
-    erklaert: 'Das Gegenteil von rosa: die Energie sitzt in den Höhen. Unterhalb von etwa 150 Hz regt es kaum an — die Raumkurve ist dort mit Vorsicht zu lesen. Und es trägt bauartbedingt rund 6 dB weniger Energie als die anderen Signale (seine Spitzen erlauben nicht mehr, ohne zu überschreien) — der Störabstand fällt entsprechend kleiner aus. Genau dafür steht es im Vergleich: als Gegenprobe.' },
-  sweep:    { name: 'Sweep · logarithmisch', farbe: '#3fd4e8', dauer: 13,
-    erklaert: 'Ein Ton, der von 20 Hz bis 20 kHz hochläuft, jede Oktave gleich lang. Der Standard der Raumakustik: seine ganze Energie steckt zu jedem Zeitpunkt in einer Frequenz.' },
-  sweeplin: { name: 'Sweep · linear',     farbe: '#ffa03d', dauer: 13,
-    erklaert: 'Derselbe Lauf, aber mit gleichmäßig wachsender Frequenz: die halbe Zeit verbringt er oberhalb von 10 kHz, den Baß streift er nur. Unterhalb von etwa 150 Hz ist seine Kurve deshalb unsicher — auch er ist Gegenprobe, nicht Empfehlung.' },
+  weiss:    { nk: 'mess.signal.weiss', get name(){ return window.t('mess.signal.weiss'); },    farbe: '#e8edf4', dauer: 13,
+    get erklaert(){ return window.t('mess.dok.sig.weiss'); } },
+  rosa:     { nk: 'mess.signal.rosa', get name(){ return window.t('mess.signal.rosa'); },      farbe: '#ff6bf0', dauer: 13,
+    get erklaert(){ return window.t('mess.dok.sig.rosa'); } },
+  blau:     { nk: 'mess.dok.sig.blau.name', get name(){ return window.t('mess.dok.sig.blau.name'); },    farbe: '#5b8cff', dauer: 13,
+    get erklaert(){ return window.t('mess.dok.sig.blau'); } },
+  sweep:    { nk: 'mess.dok.sig.sweep.name', get name(){ return window.t('mess.dok.sig.sweep.name'); }, farbe: '#3fd4e8', dauer: 13,
+    get erklaert(){ return window.t('mess.dok.sig.sweep'); } },
+  sweeplin: { nk: 'mess.dok.sig.sweeplin.name', get name(){ return window.t('mess.dok.sig.sweeplin.name'); },     farbe: '#ffa03d', dauer: 13,
+    get erklaert(){ return window.t('mess.dok.sig.sweeplin'); } },
 };
 
 /* Die Sollform des Eingangssignals, je Terzband, als je-Hz-Dichte -
@@ -24949,7 +24947,7 @@ function dokDia(kurven, opt){
       + ' stroke-linejoin="round"/>';
   });
   svg += '<text x="' + R + '" y="12" fill="#8a93a3" font-size="12">'
-    + String(hi).replace('.', ',') + ' … ' + String(lo).replace('.', ',') + ' dB · 20 Hz – 20 kHz</text>';
+    + dezimal(String(hi)) + ' … ' + dezimal(String(lo)) + ' dB · 20 Hz – 20 kHz</text>';
   /* Die Legende darf der dB-Angabe links nicht in die Quere kommen -
      was nicht mehr passt, rueckt eine Zeile tiefer. */
   let lx = W - R, ly = 8;
@@ -24989,7 +24987,7 @@ function dokTreppeDia(reihe){
     + '" fill="none" vector-effect="non-scaling-stroke" stroke="#8a93a3" stroke-width="2.5" stroke-dasharray="7 6"/>';
   svg += '<polyline points="' + ist.map(p => sx(p.x).toFixed(1) + ',' + sy(p.db).toFixed(1)).join(' ')
     + '" fill="none" vector-effect="non-scaling-stroke" stroke="#ffa03d" stroke-width="3"/>';
-  svg += '<text x="' + R + '" y="12" fill="#8a93a3" font-size="12">Pegel gegen die erste Stufe · Soll gestrichelt, Ist orange</text>';
+  svg += '<text x="' + R + '" y="12" fill="#8a93a3" font-size="12">' + window.t('mess.dok.treppe') + '</text>';
   return svg + '</svg>';
 }
 
@@ -25045,9 +25043,9 @@ function dokAuf(){
   dokCssRein();
   const el = document.getElementById('messdok'); if (!el) return;
   if (!el.innerHTML.trim()){
-    el.innerHTML = '<div class="dokleiste"><b>TONVERMESSUNG</b>'
-      + '<span><button class="knopf" onclick="dokNeu()">Neuer Durchlauf</button> '
-      + '<button class="knopf" onclick="dokVerlassen()">Messung verlassen</button></span></div>'
+    el.innerHTML = '<div class="dokleiste"><b>' + window.t('mess.dok.kopf') + '</b>'
+      + '<span><button class="knopf" onclick="dokNeu()">' + window.t('mess.dok.neu') + '</button> '
+      + '<button class="knopf" onclick="dokVerlassen()">' + window.t('mess.dok.verlassen') + '</button></span></div>'
       + '<div id="dokinhalt"></div>';
   }
   if (typeof messAnsicht === 'function') messAnsicht('dokument');
@@ -25148,7 +25146,7 @@ async function dokKopfZeigen(){
   const eingefroren = dok.schritt >= 0;
   let sys = null;
   try { sys = await (await fetch('/api/system/lautstaerke', { cache: 'no-store' })).json(); } catch (e) {}
-  let ausg = { text: 'unbekannt' };
+  let ausg = { text: window.t('mess.geraet.unbekannt') };
   try { ausg = await ausgabeGeraetInfo(); } catch (e) {}
 
   const stoerer = [];
@@ -25172,35 +25170,35 @@ async function dokKopfZeigen(){
     + '</select>';
 
   const z = [];
-  z.push('<h6><span class="doknr">0</span>KOPF &amp; GERÄTE</h6>');
-  z.push('<p>' + new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' })
-    + ' · vollständiger Messgang · App-Pegel: <b>' + dok.messPegel + ' %</b> (stellt die App selbst und hebt an, bis der Piep trägt)'
-    + (dok.versatz !== null ? ' · geeichter Versatz: <b>' + dok.versatz + ' ms</b>'
-        + (dok.eich ? ' (Laufzeit streut um ' + dok.eich.spanne + ' ms, ' + dok.eich.ueberRuhe + ' dB über Ruhe)' : '')
-      : ' · Versatz: folgt in Schritt 3') + '</p>');
-  z.push('<p>Mikrofon: ' + (mikros.length
+  z.push('<h6><span class="doknr">0</span>' + window.t('mess.dok.k.titel') + '</h6>');
+  z.push('<p>' + new Date().toLocaleString(localeTag(), { dateStyle: 'medium', timeStyle: 'short' })
+    + window.t('mess.dok.k.pegel', { p: dok.messPegel })
+    + (dok.versatz !== null ? window.t('mess.dok.k.versatz', { ms: dok.versatz })
+        + (dok.eich ? window.t('mess.dok.k.streut', { ms: dok.eich.spanne, db: dok.eich.ueberRuhe }) : '')
+      : window.t('mess.dok.k.versatz_folgt')) + '</p>');
+  z.push('<p>' + window.t('mess.proto.mikro') + (mikros.length
       ? wahl('dokmikro', mikros, dok.mikroId, null)
-      : '<b>noch keines sichtbar</b> — erst der Zugriff unten füllt die Liste') + '<br>'
-    + 'Lautsprecher: ' + wahl('dokausgabe', ausgaben, dok.ausgabeId, 'Systemstandard')
-    + '<br><span class="dokfein">spielt gerade: ' + ausg.text
-    + (ausg.airplay ? ' — AirPlay erreicht man über „Systemstandard“, dort entscheidet macOS' : '') + '</span></p>');
+      : window.t('mess.dok.k.kein_mikro')) + '<br>'
+    + window.t('mess.dok.k.lautsprecher') + wahl('dokausgabe', ausgaben, dok.ausgabeId, window.t('mess.dok.k.systemstandard'))
+    + '<br><span class="dokfein">' + window.t('mess.dok.k.spielt') + ausg.text
+    + (ausg.airplay ? window.t('mess.dok.k.airplay') : '') + '</span></p>');
   if (eingefroren)
-    z.push('<p class="dokfein">Die Gerätewahl ist ab dem Stilletest eingefroren — ein Wechsel mitten in der '
-      + 'Serie machte alle Kurven unvergleichbar. Für ein anderes Gerät: Messung verlassen und neu beginnen.</p>');
-
+    z.push('<p class="dokfein">' + window.t('mess.dok.k.eingefroren') + '</p>');
   z.push('<div class="dokampeln">');
   if (sys && sys.verfuegbar){
-    if (sys.stumm) z.push('<p class="dokwarn">✗ Systemausgabe stummgeschaltet — so kommt kein Ton heraus. Schalte den Ton am Rechner wieder ein.</p>');
-    else if (sys.prozent >= 99) z.push('<p>● Systemlautstärke voll (' + sys.prozent + ' %) — die Prozente in der App bedeuten immer dasselbe.</p>');
-    else z.push('<p class="dokwarn">⚠ Systemlautstärke ' + sys.prozent + ' % — für vergleichbare Messungen voll aufdrehen; leise macht es danach allein die App.</p>');
-  } else z.push('<p>· Systemlautstärke nicht abfragbar — bitte selbst voll aufdrehen.</p>');
+    if (sys.stumm) z.push('<p class="dokwarn">' + window.t('mess.dok.k.stumm') + '</p>');
+    else if (sys.prozent >= 99) z.push('<p>' + window.t('mess.dok.k.voll', { p: sys.prozent }) + '</p>');
+    else z.push('<p class="dokwarn">' + window.t('mess.dok.k.nicht_voll', { p: sys.prozent }) + '</p>');
+  } else z.push('<p>' + window.t('mess.dok.k.unbekannt') + '</p>');
   z.push(stoerer.length
-    ? '<p class="dokwarn">⚠ Frequenzverbiegend aktiv: <b>' + stoerer.join(', ') + '</b> — die Messläufe umgehen das Tonstudio ohnehin; fürs Musikhören danach gilt die Einstellung weiter.</p>'
-    : '<p>● Wiedergabekette neutral — kein EQ, keine Kerbe gegen Störfrequenzen verbiegt den Frequenzgang.</p>');
+    ? '<p class="dokwarn">' + window.t('mess.dok.k.stoerer', { was: stoerer.map(s => ({ 'Titel-EQ': window.t('mess.start.st.titeleq'),
+        'Titel-Kerbe': window.t('mess.start.st.titelkerbe'), 'EQ-Regler': window.t('mess.start.st.eqregler'),
+        'Kerbe': window.t('mess.start.st.kerbe') })[s] || s).join(', ') }) + '</p>'
+    : '<p>' + window.t('mess.dok.k.neutral') + '</p>');
   z.push(dok.mikroFrei
-    ? '<p>● Mikrofonzugriff gewährt.</p>'
-    : '<p>· Mikrofonzugriff noch nicht erteilt — ohne ihn bleiben die Gerätenamen leer und keine Messung kann hören.'
-      + ' <button class="knopf" onclick="dokMikroFreigeben()">Zugriff erteilen</button></p>');
+    ? '<p>' + window.t('mess.dok.k.mikro_frei') + '</p>'
+    : '<p>' + window.t('mess.dok.k.mikro_fehlt')
+      + ' <button class="knopf" onclick="dokMikroFreigeben()">' + window.t('mess.dok.k.zugriff') + '</button></p>');
   z.push('</div>');
 
   dokBlockStill('kopf', z.join(''));
@@ -25389,7 +25387,7 @@ function dokLiveZeichnen(L, feld){
   if (L.ausgSpur){
     const h0 = 52;
     z.fillStyle = '#8a93a3'; z.font = '10.5px sans-serif';
-    z.fillText('Ende der Audiokette (gesendet)', 8, oben - 4);
+    z.fillText(window.t('mess.live.kette'), 8, oben - 4);
     if (L.ausgSpur.length > 1){
       z.strokeStyle = '#e8edf4'; z.lineWidth = 2.5; z.lineJoin = 'round';
       z.beginPath();
@@ -25405,7 +25403,7 @@ function dokLiveZeichnen(L, feld){
      mit der erkannten Ankunft als Marke. */
   const h1 = L.ausgSpur ? 74 : 96;
   z.fillStyle = '#8a93a3'; z.font = '10.5px sans-serif';
-  z.fillText('gehört (Mikrofon)', 8, oben - 4);
+  z.fillText(window.t('mess.live.gehoert'), 8, oben - 4);
   if (L.ruhe !== null && L.ruhe !== undefined){
     const yr = yVon(L.ruhe, oben, h1);
     z.strokeStyle = 'rgba(138,147,163,0.5)'; z.lineWidth = 1; z.setLineDash([3, 4]);
@@ -25424,14 +25422,14 @@ function dokLiveZeichnen(L, feld){
     const ax = xVon(L.ankunft);
     z.strokeStyle = '#59d18c'; z.lineWidth = 2;
     z.beginPath(); z.moveTo(ax, oben - 2); z.lineTo(ax, oben + h1 + 2); z.stroke();
-    z.fillStyle = '#59d18c'; z.fillText('erkannt', Math.min(ax + 4, W - 50), oben + 8);
+    z.fillStyle = '#59d18c'; z.fillText(window.t('mess.live.erkannt'), Math.min(ax + 4, W - 50), oben + 8);
   }
   oben += h1 + 16;
   /* Das Momentanspektrum in Terzbaendern - Flaeche gedaempft, Topline
      voll (Hausform). */
   const h2 = H - oben - 6;
   z.fillStyle = '#8a93a3';
-  z.fillText('Momentanspektrum 20 Hz – 20 kHz', 8, oben - 4);
+  z.fillText(window.t('mess.live.spektrum'), 8, oben - 4);
   if (L.jetzt){
     const bB = (W - 16) / 31;
     for (let i = 0; i < 31; i++){
@@ -25445,11 +25443,10 @@ function dokLiveZeichnen(L, feld){
   }
   const t = document.getElementById('doklebentext');
   if (t){
-    const PHASE = { vorlauf: 'Vorlauf — noch Stille', wartet: 'Ton unterwegs …', misst: 'Ton läuft', aus: 'Nachlauf' };
-    t.textContent = (L.sende ? (PHASE[L.phase] || 'läuft') + ' · ' : 'höre zu … ')
-      + L.t.toFixed(1).replace('.', ',') + ' von ' + Math.round(L.dauer) + ' s · gerade '
-      + Math.round(L.pegel) + ' dB'
-      + (L.ruhe !== null && L.ruhe !== undefined ? ' · Ruhe ' + Math.round(L.ruhe) + ' dB' : '');
+    const PHASE = { vorlauf: window.t('mess.live.vorlauf'), wartet: window.t('mess.live.wartet'), misst: window.t('mess.live.misst'), aus: window.t('mess.live.aus') };
+    t.textContent = (L.sende ? (PHASE[L.phase] || window.t('mess.live.laeuft')) + ' · ' : window.t('mess.live.hoere_zu'))
+      + window.t('mess.live.stand', { t: dezimal(L.t.toFixed(1)), dauer: Math.round(L.dauer), db: Math.round(L.pegel) })
+      + (L.ruhe !== null && L.ruhe !== undefined ? window.t('mess.live.ruhe', { db: Math.round(L.ruhe) }) : '');
   }
 }
 
@@ -25489,31 +25486,22 @@ async function dokPiep(eichen){
 function dokPiepFehlerText(r){
   const d = (r && r.diagnose) || {};
   if (r && r.grund === 'einstreuung')
-    return '<p class="dokwarn"><b>Messung abgebrochen: ' + r.text + '.</b> Der Exklusiv-Wächter hat '
-      + 'die Messung gestoppt — bitte während eines Laufs nichts abspielen oder anhalten.</p>';
+    return '<p class="dokwarn">' + window.t('mess.dok.f.einstreuung', { was: r.text }) + '</p>';
   if (r && r.grund === 'signal' && r.signalPruef)
-    return '<p class="dokwarn"><b>Das erzeugte Signal fiel durch die Prüfung</b> — '
-      + r.signalPruef.text + '. Es wurde nicht gesendet; das ist ein Fehler in der Tonerzeugung, '
-      + 'keine Raumfrage. Wiederhole den Schritt; kommt die Meldung wieder, starte KlangTresor neu.</p>';
+    return '<p class="dokwarn">' + window.t('mess.dok.f.signal', { text: r.signalPruef.text }) + '</p>';
   if (r && r.grund !== 'stumm')
-    return '<p class="dokwarn">Ging nicht: ' + (r && r.grund || '?') + ' — wiederhole den Schritt; hilft das nicht, Mikrofonzugriff und Lautsprecher im Kopf (Schritt 0) prüfen.</p>';
+    return '<p class="dokwarn">' + window.t('mess.dok.f.ging_nicht', { was: (r && r.grund || '?') }) + '</p>';
   /* "stumm" hat zwei Gesichter: gar nichts - oder zu leise fuer die
      Erkennung. Die Zahlen unterscheiden sie. */
   const ueber = typeof d.ueber_ruhe_dB === 'number' ? d.ueber_ruhe_dB : null;
   if (ueber !== null && ueber >= 6)
-    return '<p class="dokwarn"><b>Der Ton kam an, aber zu leise:</b> nur '
-      + String(Math.round(ueber)) + ' dB über der Raumruhe (Ruhe ' + String(d.ruhe_dB).replace('.', ',')
-      + ' dB, lautester Moment ' + String(d.lautestes_dB).replace('.', ',') + ' dB) — zu wenig, um '
-      + 'die Ankunft sicher zu erkennen.</p>'
-      + '<p class="dokfein">Was hilft: den Pegelregler am Mikrofon höher drehen (viele USB-Mikrofone '
-      + 'haben einen eigenen) · das Mikrofon näher zum Lautsprecher · oder ein lauteres Ausgabegerät wählen.</p>';
-  return '<p class="dokwarn"><b>Es kam kein Ton am Mikrofon an — die Ausgabekette ist unterbrochen.</b> '
-    + 'Der Prüfton wurde abgespielt, aber das Mikrofon hat nur Ruhe gehört'
-    + (d.ruhe_dB !== undefined ? ' (' + String(d.ruhe_dB).replace('.', ',') + ' dB, lautester Moment '
-      + String(d.lautestes_dB).replace('.', ',') + ' dB)' : '') + '.</p>'
-    + '<p class="dokfein">Woran es liegen kann: Systemlautstärke oder Stummschalter · falsches Ausgabegerät '
-    + '(Kopf prüfen: „spielt gerade“) · ein virtuelles Mikrofon, das den Raum nicht hört · '
-    + 'oder die Wiedergabe hängt — einmal kurz Musik anspielen weckt sie.</p>';
+    return '<p class="dokwarn">' + window.t('mess.dok.f.zu_leise', { n: String(Math.round(ueber)),
+        ruhe: dezimal(String(d.ruhe_dB)), max: dezimal(String(d.lautestes_dB)) }) + '</p>'
+      + '<p class="dokfein">' + window.t('mess.dok.f.zu_leise_hilft') + '</p>';
+  return '<p class="dokwarn">' + window.t('mess.dok.f.kein_ton')
+    + (d.ruhe_dB !== undefined ? window.t('mess.dok.f.kein_ton_zahlen', { ruhe: dezimal(String(d.ruhe_dB)),
+      max: dezimal(String(d.lautestes_dB)) }) : '') + '.</p>'
+    + '<p class="dokfein">' + window.t('mess.dok.f.kein_ton_woran') + '</p>';
 }
 
 /* ---- Der Gang ------------------------------------------------------- */
@@ -25564,24 +25552,12 @@ async function dokStarten(){
   dokInhaltZeigen();
   if (dok.schritt < 0 && !document.querySelector('[data-dok="info"]')){
     lautstaerkeSetzen(50, false);
-    dokBlock('info', '<h6><span class="doknr">1</span>ZUSAMMENFASSUNG</h6>'
-      + '<p>Was gleich passiert: erst ein <b>Stilletest</b> (nur zuhören), dann ein kurzer <b>Piep</b>, '
-      + 'der den Versatz der Kette mißt. Danach zehn Messungen — weißes, rosa und blaues Rauschen '
-      + 'sowie zwei Sweeps, jedes zweimal für die Wiederholbarkeit — und zwei <b>Lautstärkerampen</b>. '
-      + 'Am Ende stehen alle Raumkurven übereinander, ein Urteil in Klartext und ein Korrekturvorschlag '
-      + 'für die Regler.</p>'
-      + '<p>Vor jedem Ton horcht die App zwei Sekunden, ob die Kulisse noch dieselbe ist. Latenz '
-      + 'und Pegel mißt die Eichung einmal am Anfang — danach gelten sie für den ganzen Gang; '
-      + 'gewacht wird trotzdem: jede Messung erkennt ihr Signal selbst und bricht mit Klartext ab, '
-      + 'wenn nichts ankommt. Die <b>App-Lautstärke stellt sie selbst</b> ein — '
-      + 'Start bei 50 %, und ist der Piep zu leise, hebt sie stufenweise an; am Ende kommt dein '
-      + 'alter Pegel zurück. Die Warntöne des Systems werden während der Töne stummgeschaltet.</p>'
-      + '<p>⚠ Es wird <b>zeitweise laut</b>, besonders bei den Rampen. Zusammen sind es gut acht Minuten; '
-      + 'zwischen allen Schritten wartet der Ablauf auf deinen Klick — du kannst den Raum jederzeit '
-      + 'verlassen und in Ruhe zurückkommen. Während der Töne: still sein, jedes Geräusch steht '
-      + 'nachher in der Kurve.</p>'
+    dokBlock('info', '<h6><span class="doknr">1</span>' + window.t('mess.dok.info.titel') + '</h6>'
+      + '<p>' + window.t('mess.dok.info.1') + '</p>'
+      + '<p>' + window.t('mess.dok.info.2') + '</p>'
+      + '<p>' + window.t('mess.dok.info.3') + '</p>'
       + '<div class="dokknoepfe"><button class="knopf planbereit" onclick="dokKnoepfeWeg(\'info\');dokWeiter()">'
-      + 'Stilletest beginnen</button></div>');
+      + window.t('mess.dok.info.los') + '</button></div>');
   }
   /* Beim ersten Oeffnen steht der SEITENANFANG oben - erst muss man
      alles lesen koennen; die Absatz-fuer-Absatz-Ausrichtung beginnt
@@ -25608,11 +25584,19 @@ async function dokStarten(){
 function dokAutoKnoepfe(id, knoepfeHtml){
   return (dok && dok.autoLauf) ? '' : '<div class="dokknoepfe">' + knoepfeHtml + '</div>';
 }
-function dokAutoDann(status, notiz){
+/* Ins Messarchiv geht das Protokoll des Ueber-alles-Tests deutsch, wie
+   bisher; angezeigt wird es in der Oberflaechensprache (nk/nv). */
+function dokTDe(k, v){
+  let s = (window.WOERTER && window.WOERTER.de && window.WOERTER.de[k]);
+  if (s == null) return k;
+  return s.replace(/\{(\w+)\}/g, (_, x) => (v && v[x] != null) ? String(v[x]) : '');
+}
+function dokAutoDann(status, notiz, nk, nv){
   if (!dok || !dok.autoLauf) return;
+  if (nk && notiz == null) notiz = dokTDe(nk, nv);
   dok.autoErgebnis.push({ i: dok.schritt,
-    titel: dokGangTitel(DOK_GANG[dok.schritt]) || ('Schritt ' + dok.schritt),
-    status, notiz: notiz || '' });
+    titel: dokGangTitel(DOK_GANG[dok.schritt], dokTDe) || ('Schritt ' + dok.schritt),
+    status, notiz: notiz || '', nk: nk || null, nv: nv || null });
   dok.autoLetzterFehl = (status === 'gescheitert');
   setTimeout(dokWeiter, 600);
 }
@@ -25658,7 +25642,7 @@ function dokDatenSammeln(){
       grenze: R.grenze, reihe: R.reihe.map(x => ({ stufe: x.stufe, kurve: x.kurve,
         mittel: +(+x.mittel).toFixed(1), abstand: +(+x.abstand).toFixed(1), laufzeit: x.laufzeit })) }])),
     erledigt: dok.erledigt || {},
-    autoErgebnis: dok.autoErgebnis || null,
+    autoErgebnis: dok.autoErgebnis ? dok.autoErgebnis.map(e => ({ i: e.i, titel: e.titel, status: e.status, notiz: e.notiz })) : null,
   };
 }
 function dokSpeichern(){
@@ -25673,10 +25657,8 @@ async function dokAllesLauf(){
   if (!dok || dok.autoLauf) return;
   if (typeof messLaeuft !== 'undefined' && messLaeuft) return;
   dok.autoLauf = true; dok.autoErgebnis = []; dok.autoLetzterFehl = false;
-  dokBlock('auto', '<h6><span class="doknr">»</span>ÜBER-ALLES-TEST</h6>'
-    + '<p>Alle Tests laufen jetzt <b>ohne Zwischenhalte</b> durch — du kannst den Raum verlassen. '
-    + 'Am Ende steht die Auswertung: Gescheitertes hält nichts auf, es wird notiert und läßt sich '
-    + 'danach einzeln über das Inhaltsverzeichnis nachholen. Abbruch jederzeit über „Messung verlassen“.</p>');
+  dokBlock('auto', '<h6><span class="doknr">»</span>' + window.t('mess.dok.auto.titel') + '</h6>'
+    + '<p>' + window.t('mess.dok.auto.text') + '</p>');
   dok.schritt = -1;
   dokWeiter();
 }
@@ -25685,45 +25667,46 @@ function dokAutoFertig(id){
   const zeilen = E.map(e =>
     '<p>' + (e.status === 'ok' ? '<span style="color:#59d18c">✓</span>'
       : e.status === 'warnung' ? '<span class="dokwarn">⚠</span>' : '<span class="dokwarn">✗</span>')
-    + ' ' + e.titel + (e.notiz ? ' <span class="dokfein">— ' + e.notiz + '</span>' : '') + '</p>').join('');
+    + ' ' + ((DOK_GANG[e.i] && dokGangTitel(DOK_GANG[e.i])) || window.t('mess.dok.schritt_n', { n: e.i }))
+    + ((e.nk || e.notiz) ? ' <span class="dokfein">— ' + (e.nk ? window.t(e.nk, e.nv) : e.notiz) + '</span>' : '') + '</p>').join('');
   const fehlgeschlagen = E.filter(e => e.status === 'gescheitert').length;
   dok.autoLauf = false;
   dokSpeichern();
-  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>ÜBER-ALLES-TEST — AUSWERTUNG</h6>'
+  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.auto.auswertung') + '</h6>'
     + '<div class="dokverz">' + zeilen + '</div>'
     + '<p class="dokbew">' + (fehlgeschlagen
-      ? fehlgeschlagen + ' Test' + (fehlgeschlagen > 1 ? 's' : '') + ' gescheitert — im Inhaltsverzeichnis '
-        + 'anklicken, um sie einzeln nachzuholen.'
-      : 'Alle Tests durchgelaufen.') + '</p>');
+      ? window.t('mess.dok.auto.gescheitert', { n: fehlgeschlagen })
+      : window.t('mess.dok.auto.alle')) + '</p>');
   dokInhaltZeigen();
 }
 
-function dokGangTitel(s){
-  if (s.art === 'stille')     return 'Stilletest';
-  if (s.art === 'piepeich')   return 'Piep-Eichung · Latenz & Pegel';
-  if (s.art === 'messung')    return DOK_SIGNAL[s.signal].name + ' · ' + s.wdh + '. Lauf';
-  if (s.art === 'rampe')      return 'Lautstärkerampe · ' + DOK_SIGNAL[s.signal].name;
-  if (s.art === 'zusammen')   return 'Zusammenfassung & Steckbrief';
-  if (s.art === 'schluss')    return 'Abschluß';
+function dokGangTitel(s, tf){
+  tf = tf || window.t;
+  if (s.art === 'stille')     return tf('mess.dok.g.stille');
+  if (s.art === 'piepeich')   return tf('mess.dok.g.piepeich');
+  if (s.art === 'messung')    return tf('mess.dok.g.messung', { name: tf(DOK_SIGNAL[s.signal].nk), n: s.wdh });
+  if (s.art === 'rampe')      return tf('mess.dok.g.rampe', { name: tf(DOK_SIGNAL[s.signal].nk) });
+  if (s.art === 'zusammen')   return tf('mess.dok.g.zusammen');
+  if (s.art === 'schluss')    return tf('mess.dok.g.schluss');
   if (s.art === 'halt')       return null;      /* Baustellenende ist kein Test */
   return s.art;
 }
 function dokInhaltZeigen(){
   if (!dok) return;
   if (!dok.erledigt) dok.erledigt = {};
-  const z = ['<h6><span class="doknr">·</span>DIE TESTS DIESES DURCHLAUFS</h6><div class="dokverz">'];
+  const z = ['<h6><span class="doknr">·</span>' + window.t('mess.dok.verz.titel') + '</h6><div class="dokverz">'];
   DOK_GANG.forEach((s, i) => {
     const titel = dokGangTitel(s); if (!titel) return;
     const erledigt = !!dok.erledigt[i], aktiv = i === dok.schritt;
     z.push('<p class="dokvlink" onclick="dokSpringen(' + i + ')" title="'
-      + (erledigt ? 'zum Ergebnis springen' : 'diesen Test jetzt anfahren') + '"'
+      + (erledigt ? window.t('mess.dok.verz.springen') : window.t('mess.dok.verz.anfahren')) + '"'
       + (aktiv ? ' style="color:var(--titel-a, var(--text))"' : '') + '>'
       + (erledigt ? '<span style="color:#59d18c">✓</span> ' : (aktiv ? '▸ ' : '<span style="opacity:.45">·</span> '))
       + titel + '</p>');
   });
-  z.push('<p class="dokvlink" onclick="dokAllesLauf()" title="alle Tests ohne Zwischenhalte">'
-    + '<b>» Über-alles-Test</b> — alles läuft durch, ohne Bestätigungen</p>');
-  z.push('<p><span style="opacity:.45">·</span> <i>weitere Abschnitte folgen nach der Abnahme</i></p></div>');
+  z.push('<p class="dokvlink" onclick="dokAllesLauf()" title="' + window.t('mess.dok.verz.auto.titel') + '">'
+    + window.t('mess.dok.verz.auto') + '</p>');
+  z.push('<p><span style="opacity:.45">·</span> <i>' + window.t('mess.dok.verz.folgen') + '</i></p></div>');
   dokBlockStill('inhalt', z.join(''));
 }
 
@@ -25743,7 +25726,7 @@ function dokSpringen(i){
   dok.schritt = i;
   dokInhaltZeigen();
   dokSchritt(DOK_GANG[i]).catch(e => {
-    dokBlock('g' + i, '<p class="dokwarn">Schritt fehlgeschlagen: ' + ((e && e.message) || e) + ' — wähl den Schritt im Inhaltsverzeichnis noch einmal an.</p>');
+    dokBlock('g' + i, '<p class="dokwarn">' + window.t('mess.dok.fehl_springen', { was: ((e && e.message) || e) }) + '</p>');
   });
 }
 
@@ -25762,10 +25745,9 @@ function dokWeiter(){
   const s = DOK_GANG[dok.schritt];
   if (!s){ dok.fertig = true; return; }
   dokSchritt(s).catch(e => {
-    dokBlock('g' + dok.schritt, '<p class="dokwarn">Schritt fehlgeschlagen: '
-      + ((e && e.message) || e) + '</p>'
-      + '<div class="dokknoepfe"><button class="knopf" onclick="dokNochmal()">Nochmal</button>'
-      + '<button class="knopf" onclick="dokWeiter()">Überspringen</button></div>');
+    dokBlock('g' + dok.schritt, '<p class="dokwarn">' + window.t('mess.dok.fehl', { was: ((e && e.message) || e) }) + '</p>'
+      + '<div class="dokknoepfe"><button class="knopf" onclick="dokNochmal()">' + window.t('mess.dok.nochmal') + '</button>'
+      + '<button class="knopf" onclick="dokWeiter()">' + window.t('mess.dok.ueberspringen') + '</button></div>');
   });
 }
 function dokNochmal(){
@@ -25789,18 +25771,14 @@ async function dokSchritt(s){
 }
 
 async function dokSchrittStille(id){
-  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>STILLETEST</h6>'
-    + '<p>Zwölf Sekunden nur zuhören — lieber länger als zu kurz, erst dann trennt die Auflösung '
-    + 'eng benachbarte Dauertöne sauber. Netzbrummen (50 Hz und '
-    + 'Vielfache) oder ein Lüfter stehen dann als Nadeln im Bild, klar getrennt von ihren '
-    + 'Nachbarfrequenzen. Diese Kurve ist der <b>Stille-Bezug der ganzen Serie</b>: jede spätere '
-    + 'Prüfung und jedes Meßdiagramm trägt sie zum Vergleich.</p>'
-    + '<p class="dokweg"><b>Bitte jetzt still sein.</b> Es läuft bereits …</p>');
+  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.st.titel') + '</h6>'
+    + '<p>' + window.t('mess.dok.st.text') + '</p>'
+    + '<p class="dokweg">' + window.t('mess.dok.st.still') + '</p>');
   const s = await dokStilleAufnahme(12);
   dokWeg(id);
   if (!s.ok){
-    dokNachtrag(id, '<p class="dokwarn">Ging nicht: ' + s.grund + ' — meist fehlt der Mikrofonzugriff (Kopf, Schritt 0).</p>'
-      + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokNochmal()">Nochmal</button>'));
+    dokNachtrag(id, '<p class="dokwarn">' + window.t('mess.dok.st.ging_nicht', { was: s.grund }) + '</p>'
+      + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokNochmal()">' + window.t('mess.dok.nochmal') + '</button>'));
     dokAutoDann('gescheitert', s.grund);
     return;
   }
@@ -25808,45 +25786,34 @@ async function dokSchrittStille(id){
   dok.stilleFein = s.lang;
   const nadeln = s.stoer.map(x => {
     const wer = messStoerdeutung(x.f);
-    return (x.f >= 1000 ? (x.f / 1000).toFixed(2).replace('.', ',') + ' kHz' : Math.round(x.f) + ' Hz')
-      + ' (+' + x.ueber.toFixed(0) + ' dB' + (wer ? ', vermutlich ' + wer : '') + ')';
+    return (x.f >= 1000 ? dezimal((x.f / 1000).toFixed(2)) + ' kHz' : Math.round(x.f) + ' Hz')
+      + ' (+' + x.ueber.toFixed(0) + ' dB' + (wer ? window.t('mess.dok.st.vermutlich', { wer }) : '') + ')';
   });
   dokNachtrag(id,
     dokDia([
-      { fein: s.lang ? { db: s.lang.db, df: s.lang.df } : null, farbe: '#9aa4b5', breit: 1.2, name: 'superfein' },
-      { punkte: s.kurve, farbe: (getComputedStyle(document.body).getPropertyValue('--titel-a') || '').trim() || '#cfd6e0', name: 'Terzmittel' },
+      { fein: s.lang ? { db: s.lang.db, df: s.lang.df } : null, farbe: '#9aa4b5', breit: 1.2, name: window.t('mess.dok.st.superfein') },
+      { punkte: s.kurve, farbe: (getComputedStyle(document.body).getPropertyValue('--titel-a') || '').trim() || '#cfd6e0', name: window.t('mess.dok.st.terz') },
     ], { marken: s.stoer.map(x => ({ f: x.f })), hoch: 230 })
-    + '<p class="dokbew">Grundpegel ' + s.pegel.toFixed(0) + ' dB. '
-    + (nadeln.length ? 'Dauertöne erkannt: ' + nadeln.join(' · ') + '.' : 'Keine auffälligen Dauertöne.')
-    + ' Die Kurve bleibt als Bezug stehen.</p>'
-    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Paßt — weiter</button>'
-      + '<button class="knopf" onclick="dokNochmal()">Wiederholen</button>'));
+    + '<p class="dokbew">' + window.t('mess.dok.st.grund', { db: s.pegel.toFixed(0) })
+    + (nadeln.length ? window.t('mess.dok.st.nadeln', { was: nadeln.join(' · ') }) : window.t('mess.dok.st.keine'))
+    + window.t('mess.dok.st.bezug') + '</p>'
+    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.passt') + '</button>'
+      + '<button class="knopf" onclick="dokNochmal()">' + window.t('mess.dok.wiederholen') + '</button>'));
   dokAutoDann('ok');
 }
 
 /* Das Ende des bisher freigegebenen Abschnitts. */
 async function dokSchrittHalt(id){
   if (dok.autoLauf){ dokAutoFertig(id); return; }
-  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>HIER ENDET DER AUSGEBAUTE TEIL</h6>'
-    + '<p>Bis hierher ist der Messgang ausgebaut — das Inhaltsverzeichnis oben zeigt, was gelaufen '
-    + 'ist. Die nächsten Abschnitte werden Schritt für Schritt ergänzt, sobald dieser Teil '
-    + 'abgenommen ist.</p>'
-    + '<div class="dokknoepfe"><button class="knopf" onclick="dokVerlassen()">Messung verlassen</button></div>');
+  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.halt.titel') + '</h6>'
+    + '<p>' + window.t('mess.dok.halt.text') + '</p>'
+    + '<div class="dokknoepfe"><button class="knopf" onclick="dokVerlassen()">' + window.t('mess.dok.verlassen') + '</button></div>');
 }
 
 async function dokSchrittPiepeich(id){
-  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>PIEP-EICHUNG</h6>'
-    + '<p>Ein kurzer 1-kHz-Piep durch die ganze Kette mißt den <b>Versatz</b> zwischen Kettenende '
-    + 'und Mikrofon; ist er zu leise, hebt die App den Pegel stufenweise an. Ein <b>zweiter Piep</b> '
-    + 'bestätigt, daß die Latenz konstant bleibt — weichen beide ab, wird wiederholt. '
-    + 'Piep und alle Meßsignale tragen denselben <b>Energiegehalt</b> — was für den Piep '
-    + 'eingemessen ist, gilt damit für alles. Eine kurze <b>Rauschprobe</b> bestätigt das: erst '
-    + 'wenn auch sie mit mindestens 20 dB Störabstand je Band ankommt, steht der Messpegel; '
-    + 'sonst hebt die App stufenweise an. '
-    + 'Jedes Signal wird vor dem Senden geprüft; im Live-Bild läuft oben, was gesendet wird, '
-    + 'darunter, was das Mikrofon davon hört. Ab jetzt gilt: jeder Ton muß binnen Versatz + 1 '
-    + 'Sekunde ankommen, sonst bricht der Schritt mit einer Fehlermeldung ab.</p>'
-    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">Piep abspielen</button>'));
+  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.pe.titel') + '</h6>'
+    + '<p>' + window.t('mess.dok.pe.text') + '</p>'
+    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">' + window.t('mess.dok.pe.los') + '</button>'));
   if (dok.autoLauf) dokPiepeichLos(id);
 }
 /* Der Pruefpiep MIT Anhebung - ueberall derselbe (Caspar_D,
@@ -25858,7 +25825,7 @@ async function dokSchrittPiepeich(id){
 async function dokPiepAnheben(id, eichen){
   let r = null;
   for (;;){
-    dokNachtrag(id, '<p class="dokbew dokweg">Prüfpiep bei ' + dok.messPegel + ' % — bitte kurz still …</p>');
+    dokNachtrag(id, '<p class="dokbew dokweg">' + window.t('mess.dok.pe.pruefpiep', { p: dok.messPegel }) + '</p>');
     r = await dokPiep(eichen);
     dokWeg(id);
     const ueber = (r.diagnose && typeof r.diagnose.ueber_ruhe_dB === 'number') ? r.diagnose.ueber_ruhe_dB : null;
@@ -25866,9 +25833,9 @@ async function dokPiepAnheben(id, eichen){
     if (!zuLeise || dok.messPegel >= 100) break;
     const altP = dok.messPegel;
     dok.messPegel = Math.min(100, Math.round(dok.messPegel * Math.SQRT2));
-    dokNachtrag(id, '<p class="dokbew">Piep zu leise bei ' + altP + ' % ('
-      + (ueber !== null ? 'nur ' + Math.round(ueber) + ' dB über der Raumruhe' : 'nicht erkannt')
-      + ') — die App hebt auf <b>' + dok.messPegel + ' %</b> an.</p>');
+    dokNachtrag(id, '<p class="dokbew">' + window.t('mess.dok.pe.zu_leise', { alt: altP,
+        wie: (ueber !== null ? window.t('mess.dok.pe.nur_ueber', { db: Math.round(ueber) }) : window.t('mess.dok.nicht_erkannt')),
+        p: dok.messPegel }) + '</p>');
     dokKopfZeigen();
   }
   if (r && r.ok && dok.versatz === null){ dok.versatz = r.laufzeit; dokKopfZeigen(); }
@@ -25887,37 +25854,35 @@ async function dokPiepeichLos(id){
     r = await dokPiepAnheben(id, true);
     if (!r || !r.ok){
       dokNachtrag(id, dokPiepFehlerText(r || { grund: '?' })
-        + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">Nochmal</button>'));
-      dokAutoDann('gescheitert', (r && r.grund === 'stumm') ? 'kein Ton am Mikrofon' : ((r && r.grund) || '?'));
+        + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">' + window.t('mess.dok.nochmal') + '</button>'));
+      if (r && r.grund === 'stumm') dokAutoDann('gescheitert', null, 'mess.dok.n.kein_ton');
+      else dokAutoDann('gescheitert', ((r && r.grund) || '?'));
       return;
     }
     const ueber = (r.diagnose && typeof r.diagnose.ueber_ruhe_dB === 'number') ? r.diagnose.ueber_ruhe_dB : null;
     if (ueber !== null && ueber < 20){
-      dokNachtrag(id, '<p class="dokwarn">Auch bei 100 % kommt der Piep nur '
-        + Math.round(ueber) + ' dB über die Raumruhe — unter den 20 dB für eine belastbare Messung. '
-        + 'Mikrofon-Pegelregler höher oder Mikrofon näher zum Lautsprecher.</p>'
-        + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Trotzdem weiter</button>'
-        + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">Nochmal</button>'));
-      dokAutoDann('warnung', 'Piep auch bei 100 % zu leise');
+      dokNachtrag(id, '<p class="dokwarn">' + window.t('mess.dok.pe.100', { db: Math.round(ueber) }) + '</p>'
+        + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.trotzdem') + '</button>'
+        + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">' + window.t('mess.dok.nochmal') + '</button>'));
+      dokAutoDann('warnung', null, 'mess.dok.n.piep_leise');
       return;
     }
     /* Der Bestaetigungs-Piep: bleibt die Latenz konstant? (Caspar_D,
        29.08.2026: "Lautstärkeerhöhung, wiederholen, bleibt die latenz
        konstant") */
-    dokNachtrag(id, '<p class="dokbew dokweg">Bestätigungs-Piep — bleibt die Latenz konstant?</p>');
+    dokNachtrag(id, '<p class="dokbew dokweg">' + window.t('mess.dok.pe.bestaetigung') + '</p>');
     r2 = await dokPiep(false);
     dokWeg(id);
     if (!r2 || !r2.ok){
       if (versuch < 3) continue;
       dokNachtrag(id, dokPiepFehlerText(r2 || { grund: '?' })
-        + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">Nochmal</button>'));
-      dokAutoDann('gescheitert', 'Bestätigungs-Piep scheiterte');
+        + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">' + window.t('mess.dok.nochmal') + '</button>'));
+      dokAutoDann('gescheitert', null, 'mess.dok.n.bestaetigung');
       return;
     }
     spanne = Math.abs(r.laufzeit - r2.laufzeit);
     if (spanne > 150 && versuch < 3){
-      dokNachtrag(id, '<p class="dokbew">Latenz nicht konstant (' + r.laufzeit + ' gegen ' + r2.laufzeit
-        + ' ms) — die Eichung wird wiederholt.</p>');
+      dokNachtrag(id, '<p class="dokbew">' + window.t('mess.dok.pe.nicht_konstant', { a: r.laufzeit, b: r2.laufzeit }) + '</p>');
       continue;
     }
     break;
@@ -25935,42 +25900,38 @@ async function dokPiepeichLos(id){
      weiter an. Der Versatz aus dem Piep bleibt dabei geeicht. */
   let rp = null;
   for (;;){
-    dokNachtrag(id, '<p class="dokbew dokweg">Rauschprobe bei ' + dok.messPegel + ' % — 2 s rosa Rauschen …</p>');
+    dokNachtrag(id, '<p class="dokbew dokweg">' + window.t('mess.dok.pe.rauschprobe', { p: dok.messPegel }) + '</p>');
     lautstaerkeSetzen(dok.messPegel, false);
     rp = await messLauf(true, { art: 'rosa', dauer: 2, beilauf: true, zielRms: -12,
       vor: Math.max(2, dok.versatz / 1000 + 1.8), reserve: Math.max(1.5, dok.versatz / 1000 + 1) });
     dokWeg(id);
     if (rp && rp.ok && rp.abstand >= 20) break;
     if (dok.messPegel >= 100){
-      dokNachtrag(id, '<p class="dokwarn">Auch bei 100 % bleibt das Rauschen unter 20 dB Störabstand je Band'
-        + (rp && rp.ok ? ' (' + Math.round(rp.abstand) + ' dB)' : ' (nicht erkannt)')
-        + ' — die Messkurven werden zappeliger, als der Raum ist. Was hilft: Mikrofon-Pegelregler '
-        + 'höher, Mikrofon näher zum Lautsprecher, oder leisere Störer im Raum abstellen.</p>'
-        + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Trotzdem weiter</button>'
-        + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">Nochmal</button>'));
+      dokNachtrag(id, '<p class="dokwarn">' + window.t('mess.dok.pe.rausch100', {
+          wie: (rp && rp.ok ? ' (' + Math.round(rp.abstand) + ' dB)' : ' (' + window.t('mess.dok.nicht_erkannt') + ')') }) + '</p>'
+        + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.trotzdem') + '</button>'
+        + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">' + window.t('mess.dok.nochmal') + '</button>'));
       dokKopfZeigen();
-      dokAutoDann('warnung', 'Rauschprobe auch bei 100 % unter 20 dB');
+      dokAutoDann('warnung', null, 'mess.dok.n.rausch_leise');
       return;
     }
     const altP = dok.messPegel;
     dok.messPegel = Math.min(100, Math.round(dok.messPegel * Math.SQRT2));
-    dokNachtrag(id, '<p class="dokbew">Rauschen zu leise bei ' + altP + ' % ('
-      + (rp && rp.ok ? 'Störabstand nur ' + Math.round(rp.abstand) + ' dB je Band' : 'nicht erkannt')
-      + ') — die App hebt auf <b>' + dok.messPegel + ' %</b> an, neue Probe.</p>');
+    dokNachtrag(id, '<p class="dokbew">' + window.t('mess.dok.pe.rausch_zu_leise', { alt: altP,
+        wie: (rp && rp.ok ? window.t('mess.dok.pe.abstand_nur', { db: Math.round(rp.abstand) }) : window.t('mess.dok.nicht_erkannt')),
+        p: dok.messPegel }) + '</p>');
   }
   dokNachtrag(id,
     (r.signalPruef ? '<p class="dokfein">' + r.signalPruef.text + '</p>' : '')
-    + dokPfeil('Signal gespielt', 'Signal gehört', dok.versatz + ' ms')
-    + '<p class="dokbew">Zwei Pieps, Latenz konstant: ' + r.laufzeit + ' und ' + r2.laufzeit
-    + ' ms (streut um ' + dok.eich.spanne + ' ms) — der Versatz von <b>' + dok.versatz + ' ms</b> eicht ab '
-    + 'jetzt das Meßfenster jedes Schritts. Der Piep kam <b>' + dok.eich.ueberRuhe + ' dB</b> über der '
-    + 'Raumruhe an, bei Eichpegel <b>' + dok.messPegel + ' %</b>'
-    + (dok.messPegel > 50 ? ' (von der App eingemessen)' : '') + '. '
-    + 'Die Rauschprobe trägt: <b>' + Math.round(rp.abstand) + ' dB</b> Störabstand je Band.</p>'
-    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Paßt — weiter</button>'
-    + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">Wiederholen</button>'));
+    + dokPfeil(window.t('mess.dok.pfeil.gespielt'), window.t('mess.dok.pfeil.gehoert'), dok.versatz + ' ms')
+    + '<p class="dokbew">' + window.t('mess.dok.pe.ergebnis', { a: r.laufzeit, b: r2.laufzeit, spanne: dok.eich.spanne,
+        v: dok.versatz, ueber: dok.eich.ueberRuhe, p: dok.messPegel })
+    + (dok.messPegel > 50 ? window.t('mess.dok.pe.eingemessen') : '') + '. '
+    + window.t('mess.dok.pe.rausch_traegt', { db: Math.round(rp.abstand) }) + '</p>'
+    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.passt') + '</button>'
+    + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeg(\'' + id + '\');dokPiepeichLos(\'' + id + '\')">' + window.t('mess.dok.wiederholen') + '</button>'));
   dokKopfZeigen();
-  dokAutoDann('ok', 'Versatz ' + dok.versatz + ' ms (streut um ' + dok.eich.spanne + ' ms), Rauschprobe ' + Math.round(rp.abstand) + ' dB');
+  dokAutoDann('ok', null, 'mess.dok.n.piep_ok', { v: dok.versatz, spanne: dok.eich.spanne, db: Math.round(rp.abstand) });
 }
 
 /* Das Ergebnisbild der Eichung: Tick - Pfeil mit der Laufzeit - Tick
@@ -25993,41 +25954,39 @@ function dokPfeil(links, rechts, drauf){
    Messung - zwei Diagramme - Bewertung - ein Klick weiter. */
 async function dokSchrittMessung(id, s){
   const sig = DOK_SIGNAL[s.signal];
-  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>MESSUNG · ' + sig.name + ' · ' + s.wdh + '. Lauf</h6>'
-    + '<p>' + sig.erklaert + (s.wdh === 2 ? ' Der zweite Lauf zeigt die Wiederholbarkeit — er wird gestrichelt zum ersten gezeichnet.' : '') + '</p>'
-    + '<p class="dokfein">' + sig.dauer + ' Sekunden Ton bei App-Pegel ' + dok.messPegel + ' %. Vorher: 2 s Stilleprüfung. Bitte still sein.</p>'
-    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokMessungLos(\'' + id + '\',' + dok.schritt + ')">Start</button>'
-    + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Überspringen</button>'));
+  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.m.titel', { name: sig.name, n: s.wdh }) + '</h6>'
+    + '<p>' + sig.erklaert + (s.wdh === 2 ? window.t('mess.dok.m.zweiter') : '') + '</p>'
+    + '<p class="dokfein">' + window.t('mess.dok.m.dauer', { s: sig.dauer, p: dok.messPegel }) + '</p>'
+    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokMessungLos(\'' + id + '\',' + dok.schritt + ')">' + window.t('mess.dok.m.start') + '</button>'
+    + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.ueberspringen') + '</button>'));
   if (dok.autoLauf) dokMessungLos(id, dok.schritt);
 }
 async function dokMessungLos(id, schritt){
   const s = DOK_GANG[schritt], sig = DOK_SIGNAL[s.signal];
-  dokNachtrag(id, '<p class="dokbew dokweg" id="' + id + 'stand">Stilleprüfung …</p>');
+  dokNachtrag(id, '<p class="dokbew dokweg" id="' + id + 'stand">' + window.t('mess.dok.stillepruefung') + '</p>');
   const stand = (t) => { const e = document.getElementById(id + 'stand'); if (e) e.innerHTML = t; };
 
   const k = await dokKurzcheck();
   if (k.ok && k.drift !== null && k.drift > 6 && dok.autoLauf){
     stand('');
-    dokNachtrag(id, '<p class="dokwarn">⚠ Kulisse verändert (bis ' + k.drift.toFixed(0) + ' dB bei '
-      + Math.round(k.bei) + ' Hz) — der Über-alles-Test mißt trotzdem.</p>');
+    dokNachtrag(id, '<p class="dokwarn">' + window.t('mess.dok.m.kulisse_auto', { db: k.drift.toFixed(0), hz: Math.round(k.bei) }) + '</p>');
     await dokMessungTon(id, schritt);
     return;
   }
   if (k.ok && k.drift !== null && k.drift > 6){
     stand('');
     dokNachtrag(id, dokDia([
-        { punkte: dok.stilleKurve, farbe: '#8a93a3', punktiert: true, name: 'Bezug' },
-        { punkte: k.s.kurve, farbe: '#e8edf4', name: 'jetzt' },
+        { punkte: dok.stilleKurve, farbe: '#8a93a3', punktiert: true, name: window.t('mess.dok.m.bezug') },
+        { punkte: k.s.kurve, farbe: '#e8edf4', name: window.t('mess.dok.m.jetzt') },
       ], { marken: k.marken, hoch: 150 })
-      + '<p class="dokwarn">⚠ Die Kulisse hat sich geändert: bis zu ' + k.drift.toFixed(0) + ' dB Abweichung bei '
-      + Math.round(k.bei) + ' Hz. Ist etwas dazugekommen (Gerät, Fenster, Gespräch)?</p>'
-      + '<div class="dokknoepfe"><button class="knopf" onclick="dokMessungLos(\'' + id + '\',' + schritt + ')">Neu prüfen</button>'
-      + '<button class="knopf" onclick="dokMessungTon(\'' + id + '\',' + schritt + ')">Trotzdem messen</button>'
-      + '<button class="knopf" onclick="dokWeiter()">Überspringen</button></div>');
+      + '<p class="dokwarn">' + window.t('mess.dok.m.kulisse', { db: k.drift.toFixed(0), hz: Math.round(k.bei) }) + '</p>'
+      + '<div class="dokknoepfe"><button class="knopf" onclick="dokMessungLos(\'' + id + '\',' + schritt + ')">' + window.t('mess.dok.neu_pruefen') + '</button>'
+      + '<button class="knopf" onclick="dokMessungTon(\'' + id + '\',' + schritt + ')">' + window.t('mess.dok.m.trotzdem') + '</button>'
+      + '<button class="knopf" onclick="dokWeiter()">' + window.t('mess.dok.ueberspringen') + '</button></div>');
     return;
   }
-  stand('Stilleprüfung: Kulisse unverändert'
-    + (k.drift !== null ? ' (größte Abweichung ' + k.drift.toFixed(1).replace('.', ',') + ' dB)' : '') + '.');
+  stand(window.t('mess.dok.m.unveraendert')
+    + (k.drift !== null ? window.t('mess.dok.m.groesste', { db: dezimal(k.drift.toFixed(1)) }) : '') + '.');
   await dokMessungTon(id, schritt, true);
 }
 async function dokMessungTon(id, schritt, standBleibt, latenzNochmal){
@@ -26039,7 +25998,7 @@ async function dokMessungTon(id, schritt, standBleibt, latenzNochmal){
      ganzen Gang. Das Netz danach: Signalerkennung, Exklusiv-Waechter
      und der Latenzabgleich nach jeder Rauschmessung. */
   dokNachtrag(id, '<p class="dokbew dokweg" id="' + id + 'stand"></p>');
-  stand('<b>' + sig.name + '</b> läuft, ' + sig.dauer + ' s — bitte still sein …');
+  stand(window.t('mess.dok.m.laeuft', { name: sig.name, s: sig.dauer }));
 
   lautstaerkeSetzen(dok.messPegel, false);
   const r = await messLauf(true, {
@@ -26051,9 +26010,9 @@ async function dokMessungTon(id, schritt, standBleibt, latenzNochmal){
     dokWeg(id);
     dokNachtrag(id, (r && r.grund === 'stumm' ? dokPiepFehlerText(r)
         : (r && r.grund === 'einstreuung' ? dokPiepFehlerText(r)
-        : '<p class="dokwarn">Messung fehlgeschlagen: ' + ((r && r.grund) || '?') + '</p>'))
-      + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokMessungLos(\'' + id + '\',' + schritt + ')">Wiederholen</button>'
-      + '<button class="knopf" onclick="dokWeiter()">Überspringen</button>'));
+        : '<p class="dokwarn">' + window.t('mess.dok.m.fehl', { was: ((r && r.grund) || '?') }) + '</p>'))
+      + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokMessungLos(\'' + id + '\',' + schritt + ')">' + window.t('mess.dok.wiederholen') + '</button>'
+      + '<button class="knopf" onclick="dokWeiter()">' + window.t('mess.dok.ueberspringen') + '</button>'));
     dokAutoDann('gescheitert', (r && r.text) || (r && r.grund) || 'unbekannt');
     return;
   }
@@ -26065,8 +26024,7 @@ async function dokMessungTon(id, schritt, standBleibt, latenzNochmal){
   if (Math.abs(r.laufzeit - dok.versatz) > 700 && !latenzNochmal
       && s.signal !== 'sweep' && s.signal !== 'sweeplin'){
     dokWeg(id);
-    dokNachtrag(id, '<p class="dokbew">Laufzeit ' + r.laufzeit + ' ms weicht von der Eichung ('
-      + dok.versatz + ' ms) ab — automatische Wiederholung.</p>');
+    dokNachtrag(id, '<p class="dokbew">' + window.t('mess.dok.m.latenz_neu', { ms: r.laufzeit, v: dok.versatz }) + '</p>');
     return dokMessungTon(id, schritt, false, true);
   }
   dok.laeufe = dok.laeufe.filter(l => !(l.signal === s.signal && l.wdh === s.wdh));
@@ -26081,34 +26039,33 @@ async function dokMessungTon(id, schritt, standBleibt, latenzNochmal){
      SIGNALS (weisse Kurve fuers weisse Rauschen usw.) - sobald mehrere
      Verfahren nebeneinanderstehen, unterscheidet nur sie. */
   const oben = [
-    lauf.ruheKurve ? { punkte: lauf.ruheKurve, farbe: '#8a93a3', punktiert: true, name: 'Stille' } : null,
-    { punkte: dokSollHeben(dokSollForm(s.signal), r.kurve), farbe: '#8a93a3', dash: true, name: 'Eingang' },
-    erster ? { punkte: erster.kurve, farbe: '#8a93a3', dash: true, breit: 2.5, name: '1. Lauf (Terz)' } : null,
-    r.lang ? { fein: { db: r.lang.db, df: r.lang.df }, farbe: sig.farbe, breit: 2.5, name: 'gemessen · superfein' }
-           : { punkte: r.kurve, farbe: sig.farbe, breit: 3, name: 'gemessen' },
+    lauf.ruheKurve ? { punkte: lauf.ruheKurve, farbe: '#8a93a3', punktiert: true, name: window.t('mess.dok.m.stille') } : null,
+    { punkte: dokSollHeben(dokSollForm(s.signal), r.kurve), farbe: '#8a93a3', dash: true, name: window.t('mess.dok.m.eingang') },
+    erster ? { punkte: erster.kurve, farbe: '#8a93a3', dash: true, breit: 2.5, name: window.t('mess.dok.m.erster_terz') } : null,
+    r.lang ? { fein: { db: r.lang.db, df: r.lang.df }, farbe: sig.farbe, breit: 2.5, name: window.t('mess.dok.m.gemessen_fein') }
+           : { punkte: r.kurve, farbe: sig.farbe, breit: 3, name: window.t('mess.lauf.gemessen') },
   ];
   const unten = [
-    erster ? { punkte: dokRaumkurve(erster.kurve, s.signal), farbe: '#8a93a3', dash: true, name: '1. Lauf' } : null,
-    { punkte: dokRaumkurve(r.kurve, s.signal), farbe: sig.farbe, breit: 2.5, fuellNull: true, name: 'Raumkurve' },
+    erster ? { punkte: dokRaumkurve(erster.kurve, s.signal), farbe: '#8a93a3', dash: true, name: window.t('mess.dok.m.erster') } : null,
+    { punkte: dokRaumkurve(r.kurve, s.signal), farbe: sig.farbe, breit: 2.5, fuellNull: true, name: window.t('mess.dok.m.raumkurve') },
   ];
   const zweifel = (s.signal === 'blau' || s.signal === 'sweeplin')
-    ? ' Unterhalb von 150 Hz regt dieses Signal kaum an — die Raumkurve ist dort unsicher.' : '';
+    ? window.t('mess.dok.m.zweifel') : '';
   dokNachtrag(id,
     (r.signalPruef ? '<p class="dokfein">' + r.signalPruef.text + '</p>' : '')
     + dokDia(oben, { hoch: 210 })
     + dokDia(unten, { hoch: 170 })
-    + '<p class="dokbew">Störabstand <b>' + r.abstand.toFixed(0) + ' dB</b> je Band'
-    + ' · Laufzeit ' + r.laufzeit + ' ms'
-    + (Math.abs(r.laufzeit - dok.versatz) > 700 ? ' <span class="dokwarn">(weit weg von der Eichung — Schritt besser wiederholen)</span>' : '')
-    + (r.diagnose && r.diagnose.anteil_nah_voll > 0.01 ? ' · <span class="dokwarn">Mikrofon überschreit — Pegelregler am Mikrofon zurück und Schritt wiederholen!</span>'
-       : (r.diagnose ? ' · Mikrofon ' + Math.round(r.diagnose.kopfraum_dB) + ' dB Spielraum bis zum Vollpegel' : ''))
-    + (r.abstand < 20 ? ' · <span class="dokwarn">unter 20 dB Störabstand ist die Kurve mehr Zufall als Messung — Mikrofon näher oder seinen Pegelregler höher und wiederholen</span>' : '')
+    + '<p class="dokbew">' + window.t('mess.dok.m.abstand', { db: r.abstand.toFixed(0) })
+    + window.t('mess.lauf.laufzeit', { ms: r.laufzeit })
+    + (Math.abs(r.laufzeit - dok.versatz) > 700 ? ' <span class="dokwarn">' + window.t('mess.dok.m.weit_weg') + '</span>' : '')
+    + (r.diagnose && r.diagnose.anteil_nah_voll > 0.01 ? ' · <span class="dokwarn">' + window.t('mess.dok.m.ueberschreit') + '</span>'
+       : (r.diagnose ? window.t('mess.lauf.kopfraum', { db: Math.round(r.diagnose.kopfraum_dB) }) : ''))
+    + (r.abstand < 20 ? ' · <span class="dokwarn">' + window.t('mess.dok.m.unter20') + '</span>' : '')
     + '.' + zweifel
-    + ' Oben: die superfeine Messkurve, Eingangssignal gestrichelt, Stille punktiert unterlegt. '
-    + 'Unten: die Differenz — <b>die Raumkurve selbst</b>, gefüllt gegen die Nulllinie.</p>'
-    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Paßt — weiter</button>'
-    + '<button class="knopf" onclick="dokMessungLos(\'' + id + '\',' + schritt + ')">Wiederholen</button>'));
-  dokAutoDann(r.abstand < 20 ? 'warnung' : 'ok', 'Störabstand ' + Math.round(r.abstand) + ' dB');
+    + window.t('mess.dok.m.legende') + '</p>'
+    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.passt') + '</button>'
+    + '<button class="knopf" onclick="dokMessungLos(\'' + id + '\',' + schritt + ')">' + window.t('mess.dok.wiederholen') + '</button>'));
+  dokAutoDann(r.abstand < 20 ? 'warnung' : 'ok', null, 'mess.dok.n.abstand', { db: Math.round(r.abstand) });
 }
 
 /* Die Sollform des Eingangs wird zum Zeichnen auf das Mittel der
@@ -26125,32 +26082,27 @@ function dokSollHeben(soll, kurve){
 
 async function dokSchrittRampe(id, s){
   const sig = DOK_SIGNAL[s.signal];
-  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>LAUTSTÄRKERAMPE · ' + sig.name + '</h6>'
-    + '<p>Der App-Pegel beginnt beim <b>eingemessenen Messpegel (' + dok.messPegel + ' %)</b> — darunter '
-    + 'wäre die Messung Zufall — und steigt in 3-dB-Schritten bis 100 %, je Stufe drei Sekunden ' + sig.name + '. '
-    + 'Nach jeder Stufe wächst die Kurvenschar um eine Linie; die Treppe darunter hält Ist gegen Soll. '
-    + 'Die Rampe steigt, bis der Baßabfall gemessen <b>und von der Folgestufe bestätigt</b> ist — '
-    + 'dann steht die Kennlinie des Lautsprechers, und lauter brächte nur noch den Begrenzer. Zeigt '
-    + 'sich keine Begrenzung, geht es bis 100 %. Der Befund wird als <b>Empfehlung</b> ausgewiesen.</p>'
-    + '<p class="dokwarn">⚠ Die letzte Stufe ist <b>voll aufgedreht</b> — das ist laut.</p>'
-    + '<p class="dokfein">Vorher wie immer: die Stilleprüfung.</p>'
-    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokRampeLos(\'' + id + '\',' + dok.schritt + ')">Rampe starten</button>'
-    + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Überspringen</button>'));
+  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.r.titel', { name: sig.name }) + '</h6>'
+    + '<p>' + window.t('mess.dok.r.text', { p: dok.messPegel, name: sig.name }) + '</p>'
+    + '<p class="dokwarn">' + window.t('mess.dok.r.laut') + '</p>'
+    + '<p class="dokfein">' + window.t('mess.dok.r.vorher') + '</p>'
+    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokRampeLos(\'' + id + '\',' + dok.schritt + ')">' + window.t('mess.dok.r.start') + '</button>'
+    + '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.ueberspringen') + '</button>'));
   if (dok.autoLauf) dokRampeLos(id, dok.schritt);
 }
 async function dokRampeLos(id, schritt){
   const s = DOK_GANG[schritt], sig = DOK_SIGNAL[s.signal];
-  dokNachtrag(id, '<p class="dokbew" id="' + id + 'stand">Stilleprüfung …</p>'
+  dokNachtrag(id, '<p class="dokbew" id="' + id + 'stand">' + window.t('mess.dok.stillepruefung') + '</p>'
     + '<div id="' + id + 'schar"></div><div id="' + id + 'treppe"></div>');
   const stand = (t) => { const e = document.getElementById(id + 'stand'); if (e) e.innerHTML = t; };
   const feld = (n) => document.getElementById(id + n);
 
   const k = await dokKurzcheck();
   if (k.ok && k.drift !== null && k.drift > 6){
-    stand('<span class="dokwarn">⚠ Kulisse verändert (' + k.drift.toFixed(0) + ' dB bei ' + Math.round(k.bei) + ' Hz).</span>');
+    stand('<span class="dokwarn">' + window.t('mess.dok.r.kulisse', { db: k.drift.toFixed(0), hz: Math.round(k.bei) }) + '</span>');
     if (dok.autoLauf){ await dokRampeStufen(id, schritt); return; }
-    dokNachtrag(id, '<div class="dokknoepfe"><button class="knopf" onclick="dokRampeLos(\'' + id + '\',' + schritt + ')">Neu prüfen</button>'
-      + '<button class="knopf" onclick="dokRampeStufen(\'' + id + '\',' + schritt + ')">Trotzdem starten</button></div>');
+    dokNachtrag(id, '<div class="dokknoepfe"><button class="knopf" onclick="dokRampeLos(\'' + id + '\',' + schritt + ')">' + window.t('mess.dok.neu_pruefen') + '</button>'
+      + '<button class="knopf" onclick="dokRampeStufen(\'' + id + '\',' + schritt + ')">' + window.t('mess.dok.r.trotzdem') + '</button></div>');
     return;
   }
   await dokRampeStufen(id, schritt);
@@ -26171,9 +26123,8 @@ async function dokRampeStufen(id, schritt){
   STUFEN.push(100);
   if (STUFEN.length < 2){
     dokWeg(id);
-    dokNachtrag(id, '<p class="dokbew">Der Messpegel steht schon bei ' + dok.messPegel + ' % — für eine '
-      + 'Rampe bleibt kein Weg nach oben. Übersprungen.</p>'
-      + '<div class="dokknoepfe"><button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Weiter</button></div>');
+    dokNachtrag(id, '<p class="dokbew">' + window.t('mess.dok.r.oben', { p: dok.messPegel }) + '</p>'
+      + '<div class="dokknoepfe"><button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.weiter') + '</button></div>');
     return;
   }
   const reihe = [];
@@ -26187,7 +26138,7 @@ async function dokRampeStufen(id, schritt){
     return drin.reduce((a, p) => a + p.db, 0) / Math.max(1, drin.length);
   };
   for (const stufe of STUFEN){
-    stand('Stufe <b>' + stufe + ' %</b> — ' + sig.name + ', 3 s …');
+    stand(window.t('mess.dok.r.stufe', { p: stufe, name: sig.name }));
     lautstaerkeSetzen(stufe, false);
     const r = await messLauf(true, {
       art: s.signal, dauer: 3, beilauf: true, zielRms: -12, versatzMs: dok.versatz,
@@ -26198,10 +26149,10 @@ async function dokRampeStufen(id, schritt){
       lautstaerkeSetzen(dok.messPegel, false);
       stand('');
       dokNachtrag(id, (r && r.grund === 'stumm' ? dokPiepFehlerText(r)
-          : '<p class="dokwarn">Stufe ' + stufe + ' % fehlgeschlagen: ' + ((r && r.grund) || '?') + '</p>')
-        + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokRampeLos(\'' + id + '\',' + schritt + ')">Rampe neu</button>'
-        + '<button class="knopf" onclick="dokWeiter()">Überspringen</button>'));
-      dokAutoDann('gescheitert', 'Stufe ' + stufe + ' %: ' + ((r && r.grund) || '?'));
+          : '<p class="dokwarn">' + window.t('mess.dok.r.fehl', { p: stufe, was: ((r && r.grund) || '?') }) + '</p>')
+        + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokRampeLos(\'' + id + '\',' + schritt + ')">' + window.t('mess.dok.r.neu') + '</button>'
+        + '<button class="knopf" onclick="dokWeiter()">' + window.t('mess.dok.ueberspringen') + '</button>'));
+      dokAutoDann('gescheitert', null, 'mess.dok.n.stufe', { p: stufe, was: ((r && r.grund) || '?') });
       return;
     }
     reihe.push({ stufe, kurve: r.kurve, mittel: mittelVon(r.kurve), abstand: r.abstand, laufzeit: r.laufzeit });
@@ -26210,7 +26161,7 @@ async function dokRampeStufen(id, schritt){
     const schar = reihe.map((x, i) => ({ punkte: x.kurve, farbe: sig.farbe,
       blass: 0.35 + 0.65 * i / Math.max(1, STUFEN.length - 1),
       breit: i === reihe.length - 1 ? 3 : 2, name: x.stufe + ' %' }));
-    if (dok.stilleKurve) schar.unshift({ punkte: dok.stilleKurve, farbe: '#8a93a3', punktiert: true, name: 'Stille' });
+    if (dok.stilleKurve) schar.unshift({ punkte: dok.stilleKurve, farbe: '#8a93a3', punktiert: true, name: window.t('mess.dok.m.stille') });
     if (feld('schar')) feld('schar').innerHTML = dokDia(schar, { hoch: 230 });
     if (feld('treppe')) feld('treppe').innerHTML = dokTreppeDia(reihe);
     /* Bass gegen Mitten, verglichen mit der ersten Stufe: faellt er
@@ -26243,22 +26194,20 @@ async function dokRampeStufen(id, schritt){
   const bezug = reihe[0];
   const istLetzte = reihe[reihe.length - 1];
   const fehlt = (40 * Math.log10(istLetzte.stufe / bezug.stufe)) - (istLetzte.mittel - bezug.mittel);
-  dokNachtrag(id, '<p class="dokbew">Raumkurve je Lautstärke — liegen sie deckungsgleich, bleibt die Anlage linear:</p>'
+  dokNachtrag(id, '<p class="dokbew">' + window.t('mess.dok.r.je_laut') + '</p>'
     + dokDia(raum, { hoch: 190 })
     + '<p class="dokbew">' + (grenze
-      ? '<span class="dokwarn">Die Kennlinie steht: ab ' + grenze + ' % fällt der Baß gegenüber den '
-        + 'Mitten um mehr als 4 dB zurück'
-        + (bestaetigt ? ' (bestätigt bei ' + bestaetigt + ' %) — dort endete die Rampe, höher zeigte nur noch den Begrenzer' : '')
-        + '. Empfehlung: fürs ehrliche Abhören unter ' + grenze + ' % bleiben.</span>'
+      ? '<span class="dokwarn">' + window.t('mess.dok.r.grenze', { p: grenze })
+        + (bestaetigt ? window.t('mess.dok.r.bestaetigt', { p: bestaetigt }) : '')
+        + window.t('mess.dok.r.empfehlung', { p: grenze }) + '</span>'
       : (fehlt > 1.5
-        ? 'Die Treppe bleibt <span class="dokwarn">' + fehlt.toFixed(1).replace('.', ',') + ' dB hinter dem Soll</span> zurück — '
-          + 'auf dem Weg regelt etwas leise, auch wenn die Form hielt.'
-        : 'Linear bis 100 %: die Treppe folgt dem Soll (' + fehlt.toFixed(1).replace('.', ',') + ' dB Abweichung) '
-          + 'und die Raumkurven liegen aufeinander.'))
+        ? window.t('mess.dok.r.hinter', { db: dezimal(fehlt.toFixed(1)) })
+        : window.t('mess.dok.r.linear', { db: dezimal(fehlt.toFixed(1)) })))
     + '</p>'
-    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Paßt — weiter</button>'
-    + '<button class="knopf" onclick="dokRampeLos(\'' + id + '\',' + schritt + ')">Rampe wiederholen</button>'));
-  dokAutoDann(grenze ? 'warnung' : 'ok', grenze ? 'Begrenzung ab ' + grenze + ' %' : 'linear bis 100 %');
+    + dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.passt') + '</button>'
+    + '<button class="knopf" onclick="dokRampeLos(\'' + id + '\',' + schritt + ')">' + window.t('mess.dok.r.wiederholen') + '</button>'));
+  if (grenze) dokAutoDann('warnung', null, 'mess.dok.n.begrenzung', { p: grenze });
+  else dokAutoDann('ok', null, 'mess.dok.n.linear');
 }
 
 /* ---- Empfehlungen und Schluss --------------------------------------- */
@@ -26349,12 +26298,12 @@ function dokFormtreueDia(werte){
   const y4 = sy(4);
   svg += '<line x1="' + R + '" y1="' + y4.toFixed(1) + '" x2="' + (W - R) + '" y2="' + y4.toFixed(1)
     + '" stroke="#8a93a3" stroke-width="1.5" stroke-dasharray="4 5" vector-effect="non-scaling-stroke"/>';
-  svg += '<text x="' + (W - R) + '" y="' + (y4 - 4).toFixed(1) + '" fill="#8a93a3" font-size="10.5" text-anchor="end">4-dB-Marke</text>';
+  svg += '<text x="' + (W - R) + '" y="' + (y4 - 4).toFixed(1) + '" fill="#8a93a3" font-size="10.5" text-anchor="end">' + window.t('mess.dok.z.marke4') + '</text>';
   svg += '<polyline points="' + werte.map(w => sx(w.stufe).toFixed(1) + ',' + sy(w.ges).toFixed(1)).join(' ')
     + '" fill="none" vector-effect="non-scaling-stroke" stroke="#e8edf4" stroke-width="2.5"/>';
   svg += '<polyline points="' + werte.map(w => sx(w.stufe).toFixed(1) + ',' + sy(w.bass).toFixed(1)).join(' ')
     + '" fill="none" vector-effect="non-scaling-stroke" stroke="#ffa03d" stroke-width="2.5" stroke-dasharray="7 6"/>';
-  svg += '<text x="' + R + '" y="12" fill="#8a93a3" font-size="12">Formabweichung zur ersten Stufe · weiß gesamt, orange gestrichelt Baß</text>';
+  svg += '<text x="' + R + '" y="12" fill="#8a93a3" font-size="12">' + window.t('mess.dok.z.formdia') + '</text>';
   return svg + '</svg>';
 }
 function dokKompSicht(id, welche){
@@ -26369,14 +26318,14 @@ function dokKompSicht(id, welche){
 async function dokSchrittZusammen(id){
   const L = dok.laeufe;
   if (!L.length){
-    dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>ZUSAMMENFASSUNG</h6>'
-      + '<p>Noch keine Messläufe im Durchlauf — erst messen (oder den Über-alles-Test fahren).</p>'
-      + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Weiter</button>'));
-    dokAutoDann('warnung', 'keine Läufe');
+    dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.info.titel') + '</h6>'
+      + '<p>' + window.t('mess.dok.z.leer') + '</p>'
+      + dokAutoKnoepfe(id, '<button class="knopf" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.weiter') + '</button>'));
+    dokAutoDann('warnung', null, 'mess.dok.n.keine');
     return;
   }
   const band = dokVergleichsBand();
-  const hz = (f) => f >= 1000 ? (f / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(f) + ' Hz';
+  const hz = (f) => f >= 1000 ? dezimal((f / 1000).toFixed(1)) + ' kHz' : Math.round(f) + ' Hz';
 
   /* Konsens-Raumkurve: Median je Band ueber taugliche, tragende Laeufe */
   const konsens = [];
@@ -26395,7 +26344,7 @@ async function dokSchrittZusammen(id){
     const stil = { farbe: sig.farbe, dash: l.wdh === 2, name: l.wdh === 1 ? sig.name : null };
     schar = schar.concat(dokBandSplit(dokRaumkurve(l.kurve, l.signal), band, stil));
   }
-  schar = schar.concat(dokBandSplit(konsens, band, { farbe: '#e8edf4', breit: 3.5, name: 'Konsens' }));
+  schar = schar.concat(dokBandSplit(konsens, band, { farbe: '#e8edf4', breit: 3.5, name: window.t('mess.dok.z.konsens') }));
 
   /* Wiederholstreuung + Kreuzabstand, NUR im Vergleichsband */
   const von = band ? band.von : 63, bis = band ? band.bis : 8000;
@@ -26433,106 +26382,100 @@ async function dokSchrittZusammen(id){
   const kk = (typeof messKorrekturRechnen === 'function') ? messKorrekturRechnen() : null;
 
   const z = [];
-  z.push('<h6><span class="doknr">' + dokNr() + '</span>ZUSAMMENFASSUNG &amp; STECKBRIEF</h6>');
-  z.push('<p><b>Steckbrief des Systems</b><br>'
-    + '· Stille des Raumes: im Mittel ' + (stM !== null ? stM.toFixed(0) + ' dB (relativ)' : '—')
-    + ' — der Stilletest oben trägt die Nadeln samt Deutung<br>'
-    + '· Latenz: <b>' + (dok.versatz !== null ? dok.versatz + ' ms</b> (streut um ' + (dok.eich ? dok.eich.spanne : '—') + ' ms, Eichpegel '
-    + (dok.eich ? dok.eich.pegel : dok.messPegel) + ' %)' : '—</b>')
-    + '<br>· Kette: ' + (rampeW ? (maxTreu === 100 && (fehlt100 === null || fehlt100 < 1.5)
-        ? 'linear bis 100 % (Pegelfehlbetrag ' + (fehlt100 === null ? '—' : String(fehlt100).replace('.', ',')) + ' dB)'
-        : 'formtreu bis ' + maxTreu + ' %' + (fehlt100 !== null ? ', Pegelfehlbetrag bei Vollgas ' + String(fehlt100).replace('.', ',') + ' dB' : ''))
-      : 'keine Rampe gefahren')
-    + '<br>· Meßgüte: bester Störabstand ' + Math.round(bestesA) + ' dB je Band — das reicht '
-    + (bestesA >= 45 ? 'auch für eine genaue Messung der Nachhallzeit' : (bestesA >= 35 ? 'für eine einfache Messung der Nachhallzeit (35 dB nötig), nicht für die genaue (45 dB)' : 'noch nicht für eine Messung der Nachhallzeit (mindestens 35 dB nötig) — Mikrofon näher oder seinen Pegelregler höher'))
-    + ' <span class="dokfein">(gilt oberhalb von etwa 100–200 Hz; darunter zählen in Wohnräumen die stehenden Wellen einzeln, '
-    + 'und für den Nachhall fehlt noch ein Rechenschritt)</span></p>');
-  z.push('<p class="dokfein"><b>Was nach Stand der Technik noch fehlt</b> (Recherche 28.08.): '
-    + 'der Rechenschritt, der aus der Sweep-Aufnahme die Antwort des Raums auf einen einzelnen Knall macht — daraus fielen Nachhallzeit, '
-    + 'Klarheit, Verzerrung je Oberton und Reflexionen mit Laufzeit an, aus '
-    + 'denselben Aufnahmen, ohne neuen Ton.</p>');
-  z.push('<p><b>Alle Raumkurven</b> — voll gezeichnet im <b>vergleichbaren Bereich '
-    + (band ? hz(band.von) + ' bis ' + hz(band.bis) : '—') + '</b> (dort tragen mindestens 60 % der tauglichen '
-    + 'Läufe 20 dB über ihrer Ruhe); außerhalb blass — dort wird nichts behauptet:</p>');
+  z.push('<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.z.titel') + '</h6>');
+  z.push('<p>' + window.t('mess.dok.z.steckbrief')
+    + window.t('mess.dok.z.stille', { was: (stM !== null ? window.t('mess.dok.z.relativ', { db: stM.toFixed(0) }) : '—') })
+    + window.t('mess.dok.z.latenz') + (dok.versatz !== null ? window.t('mess.dok.z.latenz_wert', { ms: dok.versatz,
+        spanne: (dok.eich ? dok.eich.spanne : '—'), p: (dok.eich ? dok.eich.pegel : dok.messPegel) }) : '—</b>')
+    + window.t('mess.dok.z.kette') + (rampeW ? (maxTreu === 100 && (fehlt100 === null || fehlt100 < 1.5)
+        ? window.t('mess.dok.z.linear', { db: (fehlt100 === null ? '—' : dezimal(String(fehlt100))) })
+        : window.t('mess.dok.z.formtreu', { p: maxTreu }) + (fehlt100 !== null ? window.t('mess.dok.z.vollgas', { db: dezimal(String(fehlt100)) }) : ''))
+      : window.t('mess.dok.z.keine_rampe'))
+    + window.t('mess.dok.z.guete', { db: Math.round(bestesA) })
+    + (bestesA >= 45 ? window.t('mess.dok.z.guete45') : (bestesA >= 35 ? window.t('mess.dok.z.guete35') : window.t('mess.dok.z.guete0')))
+    + window.t('mess.dok.z.guete_fein') + '</p>');
+  z.push('<p class="dokfein">' + window.t('mess.dok.z.fehlt') + '</p>');
+  z.push('<p>' + window.t('mess.dok.z.alle', { band: (band ? window.t('mess.dok.z.band', { von: hz(band.von), bis: hz(band.bis) }) : '—') }) + '</p>');
   z.push(dokDia(schar, { hoch: 260 }));
   if (streu.length)
-    z.push('<p class="dokbew">Wiederholstreuung (Lauf 1 gegen 2, im Band): ' + streu.map(x =>
-      DOK_SIGNAL[x.sg].name + ' ±' + x.w.toFixed(1).replace('.', ',') + ' dB').join(' · ') + '.</p>');
+    z.push('<p class="dokbew">' + window.t('mess.dok.z.streu') + streu.map(x =>
+      DOK_SIGNAL[x.sg].name + ' ±' + dezimal(x.w.toFixed(1)) + ' dB').join(' · ') + '.</p>');
   if (kreuz.length){
     const schlimmst = kreuz.reduce((x, y) => y.d > x.d ? y : x);
-    z.push('<p class="dokbew">Größter Formabstand zwischen Verfahren (im Band): '
+    z.push('<p class="dokbew">' + window.t('mess.dok.z.kreuz')
       + DOK_SIGNAL[schlimmst.a].name + ' ↔ ' + DOK_SIGNAL[schlimmst.b].name + ' = '
-      + schlimmst.d.toFixed(1).replace('.', ',') + ' dB.</p>');
+      + dezimal(schlimmst.d.toFixed(1)) + ' dB.</p>');
   }
 
   /* Maximallautstaerke - mit Handgriff */
   if (formW){
-    z.push('<p><b>Maximallautstärke im Ursprungsverhältnis</b> — Formabweichung je Stufe gegen die erste:</p>');
+    z.push('<p>' + window.t('mess.dok.z.max') + '</p>');
     z.push(dokFormtreueDia(formW));
     z.push('<p class="dokbew">' + (maxTreu === 100
-      ? 'Bis 100 % bleibt der Baß innerhalb von 4 dB — im gemessenen Pegelfenster keine Begrenzung.'
-      : 'Formtreu bis <b>' + maxTreu + ' %</b> — darüber kippt der Baß.')
+      ? window.t('mess.dok.z.max100')
+      : window.t('mess.dok.z.maxp', { p: maxTreu }))
       + '</p><div class="doktun">'
-      + (maxTreu && maxTreu < 100 ? '<button class="knopf planbereit" onclick="lautstaerkeSetzen(' + maxTreu + ')">Abhörpegel auf ' + maxTreu + ' % stellen</button>' : '')
+      + (maxTreu && maxTreu < 100 ? '<button class="knopf planbereit" onclick="lautstaerkeSetzen(' + maxTreu + ')">' + window.t('mess.dok.z.max_knopf', { p: maxTreu }) + '</button>' : '')
       + '</div>');
   }
 
   /* EQ-Absenkung - mit Handgriff */
   if (kk && kk.gruende && kk.gruende.length){
-    z.push('<p><b>EQ-Absenkung</b> — aus dem Konsens ragen heraus:</p><ul>'
-      + kk.gruende.map(g => '<li>' + hz(g.f) + ': +' + g.ueber.toFixed(1).replace('.', ',') + ' dB → Regler '
-        + hz(EQ_FREQ_STD[g.i]) + ' auf <b>' + g.db.toFixed(1).replace('.', ',') + ' dB</b></li>').join('') + '</ul>'
-      + '<div class="doktun"><button class="knopf planbereit" onclick="messKorrekturAnwenden()">Auf die Regler legen</button>'
-      + '<button class="knopf" onclick="studioLasche(\'eq\')">Equalizer öffnen</button></div>');
+    z.push('<p>' + window.t('mess.dok.z.eq') + '</p><ul>'
+      + kk.gruende.map(g => '<li>' + window.t('mess.dok.z.eq_zeile', { f: hz(g.f), ueber: dezimal(g.ueber.toFixed(1)),
+          regler: hz(EQ_FREQ_STD[g.i]), db: dezimal(g.db.toFixed(1)) }) + '</li>').join('') + '</ul>'
+      + '<div class="doktun"><button class="knopf planbereit" onclick="messKorrekturAnwenden()">' + window.t('mess.dok.z.eq_anwenden') + '</button>'
+      + '<button class="knopf" onclick="studioLasche(\'eq\')">' + window.t('mess.dok.z.eq_oeffnen') + '</button></div>');
   } else {
-    z.push('<p><b>EQ-Absenkung:</b> Im Konsens ragt kein Band über 3 dB aus seiner Nachbarschaft — nichts zu korrigieren.</p>');
+    z.push('<p>' + window.t('mess.dok.z.eq_nichts') + '</p>');
   }
 
   /* Kompressor - beide Sichten mit Umschalter (Caspar_D: "beides mit
      umschalter") */
   const stoerW = (() => { const a = L.filter(l => l.signal === 'weiss').map(l => l.abstand); return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null; })();
-  z.push('<p><b>Kompressor</b> — zwei Sichten:</p>'
+  z.push('<p>' + window.t('mess.dok.z.komp') + '</p>'
     + '<div class="dokknoepfe" style="margin-top:4px">'
-    + '<button class="knopf planbereit" id="' + id + 'kka" onclick="dokKompSicht(\'' + id + '\',\'kette\')">Was die Kette schon komprimiert</button>'
-    + '<button class="knopf" id="' + id + 'kkb" onclick="dokKompSicht(\'' + id + '\',\'hoer\')">Was die Hörbarkeit braucht</button></div>'
+    + '<button class="knopf planbereit" id="' + id + 'kka" onclick="dokKompSicht(\'' + id + '\',\'kette\')">' + window.t('mess.dok.z.komp_kette') + '</button>'
+    + '<button class="knopf" id="' + id + 'kkb" onclick="dokKompSicht(\'' + id + '\',\'hoer\')">' + window.t('mess.dok.z.komp_hoer') + '</button></div>'
     + '<div id="' + id + 'kompkette"><p class="dokbew">'
     + (fehlt100 !== null
       ? (fehlt100 < 1.5
-        ? 'Die Kette nimmt auf dem Weg zum Vollpegel nur ' + String(fehlt100).replace('.', ',') + ' dB — sie komprimiert praktisch nicht. Der Studio-Kompressor muß nichts ausgleichen; was er tut, ist Klanggestaltung, keine Reparatur.'
-        : 'Die Kette nimmt bis Vollpegel ' + String(fehlt100).replace('.', ',') + ' dB weg — sie komprimiert selbst. Empfehlung: den Studio-Kompressor entsprechend sanfter fahren (Verhältnis Richtung 1:1), sonst komprimiert es doppelt.')
-      : 'Ohne Rampe keine Aussage über die Ketten-Kompression.')
+        ? window.t('mess.dok.z.komp_nicht', { db: dezimal(String(fehlt100)) })
+        : window.t('mess.dok.z.komp_selbst', { db: dezimal(String(fehlt100)) }))
+      : window.t('mess.dok.z.komp_ohne_rampe'))
     + '</p></div>'
     + '<div id="' + id + 'komphoer" hidden><p class="dokbew">'
     + (stoerW !== null
-      ? 'Der Raum läßt ' + Math.round(stoerW) + ' dB Störabstand: Passagen, die weiter unter der Spitze liegen, versinken am Hörplatz in der Kulisse. Wer leise Stellen retten will, setzt den Kompressor so, daß sie über dieser Schwelle bleiben — sanfte Ratio, Threshold nach Gehör an den leisesten wichtigen Passagen.'
-      : 'Ohne Rauschläufe keine Aussage.')
+      ? window.t('mess.dok.z.komp_raum', { db: Math.round(stoerW) })
+      : window.t('mess.dok.z.komp_ohne_rausch'))
     + '</p></div>'
-    + '<div class="doktun"><button class="knopf" onclick="studioLasche(\'pro\')">Kompressor öffnen</button></div>');
+    + '<div class="doktun"><button class="knopf" onclick="studioLasche(\'pro\')">' + window.t('mess.dok.z.komp_oeffnen') + '</button></div>');
 
   /* Latenz - mit Handgriff (Textversatz sofort, Rest laut Backlog) */
   if (dok.versatz !== null){
     z.push('<div class="doktun"><button class="knopf" onclick="versatzSetzen(' + dok.versatz + ')">'
-      + 'Latenz (' + dok.versatz + ' ms) als Textversatz der Bühne übernehmen</button></div>');
+      + window.t('mess.dok.z.latenz_knopf', { ms: dok.versatz }) + '</button></div>');
   }
 
-  z.push(dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">Weiter</button>'));
+  z.push(dokAutoKnoepfe(id, '<button class="knopf planbereit" onclick="dokKnoepfeWeg(\'' + id + '\');dokWeiter()">' + window.t('mess.dok.weiter') + '</button>'));
   dokBlock(id, z.join(''));
-  dokAutoDann('ok', band ? 'Band ' + hz(band.von) + '–' + hz(band.bis) : 'ohne Band');
+  /* fuers Archiv die deutsche Zahlform, wie bisher */
+  const hzDe = (f) => f >= 1000 ? (f / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(f) + ' Hz';
+  if (band) dokAutoDann('ok', 'Band ' + hzDe(band.von) + '–' + hzDe(band.bis), 'mess.dok.n.band', { von: hz(band.von), bis: hz(band.bis) });
+  else dokAutoDann('ok', null, 'mess.dok.n.ohne_band');
 }
 
 async function dokSchrittSchluss(id){
   let mikro = '';
   const l0 = dok.laeufe[0];
   if (l0 && l0.diagnose && l0.diagnose.mikro) mikro = l0.diagnose.mikro;
-  let ausg = { text: 'unbekannt' };
+  let ausg = { text: window.t('mess.geraet.unbekannt') };
   try { ausg = await ausgabeGeraetInfo(); } catch (e) {}
-  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>ABSCHLUSS</h6>'
-    + '<p>Gemessen mit <b>' + (mikro || 'dem gewählten Mikrofon') + '</b> über <b>' + ausg.text + '</b> '
-    + 'bei App-Pegel 50 %, geeichter Versatz ' + (dok.versatz !== null ? dok.versatz + ' ms' : '—') + '. '
-    + dok.laeufe.length + ' Messläufe, ' + Object.keys(dok.rampen).length + ' Rampen. '
-    + 'Das Dokument oben ist der vollständige Prozeß — jedes Diagramm bleibt stehen.</p>'
-    + '<div class="dokknoepfe"><button class="knopf planbereit" onclick="dokExport()">Protokoll exportieren</button>'
-    + '<button class="knopf" onclick="dokVerlassen()">Messung verlassen</button></div>');
+  dokBlock(id, '<h6><span class="doknr">' + dokNr() + '</span>' + window.t('mess.dok.s.titel') + '</h6>'
+    + '<p>' + window.t('mess.dok.s.text', { mikro: (mikro || window.t('mess.dok.s.mikro')), ausg: ausg.text,
+        v: (dok.versatz !== null ? dok.versatz + ' ms' : '—'), n: dok.laeufe.length, r: Object.keys(dok.rampen).length }) + '</p>'
+    + '<div class="dokknoepfe"><button class="knopf planbereit" onclick="dokExport()">' + window.t('mess.dok.s.export') + '</button>'
+    + '<button class="knopf" onclick="dokVerlassen()">' + window.t('mess.dok.verlassen') + '</button></div>');
   dok.fertig = true;
   lautstaerkeSetzen(dok.merkLaut, false);
 }
@@ -26543,12 +26486,12 @@ function dokExport(){
   const wirt = document.getElementById('dokinhalt'); if (!wirt) return;
   const kopie = wirt.cloneNode(true);
   kopie.querySelectorAll('.dokknoepfe, button, select').forEach(e => e.remove());
-  const html = '<!doctype html><html lang="de"><head><meta charset="utf-8">'
-    + '<title>KlangTresor · Tonvermessung</title>'
+  const html = '<!doctype html><html lang="' + (window.sprache() === 'en' ? 'en-GB' : 'de') + '"><head><meta charset="utf-8">'
+    + '<title>' + window.t('mess.dok.export.titel') + '</title>'
     + '<style>' + DOK_CSS.replace(/#messdok/g, 'body')
     + 'body{position:static;inset:auto;margin:0;padding:30px 16px;background:#0b0e14}'
     + '</style></head><body><div class="dokbahn" style="padding-bottom:40px">'
-    + '<p style="color:#5a6376;letter-spacing:.08em">KLANGTRESOR · TONVERMESSUNG</p>'
+    + '<p style="color:#5a6376;letter-spacing:.08em">' + window.t('mess.dok.export.kopf') + '</p>'
     + kopie.innerHTML + '</div></body></html>';
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const a = document.createElement('a');
@@ -26661,7 +26604,7 @@ function messLiveZeichnen(){
       b.beginPath(); b.moveTo(x, y - 6); b.lineTo(x, OB + bh); b.stroke();
       b.fillStyle = '#f9143c'; b.beginPath(); b.arc(x, y, 3, 0, 6.284); b.fill();
       const deut = messStoerdeutung(st.f);
-      const wort = (st.f >= 1000 ? (st.f / 1000).toFixed(1).replace('.', ',') + ' kHz'
+      const wort = (st.f >= 1000 ? dezimal((st.f / 1000).toFixed(1)) + ' kHz'
                                  : Math.round(st.f) + ' Hz')
                  + (deut ? ' · ' + deut : '');
       b.font = '10px system-ui';
@@ -26701,11 +26644,11 @@ function messLiveZeichnen(){
 
   /* In Worten, was gerade geschieht. */
   const worte = {
-    raum:    'Ich höre nur den Raum — kein Ton wird ausgegeben',
-    vorlauf: 'Stille — ich höre erst den Raum ab',
-    wartet:  'Der Ton ist unterwegs — über AirPlay dauert das gut zwei Sekunden',
-    misst:   'Ton da' + (L.ankunft !== null ? ' nach ' + Math.round((L.ankunft - L.vor) * 1000) + ' ms' : '') + ' — die Kurve baut sich auf',
-    aus:     'Ton vorbei — ich werte aus',
+    raum:    window.t('mess.live.w.raum'),
+    vorlauf: window.t('mess.live.w.vorlauf'),
+    wartet:  window.t('mess.live.w.wartet'),
+    misst:   window.t('mess.live.w.da') + (L.ankunft !== null ? window.t('mess.live.w.nach', { ms: Math.round((L.ankunft - L.vor) * 1000) }) : '') + window.t('mess.live.w.baut'),
+    aus:     window.t('mess.live.w.aus'),
   };
   b.fillStyle = '#ececed'; b.font = '12px system-ui';
   b.fillText(worte[L.phase] || '', LI, 16);
@@ -26715,13 +26658,13 @@ function messLiveZeichnen(){
        muss. Die Schwellen folgen dem, was fuer eine Differenzmessung
        reicht: je leiser der Raum, desto leiser darf die Messung sein. */
     const m = L.mittel === null ? -120 : L.mittel;
-    const urteil = m < -60 ? 'sehr ruhig — hier läßt sich auch leise messen'
-                 : m < -50 ? 'ruhig — gut zum Messen'
-                 : m < -40 ? 'brauchbar — die Messung muß etwas lauter sein'
-                 : 'laut — such eine ruhigere Stelle oder mach die Quelle aus';
+    const urteil = m < -60 ? window.t('mess.live.u.sehr_ruhig')
+                 : m < -50 ? window.t('mess.live.u.ruhig')
+                 : m < -40 ? window.t('mess.live.u.brauchbar')
+                 : window.t('mess.live.u.laut');
     const anz = (L.stoer || []).length;
-    b.fillText('Grundgeräusch ' + m.toFixed(0) + ' dB   ·   ' + urteil
-      + (anz ? '   ·   ' + anz + (anz === 1 ? ' Störlinie' : ' Störlinien') + ' gefunden' : ''), LI, 29);
+    b.fillText(window.t('mess.live.grund', { db: m.toFixed(0) }) + urteil
+      + (anz ? window.t('mess.live.linien', { n: anz }) : ''), LI, 29);
 
     /* DER FORTSCHRITT DER MITTELUNG, rechts oben. Man soll zusehen
        koennen, wie das Rauschen wegmittelt - wie bei der
@@ -26741,13 +26684,12 @@ function messLiveZeichnen(){
       b.fillStyle = rest < ZIEL ? '#14b4a0' : '#f97b14';
       b.fillRect(bx, by, bwd * anteil, bhd);
       b.fillStyle = '#6e6e73'; b.font = '9px system-ui';
-      b.fillText(L.feinN + ' Aufnahmen   ·   noch '
-        + rest.toFixed(2).replace('.', ',') + ' dB Rauschen', bx, by + 16);
+      b.fillText(window.t('mess.live.aufnahmen', { n: L.feinN, db: dezimal(rest.toFixed(2)) }), bx, by + 16);
     }
   } else {
-    b.fillText((L.neutral ? 'Durchgang 1 · neutral' : 'Durchgang 2 · mit Einstellung')
-      + (L.ruhe !== null ? '   ·   Raum ' + L.ruhe.toFixed(0) + ' dB' : '')
-      + (L.abstand !== undefined ? '   ·   Störabstand bis ' + Math.max(0, L.abstand).toFixed(0) + ' dB' : ''), LI, 29);
+    b.fillText((L.neutral ? window.t('mess.live.d1') : window.t('mess.live.d2'))
+      + (L.ruhe !== null ? window.t('mess.live.raum', { db: L.ruhe.toFixed(0) }) : '')
+      + (L.abstand !== undefined ? window.t('mess.live.abstand', { db: Math.max(0, L.abstand).toFixed(0) }) : ''), LI, 29);
   }
 
   /* Zeitleiste unten - im Abhoermodus gibt es kein Ende, also auch
@@ -26775,19 +26717,19 @@ const MESS_FARBEN = ['#f97b14', '#14b4a0', '#2a4bf0', '#f9143c', '#4b93f0', '#f9
    Das ist genauer als "Einstellung 3" und kuerzer als acht Zahlen. */
 function messLaufName(){
   const g = eqGains.map(v => +v || 0);
-  if (g.every(v => Math.abs(v) < 0.05)) return 'neutral gestellt';
+  if (g.every(v => Math.abs(v) < 0.05)) return window.t('mess.name.neutral');
   for (const [k, vals] of Object.entries(EQ_KLASSIKER))
     if (vals.every((v, i) => Math.abs(v - g[i]) < 1e-9)){
-      return ({ loudness: 'Loudness', bass: 'Bass', hoehen: 'Höhen',
-                stimme: 'Stimme', nacht: 'Nacht' })[k] || k;
+      return ({ loudness: 'Loudness', bass: 'Bass', hoehen: window.t('mess.name.hoehen'),
+                stimme: window.t('mess.name.stimme'), nacht: window.t('mess.name.nacht') })[k] || k;
     }
   let iMax = 0;
   g.forEach((v, i) => { if (Math.abs(v) > Math.abs(g[iMax])) iMax = i; });
   const f = (eqAnsichtHz ? (eqFreq[iMax] || EQ_FREQ_STD[iMax]) : EQ_FREQ_STD[iMax]);
   const wieviele = g.filter(v => Math.abs(v) >= 0.5).length;
-  const kern = (f >= 1000 ? (f / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(f) + ' Hz')
-    + ' ' + (g[iMax] >= 0 ? '+' : '') + (+g[iMax].toFixed(1)).toString().replace('.', ',');
-  return wieviele > 1 ? kern + ' u. a.' : kern;
+  const kern = (f >= 1000 ? dezimal((f / 1000).toFixed(1)) + ' kHz' : Math.round(f) + ' Hz')
+    + ' ' + (g[iMax] >= 0 ? '+' : '') + dezimal((+g[iMax].toFixed(1)).toString());
+  return wieviele > 1 ? kern + window.t('mess.name.ua') : kern;
 }
 
 /* Die Reihe leeren - die Bezugsmessung bleibt, sie ist ja der Nullpunkt. */
@@ -26796,7 +26738,7 @@ function messReiheLeeren(){
   messErgebnis.mit = null;
   messErgebnis.pegel = null;
   messBildZeichnen(); messWirkungZeichnen(); messPegelZeichnen(); messFazitZeigen();
-  const e = $('messstand'); if (e) e.textContent = 'Reihe geleert — die neutrale Bezugsmessung bleibt.';
+  const e = $('messstand'); if (e) e.textContent = window.t('mess.geleert');
 }
 
 /* DIE SOLLKURVE: was das Tonstudio laut seiner eigenen Rechnung tut,
@@ -27001,19 +26943,14 @@ async function pegelReihe(){
      Ende zuweisen. */
   const gesammelt = [];
   let gefunden = null;
-  sagen('Bitte jetzt Ruhe — Durchgänge mit dem Sweep, je rund 20 Sekunden. '
-    + 'Die Lautstärke steigt in Vier-Dezibel-Schritten von ' + MESS_STUFEN[0] + ' % an, '
-    + 'höchstens bis ' + MESS_STUFEN[MESS_STUFEN.length - 1] + ' %. '
-    + 'Es beginnt leise und hört auf, sobald der Lautsprecher anfängt, den Baß '
-    + 'zurückzunehmen — laut wird es also nur, wenn es sein muß. '
-    + 'Sonst ändert sich nichts: gleiches Signal, gleiche Dauer, gleicher Platz.');
+  sagen(window.t('mess.reihe.start', { von: MESS_STUFEN[0], bis: MESS_STUFEN[MESS_STUFEN.length - 1] }));
   await new Promise(r => setTimeout(r, 2200));
   try {
     for (let i = 0; i < MESS_STUFEN.length; i++){
-      if (messAbbruch){ sagen('Reihe abgebrochen — die Durchgänge davor sind verworfen.');
+      if (messAbbruch){ sagen(window.t('mess.reihe.abgebrochen'));
         gesammelt.length = 0; break; }
       const stufe = MESS_STUFEN[i];
-      sagen('Lautstärke ' + stufe + ' % — Durchgang ' + (i + 1) + ' von ' + MESS_STUFEN.length + ' …');
+      sagen(window.t('mess.reihe.stufe', { p: stufe, i: i + 1, n: MESS_STUFEN.length }));
       lautstaerkeSetzen(stufe);
       /* messLauf(true) umgeht das Tonstudio und legt seine Kurve in
          messErgebnis.neutral ab - hier interessiert nur der Pegel. */
@@ -27025,7 +26962,7 @@ async function pegelReihe(){
            die Schwelle, und "das Lautstaerkedurchfahren funktioniert
            nicht"). Sie wird uebersprungen; Bezug ist die erste Stufe,
            die traegt. */
-        sagen('bei ' + stufe + ' % kam nichts an — Stufe übersprungen, es geht lauter weiter.');
+        sagen(window.t('mess.reihe.nichts', { p: stufe }));
         await new Promise(r => setTimeout(r, 1200));
         continue;
       }
@@ -27052,9 +26989,7 @@ async function pegelReihe(){
         const zeiten = gesammelt.map(g => g.laufzeit).sort((a, b) => a - b);
         const median = zeiten[Math.floor(zeiten.length / 2)];
         if (Math.abs(messErgebnis.laufzeit - median) > 150){
-          sagen('⚠ Laufzeit springt: ' + messErgebnis.laufzeit + ' ms bei dieser Stufe gegen '
-            + median + ' ms im Median der Reihe — die Ankunftserkennung ist hier unsicher, '
-            + 'die Kurve dieser Stufe mit Vorsicht lesen.');
+          sagen(window.t('mess.reihe.springt', { ms: messErgebnis.laufzeit, median }));
           await new Promise(r => setTimeout(r, 1800));
         }
       }
@@ -27064,14 +26999,13 @@ async function pegelReihe(){
          die Mitten, denn nur das VERHAELTNIS zaehlt: dass alles leiser
          wird, ist ja der Zweck des Reglers. */
       const bef = messPegelBefund(gesammelt);
-      let melde = 'Stufe ' + stufe + ' % gemessen (' + (i + 1) + ' von '
-        + MESS_STUFEN.length + '), Störabstand ' + Math.round(messErgebnis.abstandN) + ' dB';
+      let melde = window.t('mess.reihe.gemessen', { p: stufe, i: i + 1, n: MESS_STUFEN.length,
+        db: Math.round(messErgebnis.abstandN) });
       if (bef){
-        melde += ' — Baß ' + (bef.bass >= 0 ? '+' : '') + bef.bass.toFixed(1)
-          + ' dB, Höhen ' + (bef.hoehen >= 0 ? '+' : '') + bef.hoehen.toFixed(1)
-          + ' dB gegenüber ' + gesammelt[0].laut + ' %';
+        melde += window.t('mess.reihe.befund', { bass: (bef.bass >= 0 ? '+' : '') + bef.bass.toFixed(1),
+          hoehen: (bef.hoehen >= 0 ? '+' : '') + bef.hoehen.toFixed(1), p: gesammelt[0].laut });
       }
-      sagen(melde + '. Bitte weiter still.');
+      sagen(melde + window.t('mess.reihe.still'));
 
       /* ABBRECHEN, SOBALD DER PUNKT GEFUNDEN IST. Drei Dezibel Abfall
          im Bass sind eindeutig - und eine Stufe weiter zur Bestaetigung
@@ -27079,9 +27013,7 @@ async function pegelReihe(){
       if (bef && (bef.bass < -3 || bef.hoehen < -3)){
         if (!gefunden){ gefunden = i; }
         else if (i > gefunden){
-          sagen('Der Punkt ist gefunden: ab rund ' + MESS_STUFEN[gefunden]
-            + ' % beginnt der Lautsprecher zurückzuregeln. Die Reihe hört hier auf — '
-            + 'lauter zu messen brächte nur noch Lärm.');
+          sagen(window.t('mess.reihe.gefunden', { p: MESS_STUFEN[gefunden] }));
           break;
         }
       }
@@ -27113,30 +27045,21 @@ async function pegelReihe(){
       const erwartet = soll(laut.laut) - soll(leise.laut);
       const gemessen = laut.mittel - leise.mittel;
       const bef = messPegelBefund(p);
-      sagen('Lautstärkereihe steht: von ' + leise.laut + ' % auf ' + laut.laut
-        + ' % wären ' + erwartet.toFixed(1).replace('.', ',') + ' dB zu erwarten, gemessen '
-        + gemessen.toFixed(1).replace('.', ',') + ' dB.'
-        + (bef ? ' Dabei fiel der Baß um ' + Math.abs(bef.bass).toFixed(1).replace('.', ',')
-                 + ' dB und die Höhen um ' + Math.abs(bef.hoehen).toFixed(1).replace('.', ',')
-                 + ' dB gegenüber den Mitten zurück.' : '')
+      sagen(window.t('mess.reihe.steht', { von: leise.laut, bis: laut.laut,
+          erw: dezimal(erwartet.toFixed(1)), gem: dezimal(gemessen.toFixed(1)) })
+        + (bef ? window.t('mess.reihe.fiel', { bass: dezimal(Math.abs(bef.bass).toFixed(1)),
+                 hoehen: dezimal(Math.abs(bef.hoehen).toFixed(1)) }) : '')
         /* WER regelt - Lautsprecher oder Mikrofon? Der Klirranteil
            entscheidet, und der Kopfraum bestätigt. */
         + (bef && bef.klirrLeise !== null && bef.klirrLaut !== null
-            ? ' Der Klirranteil bei 40 Hz ging dabei von '
-              + bef.klirrLeise.toFixed(1).replace('.', ',') + ' % auf '
-              + bef.klirrLaut.toFixed(1).replace('.', ',') + ' % — '
+            ? window.t('mess.reihe.klirr', { a: dezimal(bef.klirrLeise.toFixed(1)), b: dezimal(bef.klirrLaut.toFixed(1)) })
               + (bef.klirrLaut > bef.klirrLeise * 2
-                  ? 'er steigt deutlich, es wird also auch verzerrt. Dann läßt sich nicht '
-                    + 'sicher sagen, ob Lautsprecher oder Mikrofon an der Grenze ist.'
-                  : 'er bleibt praktisch gleich. Es wird also nicht verzerrt, sondern '
-                    + 'geregelt — und regeln kann nur der Lautsprecher, das Mikrofon hat '
-                    + 'nichts zu regeln.')
+                  ? window.t('mess.reihe.klirr_steigt')
+                  : window.t('mess.reihe.klirr_gleich'))
             : '')
         + (messErgebnis.kopfraum !== undefined
-            ? ' Das Mikrofon blieb ' + Math.round(messErgebnis.kopfraum)
-              + ' dB unter Vollaussteuerung.' : '')
-        + ' Die neutrale Bezugsmessung steht jetzt auf ' + merkLaut + ' % — für eine '
-        + 'Einstellungsreihe bitte „1 · Neutral“ neu messen.');
+            ? window.t('mess.reihe.kopfraum', { db: Math.round(messErgebnis.kopfraum) }) : '')
+        + window.t('mess.reihe.neu_neutral', { p: merkLaut }));
     }
   }
 }
@@ -27250,7 +27173,7 @@ function messRaumbildZeichnen(){
     b.beginPath(); b.moveTo(x, y - 7); b.lineTo(x, OB + bh); b.stroke();
     b.fillStyle = '#f9143c'; b.beginPath(); b.arc(x, y, 3, 0, 6.284); b.fill();
     const deut = messStoerdeutung(st.f);
-    const wort = (st.f >= 1000 ? (st.f / 1000).toFixed(1).replace('.', ',') + ' kHz'
+    const wort = (st.f >= 1000 ? dezimal((st.f / 1000).toFixed(1)) + ' kHz'
                                : Math.round(st.f) + ' Hz') + (deut ? ' · ' + deut : '');
     b.font = MESS_SCHRIFT;
     const br = b.measureText(wort).width;
@@ -27260,19 +27183,17 @@ function messRaumbildZeichnen(){
   }
 
   b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
-  b.fillText('Säulen: Terzbänder   ·   weiß: gemittelt (' + R.feinDf.toFixed(2).replace('.', ',')
-    + ' Hz)'
-    + (R.lang ? '   ·   türkis: eine lange FFT über ' + R.lang.sekunden.toFixed(1).replace('.', ',')
-                + ' s (' + R.lang.df.toFixed(3).replace('.', ',') + ' Hz)' : '')
-    + '   ·   rot: Störlinien'
-    + (V && V.fein ? '   ·   gelb: davor' : ''), LI, 33);
+  b.fillText(window.t('mess.rb.saeulen', { hz: dezimal(R.feinDf.toFixed(2)) })
+    + (R.lang ? window.t('mess.rb.lang', { s: dezimal(R.lang.sekunden.toFixed(1)), hz: dezimal(R.lang.df.toFixed(3)) }) : '')
+    + window.t('mess.rb.rot')
+    + (V && V.fein ? window.t('mess.rb.gelb') : ''), LI, 33);
   b.fillStyle = '#ececed'; b.font = MESS_SCHRIFT_GROSS;
-  let kopf = 'Grundgeräusch ' + (R.mittel === null ? '—' : R.mittel.toFixed(0) + ' dB')
-    + (R.tiefst !== null ? ',  am ruhigsten ' + R.tiefst.toFixed(0) + ' dB' : '');
+  let kopf = window.t('mess.rb.grund', { was: (R.mittel === null ? '—' : R.mittel.toFixed(0) + ' dB') })
+    + (R.tiefst !== null ? window.t('mess.rb.tiefst', { db: R.tiefst.toFixed(0) }) : '');
   if (V && V.mittel !== null && R.mittel !== null){
     const d = V.mittel - R.mittel;
     if (Math.abs(d) >= 0.5)
-      kopf += '   ·   ' + Math.abs(d).toFixed(0) + ' dB ' + (d > 0 ? 'leiser' : 'lauter') + ' als vorher';
+      kopf += window.t(d > 0 ? 'mess.rb.leiser' : 'mess.rb.lauter', { db: Math.abs(d).toFixed(0) });
   }
   b.fillText(kopf, LI, 15);
 }
@@ -27367,7 +27288,7 @@ function messRidgeZeichnen(){
   for (const f of [31.5, 100, 315, 1000, 3150, 10000]){
     const k = MESS_JEOKT * Math.log2(f / 20);
     if (k < 0 || k > M - 1) continue;
-    const wort = f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0).replace('.', ',') + 'k'
+    const wort = f >= 1000 ? dezimal((f / 1000).toFixed(f < 10000 ? 1 : 0)) + 'k'
                            : String(Math.round(f));
     b.fillText(wort, X(k) - b.measureText(wort).width / 2, OB + bh + 9 + 8);
   }
@@ -27411,11 +27332,9 @@ function messRidgeZeichnen(){
   b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
   const spanne = zeilen.length > 1 ? (zeilen[zeilen.length-1].t - zeilen[0].t) : 0;
   const proZeile = zeilen.length > 1 ? spanne / (zeilen.length - 1) : 0;
-  b.fillText('je Zeile ' + (proZeile * 1000).toFixed(0) + ' ms, älteste oben   ·   '
-    + M + ' Punkte, Spitzenwert je Punkt   ·   durchgehender Kamm = dauerhaft, '
-    + 'einzelner Ausschlag = einmaliges Geräusch', LI, 18);
+  b.fillText(window.t('mess.ridge.text', { ms: (proZeile * 1000).toFixed(0), n: M }), LI, 18);
   b.save(); b.translate(15, OB + bh / 2); b.rotate(-Math.PI / 2);
-  b.fillStyle = '#55555a'; b.fillText('Zeit →', -18, 0); b.restore();
+  b.fillStyle = '#55555a'; b.fillText(window.t('mess.ridge.zeit'), -18, 0); b.restore();
 }
 
 /* DIE HAUSFORM FUER DIE MESSBILDER.
@@ -27456,7 +27375,7 @@ function messRahmen(c, OB, UN, LI, RE){
   for (let t = 0; t < 31; t++){
     const f = 20 * Math.pow(2, t / 3);
     if (![31.5, 100, 315, 1000, 3150, 10000].some(r => Math.abs(f - r) / r < 0.06)) continue;
-    const wort = f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0).replace('.', ',') + 'k'
+    const wort = f >= 1000 ? dezimal((f / 1000).toFixed(f < 10000 ? 1 : 0)) + 'k'
                            : String(Math.round(f));
     b.fillText(wort, X(t) - b.measureText(wort).width / 2, OB + bh + 9 + 8);
   }
@@ -27504,7 +27423,7 @@ function messSaeulen(b, werte, X, Y, grund, farbe, breite){
      derselbe Frequenzgang, zweimal gemessen. */
 function messVergleichBefund(l){
   const n = messErgebnis.neutral;
-  if (!n || !l.kurve) return 'Gemessen.';
+  if (!n || !l.kurve) return window.t('mess.vgl.gemessen');
   const zappel = (k) => {
     const innen = k.filter(p => p.f >= 63 && p.f <= 8000);
     let s2 = 0, c = 0;
@@ -27534,33 +27453,24 @@ function messVergleichBefund(l){
   const beide = mR.filter(a => mS.some(b => Math.abs(a.f - b.f) / a.f < 0.05));
 
   const teile = [];
-  teile.push('Beide Signale haben dieselbe Kette gesehen. Was sie unterscheidet, ist das '
-    + 'Verfahren.');
-  teile.push('<b>Unruhe der Kurve:</b> Rauschen ' + zR.toFixed(2).replace('.', ',')
-    + ' dB von Band zu Band, Sweep ' + zS.toFixed(2).replace('.', ',') + ' dB. '
+  teile.push(window.t('mess.vgl.kette'));
+  teile.push(window.t('mess.vgl.unruhe', { r: dezimal(zR.toFixed(2)), s: dezimal(zS.toFixed(2)) })
     + (zS > zR * 1.25
-        ? 'Der Sweep zappelt deutlich mehr — genau wie erwartet: er streift jedes Band nur '
-          + 'einmal, das Rauschen regt es die ganze Zeit an.'
+        ? window.t('mess.vgl.sweep_mehr')
         : zR > zS * 1.25
-          ? 'Ungewöhnlich: hier ist das Rauschen unruhiger. Das spricht dafür, daß während '
-            + 'einer der beiden Messungen etwas im Raum war.'
-          : 'Beide etwa gleich ruhig — bei dieser Länge holt der Sweep auf.'));
-  teile.push('<b>Frequenzgang:</b> die beiden Kurven liegen im Mittel '
-    + mittlereAbweichung.toFixed(2).replace('.', ',') + ' dB auseinander'
+          ? window.t('mess.vgl.rausch_mehr')
+          : window.t('mess.vgl.gleich')));
+  teile.push(window.t('mess.vgl.fg', { db: dezimal(mittlereAbweichung.toFixed(2)) })
     + (Math.abs(versatz) > 0.5
-        ? ' (nach Abzug eines Pegelunterschieds von ' + versatz.toFixed(1).replace('.', ',')
-          + ' dB, den der Scheitelfaktor der Signale erklärt)' : '')
+        ? window.t('mess.vgl.versatz', { db: dezimal(versatz.toFixed(1)) }) : '')
     + '. ' + (mittlereAbweichung < 1.5
-        ? 'Das ist gute Übereinstimmung: derselbe Raum, zweimal gemessen.'
-        : 'Das ist mehr, als zwei Messungen desselben Raums auseinanderliegen sollten.'));
+        ? window.t('mess.vgl.gut')
+        : window.t('mess.vgl.schlecht')));
   if (mR.length || mS.length){
-    teile.push('<b>Raummoden:</b> im Rauschen ' + mR.length + ', im Sweep ' + mS.length
+    teile.push(window.t('mess.vgl.moden', { r: mR.length, s: mS.length })
       + (beide.length
-          ? ', davon <b>' + beide.length + ' in beiden</b> — '
-            + beide.map(m => m.f.toFixed(1).replace('.', ',') + ' Hz').join(', ')
-            + '. Was beide Signale finden, ist eine Eigenschaft des Raums und kein Artefakt.'
-          : ', aber keine gemeinsame. Das ist ein Warnzeichen: eine echte Mode müßte in '
-            + 'beiden auftauchen.'));
+          ? window.t('mess.vgl.beide', { n: beide.length, liste: beide.map(m => dezimal(m.f.toFixed(1)) + ' Hz').join(', ') })
+          : window.t('mess.vgl.keine')));
   }
   return teile.join('<br><br>');
 }
@@ -27658,8 +27568,8 @@ function messLupeZeichnen(){
        (es koennte auch die zweite Mode einer doppelt so langen Strecke
        sein), aber ein Anhalt, der die Zahl greifbar macht. */
     const meter = 343 / (2 * m.f);
-    const wort = m.f.toFixed(1).replace('.', ',') + ' Hz  Q ' + m.q.toFixed(0)
-      + '  ≈ ' + meter.toFixed(1).replace('.', ',') + ' m';
+    const wort = dezimal(m.f.toFixed(1)) + ' Hz  Q ' + m.q.toFixed(0)
+      + '  ≈ ' + dezimal(meter.toFixed(1)) + ' m';
     b.font = MESS_SCHRIFT;
     const br = b.measureText(wort).width;
     const tx = Math.min(LI + bw - br - 2, Math.max(LI + 2, x - br / 2));
@@ -27668,16 +27578,14 @@ function messLupeZeichnen(){
   }
 
   b.fillStyle = '#ececed'; b.font = MESS_SCHRIFT_GROSS;
-  b.fillText('Der Raum von 20 bis 400 Hz, aufgelöst mit '
-    + L.df.toFixed(3).replace('.', ',') + ' Hz', LI, 15);
+  b.fillText(window.t('mess.lupe.kopf', { hz: dezimal(L.df.toFixed(3)) }), LI, 15);
   b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
   b.fillText(moden.length
-    ? moden.length + (moden.length === 1 ? ' Raummode' : ' Raummoden')
-      + (messModenBestaetigt() ? ' (in beiden Signalen bestätigt)' : ' — noch unbestätigt')
+    ? window.t('mess.lupe.moden', { n: moden.length })
+      + (messModenBestaetigt() ? window.t('mess.lupe.bestaetigt') : window.t('mess.lupe.unbestaetigt'))
       + ' — '
-      + 'Q sagt, wie lange sie nachklingt (30 ≈ dreißig Perioden), der Meterwert den '
-      + 'Wandabstand, der sie erzeugt. Dauertöne aus der Raumstille sind ausgenommen'
-    : 'keine ausgeprägte Raummode gefunden', LI, 30);
+      + window.t('mess.lupe.q')
+    : window.t('mess.lupe.keine'), LI, 30);
 
   messKammBefund(L);
 }
@@ -27845,20 +27753,11 @@ function messKammBefund(L){
   el.hidden = false;
   const msek = 1000 / besterAbstand;
   const meter = 343 * msek / 1000;
-  el.innerHTML = '<h5>Eine Reflexion ist zu sehen</h5>'
-    + '<p>Im Frequenzgang wiederholt sich ein Muster im Abstand von <b>'
-    + besterAbstand + ' Hz</b>. Das ist ein Kammfilter, und er entsteht, wenn derselbe '
-    + 'Schall zweimal ankommt: einmal direkt, einmal über eine Fläche reflektiert. '
-    + 'Der Abstand der Einbrüche ist der Kehrwert der Laufzeitdifferenz.</p>'
-    + '<p>Aus <b>' + besterAbstand + ' Hz</b> folgt eine Verzögerung von <b class="fzahl">'
-    + msek.toFixed(1).replace('.', ',') + ' ms</b> — bei 343 m/s Schallgeschwindigkeit ein '
-    + 'Umweg von <b class="fzahl">' + meter.toFixed(2).replace('.', ',') + ' m</b>. '
-    + 'Die reflektierende Fläche liegt also rund <b>' + (meter / 2).toFixed(2).replace('.', ',')
-    + ' m</b> von der geraden Linie zwischen Lautsprecher und Ohr entfernt: Tischplatte, '
-    + 'Seitenwand, Fensterscheibe.</p>'
-    + '<p class="fmatt">Dagegen hilft kein Equalizer — die Auslöschungen sitzen an anderen '
-    + 'Frequenzen, sobald du den Kopf bewegst. Was hilft: die Fläche dämpfen oder den '
-    + 'Lautsprecher so stellen, daß der Umweg länger wird.</p>';
+  el.innerHTML = '<h5>' + window.t('mess.kamm.titel') + '</h5>'
+    + '<p>' + window.t('mess.kamm.1', { hz: besterAbstand }) + '</p>'
+    + '<p>' + window.t('mess.kamm.2', { hz: besterAbstand, ms: dezimal(msek.toFixed(1)),
+        m: dezimal(meter.toFixed(2)), halb: dezimal((meter / 2).toFixed(2)) }) + '</p>'
+    + '<p class="fmatt">' + window.t('mess.kamm.3') + '</p>';
 }
 
 /* DIE WIRKUNG: was eingestellt war gegen das, was ankam (Caspar_D,
@@ -27918,7 +27817,7 @@ function messWirkungZeichnen(){
   }
 
   b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
-  b.fillText('gestrichelt: eingestellt   ·   durchgezogen: am Hörplatz gemessen', LI, 13);
+  b.fillText(window.t('mess.wirk.leg'), LI, 13);
 }
 
 /* DIE LAUTSTAERKEKENNLINIE (Caspar_D, 27.08.2026: "und auch erhoehung
@@ -27981,8 +27880,8 @@ function messPegelZeichnen(){
   });
 
   b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
-  b.fillText('gestrichelt: was ohne Begrenzung herauskäme   ·   gelb: was fehlt', LI, 13);
-  b.fillText('gemessener Pegel', 4, OB + bh / 2);
+  b.fillText(window.t('mess.pegel.leg'), LI, 13);
+  b.fillText(window.t('mess.pegel.achse'), 4, OB + bh / 2);
 
   messPegelBaenderZeichnen();
 }
@@ -28100,8 +27999,8 @@ function messPegelBaenderZeichnen(){
   });
 
   b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
-  b.fillText('Formänderung gegenüber der leisesten Stufe — flach heißt: auf allen Frequenzen gleich'
-    + (fein ? '   ·   volle Auflösung' : ''), LI, 13);
+  b.fillText(window.t('mess.pb.leg')
+    + (fein ? window.t('mess.pb.fein') : ''), LI, 13);
 }
 
 /* DAS FAZIT (Caspar_D, 27.08.2026: "es muss ja jetzt ein Fazit geben"
@@ -28128,16 +28027,14 @@ function messFazitZeigen(){
   el.hidden = false;
 
   const z = [];
-  const hz = (f) => f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0).replace('.', ',') + ' kHz'
+  const hz = (f) => f >= 1000 ? dezimal((f / 1000).toFixed(f < 10000 ? 1 : 0)) + ' kHz'
                               : Math.round(f) + ' Hz';
-  const zahl = (v, n = 1) => (v >= 0 ? '+' : '') + v.toFixed(n).replace('.', ',');
+  const zahl = (v, n = 1) => (v >= 0 ? '+' : '') + dezimal(v.toFixed(n));
 
   /* ---- 1. Traegt die Messung? ---- */
   const abN = messErgebnis.abstandN;
   if (abN !== undefined && abN < 20){
-    z.push('<p class="fwarn">Die Bezugsmessung trägt nicht: Störabstand nur '
-      + Math.round(abN) + ' dB. Unter 20 dB ist eine Differenz mehr Zufall als Messung. '
-      + 'Lauter stellen oder mit „Raum abhören“ eine ruhigere Stelle suchen.</p>');
+    z.push('<p class="fwarn">' + window.t('mess.fazit.traegt_nicht', { db: Math.round(abN) }) + '</p>');
   }
 
   /* ---- 2. Was jeder Lauf am Hoerplatz bewirkt ---- */
@@ -28154,14 +28051,13 @@ function messFazitZeigen(){
       if (iH < 0 || d > gem[iH]) iH = i;
       if (iT < 0 || d < gem[iT]) iT = i; });
     if (iH < 0){ z.push('<p><b style="color:' + l.farbe + '">' + l.name
-      + '</b> — kein auswertbares Band.</p>'); continue; }
+      + '</b>' + window.t('mess.fazit.kein_band') + '</p>'); continue; }
 
     let satz = '<p><b style="color:' + l.farbe + '">' + l.name + '</b> — ';
     if (gem[iH] - gem[iT] < 1){
-      satz += 'am Hörplatz nicht von der neutralen Messung zu unterscheiden.';
+      satz += window.t('mess.fazit.gleich');
     } else {
-      satz += 'hebt <span class="fzahl">' + zahl(gem[iH]) + ' dB</span> bei ' + hz(l.kurve[iH].f)
-        + ' an, nimmt <span class="fzahl">' + zahl(gem[iT]) + ' dB</span> bei ' + hz(l.kurve[iT].f) + ' weg';
+      satz += window.t('mess.fazit.hebt', { a: zahl(gem[iH]), fa: hz(l.kurve[iH].f), b: zahl(gem[iT]), fb: hz(l.kurve[iT].f) });
     }
 
     /* Ausbeute gegen die eigene Rechnung des Equalizers */
@@ -28181,8 +28077,7 @@ function messFazitZeigen(){
         for (const [x, y] of paare){ ssr += Math.pow(y - k * x, 2); sst += Math.pow(y - ym, 2); }
         const r2 = sst > 0 ? Math.max(0, 1 - ssr / sst) : 0;
         ausbeuten.push({ l, k, r2, paare: paare.length });
-        satz += '. Wirkungsgrad <b class="fzahl">' + Math.round(k * 100) + ' %</b> — so viel von dem, '
-          + 'was der Equalizer rechnet, kommt bei dir an';
+        satz += window.t('mess.fazit.wirkungsgrad', { p: Math.round(k * 100) });
       }
     }
     z.push(satz + '.</p>');
@@ -28193,24 +28088,14 @@ function messFazitZeigen(){
     const kM = ausbeuten.reduce((a, b) => a + b.k, 0) / ausbeuten.length;
     const r2M = ausbeuten.reduce((a, b) => a + b.r2, 0) / ausbeuten.length;
     let deutung;
-    if (kM >= 0.85) deutung = 'Der Weg vom Rechner zum Ohr gibt die Einstellung <b>ehrlich weiter</b>. '
-      + 'Was am Regler steht, steht auch am Hörplatz.';
-    else if (kM >= 0.6) deutung = 'Ein Teil bleibt unterwegs. Das ist normal — kein Lautsprecher folgt '
-      + 'einer Kennlinie eins zu eins.';
-    else if (kM >= 0.35) deutung = 'Es kommt <b>weniger als zwei Drittel</b> an. Das ist das Bild einer '
-      + 'Begrenzung: viele Aktivlautsprecher regeln zurück, sobald es lauter wird. '
-      + 'Die Probe steht bereit — <b>Lautstärke durchfahren</b>: knickt die Kennlinie oben ab, '
-      + 'war es die Begrenzung.';
-    else deutung = 'Es kommt <b>kaum etwas</b> an. Entweder begrenzt der Lautsprecher stark, oder er '
-      + 'kann in diesem Bereich nicht mehr. Beides läßt sich mit dem Equalizer nicht überstimmen.';
-    z.push('<p>' + (ausbeuten.length > 1 ? 'Wirkungsgrad über alle Durchgänge: <b>'
-      + Math.round(kM * 100) + ' %</b>. ' : '') + deutung + '</p>');
+    if (kM >= 0.85) deutung = window.t('mess.fazit.d85');
+    else if (kM >= 0.6) deutung = window.t('mess.fazit.d60');
+    else if (kM >= 0.35) deutung = window.t('mess.fazit.d35');
+    else deutung = window.t('mess.fazit.d0');
+    z.push('<p>' + (ausbeuten.length > 1 ? window.t('mess.fazit.alle', { p: Math.round(kM * 100) }) : '') + deutung + '</p>');
 
     if (r2M < 0.5 && ausbeuten.some(a => a.paare >= 5)){
-      z.push('<p class="fmatt">Die Abweichung verteilt sich ungleichmäßig (Gleichmäßigkeit nur '
-        + r2M.toFixed(2).replace('.', ',') + '): manche Bänder folgen der Einstellung, andere gar '
-        + 'nicht. Das spricht weniger für eine gleichmäßige Dämpfung als für den Raum — stehende '
-        + 'Wellen heben und löschen einzelne Frequenzen, unabhängig von jeder Einstellung.</p>');
+      z.push('<p class="fmatt">' + window.t('mess.fazit.ungleich', { r: dezimal(r2M.toFixed(2)) }) + '</p>');
     }
   }
 
@@ -28221,17 +28106,13 @@ function messFazitZeigen(){
     const erwartet = soll(oben.laut) - soll(unten.laut);
     const gemessen = oben.mittel - unten.mittel;
     const fehlt = erwartet - gemessen;
-    z.push('<p>Von ' + unten.laut + ' % auf ' + oben.laut + ' % Lautstärke wären '
-      + '<span class="fzahl">' + erwartet.toFixed(1).replace('.', ',') + ' dB</span> zu erwarten; '
-      + 'gemessen wurden <b class="fzahl">' + gemessen.toFixed(1).replace('.', ',') + ' dB</b>. '
+    z.push('<p>' + window.t('mess.fazit.kennlinie', { von: unten.laut, bis: oben.laut,
+        erw: dezimal(erwartet.toFixed(1)), gem: dezimal(gemessen.toFixed(1)) })
       + (Math.abs(fehlt) < 1.5
-        ? 'Die Kette bleibt also <b>linear</b> — was fehlt, fehlt nicht an ihr.'
+        ? window.t('mess.fazit.linear')
         : fehlt > 0
-          ? 'Es fehlen <b class="fzahl">' + fehlt.toFixed(1).replace('.', ',') + ' dB</b>: '
-            + 'oben wird zurückgeregelt. Genau das schluckt auch die Einstellung — '
-            + 'leiser abhören läßt mehr davon durch.'
-          : 'Der Pegel steigt <b>stärker</b> als der Regler vorgibt. Das deutet auf eine '
-            + 'Klangregelung im Lautsprecher, die bei leisen Pegeln anhebt.') + '</p>');
+          ? window.t('mess.fazit.fehlt', { db: dezimal(fehlt.toFixed(1)) })
+          : window.t('mess.fazit.staerker')) + '</p>');
     /* Wo genau der Knick sitzt */
     let iKnick = -1, gr = 0;
     for (let i = 0; i < pegel.length; i++){
@@ -28239,9 +28120,7 @@ function messFazitZeigen(){
       if (ab < gr){ gr = ab; iKnick = i; }
     }
     if (iKnick >= 0 && gr < -1.5){
-      z.push('<p class="fmatt">Am weitesten unter der Geraden liegt die Stufe bei '
-        + pegel[iKnick].laut + ' % (' + gr.toFixed(1).replace('.', ',') + ' dB). '
-        + 'Darunter arbeitet die Kette am ehrlichsten.</p>');
+      z.push('<p class="fmatt">' + window.t('mess.fazit.knick', { p: pegel[iKnick].laut, db: dezimal(gr.toFixed(1)) }) + '</p>');
     }
   }
 
@@ -28256,39 +28135,36 @@ function messFazitZeigen(){
   /* ---- 6. Die Laufzeit - und was sie fuer den mitlaufenden Text heisst ---- */
   const lz = messErgebnis.laufzeit;
   if (lz !== undefined && lz !== null){
-    let satz = 'Der Ton braucht <b class="fzahl">' + lz + ' ms</b> vom Rechner bis zum Hörplatz'
-      + (lz > 500 ? ' — das ist der Puffer, den AirPlay absichtlich anlegt, damit mehrere '
-                  + 'Lautsprecher zusammenbleiben' : '') + '. ';
+    let satz = window.t('mess.fazit.lz', { ms: lz })
+      + (lz > 500 ? window.t('mess.fazit.lz_airplay') : '') + '. ';
     /* Der mitlaufende Text nimmt audio.currentTime MINUS bVersatz: ein
        positiver Versatz laesst ihn spaeter kommen. Genau um die
        Laufzeit spaeter - dann steht das Wort da, wenn es zu hoeren
        ist, statt wenn es abgeschickt wurde. */
     const jetzt = (typeof bVersatz !== 'undefined') ? Math.round(bVersatz) : null;
     if (jetzt === null){
-      satz += 'Der mitlaufende Text müßte um denselben Betrag später kommen.';
+      satz += window.t('mess.fazit.text_spaeter');
     } else if (Math.abs(jetzt - lz) < 60){
-      satz += 'Der Textversatz steht auf <span class="fzahl">' + jetzt + ' ms</span> — das paßt dazu, '
-        + 'der Text steht also da, wenn das Wort zu hören ist.';
+      satz += window.t('mess.fazit.text_passt', { ms: jetzt });
     } else {
-      satz += 'Der Textversatz steht auf <span class="fzahl">' + jetzt + ' ms</span> und läuft damit '
-        + Math.abs(jetzt - lz) + ' ms ' + (jetzt < lz ? 'zu früh' : 'zu spät') + '. '
+      satz += window.t(jetzt < lz ? 'mess.fazit.text_frueh' : 'mess.fazit.text_spaet', { ms: jetzt, d: Math.abs(jetzt - lz) })
         + '<button class="knopf messknopfklein" onclick="versatzSetzen(' + lz + '); messFazitZeigen();">'
-        + 'Auf ' + lz + ' ms setzen</button>';
+        + window.t('mess.fazit.text_setzen', { ms: lz }) + '</button>';
     }
     z.push('<p>' + satz + '</p>');
   }
 
   /* ---- 7. Belastbarkeit ---- */
   const teile = [];
-  if (abN !== undefined) teile.push('Störabstand ' + Math.round(abN) + ' dB');
-  if (messErgebnis.mikro) teile.push('gemessen mit ' + messErgebnis.mikro
-    + (messErgebnis.ausgabe ? ' über ' + messErgebnis.ausgabe : ''));
+  if (abN !== undefined) teile.push(window.t('mess.fazit.abstand', { db: Math.round(abN) }));
+  if (messErgebnis.mikro) teile.push(window.t('mess.fazit.mit', { mikro: messErgebnis.mikro })
+    + (messErgebnis.ausgabe ? window.t('mess.fazit.ueber', { ausg: messErgebnis.ausgabe }) : ''));
   const art = ($('messsignal') || { value: '' }).value;
-  if (art) teile.push('Signal: ' + ({ sweep: 'Sweep', rosa: 'rosa Rauschen',
-    weiss: 'weißes Rauschen', baender: 'Bandtöne' })[art]);
+  if (art) teile.push(window.t('mess.fazit.signal') + ({ sweep: 'Sweep', rosa: window.t('mess.fazit.rosa'),
+    weiss: window.t('mess.fazit.weiss'), baender: window.t('mess.fazit.baender') })[art]);
   if (teile.length) z.push('<p class="fmatt">' + teile.join('   ·   ') + '</p>');
 
-  el.innerHTML = '<h5>Fazit</h5>' + z.join('');
+  el.innerHTML = '<h5>' + window.t('mess.fazit.titel') + '</h5>' + z.join('');
   messKorrekturZeigen();
 }
 
@@ -28375,41 +28251,28 @@ function messKorrekturZeigen(){
   if (!k){ el.hidden = true; return; }
   el.hidden = false;
   const z = [];
-  const hz = (f) => f >= 1000 ? (f / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(f) + ' Hz';
+  const hz = (f) => f >= 1000 ? dezimal((f / 1000).toFixed(1)) + ' kHz' : Math.round(f) + ' Hz';
 
   if (!k.gruende.length){
-    z.push('<p>Im gemessenen Verlauf ragt kein Band um mehr als 3 dB aus seiner Nachbarschaft. '
-      + 'Es gibt <b>nichts zu korrigieren</b> — was uneben aussieht, ist der allgemeine Verlauf '
-      + 'von Lautsprecher und Mikrofon, und der gehört nicht weggebügelt.</p>');
+    z.push('<p>' + window.t('mess.korr.nichts') + '</p>');
   } else {
-    z.push('<p>Diese Bänder ragen aus ihrer Nachbarschaft heraus — das sind die Kandidaten '
-      + 'für eine Dämpfung:</p><ul>' + k.gruende.map(g =>
-        '<li>' + hz(g.f) + ': <span class="fzahl">' + g.ueber.toFixed(1).replace('.', ',')
-        + ' dB</span> über dem Verlauf ringsum → Regler '
-        + (EQ_FREQ_STD[g.i] >= 1000 ? (EQ_FREQ_STD[g.i]/1000).toFixed(1).replace('.', ',') + ' kHz'
-                                    : EQ_FREQ_STD[g.i] + ' Hz')
-        + ' auf <b class="fzahl">' + g.db.toFixed(1).replace('.', ',') + ' dB</b></li>').join('')
+    z.push('<p>' + window.t('mess.korr.kandidaten') + '</p><ul>' + k.gruende.map(g =>
+        '<li>' + window.t('mess.korr.zeile', { f: hz(g.f), ueber: dezimal(g.ueber.toFixed(1)),
+          regler: (EQ_FREQ_STD[g.i] >= 1000 ? dezimal((EQ_FREQ_STD[g.i]/1000).toFixed(1)) + ' kHz'
+                                    : EQ_FREQ_STD[g.i] + ' Hz'),
+          db: dezimal(g.db.toFixed(1)) }) + '</li>').join('')
       + '</ul>');
-    z.push('<p class="fmatt">Nur zu 70 % der gemessenen Überhöhung und höchstens 6 dB: '
-      + 'ein Regler soll eine Spitze brechen, nicht den Raum umbauen. '
-      + 'Und nur Überhöhungen — <b>Einbrüche werden nicht aufgefüllt</b>. Ein Loch im '
-      + 'Frequenzgang ist meist eine Auslöschung zwischen Direktschall und Reflexion; '
-      + 'mehr Pegel wird genauso ausgelöscht und verheizt nur Spielraum.</p>');
+    z.push('<p class="fmatt">' + window.t('mess.korr.regel') + '</p>');
     z.push('<p><button class="knopf" onclick="messKorrekturAnwenden()">'
-      + 'Diese Korrektur auf die Regler legen</button></p>');
+      + window.t('mess.korr.anwenden') + '</button></p>');
   }
 
   if (k.begrenzt === true){
-    z.push('<p class="fwarn">Die Lautstärkereihe zeigt eine Begrenzung auf dem Weg. '
-      + 'Deshalb wird hier <b>nicht</b> hochgerechnet, was von der Einstellung fehlt: '
-      + 'gegen eine Begrenzung hilft mehr Pegel nicht, sie regelt ihn nur stärker weg. '
-      + 'Was hier hilft, ist leiser abhören.</p>');
+    z.push('<p class="fwarn">' + window.t('mess.korr.begrenzt') + '</p>');
   } else if (k.begrenzt === null){
-    z.push('<p class="fmatt">Ob die Kette begrenzt, ist noch nicht geprüft — dafür ist '
-      + '<b>Lautstärke durchfahren</b> da. Solange das offen ist, wäre jede Hochrechnung '
-      + 'der fehlenden Wirkung geraten.</p>');
+    z.push('<p class="fmatt">' + window.t('mess.korr.offen') + '</p>');
   }
-  el.innerHTML = '<h5>Was sich daraus einstellen läßt</h5>' + z.join('');
+  el.innerHTML = '<h5>' + window.t('mess.korr.titel') + '</h5>' + z.join('');
 }
 
 function messKorrekturAnwenden(){
@@ -28420,8 +28283,7 @@ function messKorrekturAnwenden(){
   if (typeof eqPresetAnzeigen === 'function') eqPresetAnzeigen();
   if (typeof studioZeichnen === 'function') studioZeichnen();
   const e = $('messstand');
-  if (e) e.textContent = 'Korrektur auf die Regler gelegt. Zum Prüfen jetzt '
-    + '„2 · Mit Einstellung“ messen — dann steht sie als eigene Kurve neben der neutralen.';
+  if (e) e.textContent = window.t('mess.korr.gelegt');
 }
 
 /* WARUM DIE KURVE BUCKELIG AUSSIEHT (Caspar_D, 27.08.2026: "und warum
@@ -28455,16 +28317,9 @@ function messBuckeligkeit(kurve){
   const art = ($('messsignal') || { value: 'sweep' }).value;
   if (zappel < 2.5) return null;
   if (art === 'sweep'){
-    return 'Die Kurve zappelt (' + zappel.toFixed(1).replace('.', ',')
-      + ' dB von Band zu Band). Ein Teil davon ist der Raum, ein Teil das Verfahren: '
-      + 'der Sweep trägt seine Energie <b>nacheinander</b> durch die Bänder, jedes bekommt nur '
-      + 'gut hundert Millisekunden Meßzeit. Rosa Rauschen regt alle Bänder <b>zugleich</b> an — '
-      + 'jedes bekommt die volle Zeit, die Kurve wird glatter. Dafür kann der Sweep in einem '
-      + 'halligen Raum Direktschall und Nachhall trennen, das Rauschen nicht. '
-      + 'Für einen glatten Frequenzgang: rosa Rauschen. Für die Raumakustik: Sweep.';
+    return window.t('mess.buckel.sweep', { db: dezimal(zappel.toFixed(1)) });
   }
-  return 'Die Kurve zappelt (' + zappel.toFixed(1).replace('.', ',')
-    + ' dB von Band zu Band). Bei Rauschen liegt das nicht am Verfahren — das ist der Raum.';
+  return window.t('mess.buckel.rauschen', { db: dezimal(zappel.toFixed(1)) });
 }
 
 /* Was im NEUTRALEN Durchgang auffaellt, ist nicht das Tonstudio - das
@@ -28484,14 +28339,10 @@ function messRaumauffaelligkeit(neu){
   }
   if (iMax < 0 || Math.abs(abw) < 4) return null;
   const f = innen[iMax].f;
-  const hz = f >= 1000 ? (f / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(f) + ' Hz';
-  return 'Unabhängig vom Tonstudio fällt der Raum auf: bei ' + hz + ' liegt der Pegel '
-    + Math.abs(abw).toFixed(1).replace('.', ',') + ' dB '
-    + (abw > 0 ? 'über' : 'unter') + ' dem Verlauf ringsum. '
-    + (abw > 0 ? 'So sieht eine stehende Welle aus — sie steht schon im neutralen Durchgang da und '
-               + 'ist keine Folge der Einstellung.'
-               : 'Ein Einbruch an dieser Stelle kommt meist von einer Auslöschung zwischen Direktschall '
-               + 'und Reflexion; ein anderer Hörplatz ändert ihn mehr als jeder Regler.');
+  const hz = f >= 1000 ? dezimal((f / 1000).toFixed(1)) + ' kHz' : Math.round(f) + ' Hz';
+  return window.t(abw > 0 ? 'mess.raumauff.ueber' : 'mess.raumauff.unter', { hz, db: dezimal(Math.abs(abw).toFixed(1)) })
+    + (abw > 0 ? window.t('mess.raumauff.welle')
+               : window.t('mess.raumauff.loch'));
 }
 
 function messBildZeichnen(){
@@ -28505,7 +28356,7 @@ function messBildZeichnen(){
 
   if (!neu && !laeufe.length){
     b.fillStyle = '#555'; b.font = '12px system-ui';
-    b.fillText('Noch nicht gemessen.', 12, 22);
+    b.fillText(window.t('mess.bild.leer'), 12, 22);
     messLegende();
     return;
   }
@@ -28559,7 +28410,7 @@ function messBildZeichnen(){
     b.globalAlpha = 1;
     b.fillStyle = 'rgba(255,255,255,0.28)'; b.fillRect(L, m0, bw, 1);
     b.fillStyle = '#8b8b90'; b.font = '10px system-ui';
-    b.fillText('Differenz ±' + spanne.toFixed(1) + ' dB', L + 6, m0 - 6);
+    b.fillText(window.t('mess.bild.differenz', { db: spanne.toFixed(1) }), L + 6, m0 - 6);
   }
   messLegende();
 }
@@ -28610,7 +28461,7 @@ function messAnsicht(was){
     messLupeZeichnen(); }
   const rt = $('messraumtitel');
   if (rt) rt.textContent = (messLive && messLive.raum)
-    ? 'Ich höre gerade zu …' : 'Was der Raum von sich aus macht';
+    ? window.t('mess.raum.zuhoeren') : window.t('mess.raum.titel');
   /* Die Hintergruende: im Werkzeugmodus immer, im Ablauf erst, wenn er
      durch ist - vorher lenken sie nur ab. */
   const erklaeren = a === 'werkzeug' || (imAblauf && messPlanSchritt >= MESS_PLAN.length);
@@ -28637,74 +28488,32 @@ function messAnsicht(was){
    muessen. */
 const MESS_PLAN = [
   { art: 'raum',
-    titel: 'Zuerst hören wir den Raum ab',
-    text: 'Ohne selbst Töne oder Geräusche zu erzeugen, messe ich, wie laut es bei dir von '
-        + 'sich aus ist — das ist die Grundlage für alles Weitere: Ein Signal muß mindestens '
-        + '20 dB lauter sein als das Grundgeräusch, sonst mißt man Störsignal / Zufall. '
-        + 'Das dauert acht Sekunden oder länger — so lange, bis sich aus vielen '
-        + 'Momentaufnahmen ein ruhiges Bild gemittelt hat. Dabei solltest du still sein, '
-        + 'darfst dich aber ruhig bewegen.',
+    get titel(){ return window.t('mess.plan.raum.titel'); },
+    get text(){ return window.t('mess.plan.raum.text'); },
     ruhe: false },
   { art: 'neutral', signal: 'rosa',
-    titel: 'Die Bezugsmessung',
-    text: 'Rosa Rauschen, das Tonstudio wird dabei umgangen. Es läuft, bis die Kurve steht — '
-        + 'wie beim Raum vorhin wird aus vielen Momentaufnahmen gemittelt, bis das Rauschen '
-        + 'weg ist. Das dauert rund fünfzehn Sekunden — länger als die Mittelung bräuchte, '
-        + 'aber erst dann ist die Auflösung fein genug, um Raummoden im Baß voneinander zu '
-        + 'trennen. Diese Kurve '
-        + 'enthält Lautsprecher, Raum und Mikrofon — alles außer dem Equalizer. Gegen sie '
-        + 'wird später jede Einstellung gehalten.<br><br>'
-        + 'Warum Rauschen und kein Sweep? Rauschen regt alle Frequenzen <b>zugleich</b> an, '
-        + 'jedes Band bekommt die volle Meßzeit, und die Kurve wird ruhig. Ein Sweep läuft '
-        + 'sie <b>nacheinander</b> ab — jedes Band bekommt nur einen Bruchteil der Zeit, und '
-        + 'die Kurve zappelt. Für einen sauberen Frequenzgang ist Rauschen das bessere Signal.',
+    get titel(){ return window.t('mess.plan.neutral.titel'); },
+    get text(){ return window.t('mess.plan.neutral.text'); },
     ruhe: true },
   { art: 'vergleich', signal: 'sweep',
-    titel: 'Dieselbe Messung mit dem Sweep',
-    text: 'Jetzt derselbe Durchgang, aber mit einem Ton, der von 20 Hz bis 20 kHz hochläuft — '
-        + 'gleich lang wie das Rauschen, damit die Auflösung dieselbe ist. Zwei Signale, '
-        + 'dieselbe Kette, Equalizer neutral: die Unterschiede zwischen den beiden Kurven sind '
-        + 'nicht der Raum, sondern das Verfahren.<br><br>'
-        + 'Zu erwarten ist: dieselben Raummoden an denselben Frequenzen — sie sind ja eine '
-        + 'Eigenschaft des Raums, nicht des Signals. Beim Rest lohnt es sich, die Erwartung '
-        + 'offen zu lassen: bei kurzen Messungen zappelt der Sweep mehr, weil er jedes Band '
-        + 'nur streift. Bei dieser Länge kann es umgekehrt sein — dann spielt er seinen '
-        + 'Vorteil aus, seine ganze Energie in eine Frequenz zu legen, während das Rauschen '
-        + 'sie verteilt.<br><br>'
-        + 'Der Sweep hat einen Vorteil, den das Rauschen nicht hat: weil zu jedem Zeitpunkt '
-        + 'nur eine Frequenz im Raum steht, lassen sich Direktschall und Nachhall trennen. '
-        + 'Deshalb ist er der Standard der Raumakustik — und deshalb wäre er die Grundlage '
-        + 'für Nachhallzeit und Klarheit, wenn wir die einmal rechnen.',
+    get titel(){ return window.t('mess.plan.vergleich.titel'); },
+    get text(){ return window.t('mess.plan.vergleich.text'); },
     ruhe: true, freiwillig: true },
   { art: 'lauf', signal: 'rosa', gains: () => EQ_KLASSIKER.bass.slice(),
-    titel: 'Erste Einstellung: Bass',
-    text: 'Ich stelle die Bass-Anhebung ein (bis +6 dB unten herum) und messe denselben '
-        + 'Sweep noch einmal. Der Unterschied zur Bezugsmessung ist das, was der Equalizer '
-        + 'an deinem Hörplatz wirklich bewirkt.',
+    get titel(){ return window.t('mess.plan.bass.titel'); },
+    get text(){ return window.t('mess.plan.bass.text'); },
     ruhe: true },
   { art: 'lauf', signal: 'rosa', gains: () => EQ_KLASSIKER.hoehen.slice(),
-    titel: 'Zweite Einstellung: Höhen',
-    text: 'Dasselbe mit der Höhenanhebung. Zwei Einstellungen an verschiedenen Enden des '
-        + 'Bereichs zeigen, ob die Dämpfung überall gleich ist oder nur an einem Ende '
-        + 'zuschlägt.',
+    get titel(){ return window.t('mess.plan.hoehen.titel'); },
+    get text(){ return window.t('mess.plan.hoehen.text'); },
     ruhe: true },
   { art: 'lauf', signal: 'rosa', gains: () => [0,0,0,0,12,0,0,0],
-    titel: 'Dritte Einstellung: ein einzelnes Band voll aufgedreht',
-    text: '445 Hz um 12 dB angehoben — die stärkste Einstellung, die der Equalizer hergibt. '
-        + 'Wenn irgendwo eine Begrenzung sitzt, wird sie hier sichtbar.',
+    get titel(){ return window.t('mess.plan.band.titel'); },
+    get text(){ return window.t('mess.plan.band.text'); },
     ruhe: true },
   { art: 'pegel', signal: 'rosa',
-    titel: 'Zuletzt: die Lautstärke durchfahren',
-    text: 'Durchgänge mit dem Sweep, beginnend bei 25 % und in Vier-Dezibel-Schritten '
-        + 'ansteigend. Es <b>hört auf, sobald der Baß abfällt</b> — laut wird es also nur, '
-        + 'wenn es sein muß, und höchstens bis 100 %.<br><br>'
-        + 'Es ändert sich dabei <b>nur die Lautstärke</b> — gleiches Signal, gleiche Dauer, '
-        + 'gleicher Platz. Wer zwei Dinge zugleich verstellt, mißt hinterher die Summe und '
-        + 'kann sie nicht mehr trennen.<br><br>'
-        + 'Gemessen wird, ob Baß und Höhen <i>gegenüber den Mitten</i> zurückfallen. Daß mit '
-        + 'dem Regler alles leiser wird, ist ja sein Zweck; interessant ist allein, ob sich '
-        + 'die Form ändert. Viele Lautsprecher nehmen bei hohen Pegeln zuerst den Baß '
-        + 'zurück, weil tiefe Töne die größte Membranauslenkung brauchen.',
+    get titel(){ return window.t('mess.plan.pegel.titel'); },
+    get text(){ return window.t('mess.plan.pegel.text'); },
     ruhe: true },
 ];
 
@@ -28720,7 +28529,7 @@ function messPlanStarten(liste){
   messKulisseUeberspringen = false;
   const proto = $('messproto');
   if (proto){ proto.innerHTML = ''; proto.hidden = false; }
-  protoZeile('<b>Geführte Einmessung</b> · ' + new Date().toLocaleString('de-DE'));
+  protoZeile(window.t('mess.plan.proto_kopf') + new Date().toLocaleString(localeTag()));
   messErgebnis.__ansicht = 'ablauf';
   /* WAEHREND DES ABLAUFS BLEIBT ES STILL (Caspar_D: "alles passiert in
      STille, es wird keine Musik abgespielt, es bleibt alles ruhig").
@@ -28744,22 +28553,20 @@ function messPlanAbbrechen(){
 function messPlanZeigen(zustand, meldung){
   const el = $('messplan'); if (!el) return;
   if (messPlanSchritt < 0){
-    el.innerHTML = '<p>Der geführte Ablauf mißt in sechs Schritten durch, stellt den '
-      + 'Equalizer selbst ein und fragt vor jedem Ton nach. '
-      + '<button class="knopf" onclick="messPlanStarten()">Geführt messen</button></p>';
+    el.innerHTML = '<p>' + window.t('mess.plan.ruht')
+      + '<button class="knopf" onclick="messPlanStarten()">' + window.t('mess.plan.ruht_knopf') + '</button></p>';
     el.className = 'messplan ruht';
     return;
   }
   const PLAN = messPlanListe || MESS_PLAN;
   if (messPlanSchritt >= PLAN.length){
     el.className = 'messplan fertig';
-    el.innerHTML = '<h5>Alle Schritte durch</h5><p>Das Fazit unten faßt zusammen, was '
-        + 'dabei herausgekommen ist. '
-        + '<button class="knopf" onclick="protoExport()">Protokoll speichern</button> '
-        + '<button class="knopf" onclick="messPlanStarten()">Noch einmal von vorn</button></p>';
+    el.innerHTML = '<h5>' + window.t('mess.plan.fertig_titel') + '</h5><p>' + window.t('mess.plan.fertig_text')
+        + '<button class="knopf" onclick="protoExport()">' + window.t('mess.plan.speichern') + '</button> '
+        + '<button class="knopf" onclick="messPlanStarten()">' + window.t('mess.plan.vorn') + '</button></p>';
     const pr = $('messproto');
-    if (!pr || !pr.lastChild || pr.lastChild.textContent !== 'Alle Schritte durch.')
-      protoZeile('<b>Alle Schritte durch.</b>');
+    if (!pr || !pr.lastChild || pr.lastChild.textContent !== window.t('mess.plan.fertig_proto'))
+      protoZeile('<b>' + window.t('mess.plan.fertig_proto') + '</b>');
     return;
   }
   const s = PLAN[messPlanSchritt];
@@ -28769,16 +28576,16 @@ function messPlanZeigen(zustand, meldung){
   /* Der Kulissen-Selbsttest hat eine Abweichung gefunden: anhalten und
      fragen, bevor Ton in einen veraenderten Raum gemessen wird. */
   if (zustand === 'warnung'){
-    el.innerHTML = '<div class="planzeile">Schritt ' + nr + ' von ' + ges + ' — angehalten</div>'
+    el.innerHTML = '<div class="planzeile">' + window.t('mess.plan.schritt', { nr, ges }) + window.t('mess.plan.angehalten') + '</div>'
       + '<h5>' + s.titel + '</h5>'
       + '<p class="fwarn">' + (meldung || '') + '</p>';
     return;
   }
 
   if (zustand === 'laeuft'){
-    el.innerHTML = '<div class="planzeile">Schritt ' + nr + ' von ' + ges + '</div>'
+    el.innerHTML = '<div class="planzeile">' + window.t('mess.plan.schritt', { nr, ges }) + '</div>'
       + '<h5>' + s.titel + '</h5>'
-      + '<p class="planlaeuft">läuft — bitte jetzt still bleiben</p>';
+      + '<p class="planlaeuft">' + window.t('mess.plan.laeuft') + '</p>';
     return;
   }
   if (zustand === 'fertig'){
@@ -28787,28 +28594,27 @@ function messPlanZeigen(zustand, meldung){
        Gleiche Block-Nummer = eine Wiederholung ERSETZT ihn. */
     const mid = 'm' + messPlanSchritt;
     protoBlock(mid, '<h6>' + s.titel + '</h6>' + messBlockDia(s)
-      + '<p class="pbew">' + (meldung || 'gemessen') + '</p>'
+      + '<p class="pbew">' + (meldung || window.t('mess.lauf.gemessen')) + '</p>'
       + '<p class="pknoepfe planknoepfe">'
-      + '<button class="knopf planbereit" onclick="protoKnoepfeWeg(\'' + mid + '\');messPlanWeiterLos()">Paßt — weiter</button>'
-      + '<button class="knopf" onclick="protoKnoepfeWeg(\'' + mid + '\');messPlanWiederholen()">Nochmal — es gab eine Störung</button>'
-      + '<button class="knopf planweg" onclick="messPlanAbbrechen()">Ablauf beenden</button>'
+      + '<button class="knopf planbereit" onclick="protoKnoepfeWeg(\'' + mid + '\');messPlanWeiterLos()">' + window.t('mess.dok.passt') + '</button>'
+      + '<button class="knopf" onclick="protoKnoepfeWeg(\'' + mid + '\');messPlanWiederholen()">' + window.t('mess.plan.nochmal_stoerung') + '</button>'
+      + '<button class="knopf planweg" onclick="messPlanAbbrechen()">' + window.t('mess.plan.beenden') + '</button>'
       + '</p>');
-    el.innerHTML = '<div class="planzeile">Schritt ' + nr + ' von ' + ges + ' — gemessen</div>'
+    el.innerHTML = '<div class="planzeile">' + window.t('mess.plan.schritt', { nr, ges }) + window.t('mess.plan.gemessen') + '</div>'
       + '<h5>' + s.titel + '</h5>'
-      + '<p>' + (meldung || '') + ' <span class="fmatt">Weiter geht es unten am Protokollblock.</span></p>';
+      + '<p>' + (meldung || '') + ' <span class="fmatt">' + window.t('mess.plan.unten') + '</span></p>';
     return;
   }
   /* Der Normalfall: ansagen und warten. */
-  el.innerHTML = '<div class="planzeile">Schritt ' + nr + ' von ' + ges + '</div>'
+  el.innerHTML = '<div class="planzeile">' + window.t('mess.plan.schritt', { nr, ges }) + '</div>'
     + '<h5>' + s.titel + '</h5>'
     + '<p>' + s.text + '</p>'
-    + (s.ruhe ? '<p class="planruhe">Es muß still sein — jedes Geräusch im Raum steht '
-              + 'nachher in der Kurve. Wenn du soweit bist:</p>' : '')
+    + (s.ruhe ? '<p class="planruhe">' + window.t('mess.plan.ruhe') + '</p>' : '')
     + '<p class="planknoepfe">'
     + '<button class="knopf planbereit" onclick="messPlanAusfuehren()">'
-    + (s.ruhe ? 'Bereit — jetzt messen' : 'Los') + '</button>'
-    + '<button class="knopf planweg" onclick="messPlanUeberspringen()">Überspringen</button>'
-    + '<button class="knopf planweg" onclick="messPlanAbbrechen()">Ablauf beenden</button>'
+    + (s.ruhe ? window.t('mess.plan.bereit') : window.t('mess.plan.los')) + '</button>'
+    + '<button class="knopf planweg" onclick="messPlanUeberspringen()">' + window.t('mess.dok.ueberspringen') + '</button>'
+    + '<button class="knopf planweg" onclick="messPlanAbbrechen()">' + window.t('mess.plan.beenden') + '</button>'
     + '</p>';
 }
 
@@ -28828,7 +28634,7 @@ async function messPlanAusfuehren(){
      Der erste Schritt einer Reihe setzt den Bezug; jeder weitere
      vergleicht dagegen. "Trotzdem messen" ueberspringt genau einmal. */
   if (s.ruhe && !messKulisseUeberspringen){
-    const st = $('messstand'); if (st) st.textContent = 'Selbsttest: horche zwei Sekunden auf die Kulisse …';
+    const st = $('messstand'); if (st) st.textContent = window.t('mess.kul.horche');
     const K = await messKulisseCheck();
     /* Jede Stillemessung bekommt ihren Block: Diagramm (aktuelle
        Kulisse, Bezug gestrichelt dahinter), abweichende Baender rot
@@ -28848,32 +28654,32 @@ async function messPlanAusfuehren(){
         { kurve: K.kurve, farbe: '#3fd4e8' },
       ].filter(Boolean), marken);
       const schlecht = K.drift && K.drift.max > 6;
-      protoBlock(kid, '<h6>Stillemessung vor „' + s.titel + '"</h6>' + dia
+      protoBlock(kid, '<h6>' + window.t('mess.kul.vor', { titel: s.titel }) + '</h6>' + dia
         + '<p class="pbew">' + (!K.drift
-            ? 'Kulisse als Bezug der Reihe aufgenommen.'
-            : (schlecht ? '⚠ Verändert: ' : 'Unverändert: größte Abweichung ')
-              + String(K.drift.max).replace('.', ',') + ' dB um ' + K.drift.beiHz + ' Hz gegenüber dem Reihenbeginn.'
-              + (schlecht ? ' Neue Quelle im Raum — Lüfter, Gerät, Gespräch?' : '')) + '</p>'
+            ? window.t('mess.kul.bezug')
+            : (schlecht ? window.t('mess.kul.veraendert') : window.t('mess.kul.unveraendert'))
+              + window.t('mess.kul.drift', { db: dezimal(String(K.drift.max)), hz: K.drift.beiHz })
+              + (schlecht ? window.t('mess.kul.quelle') : '')) + '</p>'
         + (schlecht
           ? '<p class="pknoepfe planknoepfe">'
-            + '<button class="knopf" onclick="protoKnoepfeWeg(\'' + kid + '\');messKulisseUeberspringen = true; messPlanAusfuehren();">Trotzdem messen</button>'
-            + '<button class="knopf" onclick="protoKnoepfeWeg(\'' + kid + '\');messPlanAusfuehren()">Nochmal horchen</button>'
-            + '<button class="knopf planweg" onclick="messPlanAbbrechen()">Ablauf beenden</button></p>'
+            + '<button class="knopf" onclick="protoKnoepfeWeg(\'' + kid + '\');messKulisseUeberspringen = true; messPlanAusfuehren();">' + window.t('mess.dok.m.trotzdem') + '</button>'
+            + '<button class="knopf" onclick="protoKnoepfeWeg(\'' + kid + '\');messPlanAusfuehren()">' + window.t('mess.kul.nochmal') + '</button>'
+            + '<button class="knopf planweg" onclick="messPlanAbbrechen()">' + window.t('mess.plan.beenden') + '</button></p>'
           : ''));
       if (schlecht){
-        messPlanZeigen('warnung', 'Die Geräuschkulisse hat sich geändert — die Entscheidung steht unten im Protokoll.');
+        messPlanZeigen('warnung', window.t('mess.kul.geaendert'));
         return;
       }
     }
     if (st) st.textContent = !K.ok
-      ? 'Selbsttest übersprungen (' + K.fehler + ') — Messung startet …'
-      : (K.drift ? 'Kulisse unverändert (größte Abweichung ' + String(K.drift.max).replace('.', ',') + ' dB) — Messung startet …'
-                 : 'Kulisse als Bezug aufgenommen — Messung startet …');
+      ? window.t('mess.kul.uebersprungen', { was: K.fehler })
+      : (K.drift ? window.t('mess.kul.startet_unv', { db: dezimal(String(K.drift.max)) })
+                 : window.t('mess.kul.startet_bezug'));
   }
   messKulisseUeberspringen = false;
 
   /* Ein reiner Erklaerschritt: nichts messen, nur weiter. */
-  if (s.art === 'hinweis'){ protoZeile('<b>' + s.titel + '</b> — gelesen.'); messPlanWeiter(); return; }
+  if (s.art === 'hinweis'){ protoZeile('<b>' + s.titel + '</b>' + window.t('mess.plan.gelesen')); messPlanWeiter(); return; }
 
   /* (Die vlauf-Schritte des Verfahrensvergleichs liefen frueher hier;
      der Vergleich lebt seit dem 29.08.2026 im Messdokument.) */
@@ -28914,17 +28720,15 @@ async function messPlanAusfuehren(){
       const tiefst = (messLive && messLive.tiefst !== null) ? messLive.tiefst : null;
       const aufnahmen = messLive ? messLive.feinN : 0;
       const rest = messLive ? messLive.restrauschen : null;
-      const dauer = ((Date.now() - t0) / 1000).toFixed(1).replace('.', ',');
+      const dauer = dezimal(((Date.now() - t0) / 1000).toFixed(1));
       raumAus();
       messPlanZeigen('fertig', wert === null
-        ? 'Es kam nichts vom Mikrofon — stimmt die Auswahl oben?'
-        : 'Dein Raum liegt bei <b>' + wert.toFixed(0) + ' dB</b>'
-          + (tiefst !== null ? ', am ruhigsten war es bei ' + tiefst.toFixed(0) + ' dB' : '') + '. '
-          + (wert < -55 ? 'Das ist ruhig genug, um auch leise zu messen.'
-            : wert < -45 ? 'Brauchbar. Die Messung sollte etwas lauter laufen.'
-            : 'Ziemlich laut. Wenn eine Geräuschquelle abschaltbar ist, lohnt sich das jetzt — '
-              + 'ein Rechnerlüfter allein macht leicht 10 dB aus, und das ist ein Faktor zehn '
-              + 'in der Leistung. Abschalten, noch einmal messen, dann steht der Vergleich hier.')
+        ? window.t('mess.plan.r.nichts')
+        : window.t('mess.plan.r.wert', { db: wert.toFixed(0) })
+          + (tiefst !== null ? window.t('mess.plan.r.tiefst', { db: tiefst.toFixed(0) }) : '') + '. '
+          + (wert < -55 ? window.t('mess.plan.r.ruhig')
+            : wert < -45 ? window.t('mess.plan.r.brauchbar')
+            : window.t('mess.plan.r.laut'))
           + (() => {
               /* Hat sich seit der vorigen Messung etwas getan? Zehn
                  Dezibel sind ein Faktor zehn in der Leistung - das ist
@@ -28933,18 +28737,16 @@ async function messPlanAusfuehren(){
               const V = messErgebnis.raumVorher;
               if (!V || V.mittel === null || wert === null) return '';
               const d = V.mittel - wert;
-              if (Math.abs(d) < 0.5) return ' Gegenüber der Messung davor hat sich nichts geändert.';
+              if (Math.abs(d) < 0.5) return window.t('mess.plan.r.gleich');
               return d > 0
-                ? ' Das sind <b>' + d.toFixed(0) + ' dB weniger</b> als bei der Messung davor — '
-                  + 'im Diagramm liegt die alte Kurve gelb darunter, dort siehst du, welche '
-                  + 'Bänder ruhiger geworden sind.'
-                : ' Das sind ' + Math.abs(d).toFixed(0) + ' dB <b>mehr</b> als bei der Messung davor.';
+                ? window.t('mess.plan.r.weniger', { db: d.toFixed(0) })
+                : window.t('mess.plan.r.mehr', { db: Math.abs(d).toFixed(0) });
             })()
-          + '<br><br>Aus <b>' + aufnahmen + ' Momentaufnahmen</b> in ' + dauer + ' s gemittelt'
+          + window.t('mess.plan.r.aufnahmen', { n: aufnahmen, s: dauer })
           + (rest !== null && rest !== undefined
-              ? '; es zappelt noch um ' + rest.toFixed(2).replace('.', ',') + ' dB'
-                + (rest < 0.4 ? ' — das Bild steht.'
-                              : '. Ganz ruhig wurde es nicht: dann schwankt der Raum selbst.')
+              ? window.t('mess.plan.r.zappelt', { db: dezimal(rest.toFixed(2)) })
+                + (rest < 0.4 ? window.t('mess.plan.r.steht')
+                              : window.t('mess.plan.r.schwankt'))
               : '.'));
       return;
     }
@@ -28953,10 +28755,10 @@ async function messPlanAusfuehren(){
       await messLauf(true);
       const ab = messErgebnis.abstandN;
       messPlanZeigen('fertig', !messErgebnis.neutral
-        ? 'Es kam nichts an. Lautstärke prüfen, Ausgabegerät prüfen — dann nochmal.'
-        : 'Bezugsmessung steht, Störabstand <b>' + Math.round(ab) + ' dB</b>'
-          + (ab < 20 ? ' — das ist zu wenig. Lauter stellen und wiederholen.'
-                     : ', das trägt.'));
+        ? window.t('mess.plan.n.nichts')
+        : window.t('mess.plan.n.steht', { db: Math.round(ab) })
+          + (ab < 20 ? window.t('mess.plan.n.wenig')
+                     : window.t('mess.plan.n.traegt')));
       return;
     }
     if (s.art === 'vergleich'){
@@ -28965,21 +28767,20 @@ async function messPlanAusfuehren(){
          dieselbe Bezugsmessung - der Unterschied ist dann rein das
          Signal. */
       if (!messErgebnis.neutral){
-        messPlanZeigen('fertig', 'Es fehlt die Bezugsmessung — geh einen Schritt zurück.');
+        messPlanZeigen('fertig', window.t('mess.plan.v.fehlt'));
         return;
       }
       eqGains = [0,0,0,0,0,0,0,0]; eqAnwenden();
       await messLauf(false);
       const l = (messErgebnis.laeufe || []).slice(-1)[0];
-      if (l) l.name = 'Sweep statt Rauschen';
-      messPlanZeigen('fertig', !l ? 'Es kam nichts an — bitte wiederholen.'
+      if (l) l.name = window.t('mess.plan.v.name');
+      messPlanZeigen('fertig', !l ? window.t('mess.plan.nichts_wdh')
         : messVergleichBefund(l));
       return;
     }
     if (s.art === 'lauf'){
       if (!messErgebnis.neutral){
-        messPlanZeigen('fertig', 'Es fehlt die Bezugsmessung — ohne sie ist eine Einstellung '
-          + 'mit nichts zu vergleichen. Geh einen Schritt zurück.');
+        messPlanZeigen('fertig', window.t('mess.plan.l.fehlt'));
         return;
       }
       eqGains = s.gains(); eqAnwenden();
@@ -28987,22 +28788,21 @@ async function messPlanAusfuehren(){
       await messLauf(false);
       const l = (messErgebnis.laeufe || []).slice(-1)[0];
       messPlanZeigen('fertig', !l
-        ? 'Es kam nichts an — bitte wiederholen.'
-        : 'Gemessen. Störabstand ' + Math.round(l.abstand) + ' dB.'
-          + (l.soll ? ' Das Ergebnis steht als <b style="color:' + l.farbe + '">' + l.name
-                    + '</b> in den Diagrammen.' : ''));
+        ? window.t('mess.plan.nichts_wdh')
+        : window.t('mess.plan.l.gemessen', { db: Math.round(l.abstand) })
+          + (l.soll ? window.t('mess.plan.l.ergebnis', { farbe: l.farbe, name: l.name }) : ''));
       return;
     }
     if (s.art === 'pegel'){
       await pegelReihe();
       const p = messErgebnis.pegel;
       messPlanZeigen('fertig', !p || p.length < 2
-        ? 'Die Reihe kam nicht durch — bitte wiederholen.'
-        : 'Fünf Stufen gemessen. Das Ergebnis steht unten im Diagramm und im Fazit.');
+        ? window.t('mess.plan.p.nicht')
+        : window.t('mess.plan.p.fertig'));
       return;
     }
   } catch (e){
-    messPlanZeigen('fertig', 'Es ging etwas schief: ' + (e && e.message ? e.message : e));
+    messPlanZeigen('fertig', window.t('mess.plan.schief', { was: (e && e.message ? e.message : e) }));
   } finally {
     /* Nach jedem Schritt den Equalizer zurueckstellen waere falsch -
        die naechste Messung setzt ihn ohnehin selbst. */
@@ -29045,25 +28845,25 @@ function messWegweiser(){
     ? messLive.mittel : null;
 
   const schritte = [
-    { text: 'Mikrofon wählen',
+    { text: window.t('mess.weg.mikro'),
       fertig: !!mikroTaugt,
       note: mikroName ? mikroName.replace(/\s*\([^)]*\)\s*$/, '') : null,
-      warnung: mikroName && !mikroTaugt ? 'virtuell — hört keinen Raum' : null },
-    { text: 'Raum abhören',
+      warnung: mikroName && !mikroTaugt ? window.t('mess.weg.virtuell') : null },
+    { text: window.t('mess.abhoeren'),
       fertig: raumWert !== null || !!neu,
       note: raumWert !== null ? raumWert.toFixed(0) + ' dB' : null,
       freiwillig: true },
-    { text: '1 · Neutral messen',
+    { text: window.t('mess.weg.neutral'),
       fertig: !!neu,
       note: neu && messErgebnis.abstandN !== undefined
-        ? 'Störabstand ' + Math.round(messErgebnis.abstandN) + ' dB' : null },
-    { text: eingestellt || laeufe.length ? '2 · Mit Einstellung messen'
-                                         : 'Etwas am Equalizer einstellen',
+        ? window.t('mess.fazit.abstand', { db: Math.round(messErgebnis.abstandN) }) : null },
+    { text: eingestellt || laeufe.length ? window.t('mess.weg.mit')
+                                         : window.t('mess.weg.einstellen'),
       fertig: laeufe.length > 0,
-      note: laeufe.length ? laeufe.length + (laeufe.length === 1 ? ' Durchgang' : ' Durchgänge') : null },
-    { text: 'Lautstärke durchfahren',
+      note: laeufe.length ? window.t('mess.weg.durchgaenge', { n: laeufe.length }) : null },
+    { text: window.t('mess.rampe'),
       fertig: !!(pegel && pegel.length >= 2),
-      note: pegel && pegel.length >= 2 ? pegel.length + ' Stufen' : null,
+      note: pegel && pegel.length >= 2 ? window.t('mess.weg.stufen', { n: pegel.length }) : null,
       freiwillig: true },
   ];
 
@@ -29091,15 +28891,15 @@ function messLegende(){
   const laeufe = Array.isArray(messErgebnis.laeufe) ? messErgebnis.laeufe : [];
   const teile = [];
   if (messErgebnis.neutral)
-    teile.push('<span><i style="background:#8b8b90"></i>neutral' 
+    teile.push('<span><i style="background:#8b8b90"></i>' + window.t('mess.leg.neutral')
       + (messErgebnis.neutralLaut !== undefined ? ' (' + messErgebnis.neutralLaut + ' %)' : '') + '</span>');
   for (const l of laeufe)
     teile.push('<span><i style="background:' + l.farbe + '"></i>' + l.name + '</span>');
   if (laeufe.length === 1){
-    teile.push('<span><i class="bal" style="background:#f9143c"></i>Tonstudio hebt an</span>');
-    teile.push('<span><i class="bal" style="background:#f9b414"></i>Tonstudio nimmt weg</span>');
+    teile.push('<span><i class="bal" style="background:#f9143c"></i>' + window.t('mess.leg.hebt') + '</span>');
+    teile.push('<span><i class="bal" style="background:#f9b414"></i>' + window.t('mess.leg.nimmt') + '</span>');
   }
-  if (!teile.length) teile.push('<span class="fmatt">noch nichts gemessen</span>');
+  if (!teile.length) teile.push('<span class="fmatt">' + window.t('mess.leg.nichts') + '</span>');
   el.innerHTML = teile.join('');
   messWegweiser();
 }
@@ -30462,6 +30262,25 @@ function spracheNachziehen(){
   if ($('buehne') && $('buehne').classList.contains('auf') && bText === 'analyzer' && typeof promptsFuellen === 'function' && bSong)
     promptsFuellen();
   fassungStandNachziehen();
+  /* Einmessen und Messdokument schreiben Legende, Wegweiser, Fazit und
+     Kopf selbst - sie ziehen sich nach (17.10.2026). Laufende Ansagen
+     folgen beim naechsten Schritt von allein. */
+  if (typeof messLegende === 'function' && $('messleg')){
+    messLegende();
+    if (typeof messFazitZeigen === 'function') messFazitZeigen();
+    if (typeof messPlanSchritt !== 'undefined' && messPlanSchritt < 0 && typeof messPlanZeigen === 'function') messPlanZeigen();
+  }
+  if (typeof dok !== 'undefined' && dok && $('messdok')){
+    const l = $('messdok').querySelector('.dokleiste');
+    if (l){
+      const b = l.querySelector('b'), k = l.querySelectorAll('button');
+      if (b) b.textContent = t('mess.dok.kopf');
+      if (k[0]) k[0].textContent = t('mess.dok.neu');
+      if (k[1]) k[1].textContent = t('mess.dok.verlassen');
+    }
+    if (typeof dokKopfZeigen === 'function') dokKopfZeigen();
+    if (typeof dokInhaltZeigen === 'function') dokInhaltZeigen();
+  }
   if ($('morgenlzcode')) $('morgenlzcode').textContent = morgenLzAdresse();
   if ($('morgen') && $('morgen').classList.contains('auf')) {
     if ($('morgenliste') && $('morgenliste').childElementCount) morgenListeBauen();
