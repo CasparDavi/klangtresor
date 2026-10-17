@@ -160,6 +160,19 @@ Auszeichnungssprache des Boten.
     17.10.2026: *„Immer, aber wirklich immer eine Lösung anbieten; gibt
     es keine, müssen wir uns Gedanken machen, wie wir eine schaffen
     können."*
+25b. **Für interessierte Laien, nicht für Fachleute.** Texte sollen
+    verstehen lassen, was passiert und warum — das Hörerlebnis wird
+    besser durch Intuition und Verständnis der Gesetzmäßigkeiten, nicht
+    durch wildes Probieren. Geprüft wird, ob die Sache stimmt, nicht, ob
+    ein Tontechniker es so nennen würde. Keine Kürzel und Normbegriffe
+    nachrüsten; ein Fachwort steht höchstens in Klammern hinter dem
+    deutschen. Prüffrage für jeden Text: Versteht ein Laie danach
+    besser, was passiert und was er tun kann? Wenn nicht, bleibt er.
+    Caspar_D, 17.10.2026: *„Genau diese Biotope von Fachsprache
+    zerstören Kommunikation zwischen Profis und Laien oder machen sie
+    unmöglich – das muss und das darf nicht sein. … oft ist es nicht
+    mal schwer. Das ist so ein Gatekeeper-Ding, und nichts hasse ich
+    mehr."*
 
 ### Taufnotizen
 
