@@ -21305,7 +21305,13 @@ async function morgenListeBauen(){
    einem anderen Port oder Rechner laufen laesst, bekommt seine eigene. */
 function morgenLzAdresse(){
   return "javascript:(function(){var s=document.createElement('script');s.src='"
-       + location.origin + "/browser/morgens.js?'+Date.now();document.body.appendChild(s);})()";
+       + location.origin + "/browser/morgens.js?sprache=" + morgenLzSprache()
+       + "&'+Date.now();document.body.appendChild(s);})()";
+}
+/* Die Sprache der Oberflaeche reist im Lesezeichen mit: morgens.js laeuft auf
+   suno.com und kennt ui-sprache.js nicht. Gilt fuer neu kopierte Lesezeichen. */
+function morgenLzSprache(){
+  return (typeof window.sprache === 'function' && window.sprache() === 'en') ? 'en' : 'de';
 }
 async function morgenLzKopieren(k){
   try { await navigator.clipboard.writeText(morgenLzAdresse());
@@ -30526,6 +30532,7 @@ function spracheNachziehen(){
   if ($('buehne') && $('buehne').classList.contains('auf') && bText === 'analyzer' && typeof promptsFuellen === 'function' && bSong)
     promptsFuellen();
   fassungStandNachziehen();
+  if ($('morgenlzcode')) $('morgenlzcode').textContent = morgenLzAdresse();
   if ($('morgen') && $('morgen').classList.contains('auf')) {
     if ($('morgenliste') && $('morgenliste').childElementCount) morgenListeBauen();
     if ($('morgenauswahl') && $('morgenauswahl').style.display !== 'none') morgenAuswahlBauen();
