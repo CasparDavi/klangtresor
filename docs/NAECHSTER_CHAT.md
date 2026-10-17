@@ -9310,3 +9310,15 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
 - Testbild-Unterschrift zweisprachig („Test card / only for checking the effects“); Altfehler kbPunkteSatz (T statt Z) behoben.
 - Browserprobe im Sandkasten: Studio DE/EN, Presets, Effektkette ohne deutsche Reste; bekannt: die Statuszeile wechselt die Sprache erst
   mit der nächsten Meldung. Jörg: „ein Englisch mit leichten Fehlern ist besser als gar kein Englisch“.
+
+## 104. 17.10.2026: 1.0.86 – Medien-Dialog, Lesezeichen und weitere Teile auf Englisch
+- Medien-Dialog (capAuf) zweisprachig (cap.*); ein lokales `t` verdeckte dort window.t (umbenannt).
+- Lesezeichen „KlangTresor morgens“ (browser/morgens.js) zweisprachig: neue Lesezeichen tragen `?sprache=de|en` (die Adresse im Panel
+  wechselt mit der Sprache), alte folgen der Browsersprache. Server-Texte in den Ergebniszeilen bleiben deutsch (server.js/aufbereiten.js).
+  Einige Fehlermeldungen haben nur im Englischen einen Ausweg bekommen – Deutsch nachziehen (Regel 25a), mit Jörg.
+- Weitere Teile zweisprachig (313 Schlüssel): Import-Dialog (ton.*), Klangkette (kette.*), h-Index (hirsch.info.*), Export (export.*),
+  Tonstudio-Details, Text-/Whisper-Vergleich (zvgl.*, lyrik.*), Klangraum (karte.*), Detail/Bühne, Profil-Alias, Alben, Anschluss-Lampe,
+  Latenz, Kuriositäten. Altfehler: Spitzenlinie im Kompressor verglich mit dem deutschen Literal 'Spitze heute' (EN nie gezeichnet).
+- NOCH DEUTSCH: Einmessen (live, Plan, Ergebnisse) und das Messdokument (~560 Stellen, scratchpad/deutsch-reste.md) – eigener Block.
+- Regel-25a-Liste für diese Teile: scratchpad/reste-25a.md (36 Vorschläge, nicht eingebaut; drei brauchen Bauarbeit: Bild-im-Bild
+  scheitert stumm, Latenz-Hinweis nur in der Konsole, Kuriositäten raten bei zu wenig Daten zum Neustart).
