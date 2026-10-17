@@ -4236,6 +4236,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <div class="pzeile pwahl"><span class="ptitel" data-i18n="schaum.gegliedert">Gegliedert nach</span><span class="pinhalt" id="schaumgliederung"></span></div>
         <div class="pzeile pwahl bilderzeile" hidden><span class="ptitel" data-i18n="schaum.skala" data-i18n-html>Skalen&shy;transformation</span><span class="pinhalt" id="bildertrafo"></span></div>
         <div class="pzeile pwahl bilderzeile" hidden><span class="ptitel" data-i18n="schaum.haengung">Hängung</span><span class="pinhalt" id="bilderhaengung"></span></div>
+        <!-- Nur bei der Hängung Achse (Jörg 17.10.2026: „wir nehmen beide Hängungen mit einer Umschaltpille"): aus = Bildmitten zur Mittellinie, an = eine Fluchtlinie -->
+        <div class="pzeile" id="bilderfluchtzeile" hidden><span class="ptitel"></span><span class="pinhalt">
+          <button type="button" class="pille" id="bilderflucht" onclick="bilderschauWahl('flucht', !bilderWahl.flucht)" title="Eine waagerechte Fuge: Die Bilder darüber stehen mit der Unterkante auf ihr, die darunter hängen mit der Oberkante an ihr." data-i18n-title="schaum.flucht.titel" data-i18n="schaum.flucht">Fluchtlinie</button></span></div>
         <div class="pzeile bilderzeile" hidden><span class="ptitel" data-i18n="schaum.zeigen">Zeigen</span><span class="pinhalt">
           <button type="button" class="pille" id="bilderrahmen" onclick="bilderschauWahl('rahmen', !bilderWahl.rahmen)" title="Ein schmaler Rahmen je Bild in der Farbe seiner Gruppe aus dem Klangraum – voll nur unter der Maus und am laufenden Titel" data-i18n-title="schaum.rahmen.titel" data-i18n="schaum.rahmen" data-i18n-title="schaum.rahmen.titel">Rahmen</button>
           <button type="button" class="pille" id="bilderkopf" onclick="bilderschauWahl('kopf', !bilderWahl.kopf)" title="Der Name jeder Gruppe über ihrem Areal" data-i18n-title="schaum.ueberschriften.titel" data-i18n="schaum.ueberschriften" data-i18n-title="schaum.ueberschriften.titel">Überschriften</button>
@@ -8947,7 +8950,7 @@ function groupieZeigtWaehlen(v, fertig){
    Ueberschriften gibt es, aber aus („mach mal gar keine Beschriftungen rein, die stören … so kann es rein, genauso
    auch der Default“). Klick spielt den Titel, der laufende hat einen hellen Rahmen. */
 let schaumArt = (() => { try { return localStorage.getItem('mysuno-schaum-art') === 'bilder' ? 'bilder' : 'klang'; } catch (e) { return 'klang'; } })();
-const BILDER_VORGABE = { trafo: 'wurzel', haengung: 'salon', rahmen: true, kopf: false, unter: false };
+const BILDER_VORGABE = { trafo: 'wurzel', haengung: 'salon', rahmen: true, kopf: false, unter: false, flucht: false };
 /* format, lage, grund gehörten zum eigenen Plakat-Export bis 1.0.73 (bilderPlakat, siehe unten) - gemerkte Reste fallen beim Lesen weg */
 let bilderWahl = (() => { try { const w = { ...BILDER_VORGABE, ...JSON.parse(localStorage.getItem('mysuno-bilderschau') || '{}') }; delete w.format; delete w.lage; delete w.grund; return w; }
   catch (e) { return { ...BILDER_VORGABE }; } })();
@@ -8986,8 +8989,9 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   wahlSetzen($('bildertrafo'), 'bildertrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), t.id, { titel: window.t('bilder.wahl.trafo') });
   const h = BILDER_HAENGUNGEN.find(x => x.id === bilderWahl.haengung) || BILDER_HAENGUNGEN[0];
   wahlSetzen($('bilderhaengung'), 'bilderhaengung', BILDER_HAENGUNGEN, h.id, { titel: window.t('bilder.wahl.haengung') });
-  for (const [id, k] of [['bilderrahmen', 'rahmen'], ['bilderkopf', 'kopf'], ['bilderunter', 'unter']]) $(id).classList.toggle('an', !!bilderWahl[k]);
-  schaumKurzSetzen([m.name, gl.name.replace(/^(Klang|Sound): /, ''), t.name, h.name,
+  for (const [id, k] of [['bilderrahmen', 'rahmen'], ['bilderkopf', 'kopf'], ['bilderunter', 'unter'], ['bilderflucht', 'flucht']]) $(id).classList.toggle('an', !!bilderWahl[k]);
+  const flucht = h.id === 'achse' && !!bilderWahl.flucht;
+  schaumKurzSetzen([m.name, gl.name.replace(/^(Klang|Sound): /, ''), t.name, h.name, flucht ? window.t('schaum.flucht') : null,
     ...[['rahmen', 'schaum.rahmen'], ['kopf', 'schaum.ueberschriften'], ['unter', 'schaum.unterschriften']].filter(([k]) => bilderWahl[k]).map(([, n]) => window.t(n)),
     auswahl.n < auswahl.M ? window.t('zahl.von', { n: tZahl(auswahl.n), m: tZahl(auswahl.M) }) : null]);
   $('schaumwas').textContent = (m.was || '') + ' ' + t.kurz + '.';
@@ -8995,7 +8999,7 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   const je = schaumZoom ? (sprache() === 'en' ? gl.unten.replace(/s$/, '').toLowerCase() : gl.unten.replace(/e$/, '').replace(/s$/, ''))
     : (sprache() === 'en' ? gl.oben.replace(/s$/, '').toLowerCase() : gl.oben.replace(/n$/, ''));
   fuss.textContent = window.t('bilder.fuss', { auswahl: schaumZoom ? window.t('bilder.fuss.zoom', { n: zeilen.length, gruppe: gruppenAnzeige(schaumZoom), zusatz: auswahl.zusatz }) : auswahl.text, trafo: t.kurz, mass: m.name, je })
-    + (window.t('bilder.fuss.haengung.' + bilderWahl.haengung) || '')
+    + (window.t('bilder.fuss.haengung.' + (flucht ? 'flucht' : bilderWahl.haengung)) || '')
     + (ohneWert.length ? window.t('schaum.fuss.ohne', { n: ohneWert.length, mass: m.name }) : '')
     + (m.ernte && stamm ? window.t('schaum.fuss.zahlen', { datum: sprache() === 'en' ? new Date(stamm.slice(0, 10) + 'T00:00:00').toLocaleDateString(localeTag()) : `${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}` }) : '')
     + window.t('bilder.fuss.start', { verf: karteVerf === 'umap' ? 'UMAP' : 'NMDS' });
@@ -9007,7 +9011,7 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   const farbe = (n) => (schaumZoom ? farbeVon(schaumZoom) : farbeVon(n)) || '#8a8d94';
   const urls = new Map(zeilen.map(z => [z.id, artworkBild(z.id)]));
   /* die Auswahl selbst im Schluessel (die IDs), nicht nur Zahl und Summe: ein anderer Filter kann beides zufaellig gleich lassen */
-  const schluessel = [m.id, t.id, gl.id, schaumZoom || '', W, H, bilderWahl.haengung, bilderWahl.rahmen, bilderWahl.kopf, bilderWahl.unter, karteVerf,
+  const schluessel = [m.id, t.id, gl.id, schaumZoom || '', W, H, bilderWahl.haengung, flucht, bilderWahl.rahmen, bilderWahl.kopf, bilderWahl.unter, karteVerf,
     zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length, zeilen.map(z => z.id).join(','),
     ...(sprache() === 'en' ? ['en'] : [])].join('|');   /* englische Schilder sind anders breit - eigene Wand */
   const fertig = bilderFertig.get(schluessel);
@@ -9035,14 +9039,14 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   stand.textContent = window.t('bilder.aufhaengen');                     /* Caspar_Ds Wortlaut, 11.10.2026 */
   const t0 = performance.now();
   const daten = { gruppen, seeds: Object.keys(seeds).length === gruppen.length ? seeds : null,
-    opt: { haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen, kopf: bilderWahl.kopf ? 22 : 0, schild: bilderWahl.unter ? 15 : 0 }, kopfBreite };
+    opt: { haengung: bilderWahl.haengung, flucht, rahmen: !!bilderWahl.rahmen, kopf: bilderWahl.kopf ? 22 : 0, schild: bilderWahl.unter ? 15 : 0 }, kopfBreite };
   const res = await bilderImWorker({ ...daten, W, H }, (w) => { meine.worker = w; });
   if (bilderArbeit === meine) bilderArbeit = null;
   if (res.fehler || !res.res){ console.log('Bilderschau:', res.fehler || 'passt nicht'); if (bilderArbeit === null) stand.textContent = window.t('bilder.passt_nicht'); return; }
   res.res.ms = Math.round(performance.now() - t0);
   /* fuers Plakat (plakat.js): dort wird im Format der Seite neu gehaengt; wahl sagt, zu welchen Einstellungen diese Wand gehoert */
   res.res.daten = { ...daten, zeilen: zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })),
-    wahl: { mass: m.id, trafo: t.id, gliederung: gl.id, zoom: schaumZoom || '', haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen,
+    wahl: { mass: m.id, trafo: t.id, gliederung: gl.id, zoom: schaumZoom || '', haengung: bilderWahl.haengung, flucht, rahmen: !!bilderWahl.rahmen,
             kopf: !!bilderWahl.kopf, unter: !!bilderWahl.unter, verf: karteVerf, filter: titelFilterSchluessel() } };
   bilderFertig.set(schluessel, res.res);
   if (register === 'karte' && raumJetzt === 'schaum' && schaumArt === 'bilder') schaumZeichnen();
@@ -9315,7 +9319,8 @@ async function schaumZeichnen(){
   /* Klangschaum oder Bilderschau waehlt seit dem 15.10.2026 die Ansichtswahl oben (zwei eigene Pillen); bis dahin ein
      Dropdown in der Ueberschrift (Caspar_D, 11.10.2026: „Träume sind Schäume … als Dropdown bei den Schäumen") */
   { const bilder = !groupies && schaumArt === 'bilder';
-    $('schaumrechts').querySelectorAll('.bilderzeile').forEach(z => z.hidden = !bilder); $('schaumfarbezeile').hidden = bilder; }
+    $('schaumrechts').querySelectorAll('.bilderzeile').forEach(z => z.hidden = !bilder); $('schaumfarbezeile').hidden = bilder;
+    $('bilderfluchtzeile').hidden = !bilder || bilderWahl.haengung !== 'achse'; }
   { const vb = $('schaumvoll'); if (vb && !vb.onclick) vb.onclick = karteVollbild; }
   karteLaeuftSetzen();
   $('groupiefarbenzeile').hidden = !groupies;
