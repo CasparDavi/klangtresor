@@ -4590,9 +4590,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
-<script src="/ui-sprache.js?v=6"></script>
+<script src="/ui-sprache.js?v=7"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
-<script src="/tbs-modul.js"></script>
+<script src="/tbs-modul.js?v=1.0.85"></script>
 <script>
 // =============================================================
 //  Zustand
@@ -30527,6 +30527,9 @@ function spracheNachziehen(){
   if (typeof pzahlSetzen === 'function' && typeof aktuellId !== 'undefined' && aktuellId) pzahlSetzen(song(aktuellId));
   if (window.SunoAnalyzer && typeof window.SunoAnalyzer.spracheNachziehen === 'function')
     window.SunoAnalyzer.spracheNachziehen();
+  /* das Effektclip-Studio baut seine Karten, Zeilen und Meldungen selbst - es zieht sich nach (17.10.2026) */
+  if (typeof EffektclipStudio === 'object' && EffektclipStudio && typeof EffektclipStudio.spracheNachziehen === 'function')
+    EffektclipStudio.spracheNachziehen();
   if ($('buehne') && $('buehne').classList.contains('auf') && bText === 'analyzer' && typeof promptsFuellen === 'function' && bSong)
     promptsFuellen();
   fassungStandNachziehen();

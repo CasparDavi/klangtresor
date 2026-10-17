@@ -16,7 +16,7 @@
    Dazu drei Verabredungen im DOM (kastenVon sucht .bild im Kasten, auf der Buehne .bart mit img.motiv),
    sieben CSS-Variablen der Palette (--bg --rand --schwach --flaeche2 --text --flaeche --akzent), die Wege
    /api/... und /media/... (alle wurzelbezogen) und die Schriften unter /fonts.
-   Das Modul GIBT dem Haus die Rueckgabe { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt } und
+   Das Modul GIBT dem Haus die Rueckgabe { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt, spracheNachziehen } und
    SENDET am Kasten das Ereignis "effektclip" (detail.stand: da | weg). Das Haus liest und schreibt das
    Rezept eigen-effekt.json (Fassung 7); der Server baut Zehnsekuender und Vollvideo.
    Das Haus ruft das Modul nur ueber Waechter (typeof EffektclipStudio === 'object'), damit ein fehlendes
@@ -49,7 +49,36 @@
 var EffektclipStudio = (() => {
   let exportLaeuft=false, root=null, offen=false, rafId=0, DATA=null, stapelBox=null, lein=null, g=null, t0=0, songId=null, nachSichern=null;
   const $ = s => root ? root.querySelector(s) : null;
-const kf = v => String(v).replace('.',',');
+/* SPRACHE (17.10.2026): das Studio spricht Deutsch und Englisch wie das Haus - die Saetze stehen als Paare unter
+   dem Praefix ec. in web/ui-sprache.js. sag(k, deutsch, werte): der deutsche Satz steht HIER im Code und ist fuer DE
+   die Wahrheit, darum bleibt das Studio ohne ui-sprache.js (Labor, Pruefstand) deutsch und byte-gleich. Englisch
+   kommt nur, wenn ui-sprache.js geladen ist, die Sprache en ist UND unter dem Schluessel noch derselbe deutsche Satz
+   steht - aendert jemand hier den Satz und vergisst das Paar, bleibt es deutsch statt veraltet englisch.
+   Platzhalter {name} und Mehrzahl "eins|viele" mit n: dieselben Regeln wie t() in ui-sprache.js.
+   sagNach(deutsch): dasselbe ueber den deutschen Wortlaut statt einen Schluessel - fuer Namen, die zugleich Daten
+   sind (Effektnamen und Reglerzeilen der Registry, Paletten, Presets, Gruppen): sie bleiben im Rezept deutsch, nur
+   die Anzeige wechselt. */
+const istEn = () => typeof window!=='undefined' && typeof window.sprache==='function' && window.sprache()==='en';
+function satzFuellen(satz,v){
+  if(!v) return satz;
+  if(satz.indexOf('|')>=0 && v.n!=null){ const teile=satz.split('|'), n=Number(v.n);
+    satz = teile.length===3 ? (n===0?teile[0]:n===1?teile[1]:teile[2]) : (n===1?teile[0]:teile[1]); }
+  return satz.replace(/\{(\w+)\}/g,(_,k)=>v[k]!=null?String(v[k]):'');
+}
+function sag(k,de,v){
+  if(istEn()){ const W=window.WOERTER; if(W&&W.de&&W.en&&W.de[k]===de&&W.en[k]!=null) return satzFuellen(W.en[k],v); }
+  return satzFuellen(de,v);
+}
+let SPRACH_INDEX=null;   /* deutscher Wortlaut -> Schluessel, nur ec.*; einmal gebaut, WOERTER aendert sich nicht mehr */
+function sagNach(de,v,vorrang){   /* vorrang: ein Schluessel, der vor dem Wortlaut gilt, wenn derselbe deutsche Text zwei Dinge meint (Schatten: Effekt / Regler) */
+  if(!istEn()||typeof de!=='string') return v?satzFuellen(de,v):de;
+  const W=window.WOERTER; if(!W||!W.de||!W.en) return v?satzFuellen(de,v):de;
+  if(vorrang&&W.de[vorrang]===de&&W.en[vorrang]!=null) return satzFuellen(W.en[vorrang],v);
+  if(!SPRACH_INDEX){ SPRACH_INDEX=new Map(); for(const k of Object.keys(W.de)) if(k.slice(0,3)==='ec.'&&!SPRACH_INDEX.has(W.de[k])) SPRACH_INDEX.set(W.de[k],k); }
+  const k=SPRACH_INDEX.get(de); return satzFuellen(k&&W.en[k]!=null?W.en[k]:de,v);
+}
+/* Dezimalkomma nur im Deutschen; im Englischen bleibt der Punkt. */
+const kf = v => istEn() ? String(v) : String(v).replace('.',',');
 /* REGEL 9a: EIN REGLER WIRKT GLEICHMAESSIG UEBER SEINEN GANZEN WEG (23.09.2026). Manche Groessen
    wirken nicht linear - die Dicke eines Lichtschachts macht mit ihren ersten 3 % Reglerweg ein
    Viertel der ganzen Lichtwirkung. Ein Parameter kann darum eine `skala` tragen: Stuetzstellen
@@ -104,7 +133,7 @@ const VMODE = Object.fromEntries(VERR.map(v=>[v[0],v[2]]));
    Wer eine Rechenart hier eintraegt, muss sie gemessen haben: labor-Weg in der Notiz dort. */
 const VERR_GRUPPE = new Set(['source-over','lighter','screen','exclusion','multiply']);
 function verrOptionen(cur){ const gr={}, reihe=[]; VERR.forEach(([v,l,,g])=>{ const k=g||''; if(!gr[k]){ gr[k]=[]; reihe.push(k); } gr[k].push([v,l]); });
-  return reihe.map(k=>(k?'<optgroup label="'+k+'">':'')+gr[k].map(([v,l])=>'<option value="'+v+'"'+(cur===v?' selected':'')+'>'+l+'</option>').join('')+(k?'</optgroup>':'')).join(''); }
+  return reihe.map(k=>(k?'<optgroup label="'+sagNach(k)+'">':'')+gr[k].map(([v,l])=>'<option value="'+v+'"'+(cur===v?' selected':'')+'>'+sagNach(l)+'</option>').join('')+(k?'</optgroup>':'')).join(''); }
 
 /* Monochrome, einfärbbare Icons (currentColor); je Effekt eine Kennfarbe */
 /* Symbole der Effektgruppen fuer die Koepfe der Auswahlliste (Caspar_D, 11.09.2026: "das geht so nicht,
@@ -300,7 +329,7 @@ const EFFEKTE = {
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, lmNurSchub:true, besch:'Teilchen ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schießt sie hinaus und läuft aus wie Luftwiderstand. Anzahl, Größe, Tempo, Wind und Farbe frei. Die Farbquelle sagt, WOHER die Farben kommen: das Akzentpaar des Titelbildes, seine gemessenen Haupttöne, ein fester bunter Satz, eine einzige Farbe (schwarzer Schnee) oder ein eigenes Paar. Was die gewählte Art ausmacht, steht unter dem Auswahlfeld.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},/* HIER STAND „HORIZONT (0 OBEN)" (bis 21.09.2026). Er schnitt alle Teilchen oberhalb einer
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?sag('ec.partikel.einfarbig','Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.'):FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:sag('ec.partikel.flattern_grau','Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.'),notiz:e=>e.art==='schmetterling'?sag('ec.partikel.flattern_notiz','Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.'):null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},/* HIER STAND „HORIZONT (0 OBEN)" (bis 21.09.2026). Er schnitt alle Teilchen oberhalb einer
          Bildzeile weg - der Behelf aus der Zeit, als es keine Tiefenkarte gab und „hinten" nur
          „weiter oben im Bild" heissen konnte. Die Zonen tun dasselbe raeumlich und richtig: Wer
          Schnee nur vorn will, kreuzt „ganz vorn" an, und die Grenze liegt dort, wo das Bild
@@ -339,19 +368,19 @@ const EFFEKTE = {
        dasselbe malen; dahinter der alte Stapel als Rueckfall. */
   titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text über dem Bild</b> — der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest — oder er bekommt einen <b>Auftritt</b>: nur im ganzen Titel kommt er über einen Schlag, steht und geht einen Schlag vor der ersten Gesangszeile wieder; im Zehnsekünder steht er. Am Ende der Kette sitzt er am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild; steht ein Szenen-Effekt nach ihm, liegt er darunter. Ein zu langer Titel bricht um oder weicht in der Größe, damit er ins Bild passt. Kontur und Schatten machen ihn über bewegtem Bild lesbar; die Verrechnung ist frei. Die <b>Struktur</b> legt ein festes Licht über die Farbe — Metall, Stein, Papier oder Schraffur; Rampe, Korn und Lichtrichtung liegen im Haus, die Farbe bleibt deine. Ein Klick auf die Bühne setzt den Ort.',
     hinweis:e=>[textStufeHinweis(e),titelHinweis(e),auftrittHinweis(e)].filter(Boolean).join('<br>')||null,
-    params:[{k:'text',lbl:'Text',text:true,mehrzeilig:true,def:'',notiz:e=>(e.text&&String(e.text).trim())?null:'Leer heißt: der Titel des Songs.'},
+    params:[{k:'text',lbl:'Text',text:true,mehrzeilig:true,def:'',notiz:e=>(e.text&&String(e.text).trim())?null:sag('ec.titel.text_leer','Leer heißt: der Titel des Songs.')},
       {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk (wie Helvetica)'],['serife','Serife (wie Georgia)']],def:'grotesk'},
       {k:'gewicht',lbl:'Gewicht',sel:[['fett','fett'],['normal','normal']],def:'fett'},
-      {k:'groesse',lbl:'Größe',min:.02,max:.3,step:.005,def:.08,wert:v=>Math.round(v*100)+' %',notiz:()=>'Anteil der kurzen Bildseite. Ein zu breiter Titel bricht um oder weicht in der Größe.'},
+      {k:'groesse',lbl:'Größe',min:.02,max:.3,step:.005,def:.08,wert:v=>Math.round(v*100)+' %',notiz:()=>sag('ec.titel.groesse','Anteil der kurzen Bildseite. Ein zu breiter Titel bricht um oder weicht in der Größe.')},
       {k:'farbSatz',lbl:'Farbe',sel:[['palette','aus dem Titelbild'],['eigen','eigene Farbe']],def:'palette'},
-      {k:'farbe',lbl:'Farbwert',farbe:true,def:'#ffffff',grau:e=>e.farbSatz==='palette'?'Die Farbe kommt aus dem Titelbild — für eine eigene auf „eigene Farbe“ stellen.':null},
+      {k:'farbe',lbl:'Farbwert',farbe:true,def:'#ffffff',grau:e=>e.farbSatz==='palette'?sag('ec.titel.farbe_grau','Die Farbe kommt aus dem Titelbild — für eine eigene auf „eigene Farbe“ stellen.'):null},
       {k:'struktur',lbl:'Struktur',sel:[['glatt','glatt'],['metall','Metall'],['stein','Stein'],['papier','Papier'],['schraffur','Schraffur']],def:'glatt',
-        notiz:e=>({ metall:'Gebürstetes Metall, Licht von oben: mit warmer Farbe Gold, mit kühler Silber, mit rötlicher Kupfer.', stein:'Marmor — die Farbe als Grund, Adern darin: hell auf dunkler Farbe, grau auf heller.', papier:'Feines Korn wie Bütten, kaum sichtbar; nimmt der Fläche das Glatte.', schraffur:'Feine Schraffur in der Farbe: helle Striche auf dunkler Farbe, dunkle auf heller.' })[e.struktur||'glatt']||null},
+        notiz:e=>({ metall:sag('ec.titel.struktur.metall','Gebürstetes Metall, Licht von oben: mit warmer Farbe Gold, mit kühler Silber, mit rötlicher Kupfer.'), stein:sag('ec.titel.struktur.stein','Marmor — die Farbe als Grund, Adern darin: hell auf dunkler Farbe, grau auf heller.'), papier:sag('ec.titel.struktur.papier','Feines Korn wie Bütten, kaum sichtbar; nimmt der Fläche das Glatte.'), schraffur:sag('ec.titel.struktur.schraffur','Feine Schraffur in der Farbe: helle Striche auf dunkler Farbe, dunkle auf heller.') })[e.struktur||'glatt']||null},
       {k:'kontur',lbl:'Kontur',min:0,max:1,step:.05,def:.4},
       {k:'schatten',lbl:'Schatten',min:0,max:1,step:.05,def:.5},
-      {k:'ortX',lbl:'Ort X',min:0,max:1,step:.01,def:.5,notiz:()=>'Lage des Textkastens: 0 links, 1 rechts. Ein Klick auf die Bühne setzt beides.'},
-      {k:'ortY',lbl:'Ort Y',min:0,max:1,step:.01,def:.85,notiz:e=>[ 'Lage des Textkastens: 0 oben, 1 unten.', hochformatNotiz(e.ortY==null?0.85:e.ortY) ].filter(Boolean).join(' ')},
-      {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte',notiz:()=>'Wie mehrere Zeilen zueinander stehen; den Ort setzen Ort X und Ort Y.'},
+      {k:'ortX',lbl:'Ort X',min:0,max:1,step:.01,def:.5,notiz:()=>sag('ec.titel.ortx','Lage des Textkastens: 0 links, 1 rechts. Ein Klick auf die Bühne setzt beides.')},
+      {k:'ortY',lbl:'Ort Y',min:0,max:1,step:.01,def:.85,notiz:e=>[ sag('ec.titel.orty','Lage des Textkastens: 0 oben, 1 unten.'), hochformatNotiz(e.ortY==null?0.85:e.ortY) ].filter(Boolean).join(' ')},
+      {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte',notiz:()=>sag('ec.titel.ausrichtung','Wie mehrere Zeilen zueinander stehen; den Ort setzen Ort X und Ort Y.')},
       {k:'auftritt',lbl:'Auftritt',sel:[['keiner','keiner'],['erscheinen','erscheinen'],['aufsteigen','aufsteigen'],['scharf','scharfstellen'],['laufweite','Laufweite'],['vorhang','Vorhang'],['partikel','aus den Partikeln']],def:'keiner',notiz:e=>auftrittNotiz(e)}]},
   /* KARAOKE (24.09.2026; Caspar_D: "a second karaoke overlay configurator, take the presets from the
      stage" - "die bereinigte Lyrics waere die beste Variante" - "Karaoke macht nur Sinn bei vollem
@@ -395,20 +424,20 @@ const EFFEKTE = {
     hinweis:e=>[textStufeHinweis(e),lyrikHinweis()].filter(Boolean).join('<br>')||null,
     params:[{k:'zeilen',lbl:'Zeilen',sel:[['3','drei — die gesungene mit der davor und danach'],['1','nur die gesungene']],def:'3'},
       {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk (wie Helvetica)'],['serife','Serife (wie Georgia)']],def:'grotesk'},
-      {k:'groesse',lbl:'Größe',min:.025,max:.12,step:.001,def:.052,wert:v=>(v*100).toFixed(1).replace('.',',')+' %',notiz:()=>'Anteil der Bildbreite, wie auf der Bühne (5,2 %); die Nachbarzeilen halb so groß. Passt der Block nicht ins Bild, weicht die Schrift.'},
-      {k:'band',lbl:'Band',min:0,max:1,step:.05,def:1,notiz:e=>(e.band>=.95)?null:'Je weniger Band, desto mehr Kontur und Schatten bekommt der Text, damit er über dem Bild lesbar bleibt.'},
+      {k:'groesse',lbl:'Größe',min:.025,max:.12,step:.001,def:.052,wert:v=>kf((v*100).toFixed(1))+' %',notiz:()=>sag('ec.karaoke.groesse','Anteil der Bildbreite, wie auf der Bühne (5,2 %); die Nachbarzeilen halb so groß. Passt der Block nicht ins Bild, weicht die Schrift.')},
+      {k:'band',lbl:'Band',min:0,max:1,step:.05,def:1,notiz:e=>(e.band>=.95)?null:sag('ec.karaoke.band','Je weniger Band, desto mehr Kontur und Schatten bekommt der Text, damit er über dem Bild lesbar bleibt.')},
       {k:'farbSatz',lbl:'Farben',sel:[['palette','aus dem Titelbild'],['eigen','eigene']],def:'palette'},
-      {k:'farbe',lbl:'Farbe gesungene Zeile',farbe:true,def:'#f2f5fa',grau:e=>e.farbSatz==='eigen'?null:'Die Farben kommen aus dem Titelbild — für eigene auf „eigene“ stellen.'},
-      {k:'farbe2',lbl:'Farbe Nachbarzeilen',farbe:true,def:'#96a0b4',grau:e=>e.farbSatz==='eigen'?null:'Die Farben kommen aus dem Titelbild.'},
-      {k:'ortY',lbl:'Ort Y',min:.25,max:1,step:.01,def:1,notiz:e=>[ (e.ortY==null||e.ortY>=.995)?'Unterkante am Bildrand, wie auf der Bühne.':'Unterkante des Textes; frei im Bild läuft das Band oben ein und unten aus.', 'Ein Klick auf die Bühne setzt die Höhe.', hochformatNotiz(e.ortY==null?1:e.ortY) ].filter(Boolean).join(' ')},
+      {k:'farbe',lbl:'Farbe gesungene Zeile',farbe:true,def:'#f2f5fa',grau:e=>e.farbSatz==='eigen'?null:sag('ec.karaoke.farbe_grau','Die Farben kommen aus dem Titelbild — für eigene auf „eigene“ stellen.')},
+      {k:'farbe2',lbl:'Farbe Nachbarzeilen',farbe:true,def:'#96a0b4',grau:e=>e.farbSatz==='eigen'?null:sag('ec.karaoke.farbe2_grau','Die Farben kommen aus dem Titelbild.')},
+      {k:'ortY',lbl:'Ort Y',min:.25,max:1,step:.01,def:1,notiz:e=>[ (e.ortY==null||e.ortY>=.995)?sag('ec.karaoke.orty_rand','Unterkante am Bildrand, wie auf der Bühne.'):sag('ec.karaoke.orty_frei','Unterkante des Textes; frei im Bild läuft das Band oben ein und unten aus.'), sag('ec.karaoke.orty_klick','Ein Klick auf die Bühne setzt die Höhe.'), hochformatNotiz(e.ortY==null?1:e.ortY) ].filter(Boolean).join(' ')},
       {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte'},
-      {k:'vorlauf',lbl:'Vorlauf',min:0,max:1,step:.05,def:0,wert:v=>v.toFixed(2).replace('.',',')+' s',notiz:e=>(e.vorlauf>0)?null:'Die Zeile erscheint, wenn sie gesungen wird — wie auf der Bühne. Vorlauf zeigt sie früher.'}]},
+      {k:'vorlauf',lbl:'Vorlauf',min:0,max:1,step:.05,def:0,wert:v=>kf(v.toFixed(2))+' s',notiz:e=>(e.vorlauf>0)?null:sag('ec.karaoke.vorlauf','Die Zeile erscheint, wenn sie gesungen wird — wie auf der Bühne. Vorlauf zeigt sie früher.')}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
     params:[{k:'radius',lbl:'Radius',min:2,max:40,step:1,def:12},{k:'schwelle',lbl:'Schwelle',min:1,max:3,step:.1,def:1.8},{k:'glut',lbl:'Glut',min:.6,max:1.6,step:.05,def:1}]},
   nachzieh:{ label:'Nachzieheffekt', art:'post', staerkeDef:.5, besch:'Das Bild zieht sich nach — Rückkopplung wie eine Kamera auf ihren eigenen Monitor. Nachhall = wie lange der Geist bleibt; Versatz schmiert ihn in eine Richtung.',
     params:[{k:'nachhall',lbl:'Nachhall',min:.5,max:.98,step:.01,def:.85},{k:'versatz',lbl:'Versatz',min:0,max:.05,step:.002,def:.008},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:90}]},
   feuer:{ label:'Feuer', art:'mal', verr:'add', staerkeDef:.7, besch:'Flammen über einer Grundlinie — unten breit und gelb, oben schmal und rot, jede Zunge flackert und steigt für sich. Boden, Mitte und Breite frei; Wind zieht die Zungen zur Seite, Glut sitzt an der Basis; lodert im Takt höher. „Schein“ ist das weiche Leuchten über die Flammen hinaus — es hellt das Bild auf und beleuchtet zugleich Nebel und Rauchschwaden, die darüber stehen.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'woelbung',lbl:'W\u00f6lbung',min:0,max:1,step:.05,def:0,notiz:()=>'Die Grundlinie als unterer Bogen einer Schale: 0 gerade, 1 so tief wie breit. Boden bleibt der tiefste Punkt.'},{k:'unschaerfe',lbl:'Unsch\u00e4rfe',min:0,max:.5,step:.01,def:0},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'schein',lbl:'Schein',min:0,max:1,step:.05,def:.35}]},
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'woelbung',lbl:'W\u00f6lbung',min:0,max:1,step:.05,def:0,notiz:()=>sag('ec.feuer.woelbung','Die Grundlinie als unterer Bogen einer Schale: 0 gerade, 1 so tief wie breit. Boden bleibt der tiefste Punkt.')},{k:'unschaerfe',lbl:'Unsch\u00e4rfe',min:0,max:.5,step:.01,def:0},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'schein',lbl:'Schein',min:0,max:1,step:.05,def:.35}]},
   wellen:{ label:'Wellen (Brechung)', art:'gl', ohneStaerke:true, staerkeDef:1, besch:'Das Bild bricht sich wie unter Wasser oder in heißer Luft — echte Verschiebung jedes Pixels durch Rauschen (WebGL). Zone 1 = nur unten, Aufwind lässt es wie Hitze steigen.',
     params:[{k:'amplitude',lbl:'Amplitude',min:0,max:.08,step:.002,def:.02},{k:'skala',lbl:'Skala',min:1,max:12,step:.5,def:4},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.6},{k:'zone',lbl:'Zone (1 unten)',min:0,max:1,step:.05,def:0},{k:'aufwind',lbl:'Aufwind',min:0,max:1,step:.05,def:0}]},
   kaustik:{ label:'Kaustik (Lichtnetz)', art:'gl', verrFrei:true, staerkeDef:.6, besch:'Das wandernde Netz gebrochenen Lichts — Poolboden, Wasser an der Wand, Glas. Aus Rauschen gerechnet (WebGL), nur das Licht — die Verrechnung mischt es aufs Bild.',
@@ -416,7 +445,7 @@ const EFFEKTE = {
   linse:{ label:'Linse', art:'gl', ohneStaerke:true, staerkeDef:1, besch:'Röhrenwölbung oder Fischauge (Wölbung negativ = Tonne, positiv = Kissen) mit Farbrändern am Rand (WebGL).',
     params:[{k:'woelbung',lbl:'Wölbung',min:-1,max:1,step:.05,def:-.3},{k:'farbrand',lbl:'Farbränder',min:0,max:1,step:.05,def:.3}]},
   flammen:{ label:'Flammen (Rauschen)', art:'gl', lmNurSchub:true, staerkeDef:.8, glZusatz:(e,t)=>({ u_inPuffer:LICHTMAL?1:0 }), besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; Wind legt die Zungen zur Seite; lodert im Takt höher.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'woelbung',lbl:'W\u00f6lbung',min:0,max:1,step:.05,def:0,notiz:()=>'Die Grundlinie als unterer Bogen einer Schale: 0 gerade, 1 so tief wie breit. Boden bleibt der tiefste Punkt.'},{k:'unschaerfe',lbl:'Unsch\u00e4rfe',min:0,max:.5,step:.01,def:0},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'woelbung',lbl:'W\u00f6lbung',min:0,max:1,step:.05,def:0,notiz:()=>sag('ec.feuer.woelbung','Die Grundlinie als unterer Bogen einer Schale: 0 gerade, 1 so tief wie breit. Boden bleibt der tiefste Punkt.')},{k:'unschaerfe',lbl:'Unsch\u00e4rfe',min:0,max:.5,step:.01,def:0},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
   /* ===================== SCHEINWERFER MIT TIEFE (21.09.2026) =====================
      docs/effektclip/KONZEPT-LEUCHTEN.md. Neubau NEBEN dem alten Scheinwerfer (Hausregel: eigener
      Name, das Alte faellt erst, wenn das Neue gewonnen hat) - Caspar_D: „ich wuerde Scheinwerfer
@@ -454,19 +483,19 @@ const EFFEKTE = {
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'},
       {k:'lrOx',lbl:'Lampe X',min:-0.5,max:1.5,step:.01,def:.22},
       {k:'lrOy',lbl:'Lampe Y',min:-0.5,max:1.5,step:.01,def:.12},
-      {k:'lrOz',lbl:'Lampe Tiefe',min:0,max:1,step:.01,def:.85,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+      {k:'lrOz',lbl:'Lampe Tiefe',min:0,max:1,step:.01,def:.85,wert:v=>Number(v)>=0.5?sag('ec.wert.vorn_schmal','vorn {p} %',{p:kf((Number(v)*100).toFixed(0))}):sag('ec.wert.hinten_schmal','hinten {p} %',{p:kf(((1-Number(v))*100).toFixed(0))})},
       {k:'lrZx',lbl:'Ziel X',min:0,max:1,step:.01,def:.5},
       {k:'lrZy',lbl:'Ziel Y',min:0,max:1,step:.01,def:.55},
-      {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.35,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+      {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.35,wert:v=>Number(v)>=0.5?sag('ec.wert.vorn_schmal','vorn {p} %',{p:kf((Number(v)*100).toFixed(0))}):sag('ec.wert.hinten_schmal','hinten {p} %',{p:kf(((1-Number(v))*100).toFixed(0))})},
       {k:'winkel',lbl:'Öffnungswinkel',min:5,max:120,step:1,def:38,wert:v=>kf(v)+'°'},
       {k:'hotspot',lbl:'Hotspot',min:0,max:1,step:.05,def:.7,
-        notiz:e=>'Wie weit der Kegel voll hell bleibt, bevor die Kante einsetzt. Bei 0,7 liegt die mittlere Bildwirkung nahe am alten Scheinwerfer (94 %), ohne die weiche Kante zu verlieren, die diesen Kegel von ihm unterscheidet.'},
+        notiz:e=>sag('ec.licht.hotspot','Wie weit der Kegel voll hell bleibt, bevor die Kante einsetzt. Bei 0,7 liegt die mittlere Bildwirkung nahe am alten Scheinwerfer (94 %), ohne die weiche Kante zu verlieren, die diesen Kegel von ihm unterscheidet.')},
       {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
       {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell']],def:'aus'},
       {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:18,wert:v=>kf(v)+'\u00b0',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:6,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'verdeckung',lbl:'Verdeckung',min:0,max:1,step:.05,def:1,brauchtKarte:true,
-        notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte leuchtet die Lampe flach — der Kegel trifft dann eine gedachte Ebene statt des Motivs.'}],
+        notiz:e=>tiefeKarteDa()?null:sag('ec.licht.ohne_karte','Ohne Tiefenkarte leuchtet die Lampe flach — der Kegel trifft dann eine gedachte Ebene statt des Motivs.')}],
     /* Das GESCHWENKTE Ziel und der Modus gehen als Uniform in den Shader: die Bewegung wird an
        einer Stelle gerechnet, der Shader bekommt nur das Ergebnis. u_modus sagt ihm, ob er die
        Lichtfarbe oder den Lampenort ausgibt - derselbe Kegel, zwei Werte. */
@@ -507,52 +536,52 @@ const EFFEKTE = {
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2a2a'},
       {k:'bauart',lbl:'Bauart',sel:[['faecher','F\u00e4cher \u2014 mehrere Strahlen aus einer Quelle'],['scanner','Scanner \u2014 ein abgelenkter Strahl'],['matrix','Matrixpunkte \u2014 ein Raster'],['kegel','Kegel \u2014 ein drehender Tunnel aus Strahlen'],['lissa','Lissajous \u2014 eine geschlossene Schleife']],def:'faecher'},
       {k:'lrOx',lbl:'Quelle X',min:-0.5,max:1.5,step:.01,def:.12,
-        notiz:e=>e.quelleWandert?'Wird ignoriert, solange die Quelle unten auf „wandert“ steht.':null},
+        notiz:e=>e.quelleWandert?sag('ec.laser.quelle_ignoriert','Wird ignoriert, solange die Quelle unten auf „wandert“ steht.'):null},
       {k:'lrOy',lbl:'Quelle Y',min:-0.5,max:1.5,step:.01,def:.18,
-        notiz:e=>e.quelleWandert?'Wird ignoriert, solange die Quelle unten auf „wandert“ steht.':null},
-      {k:'lrOz',lbl:'Quelle Tiefe',min:0,max:1,step:.01,def:.86,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+        notiz:e=>e.quelleWandert?sag('ec.laser.quelle_ignoriert','Wird ignoriert, solange die Quelle unten auf „wandert“ steht.'):null},
+      {k:'lrOz',lbl:'Quelle Tiefe',min:0,max:1,step:.01,def:.86,wert:v=>Number(v)>=0.5?sag('ec.wert.vorn','vorn {p} %',{p:kf((Number(v)*100).toFixed(0))}):sag('ec.wert.hinten','hinten {p} %',{p:kf(((1-Number(v))*100).toFixed(0))})},
       {k:'quelleWandert',tog:'Quelle wandert',def:0,
-        notiz:e=>'Vom alten Laser übernommen: die Lampe selbst wandert außerhalb des Bildes auf einer Bahn, statt fest zu stehen — Quelle X/Y oben wirken dann nicht mehr, die Tiefe bleibt gesetzt.'},
+        notiz:e=>sag('ec.laser.quelle_wandert','Vom alten Laser übernommen: die Lampe selbst wandert außerhalb des Bildes auf einer Bahn, statt fest zu stehen — Quelle X/Y oben wirken dann nicht mehr, die Tiefe bleibt gesetzt.')},
       {k:'wanderTempo',lbl:'Wander-Tempo',min:2,max:30,step:1,def:8,wert:v=>kf(v)+' s',
-        notiz:e=>'Wie viele Sekunden ein Umlauf der Wanderbahn braucht. Wirkt erst, wenn „Quelle wandert“ an ist.'},
+        notiz:e=>sag('ec.laser.wander_tempo','Wie viele Sekunden ein Umlauf der Wanderbahn braucht. Wirkt erst, wenn „Quelle wandert“ an ist.')},
       {k:'lrZx',lbl:'Ziel X',min:0,max:1,step:.01,def:.7},
       {k:'lrZy',lbl:'Ziel Y',min:0,max:1,step:.01,def:.6},
-      {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.35,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
-      {k:'breite',lbl:'Strahlbreite',min:.001,max:.05,step:.001,def:.016,wert:v=>kf((Number(v)*1000).toFixed(1))+'\u2030 der Bildbreite'},
+      {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.35,wert:v=>Number(v)>=0.5?sag('ec.wert.vorn','vorn {p} %',{p:kf((Number(v)*100).toFixed(0))}):sag('ec.wert.hinten','hinten {p} %',{p:kf(((1-Number(v))*100).toFixed(0))})},
+      {k:'breite',lbl:'Strahlbreite',min:.001,max:.05,step:.001,def:.016,wert:v=>sag('ec.wert.promille_bildbreite','{v}\u2030 der Bildbreite',{v:kf((Number(v)*1000).toFixed(1))})},
       {k:'zahl',lbl:'Strahlen',min:1,max:24,step:1,def:5,wert:v=>kf(v),
         when:e=>['faecher','kegel'].indexOf(e.bauart||'faecher')>=0},
       {k:'auffaechernd',tog:'Auff\u00e4chernd',def:0,
-        notiz:e=>e.auffaechernd?'Die Strahlen laufen auseinander wie hinter einem Prisma \u2014 jeder einzelne beh\u00e4lt dabei seine Dicke, denn das ist es, was Laserlicht ausmacht.':'Die Strahlen laufen parallel nebeneinander, wie hinter einem Strahlteiler. Angeschaltet f\u00e4chern sie auf und die Weite wird ein Winkel.'},
+        notiz:e=>e.auffaechernd?sag('ec.laser.auffaechernd_an','Die Strahlen laufen auseinander wie hinter einem Prisma \u2014 jeder einzelne beh\u00e4lt dabei seine Dicke, denn das ist es, was Laserlicht ausmacht.'):sag('ec.laser.auffaechernd_aus','Die Strahlen laufen parallel nebeneinander, wie hinter einem Strahlteiler. Angeschaltet f\u00e4chern sie auf und die Weite wird ein Winkel.')},
       {k:'spreizung',lbl:'Weite',min:.005,max:.6,step:.005,def:.12,
-        wert:(v,e)=>(e&&e.auffaechernd)?kf((Number(v)*100).toFixed(1))+'\u00b0':kf((Number(v)*100).toFixed(1))+'\u2009% der Bildbreite',
+        wert:(v,e)=>(e&&e.auffaechernd)?kf((Number(v)*100).toFixed(1))+'\u00b0':sag('ec.wert.prozent_bildbreite','{v}\u2009% der Bildbreite',{v:kf((Number(v)*100).toFixed(1))}),
         notiz:e=>{ const a=e.bauart||'faecher';
-          return a==='scanner' ? 'Wie weit der Spiegel den Strahl ausschl\u00e4gt \u2014 die Breite des Strichs, den er zieht.'
-               : a==='matrix'  ? 'Wie weit das Punktraster auff\u00e4chert.'
-               : a==='kegel'   ? 'Der Halbmesser des Kegelmantels \u2014 wie weit der Tunnel sich \u00f6ffnet.'
-               : a==='lissa'   ? 'Wie gro\u00df die Figur wird, die der Spiegel zeichnet.'
-               : 'Der Abstand der parallelen Strahlen voneinander \u2014 ein Strahlteiler spreizt, er f\u00e4chert nicht.'; }},
+          return a==='scanner' ? sag('ec.laser.weite.scanner','Wie weit der Spiegel den Strahl ausschl\u00e4gt \u2014 die Breite des Strichs, den er zieht.')
+               : a==='matrix'  ? sag('ec.laser.weite.matrix','Wie weit das Punktraster auff\u00e4chert.')
+               : a==='kegel'   ? sag('ec.laser.weite.kegel','Der Halbmesser des Kegelmantels \u2014 wie weit der Tunnel sich \u00f6ffnet.')
+               : a==='lissa'   ? sag('ec.laser.weite.lissa','Wie gro\u00df die Figur wird, die der Spiegel zeichnet.')
+               : sag('ec.laser.weite.faecher','Der Abstand der parallelen Strahlen voneinander \u2014 ein Strahlteiler spreizt, er f\u00e4chert nicht.'); }},
       {k:'schwenke',lbl:'Uml\u00e4ufe je Sekunde',min:.2,max:24,step:.2,def:6,wert:v=>kf(v),
         notiz:e=>{ const a=e.bauart||'faecher';
-          return a==='kegel' ? 'Wie schnell sich der Strahlenkranz um die Achse dreht.'
-               : a==='lissa' ? 'Wie oft die Figur in der Sekunde durchlaufen wird.'
-               : 'Wie oft der Spiegel in der Sekunde hin und her geht. Nicht zu verwechseln mit dem Schwenk weiter unten \u2014 der kippt die ganze Lampe, dies lenkt nur den Strahl ab.'; },
+          return a==='kegel' ? sag('ec.laser.umlauf.kegel','Wie schnell sich der Strahlenkranz um die Achse dreht.')
+               : a==='lissa' ? sag('ec.laser.umlauf.lissa','Wie oft die Figur in der Sekunde durchlaufen wird.')
+               : sag('ec.laser.umlauf.spiegel','Wie oft der Spiegel in der Sekunde hin und her geht. Nicht zu verwechseln mit dem Schwenk weiter unten \u2014 der kippt die ganze Lampe, dies lenkt nur den Strahl ab.'); },
         when:e=>['scanner','lissa','kegel'].indexOf(e.bauart||'faecher')>=0},
       {k:'lissa',lbl:'Verh\u00e4ltnis',min:1,max:5,step:.5,def:2,wert:v=>kf(v)+' : 1',
-        notiz:e=>'Wie oft der Spiegel quer schwingt, w\u00e4hrend er einmal l\u00e4ngs schwingt. 1:1 ist ein Kreis, 2:1 eine Acht, 3:2 die bekannte Schleife. Nur ganze und halbe Schritte \u2014 bei einem krummen Verh\u00e4ltnis schl\u00f6sse sich die Kurve nie.',
+        notiz:e=>sag('ec.laser.verhaeltnis','Wie oft der Spiegel quer schwingt, w\u00e4hrend er einmal l\u00e4ngs schwingt. 1:1 ist ein Kreis, 2:1 eine Acht, 3:2 die bekannte Schleife. Nur ganze und halbe Schritte \u2014 bei einem krummen Verh\u00e4ltnis schl\u00f6sse sich die Kurve nie.'),
         when:e=>(e.bauart||'faecher')==='lissa'},
       {k:'nachgluehen',lbl:'Nachgl\u00fchen',min:0,max:1,step:.05,def:.5,
         notiz:e=>(e.bauart==='scanner'&&e.sprung)
-          ? 'Bei \u201eJe Schlag springen\u201c ein Anteil des Schlags, nicht der gleitenden Spur: bei 0,5 ist die vorige Stelle nach dem halben Schlag weg.'
-          : 'Ein Galvospiegel zieht den Strahl schneller, als das Auge folgt \u2014 was man sieht, ist seine Spur.',
+          ? sag('ec.laser.nachgluehen_sprung','Bei \u201eJe Schlag springen\u201c ein Anteil des Schlags, nicht der gleitenden Spur: bei 0,5 ist die vorige Stelle nach dem halben Schlag weg.')
+          : sag('ec.laser.nachgluehen','Ein Galvospiegel zieht den Strahl schneller, als das Auge folgt \u2014 was man sieht, ist seine Spur.'),
         when:e=>['scanner','lissa'].indexOf(e.bauart||'faecher')>=0},
       {k:'sprung',tog:'Je Schlag springen',def:0,
-        notiz:e=>'Vom alten Laser \u00fcbernommen: statt gleitend zu schwenken, h\u00e4lt der Spiegel je Schlag eine von \u201eStellen\u201c zuf\u00e4lligen Positionen \u2014 braucht den Antrieb \u201eim Takt\u201c, sonst bleibt er auf einer Stelle stehen.',
+        notiz:e=>sag('ec.laser.sprung','Vom alten Laser \u00fcbernommen: statt gleitend zu schwenken, h\u00e4lt der Spiegel je Schlag eine von \u201eStellen\u201c zuf\u00e4lligen Positionen \u2014 braucht den Antrieb \u201eim Takt\u201c, sonst bleibt er auf einer Stelle stehen.'),
         when:e=>(e.bauart||'faecher')==='scanner'},
       {k:'stufen',lbl:'Stellen',min:2,max:16,step:1,def:6,wert:v=>kf(v),
         when:e=>(e.bauart||'faecher')==='scanner'&&!!e.sprung},
       {k:'reihen',lbl:'Punkte je Reihe',min:2,max:40,step:1,def:12,wert:v=>kf(v),when:e=>(e.bauart||'faecher')==='matrix'},
       {k:'austasten',lbl:'Austastung',min:0,max:1,step:.05,def:0,
-        notiz:e=>'Wie viele Strahlen im Takt kurz ausgehen \u2014 das Blanking einer Lasershow. Bei 0 bleiben alle an.'},
+        notiz:e=>sag('ec.laser.austasten','Wie viele Strahlen im Takt kurz ausgehen \u2014 das Blanking einer Lasershow. Bei 0 bleiben alle an.')},
       /* KEIN when AN EINEM SCHIEBEREGLER (am Bild gefunden, 21.09.2026). Hier stand
          when:e=>e.austasten>0 - und die Zeile erschien nie. Beim Schieben zieht die Karte nur
          die WERTE nach, gebaut wird sie neu erst bei einer Auswahl oder einem Schalter. Im
@@ -561,22 +590,22 @@ const EFFEKTE = {
          Die Zeile steht jetzt immer da und sagt selbst, wann sie wirkt - Regel 4 verlangt
          ohnehin ausgrauen statt verstecken, und ein statischer Satz ist in jedem Zustand wahr. */
       {k:'austastTempo',lbl:'Austast-Tempo',min:.5,max:16,step:.5,def:4,wert:v=>kf(v)+'\u2009/\u2009s',
-        notiz:e=>'Wie oft in der Sekunde neu ausgew\u00fcrfelt wird, welche Strahlen ausgehen. Wirkt erst, wenn die Austastung dar\u00fcber \u00fcber 0 steht.'},
+        notiz:e=>sag('ec.laser.austast_tempo','Wie oft in der Sekunde neu ausgew\u00fcrfelt wird, welche Strahlen ausgehen. Wirkt erst, wenn die Austastung dar\u00fcber \u00fcber 0 steht.')},
       {k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:0,
-        notiz:e=>'Vom alten Laser \u00fcbernommen: ein Laser flimmert nicht wellenf\u00f6rmig, er tastet hart aus \u2014 bei 1 ist er knapp die H\u00e4lfte der Zeit dunkel. Bei 0 (Vorgabe) ohne Wirkung.'},
+        notiz:e=>sag('ec.laser.flimmer','Vom alten Laser \u00fcbernommen: ein Laser flimmert nicht wellenf\u00f6rmig, er tastet hart aus \u2014 bei 1 ist er knapp die H\u00e4lfte der Zeit dunkel. Bei 0 (Vorgabe) ohne Wirkung.')},
       {k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20,wert:v=>kf(v)+'\u2009/\u2009s',
-        notiz:e=>'Wie oft in der Sekunde ausgetastet wird. Wirkt erst, wenn Flimmern dar\u00fcber \u00fcber 0 steht.'},
+        notiz:e=>sag('ec.laser.flimmer_tempo','Wie oft in der Sekunde ausgetastet wird. Wirkt erst, wenn Flimmern dar\u00fcber \u00fcber 0 steht.')},
       {k:'roll',lbl:'Rollen',min:-90,max:90,step:1,def:0,wert:v=>kf(v)+'\u00b0'},
       {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.35},
       {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell'],['roll','Rollen \u2014 dreht um die Strahlachse'],['kreisroll','Kreis + Rollen \u2014 beides zugleich']],def:'aus'},
       {k:'rollWeite',lbl:'Rollweite',min:0,max:180,step:5,def:60,wert:v=>kf(v)+'\u00b0',
-        notiz:e=>'Wie weit die F\u00e4cherebene hin und her dreht. Der Regler \u201eRollen\u201c weiter oben setzt die Mitte, um die sie pendelt.',
+        notiz:e=>sag('ec.laser.rollweite','Wie weit die F\u00e4cherebene hin und her dreht. Der Regler \u201eRollen\u201c weiter oben setzt die Mitte, um die sie pendelt.'),
         when:e=>['roll','kreisroll'].indexOf(e.schwenkArt||'aus')>=0},
       {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:14,wert:v=>kf(v)+'\u00b0',
         when:e=>['aus','roll'].indexOf(e.schwenkArt||'aus')<0},
       {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:7,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'verdeckung',lbl:'Verdeckung',min:0,max:1,step:.05,def:1,brauchtKarte:true,
-        notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte trifft der Strahl eine gedachte Ebene statt des Motivs.'}],
+        notiz:e=>tiefeKarteDa()?null:sag('ec.laser.ohne_karte','Ohne Tiefenkarte trifft der Strahl eine gedachte Ebene statt des Motivs.')}],
     glZusatz:(e,t)=>{ const tt=(t==null?0:t); const Z=lrSchwenkAnteil(e, tt);
       const art=e.bauart||'faecher';
       /* QUELLE WANDERT (Caspar_D, 22.09.2026: "moeglichst viele Regler vom alten Laser
@@ -628,19 +657,19 @@ const EFFEKTE = {
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff5a4d'},
       {k:'bauart',lbl:'Bauart',sel:[['schacht','Schacht \u2014 ein breites Lichtband'],['faecher','F\u00e4cher \u2014 mehrere Schneisen'],['kugel','Kugelquelle \u2014 in alle Richtungen, bunt']],def:'faecher'},
       {k:'buntheit',lbl:'Farbstreuung',min:0,max:1,step:.05,def:.7,
-        notiz:e=>(e.bauart||'faecher')==='kugel'?'Wie weit die Farben der einzelnen Strahlen auseinanderlaufen. Bei 0 haben alle die gew\u00e4hlte Farbe, bei 1 verteilen sie sich \u00fcber den ganzen Farbkreis.':'Nur bei der Kugelquelle: dort tr\u00e4gt jeder Strahl seine eigene Farbe.',
-        grau:e=>(e.bauart||'faecher')==='kugel'?null:'Nur die Kugelquelle gibt jedem Strahl eine eigene Farbe \u2014 Schacht und F\u00e4cher leuchten in der gew\u00e4hlten.'},
+        notiz:e=>(e.bauart||'faecher')==='kugel'?sag('ec.strahlen.farbstreu_kugel','Wie weit die Farben der einzelnen Strahlen auseinanderlaufen. Bei 0 haben alle die gew\u00e4hlte Farbe, bei 1 verteilen sie sich \u00fcber den ganzen Farbkreis.'):sag('ec.strahlen.farbstreu_nur_kugel','Nur bei der Kugelquelle: dort tr\u00e4gt jeder Strahl seine eigene Farbe.'),
+        grau:e=>(e.bauart||'faecher')==='kugel'?null:sag('ec.strahlen.farbstreu_grau','Nur die Kugelquelle gibt jedem Strahl eine eigene Farbe \u2014 Schacht und F\u00e4cher leuchten in der gew\u00e4hlten.')},
       {k:'lrOx',lbl:'Quelle X',min:-0.5,max:1.5,step:.01,def:.15},
       {k:'lrOy',lbl:'Quelle Y',min:-0.5,max:1.5,step:.01,def:.10},
-      {k:'lrOz',lbl:'Quelle Tiefe',min:0,max:1,step:.01,def:.80,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+      {k:'lrOz',lbl:'Quelle Tiefe',min:0,max:1,step:.01,def:.80,wert:v=>Number(v)>=0.5?sag('ec.wert.vorn','vorn {p} %',{p:kf((Number(v)*100).toFixed(0))}):sag('ec.wert.hinten','hinten {p} %',{p:kf(((1-Number(v))*100).toFixed(0))})},
       {k:'lrZx',lbl:'Ziel X',min:0,max:1,step:.01,def:.6},
       {k:'lrZy',lbl:'Ziel Y',min:0,max:1,step:.01,def:.6},
-      {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.30,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+      {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.30,wert:v=>Number(v)>=0.5?sag('ec.wert.vorn','vorn {p} %',{p:kf((Number(v)*100).toFixed(0))}):sag('ec.wert.hinten','hinten {p} %',{p:kf(((1-Number(v))*100).toFixed(0))})},
       {k:'faecher',lbl:'\u00d6ffnung',min:2,max:120,step:1,def:40,wert:v=>kf(v)+'\u00b0',
-        notiz:e=>(e.bauart||'faecher')==='kugel'?'Wie weit die Strahlen der Kugel auseinandergehen \u2014 bei 180\u00b0 strahlt sie nach allen Seiten.':'Wie weit sich das Licht auf dem Weg auff\u00e4chert.'},
+        notiz:e=>(e.bauart||'faecher')==='kugel'?sag('ec.strahlen.oeffnung_kugel','Wie weit die Strahlen der Kugel auseinandergehen \u2014 bei 180\u00b0 strahlt sie nach allen Seiten.'):sag('ec.strahlen.oeffnung','Wie weit sich das Licht auf dem Weg auff\u00e4chert.')},
       {k:'zahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,wert:v=>kf(v),when:e=>(e.bauart||'faecher')!=='schacht'},
       {k:'reihen',lbl:'Ringe',min:1,max:8,step:1,def:3,wert:v=>kf(v),when:e=>(e.bauart||'faecher')==='kugel',
-        notiz:e=>'Wie viele Kr\u00e4nze von Strahlen die Kugel hat \u2014 einer ist ein Ring, mehrere f\u00fcllen den Raum.'},
+        notiz:e=>sag('ec.strahlen.ringe','Wie viele Kr\u00e4nze von Strahlen die Kugel hat \u2014 einer ist ein Ring, mehrere f\u00fcllen den Raum.')},
       /* skala (Regel 9a, gemessen 23.09.2026 am Pruefstand, Titel a, Schacht 35 Strahlen mit Filmnebel,
          Licht je Bildpunkt bei 360 und 720 px gleich): unter 0,4 Grad steil, darueber linear. Die
          Kugelquelle hat dieselbe Form (2,4 / 12,5 / 105 bei 0,05 / 0,4 / 12 Grad), nur steiler oben. */
@@ -662,17 +691,17 @@ const EFFEKTE = {
          der Formel braucht eine eigene Pruefung gegen die Laser-Faelle, nicht spaetnachts im
          selben Zug. Steht in der Uebergabe. */
       {k:'roll',lbl:'Rollen',min:-90,max:90,step:1,def:0,wert:v=>kf(v)+'\u00b0',
-        notiz:e=>'Dreht die F\u00e4cherebene um die Strahlachse. Bei 0\u00b0 steht sie senkrecht.'},
+        notiz:e=>sag('ec.strahlen.rollen','Dreht die F\u00e4cherebene um die Strahlachse. Bei 0\u00b0 steht sie senkrecht.')},
       {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
       {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell'],['roll','Rollen \u2014 dreht um die Strahlachse'],['kreisroll','Kreis + Rollen \u2014 beides zugleich']],def:'aus'},
       {k:'rollWeite',lbl:'Rollweite',min:0,max:180,step:5,def:60,wert:v=>kf(v)+'\u00b0',
-        notiz:e=>'Wie weit die F\u00e4cherebene hin und her dreht. Der Regler \u201eRollen\u201c weiter oben setzt die Mitte, um die sie pendelt.',
+        notiz:e=>sag('ec.laser.rollweite','Wie weit die F\u00e4cherebene hin und her dreht. Der Regler \u201eRollen\u201c weiter oben setzt die Mitte, um die sie pendelt.'),
         when:e=>['roll','kreisroll'].indexOf(e.schwenkArt||'aus')>=0},
       {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:12,wert:v=>kf(v)+'\u00b0',
         when:e=>['aus','roll'].indexOf(e.schwenkArt||'aus')<0},
       {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:8,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'verdeckung',lbl:'Verdeckung',min:0,max:1,step:.05,def:1,brauchtKarte:true,
-        notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte strahlt die Quelle flach \u2014 der F\u00e4cher trifft dann eine gedachte Ebene statt des Motivs.'}],
+        notiz:e=>tiefeKarteDa()?null:sag('ec.strahlen.ohne_karte','Ohne Tiefenkarte strahlt die Quelle flach \u2014 der F\u00e4cher trifft dann eine gedachte Ebene statt des Motivs.')}],
     glZusatz:(e,t)=>{ const Z=lrSchwenkAnteil(e, t==null?0:t);
       const art=e.bauart||'faecher';
       return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(), u_tiefeAn:1,
@@ -816,7 +845,7 @@ const VERDECK_ALTWERT = ['zone','wie im alten Rezept: Zone weich ausgeschnitten'
    `p.sel.map(s=>s[0])` und die ganze Nahtpruefung fiel mit „p.sel.map is not a function" aus.
    Also traegt eine ZWEITE Eigenschaft die Zugabe; `sel` ist und bleibt die Liste der Werte. */
 const VERDECK_PARAM = { k:'tiefeVerdeckung', lbl:'Verdeckung',
-  sel:VERDECK_WERTE, selMehr:e=>(e.tiefeVerdeckung==='zone')?[VERDECK_ALTWERT]:null, def:'aus',
+  sel:VERDECK_WERTE, selMehr:e=>(e.tiefeVerdeckung==='zone')?[[VERDECK_ALTWERT[0],sagNach(VERDECK_ALTWERT[1])]]:null, def:'aus',
   brauchtKarte:true, grau:e=>verdeckGrund(e), notiz:e=>verdeckNotiz(e) };
 /* HIER STANDEN GRENZE UND WEICHHEIT ALS REGLER DER EFFEKTKARTE (bis 21.09.2026).
    Sie sind nicht verschwunden, sie sind umgezogen: in die Vorbereitung, Station „Tiefe", als
@@ -928,44 +957,44 @@ function tiefeGrund(){
   /* tiefeQuelle() gibt nur dann nichts zurueck, wenn gar kein TITEL geladen ist - eine Quelle
      ist immer gewaehlt (grund faellt auf das Titelbild zurueck). Der Satz von heute morgen
      schickte den Nutzer eine Wahl treffen, die es nicht gibt (Gegenlesen 17.09.2026). */
-  if(!q) return 'Es ist kein Titel geladen — ohne Bild gibt es auch keine Tiefenkarte. Die Zeile bleibt still, statt etwas zu versprechen.';
-  const nm='„'+quellName(q)+'“';
+  if(!q) return sag('ec.tiefe.kein_titel','Es ist kein Titel geladen — ohne Bild gibt es auch keine Tiefenkarte. Die Zeile bleibt still, statt etwas zu versprechen.');
+  const nm=quellName(q);
   const was=(q.art==='video')
-    ? 'Die Quelle '+nm+' ist ein eigenes Bewegtbild, und für eigene Bewegtbilder gibt es hier keine Tiefenkarte.'
+    ? sag('ec.tiefe.grund.video','Die Quelle „{name}“ ist ein eigenes Bewegtbild, und für eigene Bewegtbilder gibt es hier keine Tiefenkarte.',{name:nm})
     : (q.art==='bewegtbild')
-    ? 'Die Quelle '+nm+' leiht sich die Tiefenkarte ihres Titelbilds \u2014 aber tiefe.png kam nicht an: entweder hat das Titelbild keine, oder sie kommt gerade nicht durch.'
+    ? sag('ec.tiefe.grund.bewegtbild','Die Quelle \u201e{name}\u201c leiht sich die Tiefenkarte ihres Titelbilds \u2014 aber tiefe.png kam nicht an: entweder hat das Titelbild keine, oder sie kommt gerade nicht durch.',{name:nm})
     : (!q.url
-      ? 'Zur Quelle '+nm+' gibt es keine Tiefenkarte — sie ist ein Prüfbild und liegt nicht beim Titel.'
+      ? sag('ec.tiefe.grund.pruefbild','Zur Quelle „{name}“ gibt es keine Tiefenkarte — sie ist ein Prüfbild und liegt nicht beim Titel.',{name:nm})
       /* GEMESSEN IST NUR DER FEHLSCHLAG (Gegenlesen 17.09.2026). Was hier ankommt, ist ein
          onerror des Bildes - ob die Datei fehlt, der Server sie mit 403 verweigert oder mit 500
          aussteigt, steht darin nicht. Der Satz von heute morgen entschied sich fuer die erste
          Moeglichkeit und behauptete damit mehr, als gemessen wurde. */
-      : 'Zur Quelle '+nm+' ließ sich keine Tiefenkarte laden — '+q.url.split('/').pop()+' kam nicht an: entweder liegt die Datei nicht neben dem Bild, oder sie kommt gerade nicht durch.');
-  return was+' Ohne sie weiß der Effekt nicht, was vorn und was hinten ist — die Zeile bleibt still, statt etwas zu versprechen.'; }
-const LAEDT = () => tiefeStand()==='unterwegs' ? 'Die Tiefenkarte dieser Quelle wird gerade geladen — die Zahlen unten stehen, sobald sie da ist.' : null;
+      : sag('ec.tiefe.grund.nicht_geladen','Zur Quelle „{name}“ ließ sich keine Tiefenkarte laden — {datei} kam nicht an: entweder liegt die Datei nicht neben dem Bild, oder sie kommt gerade nicht durch.',{name:nm,datei:q.url.split('/').pop()}));
+  return was+sag('ec.tiefe.ohne_sie',' Ohne sie weiß der Effekt nicht, was vorn und was hinten ist — die Zeile bleibt still, statt etwas zu versprechen.'); }
+const LAEDT = () => tiefeStand()==='unterwegs' ? sag('ec.tiefe.laedt','Die Tiefenkarte dieser Quelle wird gerade geladen — die Zahlen unten stehen, sobald sie da ist.') : null;
 function verdeckGrund(e){
   if(e.tiefeVerdeckung==='zone') return null;   /* der Altwert muss sichtbar und aenderbar bleiben */
-  if(!TIEFE_KOERPER(e)) return 'Dieser Effekt hat keine einzelnen Körper — er legt sich über das ganze Bild. Seine Zone kann nur ausgeschnitten werden: der Aufenthalt ist hier schon der Schnitt.';
+  if(!TIEFE_KOERPER(e)) return sag('ec.zone.keine_koerper','Dieser Effekt hat keine einzelnen Körper — er legt sich über das ganze Bild. Seine Zone kann nur ausgeschnitten werden: der Aufenthalt ist hier schon der Schnitt.');
   /* GRAU MIT GRUND, WEIL SIE NICHTS MEHR ENTSCHEIDET (18.09.2026, Schritt 2). Verdeckt wird jedes
      Teilchen nach seiner eigenen Entfernung, in vier Tiefenschichten - die Zeile hat dazu nichts
      zu wählen. Bedienbar zu bleiben wäre die Falschaussage: beide Werte täten dasselbe, nämlich
      nichts. Die Zeile verschwindet mit Schritt 5 (Spezifikation Abschnitt 6). */
-  return 'Verdeckt wird ab Schritt 2 immer, und zwar jedes Teilchen nach seiner eigenen Entfernung — in vier Tiefenschichten, bildpunktgenau. Hier ist nichts mehr zu wählen; die Zeile verschwindet mit dem nächsten Schritt.'; }
+  return sag('ec.zone.verdeckt_ab_schritt2','Verdeckt wird ab Schritt 2 immer, und zwar jedes Teilchen nach seiner eigenen Entfernung — in vier Tiefenschichten, bildpunktgenau. Hier ist nichts mehr zu wählen; die Zeile verschwindet mit dem nächsten Schritt.'); }
 /* WAS DIESE ZEILE BEI SCHWARM, SCHNUPPE UND KANONE NICHT KANN - UND WAS TROTZDEM GILT (Schritt 2,
    17.09.2026). Der Satz hier hiess "hat keinen Geburtsort im Bild, an dem ein freier Bereich
    aufzuspannen waere". Das stimmt seit Schritt 2 nicht mehr: verdeckt wird jedes Teilchen nach
    seiner eigenen Entfernung, auch diese drei - sie holen sie an ihrer eigenen Stelle (gebOrt,
    Fall 'bahn'). Was hier wirklich stillsteht, sind Groesse, Tempo und Dunst: die haengen an der
    Bahn, die die Art selbst rechnet, und das aufzuloesen ist Schritt 6. */
-function raumGrund(e){ return RAUM_OHNE.has(e.art) ? 'Diese Art rechnet ihre Bahn ganz selbst — Größe, Tempo und Dunst hängen hier nicht an der Entfernung. Verdeckt wird sie trotzdem nach ihrer eigenen Entfernung.' : null; }
+function raumGrund(e){ return RAUM_OHNE.has(e.art) ? sag('ec.raum.eigene_bahn','Diese Art rechnet ihre Bahn ganz selbst — Größe, Tempo und Dunst hängen hier nicht an der Entfernung. Verdeckt wird sie trotzdem nach ihrer eigenen Entfernung.') : null; }
 /* WIE der Aufenthalt bei DIESER Art durchgesetzt wird. Drei Mechanismen, drei Saetze - der eine
    Satz von gestern versprach allen achtzehn Arten beides zugleich („kommen nicht zur Welt" UND
    „die Schar weicht aus"), und fuer Sternschnuppe und Kanone stimmte keine der beiden Haelften. */
 function aufenthaltWie(art){
-  if(art==='schwarm') return 'Die Schar dreht vor der verbotenen Zone ab, statt hineinzufliegen.';
-  if(art==='sternschnuppen') return 'Die Schnuppe zieht ihre Bahn; ihr Schweif endet an der Zonengrenze, und ein Kopf in der verbotenen Zone fällt ganz aus.';
-  if(art==='konfettiKanone') return 'Die Kanone schießt aus ihrer Mündung; was in die verbotene Zone fliegt, wird dort nicht gezeichnet.';
-  return 'Die Teilchen kommen in der verbotenen Zone gar nicht erst zur Welt und werden dort auch nicht gezeichnet.'; }
+  if(art==='schwarm') return sag('ec.zone.aufenthalt.schwarm','Die Schar dreht vor der verbotenen Zone ab, statt hineinzufliegen.');
+  if(art==='sternschnuppen') return sag('ec.zone.aufenthalt.schnuppe','Die Schnuppe zieht ihre Bahn; ihr Schweif endet an der Zonengrenze, und ein Kopf in der verbotenen Zone fällt ganz aus.');
+  if(art==='konfettiKanone') return sag('ec.zone.aufenthalt.kanone','Die Kanone schießt aus ihrer Mündung; was in die verbotene Zone fliegt, wird dort nicht gezeichnet.');
+  return sag('ec.zone.aufenthalt.teilchen','Die Teilchen kommen in der verbotenen Zone gar nicht erst zur Welt und werden dort auch nicht gezeichnet.'); }
 /* Arten mit weichem Saum: geprueft wird der Koerper, gemalt wird ein Verlauf, der darueber
    hinausreicht. NACHGEMESSEN am 16.09.2026 (alle 18 Arten, zwei Titel, je „nur vorn" und „nur
    hinten", 480x480): seit der Ring aus acht Punkten die Diagonalen mitprueft, bleibt bei den
@@ -980,7 +1009,7 @@ const ZONE_UNGENAU = new Set(['bokeh','schwaden']);
    die saubere Abhilfe, kostet aber die Bitgleichheit - dasselbe Raster traegt den Laser (tiefeBei)
    und den Regler „Tiefe aus der Bildzeile", und ein gespeichertes Rezept saehe danach anders aus.
    Also wird die Grenze GENANNT, nicht verschwiegen (Regel 11). */
-const RASTER_SATZ = ' Entschieden wird auf dem Tiefenraster (160 Punkte breit) — wo die Zonengrenze durch feine Struktur läuft, bleibt ein Rest Farbe auf der anderen Seite (gemessen bis 2 % der gemalten Fläche).';
+const RASTER_SATZ = () => sag('ec.zone.raster',' Entschieden wird auf dem Tiefenraster (160 Punkte breit) — wo die Zonengrenze durch feine Struktur läuft, bleibt ein Rest Farbe auf der anderen Seite (gemessen bis 2 % der gemalten Fläche).');
 /* Wie viel des Bildes die erlaubte Zone einnimmt - und ob dort ueberhaupt etwas zu sehen sein wird.
    Gerechnet aus dem Raster, nicht geraten. */
 /* WAS EIN FLAECHENEFFEKT ANSTELLE DER WAHL BEKOMMT: den Grund, warum er keine hat - und dazu
@@ -995,23 +1024,23 @@ const RASTER_SATZ = ' Entschieden wird auf dem Tiefenraster (160 Punkte breit) �
 function zonenLageVon(e){ const tp=tiefeProben(); if(!tp) return null;
   const sp=tiefeSpanne(tp); return zonenLage(e.tiefeWirkt, sp.g, sp.w); }
 function leerWarnung(e){ const zl=zonenLageVon(e); if(!zl) return '';
-  if(zl.erlaubt<0.01) return ' ACHTUNG: die erlaubte Zone ist nur '+vH(zl.erlaubt)+' des Bildes groß — hier wird so gut wie nichts zu sehen sein. Grenze oder Weichheit verschieben.';
-  return ' Die erlaubte Zone ist '+vH(zl.erlaubt)+' des Bildes groß.'; }
+  if(zl.erlaubt<0.01) return sag('ec.zone.erlaubt_winzig',' ACHTUNG: die erlaubte Zone ist nur {anteil} des Bildes groß — hier wird so gut wie nichts zu sehen sein. Grenze oder Weichheit verschieben.',{anteil:vH(zl.erlaubt)});
+  return sag('ec.zone.erlaubt',' Die erlaubte Zone ist {anteil} des Bildes groß.',{anteil:vH(zl.erlaubt)}); }
 function aufenthaltNotiz(e){
   if(!tiefeKarteDa()||!e.tiefeWirkt||e.tiefeWirkt==='alles') return null;
-  if(!TIEFE_KOERPER(e)) return 'Die Zone wird aus dem Ergebnis ausgeschnitten — dieser Effekt hat keine einzelnen Körper, die man woanders hinschicken könnte.'+leerWarnung(e);
+  if(!TIEFE_KOERPER(e)) return sag('ec.zone.ausgeschnitten','Die Zone wird aus dem Ergebnis ausgeschnitten — dieser Effekt hat keine einzelnen Körper, die man woanders hinschicken könnte.')+leerWarnung(e);
   if(e.tiefeVerdeckung==='zone'){
     const zl=zonenLageVon(e);
     /* NICHT BEHAUPTEN, SONDERN NACHRECHNEN (Gegenlesen 16.09.2026). Der Satz von gestern sagte,
        die Maske schneide die Zone „ohnehin aus". Auf zwei von vier gepruefte Karten nimmt sie in
        einer der beiden Richtungen null Prozent des Bildes GANZ weg - sie dunkelt nur ab. */
-    return 'Altes Rezept: die Zone wird weich ausgeschnitten, ohne Betretungsverbot — Bild für Bild wie am Tag der Sicherung.'
+    return sag('ec.zone.altes_rezept','Altes Rezept: die Zone wird weich ausgeschnitten, ohne Betretungsverbot — Bild für Bild wie am Tag der Sicherung.')
       + (zl ? (zl.ganzWeg<0.05
-          ? ' ACHTUNG: auf dieser Karte nimmt der Schnitt nur '+vH(zl.ganzWeg)+' des Bildes ganz weg, den Rest dunkelt er bloß ab. Für eine harte Zone die Verdeckung auf „aus" stellen.'
-          : ' Der Schnitt nimmt '+vH(zl.ganzWeg)+' des Bildes ganz weg.') : ''); }
+          ? sag('ec.zone.schnitt_wenig',' ACHTUNG: auf dieser Karte nimmt der Schnitt nur {anteil} des Bildes ganz weg, den Rest dunkelt er bloß ab. Für eine harte Zone die Verdeckung auf „aus" stellen.',{anteil:vH(zl.ganzWeg)})
+          : sag('ec.zone.schnitt',' Der Schnitt nimmt {anteil} des Bildes ganz weg.',{anteil:vH(zl.ganzWeg)})) : ''); }
   return aufenthaltWie(e.art)
-    + (ZONE_UNGENAU.has(e.art) ? ' Diese Art malt einen weichen Saum über ihren Körper hinaus; ein Rest davon kann in die verbotene Zone reichen.' : '')
-    + RASTER_SATZ + leerWarnung(e); }
+    + (ZONE_UNGENAU.has(e.art) ? sag('ec.zone.saum',' Diese Art malt einen weichen Saum über ihren Körper hinaus; ein Rest davon kann in die verbotene Zone reichen.') : '')
+    + RASTER_SATZ() + leerWarnung(e); }
 /* DIE ZEILE ENTSCHEIDET NICHTS MEHR, UND DAS WIRD GESAGT (18.09.2026, Schritt 2). Bis heute
    standen hier zwei Saetze: „liegt vor dem Effekt und nimmt ihn dort weg" (Wert vorn) und
    „Nichts liegt vor dem Effekt" (Wert aus). Der zweite ist seit Schritt 2 eine Falschaussage -
@@ -1022,7 +1051,7 @@ function aufenthaltNotiz(e){
    sie heute noch bewirkt, ist nichts, und genau das sagt die Notiz. */
 function verdeckNotiz(e){
   if(!tiefeKarteDa()||!TIEFE_KOERPER(e)||e.tiefeVerdeckung==='zone') return null;
-  return 'Diese Zeile wirkt nicht mehr: verdeckt wird jedes Teilchen nach seiner eigenen Entfernung, sobald es eine Tiefenkarte gibt — in vier Tiefenschichten, bildpunktgenau. Das ist der Vogel, der halb hinter dem Pfosten steckt und auch halb weg ist. Die Zeile verschwindet mit dem nächsten Schritt.'; }
+  return sag('ec.zone.verdeck_wirkt_nicht','Diese Zeile wirkt nicht mehr: verdeckt wird jedes Teilchen nach seiner eigenen Entfernung, sobald es eine Tiefenkarte gibt — in vier Tiefenschichten, bildpunktgenau. Das ist der Vogel, der halb hinter dem Pfosten steckt und auch halb weg ist. Die Zeile verschwindet mit dem nächsten Schritt.'); }
 /* HIER STAND DIE WARNUNG VOR UNEINIGEN GRENZEN (grenzeUneins, bis 21.09.2026) - und mit ihr die
    beiden Notizen unter den Reglern. Der Kommentar, der sie begruendete, hat den Tag
    vorweggenommen: „Die Grenze beschreibt das BILD, haengt aber am Effekt - solange das so ist,
@@ -1044,9 +1073,9 @@ function leerraumNotiz(e){ if(!tiefeKarteDa()) return null;
      Verdeckung immer gilt, wirkt der Vorraum immer - also spricht die Notiz auch immer. */
   const L=leerVor();
   return (L>0.001
-    ? 'Vor der Karte liegt ein leerer Vorraum von ' + vH(L) + ' des Weges von ganz hinten nach ganz vorn — von dem Band, das „Grenze“ und „Weichheit“ aufspannen. Die Entfernung eines Teilchens wird aus dem freien Bereich an seinem Geburtsort gewürfelt: von der Fläche dort bis an das vordere Ende dieses Vorraums.'
-    : 'Ohne Vorraum: die Entfernung eines Teilchens reicht höchstens bis „ganz vorn“ — bis an die vordere Kante des Bandes, das „Grenze“ und „Weichheit“ aufspannen. Davor entsteht nichts mehr.')
-    + ' Hinter der Fläche entsteht nichts, denn eine Tiefenkarte ist eine Fläche und kein Volumen.'; }
+    ? sag('ec.raum.vorraum','Vor der Karte liegt ein leerer Vorraum von {anteil} des Weges von ganz hinten nach ganz vorn — von dem Band, das „Grenze“ und „Weichheit“ aufspannen. Die Entfernung eines Teilchens wird aus dem freien Bereich an seinem Geburtsort gewürfelt: von der Fläche dort bis an das vordere Ende dieses Vorraums.',{anteil:vH(L)})
+    : sag('ec.raum.ohne_vorraum','Ohne Vorraum: die Entfernung eines Teilchens reicht höchstens bis „ganz vorn“ — bis an die vordere Kante des Bandes, das „Grenze“ und „Weichheit“ aufspannen. Davor entsteht nichts mehr.'))
+    + sag('ec.raum.hinter_flaeche',' Hinter der Fläche entsteht nichts, denn eine Tiefenkarte ist eine Fläche und kein Volumen.'); }
 /* WOHER DAS TEILCHEN SEINE ENTFERNUNG HAT, WIE WEIT SIE AUF DIESER KARTE REICHT, UND WAS DIE
    EINSTELLUNG WEGNIMMT. Drei Auskuenfte, alle GERECHNET (raumSpanne, bodenZellen), keine gesetzt:
    - Die Herkunft kommt aus derselben Stelle wie im Maler (herkunftVon), also auch mit dem
@@ -1068,7 +1097,7 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
   /* NICHT MEHR „FLACH WIE BISHER" (Schritt 2). Bei Raumtiefe 0 sind alle Teilchen gleich gross
      und gleich schnell - verdeckt wird aber jedes nach seiner eigenen Entfernung, und das ist
      keine Reglerstellung mehr. Der alte Satz allein waere jetzt die Falschaussage. */
-  if(!(e.raumtiefe>0.001)) return 'Größe und Tempo bleiben flach: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen. Verdeckt wird jedes trotzdem nach seiner eigenen Entfernung — das gilt immer.';
+  if(!(e.raumtiefe>0.001)) return sag('ec.raum.flach','Größe und Tempo bleiben flach: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen. Verdeckt wird jedes trotzdem nach seiner eigenen Entfernung — das gilt immer.');
   const tp=tiefeProben(); if(!tp) return null;
   const L=leerVor(), sp=tiefeSpanne(tp), HK=herkunftVon(e);
   const ZONW={ iv:zonenIntervalle(e), raumAn:zonenRaumAn(e) };
@@ -1077,14 +1106,14 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
      die Spanne, was fuer "immer da" gilt. Die Notiz rechnet also denselben Fall wie das Bild. */
   const herk=(HK.herk==='boden'&&(!bz||!bz.n))?'da':HK.herk;
   const rs=raumSpanne(e,tp,ZONW,L,herk,HK.runter,bz);
-  const wo=HK.herk==='quelle'?'Die Entfernung kommt aus dem freien Bereich an der gesetzten Quelle.'
-    :HK.herk==='boden'?'Die Entfernung kommt aus dem freien Bereich über der Bodenfläche: unten am Rand nah, weiter oben fern — und dort wird das Teilchen auch gemalt.'
-    :HK.herk==='rand'?('Die Entfernung kommt aus dem freien Bereich am '+(HK.runter?'oberen':'unteren')+' Bildrand, in der eigenen Spalte — dort kommt diese Art herein, nicht von ihrem jetzigen Ort.')
-    :'Die Entfernung kommt aus dem freien Bereich an der eigenen Stelle — diese Art ist immer schon da.';
+  const wo=HK.herk==='quelle'?sag('ec.raum.wo_quelle','Die Entfernung kommt aus dem freien Bereich an der gesetzten Quelle.')
+    :HK.herk==='boden'?sag('ec.raum.wo_boden','Die Entfernung kommt aus dem freien Bereich über der Bodenfläche: unten am Rand nah, weiter oben fern — und dort wird das Teilchen auch gemalt.')
+    :HK.herk==='rand'?(HK.runter?sag('ec.raum.wo_rand_oben','Die Entfernung kommt aus dem freien Bereich am oberen Bildrand, in der eigenen Spalte — dort kommt diese Art herein, nicht von ihrem jetzigen Ort.'):sag('ec.raum.wo_rand_unten','Die Entfernung kommt aus dem freien Bereich am unteren Bildrand, in der eigenen Spalte — dort kommt diese Art herein, nicht von ihrem jetzigen Ort.'))
+    :sag('ec.raum.wo_da','Die Entfernung kommt aus dem freien Bereich an der eigenen Stelle — diese Art ist immer schon da.');
   let bo='';
   if(HK.herk==='boden'&&bz) bo = bz.grund
-    ? ' ACHTUNG: ' + bz.grund + ' Die Teilchen entstehen dann an ihrer eigenen Stelle.'
-    : ' Die Bodenfläche dieser Karte nimmt ' + vH(bz.n/bz.punkte) + ' des Bildes ein — von dort steigen die Teilchen auf.';
+    ? sag('ec.raum.boden_achtung',' ACHTUNG: {grund} Die Teilchen entstehen dann an ihrer eigenen Stelle.',{grund:bz.grund})
+    : sag('ec.raum.boden_anteil',' Die Bodenfläche dieser Karte nimmt {anteil} des Bildes ein — von dort steigen die Teilchen auf.',{anteil:vH(bz.n/bz.punkte)});
   let sa='';
   if(rs){ const R=Math.max(0,Math.min(1,e.raumtiefe));
     const gF=z=>kf(+(1+R*(2*z-1)*0.6).toFixed(2)), tF=z=>kf(+(1+R*(2*z-1)*0.5).toFixed(2));
@@ -1093,12 +1122,10 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
        der wirklichen (siehe gebOrte) - "nicht kleiner als" und "bis zu" stimmen darueber, ein
        "ist 0,4-fach gross" stimmte nicht. Und das harte Betretungsverbot kann die Spanne noch
        weiter einengen; auch das macht eine Grenze wahr und einen Punktwert falsch. */
-    sa=' Der freie Bereich an den Geburtsorten dieser Herkunft reicht auf dieser Karte von '
-      + kf(+rs.min.toFixed(2)) + ' bis ' + kf(+rs.max.toFixed(2))
-      + ': damit wird kein Teilchen kleiner als ' + gF(rs.min) + '-fach oder langsamer als ' + tF(rs.min)
-      + '-fach, keines größer als ' + gF(rs.max) + '-fach oder schneller als ' + tF(rs.max) + '-fach'
-      + (dF(rs.min)?(', und blasser als ' + dF(rs.min) + ' % wird keines'):'') + '.';
-    if(rs.leer) sa += ' ACHTUNG: an ' + vH(rs.leerAnteil) + ' dieser Geburtsorte gibt es den gewählten Aufenthaltsbereich gar nicht — die Fläche liegt dort schon vor der Grenze. Solche Teilchen bleiben auf der Fläche und damit im Vordergrund, obwohl die Zeile „Aufenthalt“ etwas anderes sagt.'; }
+    sa=sag('ec.raum.spanne',' Der freie Bereich an den Geburtsorten dieser Herkunft reicht auf dieser Karte von {a} bis {b}: damit wird kein Teilchen kleiner als {g1}-fach oder langsamer als {t1}-fach, keines größer als {g2}-fach oder schneller als {t2}-fach',
+        {a:kf(+rs.min.toFixed(2)), b:kf(+rs.max.toFixed(2)), g1:gF(rs.min), t1:tF(rs.min), g2:gF(rs.max), t2:tF(rs.max)})
+      + (dF(rs.min)?sag('ec.raum.spanne_blass',', und blasser als {d} % wird keines',{d:dF(rs.min)}):'') + '.';
+    if(rs.leer) sa += sag('ec.raum.leer_achtung',' ACHTUNG: an {anteil} dieser Geburtsorte gibt es den gewählten Aufenthaltsbereich gar nicht — die Fläche liegt dort schon vor der Grenze. Solche Teilchen bleiben auf der Fläche und damit im Vordergrund, obwohl die Zeile „Aufenthalt“ etwas anderes sagt.',{anteil:vH(rs.leerAnteil)}); }
   return wo + bo + sa; }
 
 /* DER ANTRIEB AM PARTIKEL-EFFEKT (Caspar_D, 16.09.2026: "mach beides, fallen und kanone"). Die
@@ -1111,12 +1138,12 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
 [['licht',{lmQuelle:'takt',lmTiefe:.6}],['lichtRaum',{lmQuelle:'takt',lmTiefe:.6}],['laserRaum',{lmQuelle:'takt',lmTiefe:.6}],['strahlenRaum',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['partikel',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
   .forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...lmParams(v)); });
 { const pl=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.lm);
-  if(pl) pl.grau=e=>ART_ANTRIEB[e.art]?null:('Diese Art fliegt gleichmäßig weiter — nur die Konfetti-Kanone (ihre Salven) und der Glitzer (seine Blitze) hängen am Antrieb.'
+  if(pl) pl.grau=e=>ART_ANTRIEB[e.art]?null:(sag('ec.partikel.antrieb_grau','Diese Art fliegt gleichmäßig weiter — nur die Konfetti-Kanone (ihre Salven) und der Glitzer (seine Blitze) hängen am Antrieb.')
     /* NICHT AUF EINEN SCHALTER ZEIGEN, DER HIER NICHTS TUT (Gegenlesen 16.09.2026). Der Satz stand
        bis heute bei ALLEN sechzehn Arten ohne Salve - auch bei Sternschnuppe und Schwarm, die ihre
        Bahn selbst rechnen und den Windstoss gar nicht bekommen. Eine Zeile, die zu einem Regler
        schickt, der an dieser Art still steht, ist dieselbe Luege wie der Regler selbst (Regel 11). */
-    +(EIGENUHR.has(e.art)?'':' Windstöße im Takt stehen links und hängen unmittelbar am Schlagraster.'));
+    +(EIGENUHR.has(e.art)?'':sag('ec.partikel.boeen_links',' Windstöße im Takt stehen links und hängen unmittelbar am Schlagraster.')));
   /* WINDSTOESSE GIBT ES NUR AUF DER GEMEINSAMEN UHR (gemessen 16.09.2026: Rezept mit und ohne Boe
      gab bei sternschnuppen und schwarm BITGLEICHE Clip-Pruefsummen, bei den sechzehn anderen Arten
      verschiedene). Der Stoss `boe` faehrt als `gx` in die Bahn; sternBahn und schwarmLagen bekommen
@@ -1126,8 +1153,8 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
   const pb=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.k==='boeen');
   const pbs=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.k==='boeenStaerke');
   const boeGrund=e=>EIGENUHR.has(e.art)?(e.art==='sternschnuppen'
-    ?'Eine Schnuppe fällt nicht durch die Luft, sie zieht ihre Bahn — ein Stößchen im Takt greift an ihr nicht an. Der Wind-Regler legt sie trotzdem schräg.'
-    :'Die Schar hält gegen den Wind und folgt ihrer eigenen Bahn — ein Stoß im Takt verreißt sie nicht. Der Wind-Regler lehnt ihre Bahn trotzdem zur Seite.'):null;
+    ?sag('ec.partikel.boeen_schnuppe','Eine Schnuppe fällt nicht durch die Luft, sie zieht ihre Bahn — ein Stößchen im Takt greift an ihr nicht an. Der Wind-Regler legt sie trotzdem schräg.')
+    :sag('ec.partikel.boeen_schar','Die Schar hält gegen den Wind und folgt ihrer eigenen Bahn — ein Stoß im Takt verreißt sie nicht. Der Wind-Regler lehnt ihre Bahn trotzdem zur Seite.')):null;
   if(pb) pb.grau=boeGrund; if(pbs) pbs.grau=boeGrund; }
 /* QUELLE UND FLUG als zusammengesetzter Block, nach dem Muster des Raum-Blocks. Ein Schluessel in
    GEMEIN, damit die Zeilen in der generischen Spalte stehen und spaeter jeder Effekt denselben
@@ -1154,6 +1181,19 @@ for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue
      mit Grund ist fuer Zeilen, die es gibt und die gerade nichts bestimmen (Hausgesetz 16.09.2026). */
   if(TIEFE_KOERPER({typ:k})) T.params.push(Object.assign({}, RAUM_PARAM)); }   /* der Leerraum ebenso */
 
+/* DIE REGISTRY IN DER SPRACHE DER OBERFLAECHE (17.10.2026). Name, Beschreibung, Reglerzeilen, Schalter und die
+   Woerter der Auswahllisten stehen oben deutsch und bleiben dort die Wahrheit; diese Funktion legt ueber sie die
+   Anzeige - beim ersten Aufbau und bei jedem Sprachwechsel. Das Deutsche wird beim ersten Mal gemerkt, damit der Weg
+   zurueck byte-gleich ist. Werte (sel[i][0], k, def) bleiben unberuehrt: sie sind Rezept. */
+const REG_DE = new WeakMap();
+function effekteSprache(){
+  const merk=(o,felder)=>{ let m=REG_DE.get(o); if(!m){ m={}; felder.forEach(f=>{ if(typeof o[f]==='string') m[f]=o[f]; }); REG_DE.set(o,m); } return m; };
+  Object.keys(EFFEKTE).forEach(typ=>{ const T=EFFEKTE[typ], mt=merk(T,['label','besch']);
+    if(mt.label!=null) T.label=sagNach(mt.label); if(mt.besch!=null) T.besch=sagNach(mt.besch);
+    (T.params||[]).forEach(p=>{ const mp=merk(p,['lbl','tog']);
+      if(mp.lbl!=null) p.lbl=sagNach(mp.lbl); if(mp.tog!=null) p.tog=sagNach(mp.tog);
+      if(Array.isArray(p.sel)) p.sel.forEach(o=>{ if(Array.isArray(o)&&typeof o[1]==='string'){ const mo=merk(o,[1]); if(mo[1]!=null) o[1]=sagNach(mo[1]); } }); }); });
+}
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
@@ -1392,18 +1432,18 @@ const ART_LMQUELLE={ konfettiKanone:'takt', glitzer:'takt' };
    Regen, Staub, Blätter, Funken, Glühwürmchen), bekommen keine Zeile: Schweigen ist
    hier keine Luecke, sondern die richtige Auskunft. */
 const ART_BESCH={
-  blasen:'Auch als: Detritus, Plankton, Sporen, Schwebstaub im Licht.',
-  schwaden:'Rauch: wenige, große, Verrechnung „Über“ — und sie leuchten nicht selbst, sondern nehmen das Licht auf, das in der Kette hängt. Ein Feuer darunter beleuchtet damit seinen eigenen Rauch.',
-  asche:'Asche sieht mit Verrechnung „Über“ am besten aus.',
-  schmetterling:'Vier gebogene Flügel statt zweier Ellipsen; der Schlag ist eine Stauchung, keine Drehung.',
-  konfetti:'Plättchen aus Papier: sie taumeln im Fallen und drehen sich dabei. Der feste bunte Satz bringt sechs Farben mit — die Farbquelle stellt auch auf einfarbig oder zweifarbig um.',
-  konfettiKanone:'Schießt stoßweise aus EINEM Punkt; ihre Salven liegen auf dem Antrieb rechts.',
-  daunen:'Fast schwerelos: sie fällt langsamer als jede andere Art und segelt dabei weit zur Seite.',
-  bokeh:'Unscharfe Lichtkreise — je größer, desto blasser, weil sich dasselbe Licht auf mehr Fläche verteilt.',
-  glitzer:'Kurze Blitze statt fliegender Körper; sie liegen auf demselben Antrieb wie die Salven der Kanone.',
-  pusteblume:'Samen, die segeln statt zu fallen — der Schirm ist das, was sie trägt.',
-  sternschnuppen:'Ein Ereignis und kein Nieselregen: je Cliplänge fliegt eine, ab Menge 200 zwei.',
-  schwarm:'Die einzige Art, die kein Wetter zeigt, sondern Leben: jeder Vogel weicht seinen Nachbarn aus und richtet sich nach ihnen, während die Schar einer wandernden Mitte folgt.' };
+  get blasen(){ return sag('ec.partikel.art.blasen','Auch als: Detritus, Plankton, Sporen, Schwebstaub im Licht.'); },
+  get schwaden(){ return sag('ec.partikel.art.schwaden','Rauch: wenige, große, Verrechnung „Über“ — und sie leuchten nicht selbst, sondern nehmen das Licht auf, das in der Kette hängt. Ein Feuer darunter beleuchtet damit seinen eigenen Rauch.'); },
+  get asche(){ return sag('ec.partikel.art.asche','Asche sieht mit Verrechnung „Über“ am besten aus.'); },
+  get schmetterling(){ return sag('ec.partikel.art.schmetterling','Vier gebogene Flügel statt zweier Ellipsen; der Schlag ist eine Stauchung, keine Drehung.'); },
+  get konfetti(){ return sag('ec.partikel.art.konfetti','Plättchen aus Papier: sie taumeln im Fallen und drehen sich dabei. Der feste bunte Satz bringt sechs Farben mit — die Farbquelle stellt auch auf einfarbig oder zweifarbig um.'); },
+  get konfettiKanone(){ return sag('ec.partikel.art.konfettiKanone','Schießt stoßweise aus EINEM Punkt; ihre Salven liegen auf dem Antrieb rechts.'); },
+  get daunen(){ return sag('ec.partikel.art.daunen','Fast schwerelos: sie fällt langsamer als jede andere Art und segelt dabei weit zur Seite.'); },
+  get bokeh(){ return sag('ec.partikel.art.bokeh','Unscharfe Lichtkreise — je größer, desto blasser, weil sich dasselbe Licht auf mehr Fläche verteilt.'); },
+  get glitzer(){ return sag('ec.partikel.art.glitzer','Kurze Blitze statt fliegender Körper; sie liegen auf demselben Antrieb wie die Salven der Kanone.'); },
+  get pusteblume(){ return sag('ec.partikel.art.pusteblume','Samen, die segeln statt zu fallen — der Schirm ist das, was sie trägt.'); },
+  get sternschnuppen(){ return sag('ec.partikel.art.sternschnuppen','Ein Ereignis und kein Nieselregen: je Cliplänge fliegt eine, ab Menge 200 zwei.'); },
+  get schwarm(){ return sag('ec.partikel.art.schwarm','Die einzige Art, die kein Wetter zeigt, sondern Leben: jeder Vogel weicht seinen Nachbarn aus und richtet sich nach ihnen, während die Schar einer wandernden Mitte folgt.'); } };
 /* WOHER DIE FARBEN KOMMEN (Caspar_D, 16.09.2026: "bei partikeln haette ich gerne noch Konfetti und
    auch mit mehr als 2 Farben" - "ich finde aber auch den 2Farbakzent gut" - "auch ist einfarbiges
    Konfetti - gut (da kann man aber auch das Farbpaar gleich einstellen), man koennte auch Schnee
@@ -1414,9 +1454,9 @@ const ART_BESCH={
    Der feste Satz ist mit Absicht bildunabhaengig - ein Fest hat seine eigenen Farben, und ein
    Titelbild in zwei Rottoenen soll daraus kein rotes Konfetti machen. */
 const FEST_SATZ=['#ff3b5c','#ffd23a','#3ad1ff','#5fe08a','#c27aff','#ff8a3c'];
-const FARB_GRUND={ paar:'Die beiden Akzentfarben des Titelbildes malen. Für eigene Farben die Farbquelle auf „Eigenes Paar“ stellen.',
-  bunt:'Die gemessenen Haupttöne des Titelbildes und seine beiden Akzente malen.',
-  fest:'Der feste bunte Satz bringt seine sechs Farben selbst mit — mit Absicht unabhängig vom Titelbild.', ein:null, eigen:null };
+const FARB_GRUND={ get paar(){ return sag('ec.partikel.farbquelle.paar','Die beiden Akzentfarben des Titelbildes malen. Für eigene Farben die Farbquelle auf „Eigenes Paar“ stellen.'); },
+  get bunt(){ return sag('ec.partikel.farbquelle.bunt','Die gemessenen Haupttöne des Titelbildes und seine beiden Akzente malen.'); },
+  get fest(){ return sag('ec.partikel.farbquelle.fest','Der feste bunte Satz bringt seine sechs Farben selbst mit — mit Absicht unabhängig vom Titelbild.'); }, ein:null, eigen:null };
 /* Welche Farbquelle eine Art mitbringt: Konfetti will bunt sein, alles andere bleibt beim Paar. */
 /* Die Schar bringt ihre eigenen dunklen Toene mit und darum auch "Eigenes Paar": ein Vogel ist
    eine Silhouette gegen den Himmel, keine Leuchte. Wer bunte Voegel will, stellt die Farbquelle
@@ -1459,8 +1499,8 @@ function dunkelNotiz(e){ if(e.typ!=='partikel') return null;
   if(!AUFHELLER.has(e.verr)) return null;
   const hell=(q==='ein')?tonHell(e.farbe):Math.max(tonHell(e.farbe),tonHell(e.farbe2));
   if(hell>0.22) return null;
-  const nam=(VERR.find(v=>v[0]===e.verr)||['','diese Verrechnung'])[1];
-  return '„'+nam+'“ kann nur aufhellen — eine so dunkle Farbe bleibt damit unsichtbar. Für dunkle Teilchen die Verrechnung rechts auf „Über (ersetzen)“ stellen.'; }
+  const nam=(VERR.find(v=>v[0]===e.verr)||['',sag('ec.verr.diese','diese Verrechnung')])[1];
+  return sag('ec.partikel.dunkel_aufheller','„{nam}“ kann nur aufhellen — eine so dunkle Farbe bleibt damit unsichtbar. Für dunkle Teilchen die Verrechnung rechts auf „Über (ersetzen)“ stellen.',{nam:sagNach(nam)}); }
 function farbSatzNotiz(e){
   /* DIE SCHAR IST EINE SILHOUETTE (gemessen 16.09.2026: bei Vorgaben und dunklem Titelbild
      sinken die sichtbaren Bildpunkte ueber den Clip von 1,1 auf 0,1 Promille - Faktor 11, mit
@@ -1474,11 +1514,11 @@ function farbSatzNotiz(e){
      waeren farben.toene[].hell mal anteil oder farben.umfang, und bei 20 von 325 Titeln ist
      toene leer. Diese Wahl gehoert Caspar_D, nicht dem Gegenlesen. */
   if(e.typ==='partikel'&&e.art==='schwarm'&&(e.farbSatz||'paar')==='eigen'&&tonHell(e.farbe)<0.3&&tonHell(e.farbe2)<0.3)
-    return 'Die Schar malt eine dunkle Silhouette — vor einem dunklen Titelbild verschwindet sie. Dann die beiden Farben hell stellen (oder die Farbquelle auf „Titelbild-Paar“).';
+    return sag('ec.partikel.schar_dunkel','Die Schar malt eine dunkle Silhouette — vor einem dunklen Titelbild verschwindet sie. Dann die beiden Farben hell stellen (oder die Farbquelle auf „Titelbild-Paar“).');
   if((e.farbSatz||'paar')!=='bunt') return null;
   const t=(DATA&&DATA.farben&&Array.isArray(DATA.farben.toene))?DATA.farben.toene.slice(0,3).filter(x=>x&&x.hex).length:0;
-  return t ? ('Dieser Titel gibt '+(t+2)+' Farben her: '+t+' gemessene Hauptt\u00f6ne und seine beiden Akzente.')
-           : 'Dieser Titel hat keine gemessenen Hauptt\u00f6ne \u2014 es malen nur seine beiden Akzente, also dasselbe Bild wie \u201eTitelbild-Paar\u201c.'; }
+  return t ? sag('ec.partikel.bunt_toene','Dieser Titel gibt {n} Farben her: {t} gemessene Hauptt\u00f6ne und seine beiden Akzente.',{n:t+2,t})
+           : sag('ec.partikel.bunt_keine','Dieser Titel hat keine gemessenen Hauptt\u00f6ne \u2014 es malen nur seine beiden Akzente, also dasselbe Bild wie \u201eTitelbild-Paar\u201c.'); }
 /* WIE VIELE SCHNUPPEN JE CLIPLAENGE (Caspar_D, 16.09.2026, Auftragsliste 8: "rare, fast, with a
    trail - an event, not a drizzle"). Zweihundert Sternschnuppen sind Nieselregen, und damit waere
    genau das weg, was die Art ausmacht. Der Mengenregler darf hier deshalb nicht die Zahl der
@@ -1487,9 +1527,11 @@ function sternZahl(n){ return (Number(n)||0)>=200 ? 2 : 1; }
 /* WAS "MENGE" AN DIESER ART BEDEUTET. Bei Schnee ist es die Zahl der Flocken im Bild; bei drei
    Arten ist es das nicht, und dann steht es da. */
 function mengeNotiz(e){ if(e.typ!=='partikel') return null;
-  if(e.art==='sternschnuppen') return 'Sternschnuppen sind ein Ereignis, kein Nieselregen: je Clipl\u00e4nge '+(sternZahl(e.anzahl)===1?'fliegt EINE':'fliegen ZWEI')+'. Ab Menge 200 kommt die zweite dazu, mehr wird es nicht \u2014 mehr w\u00e4re Regen.';
-  if(e.art==='glitzer') return 'Die Menge ist die Zahl der Stellen, an denen es blitzen kann. Wie oft sie blitzen, sagt der Antrieb rechts \u2014 ohne ihn alle 1,6 s.';
-  if(e.art==='schwarm') return 'Die Menge ist die St\u00e4rke der Schar. Jeder Vogel weicht seinen Nachbarn aus, die Schar wird also gr\u00f6\u00dfer statt gedr\u00e4ngter \u2014 bis sie das Bild f\u00fcllt, dann wird sie dichter.';
+  if(e.art==='sternschnuppen') return sternZahl(e.anzahl)===1
+    ? sag('ec.partikel.schnuppen_eine','Sternschnuppen sind ein Ereignis, kein Nieselregen: je Clipl\u00e4nge fliegt EINE. Ab Menge 200 kommt die zweite dazu, mehr wird es nicht \u2014 mehr w\u00e4re Regen.')
+    : sag('ec.partikel.schnuppen_zwei','Sternschnuppen sind ein Ereignis, kein Nieselregen: je Clipl\u00e4nge fliegen ZWEI. Ab Menge 200 kommt die zweite dazu, mehr wird es nicht \u2014 mehr w\u00e4re Regen.');
+  if(e.art==='glitzer') return sag('ec.partikel.glitzer_menge','Die Menge ist die Zahl der Stellen, an denen es blitzen kann. Wie oft sie blitzen, sagt der Antrieb rechts \u2014 ohne ihn alle 1,6 s.');
+  if(e.art==='schwarm') return sag('ec.partikel.schwarm_menge','Die Menge ist die St\u00e4rke der Schar. Jeder Vogel weicht seinen Nachbarn aus, die Schar wird also gr\u00f6\u00dfer statt gedr\u00e4ngter \u2014 bis sie das Bild f\u00fcllt, dann wird sie dichter.');
   return null; }
 /* Die Farben dieser Karte als Liste von Tonwerten. ZWEI Eintraege sind eine SPANNE - die
    Farbheterogenitaet blendet zwischen ihnen, genau wie seit jeher, Zahl fuer Zahl. MEHR (oder
@@ -1766,9 +1808,9 @@ function schlagHz(){ const S=DATA&&DATA.schlaege; if(!S||S.length<8) return 0;
    nicht mehr darstellbar, sie erscheint als falsche, langsamere - und bei genau 30 Hz steht sie
    still. Als Flackern lesbar bleibt sie, solange etwa vier Bilder auf eine Schwingung kommen. */
 const BILD_NYQUIST=15, BILD_LESBAR=7.5;
-function rateUrteil(hz){ if(!(hz>0)) return ''; const z=hz.toFixed(1).replace('.',',')+' pro Sekunde';
-  if(hz>BILD_NYQUIST) return z+' — im Export nicht mehr darstellbar, es entsteht ein falsches, langsameres Muster.';
-  if(hz>BILD_LESBAR) return z+' — im Export nur noch ein Stottern, kein Flackern.';
+function rateUrteil(hz){ if(!(hz>0)) return ''; const z=sag('ec.lm.rate','{z} pro Sekunde',{z:kf(hz.toFixed(1))});
+  if(hz>BILD_NYQUIST) return sag('ec.lm.rate_falsch','{z} — im Export nicht mehr darstellbar, es entsteht ein falsches, langsameres Muster.',{z});
+  if(hz>BILD_LESBAR) return sag('ec.lm.rate_stottern','{z} — im Export nur noch ein Stottern, kein Flackern.',{z});
   return z+'.'; }
 const LM_QUELLEN=[['stetig','stetig'],['takt','im Takt'],['eins','auf der Eins'],['zufall','zuf\u00e4llige Schl\u00e4ge'],['hz','Frequenz']];
 const lmHash=x=>{ const v=Math.sin(x*12.9898+78.233)*43758.5453; return v-Math.floor(v); };
@@ -2137,19 +2179,19 @@ function zonenWahlHTML(e){
   const zl = zonenListe();
   const imBild = {};
   if(zl) zl.forEach(z => imBild[z.name] = (imBild[z.name]||0) + z.anteil);
-  let h = '<div class="tbs-regler tbs-zonenwahlzeile"><span>Wirkt in</span><div class="tbs-zonenwahl">';
+  let h = '<div class="tbs-regler tbs-zonenwahlzeile"><span>'+sag('ec.zone.wirkt_in','Wirkt in')+'</span><div class="tbs-zonenwahl">';
   RAUM_VOR_SZENE.forEach(name=>{
     const an = will.indexOf(name) >= 0;
-    h += '<button type="button" class="tbs-zk tbs-zkvor'+(an?' an':'')+'" data-zone="'+name+'" title="'+RAUM_BESCHREIBUNG[name]+'">'
-       + '<span class="tbs-zkhaken">'+(an?'\u2713':'')+'</span><span class="tbs-zkname">'+name+'</span>'
-       + '<span class="tbs-zkmass">vor der Szene</span></button>';
+    h += '<button type="button" class="tbs-zk tbs-zkvor'+(an?' an':'')+'" data-zone="'+name+'" title="'+sagNach(RAUM_BESCHREIBUNG[name])+'">'
+       + '<span class="tbs-zkhaken">'+(an?'\u2713':'')+'</span><span class="tbs-zkname">'+sagNach(name)+'</span>'
+       + '<span class="tbs-zkmass">'+sag('ec.zone.vor_der_szene','vor der Szene')+'</span></button>';
   });
   ZONEN_BEREICHE.forEach(([name,a,b])=>{
     if(imBild[name] == null) return;        /* hier nicht detektiert, also hier nicht da */
     const an = will.indexOf(name) >= 0;
-    const tt = name+' \u2014 '+Math.round(imBild[name])+'\u2009% der Tiefe dieses Bildes';
+    const tt = sag('ec.zone.titel','{name} \u2014 {p}\u2009% der Tiefe dieses Bildes',{name:sagNach(name),p:Math.round(imBild[name])});
     h += '<button type="button" class="tbs-zk'+(an?' an':'')+'" data-zone="'+name+'" title="'+tt+'">'
-       + '<span class="tbs-zkhaken">'+(an?'\u2713':'')+'</span><span class="tbs-zkname">'+name+'</span>'
+       + '<span class="tbs-zkhaken">'+(an?'\u2713':'')+'</span><span class="tbs-zkname">'+sagNach(name)+'</span>'
        + '<span class="tbs-zkmass">'+Math.round(imBild[name])+'\u2009%</span></button>';
   });
   h += '</div><span></span></div>';
@@ -2163,14 +2205,14 @@ function zonenWahlHTML(e){
      waere schlimmer als einer, der nichts tut und es sagt. */
   const fehlen = will.filter(n => RAUM_VOR_SZENE.indexOf(n) < 0 && imBild[n] == null);
   const treffer = will.filter(n => RAUM_VOR_SZENE.indexOf(n) >= 0 || imBild[n] != null);
-  if(!zl) h += '<div class="tbs-graugrund">Dieses Bild hat keine Tiefenkarte \u2014 ohne sie wirkt der Effekt \u00fcberall, gleich was angekreuzt ist.</div>';
-  else if(!will.length) h += '<div class="tbs-graugrund">Keine Zone angekreuzt: der Effekt wirkt nirgends. Kreuze mindestens eine an.</div>';
-  else if(!treffer.length) h += '<div class="tbs-fehltlicht">Dieser Effekt wirkt auf diesem Bild <b>nirgends</b>: Er ist f\u00fcr '
-      + fehlen.map(n=>'\u201e'+n+'\u201c').join(' und ') + ' angekreuzt, und diese Zone'+(fehlen.length>1?'n gibt es hier nicht':' gibt es hier nicht')
-      + '. Kreuze eine der vorhandenen an \u2014 oder setze im Tiefenregister eine Grenze, die sie entstehen l\u00e4sst.'
-      + '<button type="button" class="tbs-mini" data-zonenheilen="1" style="width:auto;padding:0 9px;margin-top:5px">Auf die vorhandenen Zonen setzen</button></div>';
-  else if(fehlen.length) h += '<div class="tbs-graugrund">Zus\u00e4tzlich angekreuzt, aber hier nicht vorhanden: '
-      + fehlen.map(n=>'\u201e'+n+'\u201c').join(', ') + '. Das bleibt im Rezept stehen und wirkt auf einem Bild, das diese Zone hat.</div>';
+  if(!zl) h += '<div class="tbs-graugrund">'+sag('ec.zone.keine_karte','Dieses Bild hat keine Tiefenkarte \u2014 ohne sie wirkt der Effekt \u00fcberall, gleich was angekreuzt ist.')+'</div>';
+  else if(!will.length) h += '<div class="tbs-graugrund">'+sag('ec.zone.keine_angekreuzt','Keine Zone angekreuzt: der Effekt wirkt nirgends. Kreuze mindestens eine an.')+'</div>';
+  else if(!treffer.length) h += '<div class="tbs-fehltlicht">'
+      + (fehlen.length>1
+        ? sag('ec.zone.nirgends_mehrere','Dieser Effekt wirkt auf diesem Bild <b>nirgends</b>: Er ist f\u00fcr {namen} angekreuzt, und diese Zonen gibt es hier nicht. Kreuze eine der vorhandenen an \u2014 oder setze im Tiefenregister eine Grenze, die sie entstehen l\u00e4sst.',{namen:fehlen.map(n=>sag('ec.zone.zitat','\u201e{n}\u201c',{n:sagNach(n)})).join(sag('ec.zone.und',' und '))})
+        : sag('ec.zone.nirgends_eine','Dieser Effekt wirkt auf diesem Bild <b>nirgends</b>: Er ist f\u00fcr {namen} angekreuzt, und diese Zone gibt es hier nicht. Kreuze eine der vorhandenen an \u2014 oder setze im Tiefenregister eine Grenze, die sie entstehen l\u00e4sst.',{namen:fehlen.map(n=>sag('ec.zone.zitat','\u201e{n}\u201c',{n:sagNach(n)})).join(sag('ec.zone.und',' und '))}))
+      + '<button type="button" class="tbs-mini" data-zonenheilen="1" style="width:auto;padding:0 9px;margin-top:5px">'+sag('ec.zone.heilen','Auf die vorhandenen Zonen setzen')+'</button></div>';
+  else if(fehlen.length) h += '<div class="tbs-graugrund">'+sag('ec.zone.zusaetzlich','Zus\u00e4tzlich angekreuzt, aber hier nicht vorhanden: {namen}. Das bleibt im Rezept stehen und wirkt auf einem Bild, das diese Zone hat.',{namen:fehlen.map(n=>sag('ec.zone.zitat','\u201e{n}\u201c',{n:sagNach(n)})).join(', ')})+'</div>';
   return h;
 }
 function zonenVonEffekt(e){
@@ -2426,17 +2468,17 @@ function quellVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heig
         for(let k=0;k<=200;k++){ const F=sternBahn(e,i,k/200*8,W,H,hs,aB2,aS2,w2,E);
           if(F[2]<=0.002){ vor=false; continue; }
           if(vor) x.lineTo(F[0],F[1]); else { x.moveTo(F[0],F[1]); vor=true; } } }
-      x.stroke(); x.fillStyle='#8a8c92'; x.fillText(E===1?'eine Schnuppe je Clipl\u00e4nge':'zwei Schnuppen je Clipl\u00e4nge',8,H-8); return; }
+      x.stroke(); x.fillStyle='#8a8c92'; x.fillText(E===1?sag('ec.quelle.vor.eine_schnuppe','eine Schnuppe je Clipl\u00e4nge'):sag('ec.quelle.vor.zwei_schnuppen','zwei Schnuppen je Clipl\u00e4nge'),8,H-8); return; }
     x.strokeStyle='rgba(224,179,77,.8)'; x.lineWidth=1.2; x.beginPath();
     for(let k=0;k<=120;k++){ const M=schwarmMitte(e,k/120*14,W,H,w2,au2); k?x.lineTo(M[0],M[1]):x.moveTo(M[0],M[1]); }
     x.stroke();
     const S=schwarmLagen(Object.assign({},e,{anzahl:Math.min(40,Math.round(e.anzahl||60))}),3.1,W,H,hs,au2,w2);
     x.fillStyle='rgba(255,255,255,.85)';
     for(let i=0;i<S.n;i++){ x.beginPath(); x.arc(S.X[i],S.Y[i],1.3,0,7); x.fill(); }
-    x.fillStyle='#8a8c92'; x.fillText('die Bahn der Mitte, die Schar darauf',8,H-8); return; }
+    x.fillStyle='#8a8c92'; x.fillText(sag('ec.quelle.vor.schar','die Bahn der Mitte, die Schar darauf'),8,H-8); return; }
   if((e.qForm||'bild')==='bild'){ x.fillStyle='rgba(255,255,255,.3)';
     for(let i=0;i<70;i++) x.fillRect(hs(i)*W, hs(i+1000)*H, 1.6, 1.6);
-    x.fillStyle='#8a8c92'; x.fillText('überall, im Umlauf', 8, H-8); return; }
+    x.fillStyle='#8a8c92'; x.fillText(sag('ec.quelle.vor.ueberall','überall, im Umlauf'), 8, H-8); return; }
   const au=(typeof e.auftrieb==='number'?e.auftrieb:-1), aB=Math.abs(au), aS=-Math.sign(au);
   const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25, wd=(e.wind||0);
   /* der Fleck selbst */
@@ -2453,7 +2495,7 @@ function quellVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heig
       if(vor&&Math.hypot(F[0]-vor[0],F[1]-vor[1])>W/4) x.moveTo(F[0],F[1]); else if(vor) x.lineTo(F[0],F[1]); else x.moveTo(F[0],F[1]);
       vor=F; }
     x.stroke(); }
-  x.fillStyle='#8a8c92'; x.fillText(Q_FORM.reduce((a,q)=>q[0]===(e.qForm||'bild')?q[1]:a,'') , 8, H-8); }
+  x.fillStyle='#8a8c92'; x.fillText(qFormWorte()[e.qForm||'bild']||Q_FORM.reduce((a,q)=>q[0]===(e.qForm||'bild')?q[1]:a,'') , 8, H-8); }
 function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height, lw=Math.round(W*0.42); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
   x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=1; x.beginPath(); x.moveTo(lw/2,0); x.lineTo(lw/2,H); x.moveTo(lw,0); x.lineTo(lw,H); x.stroke();
   x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath(); for(let i=0;i<=100;i++){ const rho=Math.abs(i/50-1); const f=Math.min(1.6,poolProfil(e,Math.min(0.999,rho)))/1.6; const px=i/100*lw, py=H-3-f*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
@@ -5047,8 +5089,8 @@ function kettekopfStand(){ const kk=$('#tbs-kettekopf'); if(kk) kk.classList.tog
        ist die Liste ihre eigene Reihenfolge und es gibt nichts zu sagen (20.09.2026). */
     const zst={diorama:0,kamera:0,objektiv:0}; for(const x of STAPEL) zst[stufeVon(x)]++;
     const stTxt=(['diorama','kamera','objektiv'].filter(k=>zst[k]).length>1)
-      ? ' · '+['diorama','kamera','objektiv'].filter(k=>zst[k]).map(k=>zst[k]+' '+STUFE_NAME[k]).join(' / ') : '';
-    standSetzen('Kette', !n?'kein Effekt':(n===1?'1 Effekt zugewiesen':n+' Effekte zugewiesen')+(an<n?' · '+an+' an':'')+stTxt+(so?' · Solo: '+EFFEKTE[so.typ].label:'')); }
+      ? ' · '+['diorama','kamera','objektiv'].filter(k=>zst[k]).map(k=>zst[k]+' '+stufeNameZeigen(k)).join(' / ') : '';
+    standSetzen('Kette', !n?sag('ec.kette.kein_effekt','kein Effekt'):(n===1?sag('ec.kette.ein_effekt','1 Effekt zugewiesen'):sag('ec.kette.n_effekte','{n} Effekte zugewiesen',{n}))+(an<n?sag('ec.kette.davon_an',' · {an} an',{an}):'')+stTxt+(so?sag('ec.kette.solo',' · Solo: {name}',{name:EFFEKTE[so.typ].label}):'')); }
   const pa=$('#tbs-kettekopf .tbs-pwAlle'); if(!pa) return; const na=STAPEL.filter(x=>x.an).length; pa.classList.toggle('an',na>0&&na===STAPEL.length); pa.classList.toggle('teils',na>0&&na<STAPEL.length); }
 /* ---- DIE KETTE ZEIGT JETZT, WANN SIE WAS MALT (20.09.2026) ------------------------------
    Vor dem Umbau war die Liste die Malreihenfolge - Karte fuer Karte von oben nach unten. Seit es
@@ -5082,7 +5124,7 @@ function stufeVon(e){
 /* Der Satz auf der Textkarte, wenn die Kette sie in die Szene gezogen hat. */
 function textStufeHinweis(e){ try{ if(stufeVon(e)!=='diorama') return null; const i=STAPEL.indexOf(e);
     const danach=STAPEL.slice(i+1).filter(x=>x&&x.an&&STUFE_DIORAMA.has(x.typ)).map(x=>EFFEKTE[x.typ]?EFFEKTE[x.typ].label:x.typ);
-    return 'Liegt in der Szene <b>unter</b> '+danach.join(', ')+' und fährt mit der Kamera — ans Ende der Kette gezogen, sitzt der Text wieder am Objektiv über allem.'; }catch(x){ return null; } }
+    return sag('ec.text.stufe_szene','Liegt in der Szene <b>unter</b> {namen} und fährt mit der Kamera — ans Ende der Kette gezogen, sitzt der Text wieder am Objektiv über allem.',{namen:danach.join(', ')}); }catch(x){ return null; } }
 /* WELCHE ART DIESER EFFEKT IST, STEHT AM NAMEN (Caspar_D, 21.09.2026: „ich haette gern, dass
    neben Partikel im Effektkarussell immer steht, welcher Typ - wenn ich 3 Partikeleffekte in
    einer Effektkette habe, moechte ich schon die richtige greifen").
@@ -5100,10 +5142,31 @@ function kartenArt(e, alsText){
   }catch(x){ return ''; }
 }
 function stufeMarke(e){ const st=stufeVon(e), kl={diorama:'szene',kamera:'kamera',objektiv:'film'}[st];
-  const tt={ diorama:'Szene \u2014 wird im Diorama gemalt und f\u00e4hrt mit: zoomt die Kamera heran, wird dieser Effekt gr\u00f6\u00dfer.',
-             kamera:'Kamera \u2014 das ist der Ausschnitt selbst: Fahrt, Zoom, Kippen, Sch\u00e4rfe.',
-             objektiv:'Film \u2014 sitzt an der Kamera und bleibt stehen: eine Kamera, die zoomt, zoomt ihr eigenes Filmkorn nicht.' }[st];
-  return '<i class="tbs-stufe '+kl+'" title="'+tt+'">'+STUFE_NAME[st]+'</i>'; }
+  const tt={ diorama:sag('ec.stufe.szene.titel','Szene — wird im Diorama gemalt und fährt mit: zoomt die Kamera heran, wird dieser Effekt größer.'),
+             kamera:sag('ec.stufe.kamera.titel','Kamera — das ist der Ausschnitt selbst: Fahrt, Zoom, Kippen, Schärfe.'),
+             objektiv:sag('ec.stufe.film.titel','Film — sitzt an der Kamera und bleibt stehen: eine Kamera, die zoomt, zoomt ihr eigenes Filmkorn nicht.') }[st];
+  return '<i class="tbs-stufe '+kl+'" title="'+tt+'">'+stufeNameZeigen(st)+'</i>'; }
+/* Der Name der Stufe in der Sprache der Oberflaeche. STUFE_NAME (Abschnitt A) bleibt das deutsche Original. */
+function stufeNameZeigen(st){ return ({diorama:sag('ec.stufe.szene','Szene'),kamera:sag('ec.stufe.kamera','Kamera'),objektiv:sag('ec.stufe.film','Film')})[st]||STUFE_NAME[st]; }
+/* DIE WOERTER DER AUSWAHLLISTEN VON QUELLE, RAUM UND ANTRIEB IN DER SPRACHE DER OBERFLAECHE (17.10.2026).
+   Die Listen selbst (Q_FORM, RM_*, LM_*) bleiben deutsch und sind Daten; hier wird nur die Anzeige gewaehlt,
+   ueber den WERT, nicht ueber den deutschen Wortlaut - dasselbe deutsche Wort steht anderswo mit anderer Bedeutung. */
+const listeWorte=(liste,W)=>liste.map(([v,l])=>[v,(W&&W[v]!=null)?W[v]:l]);
+function qFormWorte(){ return { bild:sag('ec.teilchen.qform.bild','das ganze Bild'), punkt:sag('ec.teilchen.qform.punkt','Punkt'), linie:sag('ec.teilchen.qform.linie','Linie'),
+  kreis:sag('ec.teilchen.qform.kreis','Kreis'), ellipse:sag('ec.teilchen.qform.ellipse','Ellipse') }; }
+function rmBewegungWorte(){ return { fest:sag('ec.raum.bewegung.fest','fest'), wandernd:sag('ec.raum.bewegung.wandernd','wandernd'), bogen:sag('ec.raum.bewegung.bogen','Bogen'),
+  schwenk:sag('ec.raum.bewegung.schwenk','Schwenk'), fahrt:sag('ec.raum.bewegung.fahrt','Fahrt (Moving Head)'), schritt:sag('ec.raum.bewegung.schritt','Schritt auf den Schlag') }; }
+function rmFormWorte(){ return { kreis:sag('ec.raum.form.kreis','Kreis'), ellipse:sag('ec.raum.form.ellipse','Ellipse (schräger Einfall)'), kegel:sag('ec.raum.form.kegel','Kegel von außen') }; }
+function rmBlendeWorte(){ return { keine:sag('ec.raum.blende.keine','keine'), punkte:sag('ec.raum.blende.punkte','Punkte'), streifen:sag('ec.raum.blende.streifen','Streifen'),
+  gitter:sag('ec.raum.blende.gitter','Gitter'), wolken:sag('ec.raum.blende.wolken','Wolken'), sprenkel:sag('ec.raum.blende.sprenkel','Sprenkel'), iris:sag('ec.raum.blende.iris','Iris'),
+  tor:sag('ec.raum.blende.tor','Torblende') }; }
+function lmQuellenWorte(){ return { stetig:sag('ec.lm.quelle.stetig','stetig'), takt:sag('ec.lm.quelle.takt','im Takt'), eins:sag('ec.lm.quelle.eins','auf der Eins'),
+  zufall:sag('ec.lm.quelle.zufall','zufällige Schläge'), hz:sag('ec.lm.quelle.hz','Frequenz') }; }
+function lmFormenWorte(){ return { rampe_auf:sag('ec.lm.muster.rampe_auf','Rampe auf, dann aus'), rampe_ab:sag('ec.lm.muster.rampe_ab','An, dann Rampe ab'),
+  peak_an:sag('ec.lm.muster.peak_an','Aus mit An-Spitzen'), peak_aus:sag('ec.lm.muster.peak_aus','An mit Aus-Spitzen'), rechteck:sag('ec.lm.muster.rechteck','Rechteck'),
+  sinus:sag('ec.lm.muster.sinus','Sinus'), flackern:sag('ec.lm.muster.flackern','Flackern'), sequenz:sag('ec.lm.muster.sequenz','Sequenz — gemalte Schritte je Periode') }; }
+function lmVorlagenWorte(){ return { doppel:sag('ec.lm.vorlage.doppel','Doppelschlag'), wechsel:sag('ec.lm.vorlage.wechsel','Wechsel'), anlauf:sag('ec.lm.vorlage.anlauf','Anlauf'),
+  ausklang:sag('ec.lm.vorlage.ausklang','Ausklang'), offbeat:sag('ec.lm.vorlage.offbeat','Offbeat') }; }
 /* Die wirklich gemalte Reihenfolge: Szene, dann Kamera, dann Film - je Stufe in Kettenreihenfolge.
    Genau das, was zeichneFrame tut (imDiorama-Schleife, dann Stufe 2, dann die zweite Schleife). */
 function stufenFolge(){ const r=[]; for(const st of ['diorama','kamera','objektiv']) for(const e of STAPEL) if(stufeVon(e)===st) r.push(e); return r; }
@@ -5111,15 +5174,15 @@ function stufenHinweisZeigen(){ const el=$('#tbs-stufenhinweis'); if(!el) return
   const folge=stufenFolge(), gleich=folge.length===STAPEL.length&&folge.every((e,i)=>e===STAPEL[i]);
   if(gleich||STAPEL.length<2){ el.hidden=true; el.textContent=''; return; }
   const namen=folge.map(e=>EFFEKTE[e.typ].label).join(' \u2192 ');
-  el.textContent='Gemalt wird nicht von oben nach unten, sondern nach Stufen: erst die Szene, dann die Kamera, zuletzt der Film. Hier hei\u00dft das: '+namen+'. Eine Karte zwischen zwei Stufen zu schieben \u00e4ndert das Bild darum nicht \u2014 innerhalb ihrer Stufe sehr wohl.';
+  el.textContent=sag('ec.stufe.hinweis','Gemalt wird nicht von oben nach unten, sondern nach Stufen: erst die Szene, dann die Kamera, zuletzt der Film. Hier heißt das: {namen}. Eine Karte zwischen zwei Stufen zu schieben ändert das Bild darum nicht — innerhalb ihrer Stufe sehr wohl.',{namen});
   el.hidden=false; }
 function renderStapel(){
   stapelBox.innerHTML='';
   kettekopfStand();
   stufenHinweisZeigen();
   if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">'
-      +'<p>Zur Voranpassung der Quelle, bevor \u00fcberhaupt visuelle Effekte aktiviert werden, kann das <a href="#" id="tbs-vorbAuf">Vorbereitungspanel aufgeklappt</a> werden.</p>'
-      +'<p>F\u00fcr die Anwendung eines Effekts \u201eEffekt hinzuf\u00fcgen\u201c aufklappen und Effekt ausw\u00e4hlen \u2014 f\u00fcr einen ersten Eindruck eines pulsierenden Helligkeitseffekts gleich <a href="#" id="tbs-beispiel">hier</a> klicken.</p></div>';
+      +'<p>'+sag('ec.kette.leer.vorb','Zur Voranpassung der Quelle, bevor überhaupt visuelle Effekte aktiviert werden, kann das {link} werden.',{link:'<a href="#" id="tbs-vorbAuf">'+sag('ec.kette.leer.vorb_link','Vorbereitungspanel aufgeklappt')+'</a>'})+'</p>'
+      +'<p>'+sag('ec.kette.leer.beispiel','Für die Anwendung eines Effekts „Effekt hinzufügen“ aufklappen und Effekt auswählen — für einen ersten Eindruck eines pulsierenden Helligkeitseffekts gleich {link} klicken.',{link:'<a href="#" id="tbs-beispiel">'+sag('ec.kette.leer.beispiel_link','hier')+'</a>'})+'</p></div>';
     const bb=$('#tbs-beispiel'); if(bb) bb.onclick=ev=>{ ev.preventDefault(); beispiel(); };
     const va=$('#tbs-vorbAuf'); if(va) va.onclick=ev=>{ ev.preventDefault(); stufeSetzen('Vorb'); const ab=$('#tbs-abVorb'); if(ab) ab.scrollIntoView({block:'start',behavior:'smooth'}); };
     fussStand(); return; }
@@ -5127,15 +5190,15 @@ function renderStapel(){
   STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ]; e.zu=(e.id!==offenId);   /* Akkordeon: nur die aktive Karte ist offen */
     const c=document.createElement('div'); c.className='tbs-karte'+(e.an?' an':'')+(e.zu?' zu':'')+(soloId?(soloId===e.id?' solo':' soloaus'):'');   /* SOLO BLEIBT SOLO UND WANDERT MIT (Caspar_D, 15.09.2026: "es darf nicht sein, das ich an etwas Aenderungen machen kann, was ich nicht sehe" - "neue karte kriegt solo und der effekt wird klarer visualisiert"): wer bei laufendem Solo eine andere Karte aufklappt oder einhaengt, gibt ihr das Solo; die uebrigen Karten sind gedimmt */
     const gleich=STAPEL.filter(x=>x.typ===e.typ), nrTxt=gleich.length>1?String(gleich.indexOf(e)+1):'';
-    let h='<div class="tbs-kopf"><span class="tbs-pw" title="an / aus"></span>'
-      +'<button class="tbs-knopf tbs-solo'+(soloId===e.id?' an':'')+'" data-tu="solo" title="Solo \u2014 nur diesen zeigen, fl\u00fcchtig">solo</button>'
-      +ikon(e.typ)+'<b class="tbs-name" title="'+T.label+kartenArt(e,true)+' \u2014 auf- / zuklappen">'+T.label
-      +'<span class="tbs-kart">'+kartenArt(e,false)+'</span>'+stufeMarke(e)+'</b><span class="tbs-nr" title="'+(nrTxt?'Nr. '+nrTxt+' von '+gleich.length+' gleichen':'')+'">'+nrTxt+'</span>'
-      +'<button class="tbs-knopf" data-tu="dup" title="Kopie darunter einh\u00e4ngen \u2014 gleiche Einstellungen, dann nur das N\u00f6tige \u00e4ndern">\u29c9</button>'
-      +'<button class="tbs-knopf tbs-weg" data-tu="weg" title="entfernen">\u00d7</button>'
-      +'<button class="tbs-knopf" data-tu="hoch" title="nach oben">\u2191</button>'
-      +'<button class="tbs-knopf" data-tu="runter" title="nach unten">\u2193</button>'
-      +'<button class="tbs-knopf tbs-klapp" data-tu="klapp" title="'+(e.zu?'aufklappen':'zuklappen')+'">'+(e.zu?'\u25b8':'\u25be')+'</button></div>';
+    let h='<div class="tbs-kopf"><span class="tbs-pw" title="'+sag('ec.karte.an_aus','an / aus')+'"></span>'
+      +'<button class="tbs-knopf tbs-solo'+(soloId===e.id?' an':'')+'" data-tu="solo" title="'+sag('ec.karte.solo.titel','Solo — nur diesen zeigen, flüchtig')+'">'+sag('ec.karte.solo','solo')+'</button>'
+      +ikon(e.typ)+'<b class="tbs-name" title="'+sag('ec.karte.name.titel','{name} — auf- / zuklappen',{name:T.label+kartenArt(e,true)})+'">'+T.label
+      +'<span class="tbs-kart">'+kartenArt(e,false)+'</span>'+stufeMarke(e)+'</b><span class="tbs-nr" title="'+(nrTxt?sag('ec.karte.nr.titel','Nr. {nr} von {n} gleichen',{nr:nrTxt,n:gleich.length}):'')+'">'+nrTxt+'</span>'
+      +'<button class="tbs-knopf" data-tu="dup" title="'+sag('ec.karte.kopie','Kopie darunter einhängen — gleiche Einstellungen, dann nur das Nötige ändern')+'">⧉</button>'
+      +'<button class="tbs-knopf tbs-weg" data-tu="weg" title="'+sag('ec.karte.entfernen','entfernen')+'">\u00d7</button>'
+      +'<button class="tbs-knopf" data-tu="hoch" title="'+sag('ec.karte.hoch','nach oben')+'">\u2191</button>'
+      +'<button class="tbs-knopf" data-tu="runter" title="'+sag('ec.karte.runter','nach unten')+'">\u2193</button>'
+      +'<button class="tbs-knopf tbs-klapp" data-tu="klapp" title="'+(e.zu?sag('ec.karte.aufklappen','aufklappen'):sag('ec.karte.zuklappen','zuklappen'))+'">'+(e.zu?'\u25b8':'\u25be')+'</button></div>';
     h+='<div class="tbs-inhalt"><div class="tbs-besch">'+T.besch+'</div>';
     /* EIN MEDIUM OHNE LEUCHTE IST UNSICHTBAR - und das soll die Karte JETZT sagen, nicht ein
        Beschreibungstext irgendwo (Caspar_D, 14.09.2026: "wichtig ist, das dort steht, das
@@ -5151,9 +5214,9 @@ function renderStapel(){
        fragt, haelt jeden Schneefall fuer Rauch und verschweigt den Hinweis genau dort, wo er
        noetig waere (berichtigt 21.09.2026, noch am selben Abend). */
     if(leuchtetJetzt(e) && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&mediumJetzt(x)))
-      h+='<div class="tbs-fehltlicht">Es h\u00e4ngt <b>kein Medium</b> in der Kette \u2014 ohne eines sieht man nur, was der Strahl <i>trifft</i>, nicht den Strahl selbst. Ein <b>Filmnebel</b> macht ihn sichtbar; er nimmt das Licht auf, gleich an welcher Stelle der Kette er steht.</div>';
+      h+='<div class="tbs-fehltlicht">'+sag('ec.karte.kein_medium','Es hängt <b>kein Medium</b> in der Kette — ohne eines sieht man nur, was der Strahl <i>trifft</i>, nicht den Strahl selbst. Ein <b>Filmnebel</b> macht ihn sichtbar; er nimmt das Licht auf, gleich an welcher Stelle der Kette er steht.')+'</div>';
     if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&leuchtetJetzt(x)))
-      h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer, Flammen, Kaustik, leuchtende Teilchen oder Stroboskop machen ihn sichtbar.</div>';
+      h+='<div class="tbs-fehltlicht">'+sag('ec.karte.keine_leuchte','Es hängt keine Leuchte in der Kette — ohne sie zeigt der Nebel nur, daß die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer, Flammen, Kaustik, leuchtende Teilchen oder Stroboskop machen ihn sichtbar.')+'</div>';
     /* EIN EIGENER HINWEIS DES EFFEKTS (24.09.2026, fuer das Karaoke): der Registry-Eintrag darf eine
        Funktion hinweis(e) tragen, die einen Satz oder null liefert - grau mit Grund, ohne dass die
        Karte selbst die Datenlage kennen muss. Wirft sie, schweigt die Zeile, die Karte steht trotzdem. */
@@ -5191,85 +5254,87 @@ function renderStapel(){
            gilt hier: sie bleiben stehen, still und mit Grund. Gebaut wie in paramHTML - dieselbe
            Klammer, dasselbe `disabled` an jedem Bedienteil, damit es nicht nur blass ist. */
         const still=t2=>'<div class="tbs-grau">'+t2.replace(/<(input|select|button|textarea)\b/g,'<$1 disabled')+'</div>';
-        h+='<div class="tbs-rm"><div class="tbs-abunter" style="margin-bottom:4px">Quelle</div>'+sel('Quelle','qForm',Q_FORM);
-        if(f!=='bild'){ h+=sel('Ursprung','qUrsprung',[['bild','im Bild'],['aussen','außerhalb des Bildes']]);
-          if((e.qUrsprung||'bild')==='aussen') h+=rg('Winkel','qWinkel',0,1,0.01); else h+=rg('Ort X','qX',0,1,0.01)+rg('Ort Y','qY',0,1,0.01);
-          if(f==='linie') h+=rg('Ausdehnung','qAus',0.01,1,0.01)+rg('Drehung (°)','qDreh',0,360,5,true);
-          else if(f==='kreis') h+=rg('Ausdehnung','qAus',0.01,1,0.01);
-          else if(f==='ellipse') h+=rg('Ausdehnung X','qAus',0.01,1,0.01)+rg('Ausdehnung Y','qAusY',0.01,1,0.01)+rg('Drehung (°)','qDreh',0,360,5,true); }
-        else if(kan) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Die Kanone schießt aus einem Punkt — auch ohne gewählte Quelle. Der Punkt ist der Ort hier; eine Linie oder ein Kreis darüber macht daraus mehrere Rohre.</div>'+rg('Ort X','qX',0,1,0.01)+rg('Ort Y','qY',0,1,0.01);
+        h+='<div class="tbs-rm"><div class="tbs-abunter" style="margin-bottom:4px">'+sag('ec.teilchen.quelle','Quelle')+'</div>'+sel(sag('ec.teilchen.quelle','Quelle'),'qForm',listeWorte(Q_FORM,qFormWorte()));
+        const W_ORTX=sag('ec.raum.ort_x','Ort X'), W_ORTY=sag('ec.raum.ort_y','Ort Y'), W_DREH=sag('ec.raum.drehung','Drehung (°)'), W_AUSBL=sag('ec.teilchen.ausblenden','Ausblenden');
+        const flugRegler=()=>rg(sag('ec.teilchen.druck','Druck'),'druck',0,1,0.02)+rg(sag('ec.teilchen.richtung','Richtung (°)'),'winkel',0,360,5,true)+rg(sag('ec.teilchen.auffaechern','Auffächern'),'streuung',0,1,0.01)+rg(sag('ec.teilchen.laenge','Länge'),'laenge',0.05,2,0.05);
+        if(f!=='bild'){ h+=sel(sag('ec.raum.ursprung','Ursprung'),'qUrsprung',[['bild',sag('ec.raum.im_bild','im Bild')],['aussen',sag('ec.raum.ausserhalb','außerhalb des Bildes')]]);
+          if((e.qUrsprung||'bild')==='aussen') h+=rg(sag('ec.raum.winkel','Winkel'),'qWinkel',0,1,0.01); else h+=rg(W_ORTX,'qX',0,1,0.01)+rg(W_ORTY,'qY',0,1,0.01);
+          if(f==='linie') h+=rg(sag('ec.teilchen.ausdehnung','Ausdehnung'),'qAus',0.01,1,0.01)+rg(W_DREH,'qDreh',0,360,5,true);
+          else if(f==='kreis') h+=rg(sag('ec.teilchen.ausdehnung','Ausdehnung'),'qAus',0.01,1,0.01);
+          else if(f==='ellipse') h+=rg(sag('ec.teilchen.ausdehnung_x','Ausdehnung X'),'qAus',0.01,1,0.01)+rg(sag('ec.teilchen.ausdehnung_y','Ausdehnung Y'),'qAusY',0.01,1,0.01)+rg(W_DREH,'qDreh',0,360,5,true); }
+        else if(kan) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">'+sag('ec.teilchen.kanone.punkt','Die Kanone schießt aus einem Punkt — auch ohne gewählte Quelle. Der Punkt ist der Ort hier; eine Linie oder ein Kreis darüber macht daraus mehrere Rohre.')+'</div>'+rg(W_ORTX,'qX',0,1,0.01)+rg(W_ORTY,'qY',0,1,0.01);
         else if(eu) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">'+(e.art==='sternschnuppen'
-          ?'Eine Schnuppe kommt aus EINEM Punkt. Ohne gewählte Quelle setzt sie vor dem Bildrand an und zieht hindurch; eine Quelle macht den Fleck zu ihrem Radianten.'
-          :'Die Schar kreist um eine wandernde Mitte. Eine gewählte Quelle nagelt diese Mitte fest — dann kreist sie um den Fleck, statt zu ziehen.')+'</div>';
-        else h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Die Teilchen entstehen überall und laufen um. Erst eine Quelle schaltet Druck, Fächer und Länge frei.</div>';
-        h+='<div class="tbs-abunter" style="margin:8px 0 4px">Flug</div>'+rg('Auftrieb','auftrieb',-1,1,0.05);
+          ?sag('ec.teilchen.schnuppe.quelle','Eine Schnuppe kommt aus EINEM Punkt. Ohne gewählte Quelle setzt sie vor dem Bildrand an und zieht hindurch; eine Quelle macht den Fleck zu ihrem Radianten.')
+          :sag('ec.teilchen.schar.quelle','Die Schar kreist um eine wandernde Mitte. Eine gewählte Quelle nagelt diese Mitte fest — dann kreist sie um den Fleck, statt zu ziehen.'))+'</div>';
+        else h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">'+sag('ec.teilchen.ueberall','Die Teilchen entstehen überall und laufen um. Erst eine Quelle schaltet Druck, Fächer und Länge frei.')+'</div>';
+        h+='<div class="tbs-abunter" style="margin:8px 0 4px">'+sag('ec.teilchen.flug','Flug')+'</div>'+rg(sag('ec.teilchen.auftrieb','Auftrieb'),'auftrieb',-1,1,0.05);
         if(eu){ h+='<div class="tbs-graugrund">'+(e.art==='sternschnuppen'
-            ?'Der Auftrieb neigt hier die Bahn: −1 fällt steil, 0 zieht waagerecht, +1 steigt. Tempo macht die Schnuppe schnell, Wind legt sie schräg, Ausblenden sagt, wie lang der Schweif nachglüht.'
-            :'Der Auftrieb sagt hier, wie hoch die Schar hängt. Tempo ist ihr Zug und ihr Flügelschlag, Wind lehnt ihre Bahn zur Seite.')+'</div>';
-          if(e.art==='sternschnuppen') h+=rg('Ausblenden','ausblenden',0.1,1,0.05);
-          h+=still(rg('Druck','druck',0,1,0.02)+rg('Richtung (°)','winkel',0,360,5,true)+rg('Auffächern','streuung',0,1,0.01)+rg('Länge','laenge',0.05,2,0.05)
-              +(e.art==='sternschnuppen'?'':rg('Ausblenden','ausblenden',0.1,1,0.05))
+            ?sag('ec.teilchen.schnuppe.auftrieb','Der Auftrieb neigt hier die Bahn: −1 fällt steil, 0 zieht waagerecht, +1 steigt. Tempo macht die Schnuppe schnell, Wind legt sie schräg, Ausblenden sagt, wie lang der Schweif nachglüht.')
+            :sag('ec.teilchen.schar.auftrieb','Der Auftrieb sagt hier, wie hoch die Schar hängt. Tempo ist ihr Zug und ihr Flügelschlag, Wind lehnt ihre Bahn zur Seite.'))+'</div>';
+          if(e.art==='sternschnuppen') h+=rg(W_AUSBL,'ausblenden',0.1,1,0.05);
+          h+=still(flugRegler()
+              +(e.art==='sternschnuppen'?'':rg(W_AUSBL,'ausblenden',0.1,1,0.05))
               +'<div class="tbs-graugrund">'+(e.art==='sternschnuppen'
-                ?'Druck, Richtung, Auffächern und Länge rechnet diese Art nicht mit — die Schnuppe zieht ihre eigene gerade Bahn.'
-                :'Druck, Richtung, Auffächern, Länge und Ausblenden rechnet diese Art nicht mit — die Schar folgt ihren eigenen Regeln.')+'</div>'); }
-        if((f!=='bild'||kan)&&!eu) h+=rg('Druck','druck',0,1,0.02)+rg('Richtung (°)','winkel',0,360,5,true)+rg('Auffächern','streuung',0,1,0.01)+rg('Länge','laenge',0.05,2,0.05)+rg('Ausblenden','ausblenden',0.1,1,0.05);
-        if(kan) h+='<div style="color:var(--schwach);font-size:10.5px;margin:-2px 0 6px">Die Salven liegen auf dem Antrieb rechts: feste Frequenz oder Schlagraster. Ohne Antrieb schießt sie ruhig alle 1,6 s.</div>';
-        h+='<canvas class="tbs-qvor" width="300" height="80" title="Die Quelle und zwoelf Bahnen im Kleinen: wo die Teilchen entstehen, wohin sie fliegen, wo sie ausgehen"></canvas>';
+                ?sag('ec.teilchen.schnuppe.still','Druck, Richtung, Auffächern und Länge rechnet diese Art nicht mit — die Schnuppe zieht ihre eigene gerade Bahn.')
+                :sag('ec.teilchen.schar.still','Druck, Richtung, Auffächern, Länge und Ausblenden rechnet diese Art nicht mit — die Schar folgt ihren eigenen Regeln.'))+'</div>'); }
+        if((f!=='bild'||kan)&&!eu) h+=flugRegler()+rg(W_AUSBL,'ausblenden',0.1,1,0.05);
+        if(kan) h+='<div style="color:var(--schwach);font-size:10.5px;margin:-2px 0 6px">'+sag('ec.teilchen.kanone.salven','Die Salven liegen auf dem Antrieb rechts: feste Frequenz oder Schlagraster. Ohne Antrieb schießt sie ruhig alle 1,6 s.')+'</div>';
+        h+='<canvas class="tbs-qvor" width="300" height="80" title="'+sag('ec.teilchen.vorschau.titel','Die Quelle und zwoelf Bahnen im Kleinen: wo die Teilchen entstehen, wohin sie fliegen, wo sie ausgehen')+'"></canvas>';
         h+='</div>'; return; }
       if(p.rm){ const sel=(k,liste)=>'<div class="tbs-regler"><span>'+k[0]+'</span><select data-k="'+k[1]+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k[1]]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
         const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
-        h+='<div class="tbs-rm"><div class="tbs-abunter" style="margin-bottom:4px">Raum</div>';
+        h+='<div class="tbs-rm"><div class="tbs-abunter" style="margin-bottom:4px">'+sag('ec.raum.titel','Raum')+'</div>';
         /* Der Ursprung wirkt erst, wenn etwas von ihm ausgeht: Ellipse (Gefaelle), Kegel, Schwenk oder eine Blende (Drehung) - beim schlichten Kreis bliebe er ohne Wirkung (Tiefen-Check). */
         const urspr=(e.rmForm==='ellipse'||e.rmForm==='kegel'||e.rmBewegung==='schwenk'||((e.rmBlende||'keine')!=='keine'));
-        if(urspr){ h+=sel(['Ursprung','rmUrsprung'],[['aussen','außerhalb des Bildes'],['bild','im Bild']]);
-          if((e.rmUrsprung||'aussen')==='aussen') h+=rg('Winkel','rmWinkel',0,1,0.01); else h+=rg('Ursprung X','rmUx',-0.3,1.3,0.01)+rg('Ursprung Y','rmUy',-0.3,1.3,0.01); }
-        else h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Ursprung: erst bei Ellipse, Kegel, Schwenk oder Blende von Belang.</div>';
-        h+=rg('Ziel X','rmZx',0,1,0.01)+rg('Ziel Y','rmZy',0,1,0.01);
-        h+=sel(['Bewegung','rmBewegung'],RM_BEWEGUNG);
-        if((e.rmBewegung||'fest')!=='fest'){ if(e.rmBewegung!=='schritt') h+=rg('Tempo (s)','rmTempo',1,40,0.5,true); h+=rg('Weite','rmWeite',0,1,0.05); if(e.rmBewegung==='fahrt'||e.rmBewegung==='schritt') h+=rg('Trägheit','rmTraegheit',0,1,0.05); }
-        h+=sel(['Form','rmForm'],RM_FORM)+rg('Größe','rmGroesse',0.05,1,0.01)+rg('Randschärfe','rmRand',0,1,0.05)+rg('Hotspot','rmHotspot',0,1,0.05);
-        if((e.rmForm||'kreis')==='ellipse') h+=rg('Streckung','rmStreckung',1,4,0.1)+rg('Gefälle','rmGefaelle',0,1,0.05);
-        h+='<canvas class="tbs-rmvor" width="300" height="70" title="Links das Profil des Flecks (Hotspot, Plateau, Kante), rechts das Bild im Kleinen mit Ursprung"></canvas>';
-        h+=sel(['Blende','rmBlende'],RM_BLENDE);
-        if((e.rmBlende||'keine')!=='keine') h+=((e.rmBlende==='iris'||e.rmBlende==='tor')?'':rg('Blende Größe','rmBlGroesse',0.05,0.5,0.01))+rg('Blende Drehung','rmBlDrehung',0,360,1,true)+rg('Blende weich','rmBlWeich',0,1,0.05);
+        if(urspr){ h+=sel([sag('ec.raum.ursprung','Ursprung'),'rmUrsprung'],[['aussen',sag('ec.raum.ausserhalb','außerhalb des Bildes')],['bild',sag('ec.raum.im_bild','im Bild')]]);
+          if((e.rmUrsprung||'aussen')==='aussen') h+=rg(sag('ec.raum.winkel','Winkel'),'rmWinkel',0,1,0.01); else h+=rg(sag('ec.raum.ursprung_x','Ursprung X'),'rmUx',-0.3,1.3,0.01)+rg(sag('ec.raum.ursprung_y','Ursprung Y'),'rmUy',-0.3,1.3,0.01); }
+        else h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">'+sag('ec.raum.ursprung.belang','Ursprung: erst bei Ellipse, Kegel, Schwenk oder Blende von Belang.')+'</div>';
+        h+=rg(sag('ec.raum.ziel_x','Ziel X'),'rmZx',0,1,0.01)+rg(sag('ec.raum.ziel_y','Ziel Y'),'rmZy',0,1,0.01);
+        h+=sel([sag('ec.raum.bewegung','Bewegung'),'rmBewegung'],listeWorte(RM_BEWEGUNG,rmBewegungWorte()));
+        if((e.rmBewegung||'fest')!=='fest'){ if(e.rmBewegung!=='schritt') h+=rg(sag('ec.raum.tempo','Tempo (s)'),'rmTempo',1,40,0.5,true); h+=rg(sag('ec.raum.weite','Weite'),'rmWeite',0,1,0.05); if(e.rmBewegung==='fahrt'||e.rmBewegung==='schritt') h+=rg(sag('ec.raum.traegheit','Trägheit'),'rmTraegheit',0,1,0.05); }
+        h+=sel([sag('ec.raum.form','Form'),'rmForm'],listeWorte(RM_FORM,rmFormWorte()))+rg(sag('ec.raum.groesse','Größe'),'rmGroesse',0.05,1,0.01)+rg(sag('ec.raum.randschaerfe','Randschärfe'),'rmRand',0,1,0.05)+rg(sag('ec.raum.hotspot','Hotspot'),'rmHotspot',0,1,0.05);
+        if((e.rmForm||'kreis')==='ellipse') h+=rg(sag('ec.raum.streckung','Streckung'),'rmStreckung',1,4,0.1)+rg(sag('ec.raum.gefaelle','Gefälle'),'rmGefaelle',0,1,0.05);
+        h+='<canvas class="tbs-rmvor" width="300" height="70" title="'+sag('ec.raum.vorschau.titel','Links das Profil des Flecks (Hotspot, Plateau, Kante), rechts das Bild im Kleinen mit Ursprung')+'"></canvas>';
+        h+=sel([sag('ec.raum.blende','Blende'),'rmBlende'],listeWorte(RM_BLENDE,rmBlendeWorte()));
+        if((e.rmBlende||'keine')!=='keine') h+=((e.rmBlende==='iris'||e.rmBlende==='tor')?'':rg(sag('ec.raum.blende.groesse','Blende Größe'),'rmBlGroesse',0.05,0.5,0.01))+rg(sag('ec.raum.blende.drehung','Blende Drehung'),'rmBlDrehung',0,360,1,true)+rg(sag('ec.raum.blende.weich','Blende weich'),'rmBlWeich',0,1,0.05);
         h+='</div>'; return; }
       if(p.lm){ const q=e.lmQuelle||'stetig', form=e.lmForm||'rampe_ab';
         /* Ohne Schlagraster stehen die drei taktgebundenen Quellen nicht zur Wahl. Ein gespeicherter
            Wert bleibt trotzdem stehen und wird nicht stillschweigend umgeschrieben (Regel 12) -
            stattdessen sagt eine Zeile, warum der Antrieb ruht und was stattdessen geht. */
-        const takt=taktDa(), quellen=takt?LM_QUELLEN:LM_QUELLEN.filter(([v])=>v==='stetig'||v==='hz');
+        const LQ=listeWorte(LM_QUELLEN,lmQuellenWorte()), takt=taktDa(), quellen=takt?LQ:LQ.filter(([v])=>v==='stetig'||v==='hz');
         const verwaist=(!takt&&q!=='stetig'&&q!=='hz');
-        h+='<div class="tbs-lm"><div class="tbs-regler"><span>Antrieb</span><select data-k="lmQuelle">'+(verwaist?'<option value="'+q+'" selected>'+(LM_QUELLEN.find(x=>x[0]===q)||['',q])[1]+' (ohne Takt)</option>':'')+quellen.map(([v,l])=>'<option value="'+v+'"'+(q===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
-        if(!takt) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Dieser Titel hat kein Schlagraster.'+(verwaist?' Der Antrieb laeuft deshalb auf der festen Frequenz weiter, Muster und Tiefe gelten unveraendert.':'')+' Frequenz mit dem Muster „Flackern“ gibt die Kerze, ganz ohne Takt.</div>';
+        h+='<div class="tbs-lm"><div class="tbs-regler"><span>'+sag('ec.lm.antrieb','Antrieb')+'</span><select data-k="lmQuelle">'+(verwaist?'<option value="'+q+'" selected>'+sag('ec.lm.ohne_takt','{name} (ohne Takt)',{name:(LQ.find(x=>x[0]===q)||['',q])[1]})+'</option>':'')+quellen.map(([v,l])=>'<option value="'+v+'"'+(q===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+        if(!takt) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">'+sag('ec.lm.kein_raster','Dieser Titel hat kein Schlagraster.')+(verwaist?sag('ec.lm.kein_raster.verwaist',' Der Antrieb laeuft deshalb auf der festen Frequenz weiter, Muster und Tiefe gelten unveraendert.'):'')+sag('ec.lm.kein_raster.kerze',' Frequenz mit dem Muster „Flackern“ gibt die Kerze, ganz ohne Takt.')+'</div>';
         if(q!=='stetig'){
-          h+='<div class="tbs-regler"><span>Muster</span><div class="tbs-lmformen">'+LM_FORMEN.map(([v,l])=>'<button type="button" data-lmform="'+v+'" class="'+(form===v?'on':'')+'" title="'+l+'">'+lmIkon(v)+'</button>').join('')+'</div><span></span></div>';
-          h+='<canvas class="tbs-lmvor" width="300" height="44" title="Die Kurve \u00fcber zwei Perioden, der Strich ist jetzt"></canvas>';
+          h+='<div class="tbs-regler"><span>'+sag('ec.lm.muster','Muster')+'</span><div class="tbs-lmformen">'+listeWorte(LM_FORMEN,lmFormenWorte()).map(([v,l])=>'<button type="button" data-lmform="'+v+'" class="'+(form===v?'on':'')+'" title="'+l+'">'+lmIkon(v)+'</button>').join('')+'</div><span></span></div>';
+          h+='<canvas class="tbs-lmvor" width="300" height="44" title="'+sag('ec.lm.vorschau.titel','Die Kurve über zwei Perioden, der Strich ist jetzt')+'"></canvas>';
           if(q==='takt'||q==='zufall') h+=(()=>{ const bh=schlagHz(), teil=Number(e.lmTeiler)||1, ist=bh>0?bh/teil:0;
-            const zeile='<div class="tbs-regler"><span>Teiler</span><select data-k="lmTeiler">'+[[4,'jeder 4. Schlag'],[2,'jeder 2. Schlag'],[1,'jeder Schlag'],[0.5,'zweimal je Schlag'],[0.25,'viermal je Schlag'],[0.125,'achtmal je Schlag']].map(([v,l])=>'<option value="'+v+'"'+(Number(e.lmTeiler)===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
-            return zeile+(ist>0?'<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">Bei diesem Titel '+rateUrteil(ist)+'</div>':''); })();
-          if(q==='hz') h+='<div class="tbs-regler"><span>pro Sekunde</span><input type="range" data-k="lmHz" min="0.05" max="15" step="0.05" value="'+e.lmHz+'"><span class="tbs-wert">'+kf(e.lmHz)+'</span></div>'
+            const zeile='<div class="tbs-regler"><span>'+sag('ec.lm.teiler','Teiler')+'</span><select data-k="lmTeiler">'+[[4,sag('ec.lm.teiler.4','jeder 4. Schlag')],[2,sag('ec.lm.teiler.2','jeder 2. Schlag')],[1,sag('ec.lm.teiler.1','jeder Schlag')],[0.5,sag('ec.lm.teiler.0_5','zweimal je Schlag')],[0.25,sag('ec.lm.teiler.0_25','viermal je Schlag')],[0.125,sag('ec.lm.teiler.0_125','achtmal je Schlag')]].map(([v,l])=>'<option value="'+v+'"'+(Number(e.lmTeiler)===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+            return zeile+(ist>0?'<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">'+sag('ec.lm.bei_titel','Bei diesem Titel {urteil}',{urteil:rateUrteil(ist)})+'</div>':''); })();
+          if(q==='hz') h+='<div class="tbs-regler"><span>'+sag('ec.lm.pro_sekunde','pro Sekunde')+'</span><input type="range" data-k="lmHz" min="0.05" max="15" step="0.05" value="'+e.lmHz+'"><span class="tbs-wert">'+kf(e.lmHz)+'</span></div>'
             +'<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">'+rateUrteil(Number(e.lmHz)||0)+'</div>';
-          if(q==='zufall') h+='<div class="tbs-regler"><span>Anteil der Schl\u00e4ge</span><input type="range" data-k="lmAnteil" min="0.1" max="1" step="0.05" value="'+e.lmAnteil+'"><span class="tbs-wert">'+kf(e.lmAnteil)+'</span></div>';
-          h+='<div class="tbs-regler"><span>Tiefe</span><input type="range" data-k="lmTiefe" min="0" max="1" step="0.05" value="'+e.lmTiefe+'"><span class="tbs-wert">'+kf(e.lmTiefe)+'</span></div>';
+          if(q==='zufall') h+='<div class="tbs-regler"><span>'+sag('ec.lm.anteil','Anteil der Schläge')+'</span><input type="range" data-k="lmAnteil" min="0.1" max="1" step="0.05" value="'+e.lmAnteil+'"><span class="tbs-wert">'+kf(e.lmAnteil)+'</span></div>';
+          h+='<div class="tbs-regler"><span>'+sag('ec.lm.tiefe','Tiefe')+'</span><input type="range" data-k="lmTiefe" min="0" max="1" step="0.05" value="'+e.lmTiefe+'"><span class="tbs-wert">'+kf(e.lmTiefe)+'</span></div>';
           if(form==='sequenz'){ const n=lmSchritteHolen(e).length;
-            h+='<div class="tbs-regler"><span>Schritte</span><select data-lmschritte="1">'+[4,8,16,32].map(v=>'<option value="'+v+'"'+(n===v?' selected':'')+'>'+v+' je Periode</option>').join('')+'</select><span></span></div>';
-            h+='<div class="tbs-regler"><span>Vorlage</span><div class="tbs-lmformen">'+LM_VORLAGEN.map(([v,l])=>'<button type="button" data-lmvorlage="'+v+'" style="padding:2px 7px;line-height:1.3;font-size:11px">'+l+'</button>').join('')+'</div><span></span></div>';
-            h+='<div class="tbs-regler"><span>weich</span><button class="tbs-togp'+(e.lmWeich?' an':'')+'" data-tog="lmWeich">'+(e.lmWeich?'an':'aus')+'</button><span></span></div>';
-            h+='<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">In der Vorschau ziehen: die H\u00f6he ist die Lichtst\u00e4rke je Schritt.</div>'; }
-          if(form==='peak_an'||form==='peak_aus'||form==='rechteck') h+='<div class="tbs-regler"><span>Breite</span><input type="range" data-k="lmBreite" min="0.05" max="0.95" step="0.05" value="'+e.lmBreite+'"><span class="tbs-wert">'+kf(e.lmBreite)+'</span></div>';
-          if(form==='rampe_ab') h+='<div class="tbs-regler"><span>Abklingen</span><input type="range" data-k="lmAbkling" min="0.3" max="4" step="0.1" value="'+e.lmAbkling+'"><span class="tbs-wert">'+kf(e.lmAbkling)+'</span></div>';
+            h+='<div class="tbs-regler"><span>'+sag('ec.lm.schritte','Schritte')+'</span><select data-lmschritte="1">'+[4,8,16,32].map(v=>'<option value="'+v+'"'+(n===v?' selected':'')+'>'+sag('ec.lm.je_periode','{n} je Periode',{n:v})+'</option>').join('')+'</select><span></span></div>';
+            h+='<div class="tbs-regler"><span>'+sag('ec.lm.vorlage','Vorlage')+'</span><div class="tbs-lmformen">'+listeWorte(LM_VORLAGEN,lmVorlagenWorte()).map(([v,l])=>'<button type="button" data-lmvorlage="'+v+'" style="padding:2px 7px;line-height:1.3;font-size:11px">'+l+'</button>').join('')+'</div><span></span></div>';
+            h+='<div class="tbs-regler"><span>'+sag('ec.lm.weich','weich')+'</span><button class="tbs-togp'+(e.lmWeich?' an':'')+'" data-tog="lmWeich">'+(e.lmWeich?sag('ec.schalter.an','an'):sag('ec.schalter.aus','aus'))+'</button><span></span></div>';
+            h+='<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">'+sag('ec.lm.sequenz.ziehen','In der Vorschau ziehen: die Höhe ist die Lichtstärke je Schritt.')+'</div>'; }
+          if(form==='peak_an'||form==='peak_aus'||form==='rechteck') h+='<div class="tbs-regler"><span>'+sag('ec.lm.breite','Breite')+'</span><input type="range" data-k="lmBreite" min="0.05" max="0.95" step="0.05" value="'+e.lmBreite+'"><span class="tbs-wert">'+kf(e.lmBreite)+'</span></div>';
+          if(form==='rampe_ab') h+='<div class="tbs-regler"><span>'+sag('ec.lm.abklingen','Abklingen')+'</span><input type="range" data-k="lmAbkling" min="0.3" max="4" step="0.1" value="'+e.lmAbkling+'"><span class="tbs-wert">'+kf(e.lmAbkling)+'</span></div>';
           /* "Zeitversatz", nicht "Versatz": drei Karten nennen einen Abstand IM BILD so, dieser hier verschiebt
              in der ZEIT. Auf einer Karte mit beidem liest sich das Paar von selbst (Caspar_D, 10.09.2026:
              "das eine ist ein Orts- das andere ein Zeitversatz"). "Phase" waere richtig, aber Fachjargon. */
-          h+='<div class="tbs-regler"><span>Zeitversatz</span><input type="range" class="tbs-zust" data-k="lmVersatz" min="0" max="1" step="0.05" value="'+e.lmVersatz+'"><span class="tbs-wert">'+kf(e.lmVersatz)+'</span></div>';
-          h+='<div class="tbs-regler"><span>invers</span><button class="tbs-togp'+(e.lmInvers?' an':'')+'" data-tog="lmInvers">'+(e.lmInvers?'an':'aus')+'</button><span></span></div>'; }
+          h+='<div class="tbs-regler"><span>'+sag('ec.lm.zeitversatz','Zeitversatz')+'</span><input type="range" class="tbs-zust" data-k="lmVersatz" min="0" max="1" step="0.05" value="'+e.lmVersatz+'"><span class="tbs-wert">'+kf(e.lmVersatz)+'</span></div>';
+          h+='<div class="tbs-regler"><span>'+sag('ec.lm.invers','invers')+'</span><button class="tbs-togp'+(e.lmInvers?' an':'')+'" data-tog="lmInvers">'+(e.lmInvers?sag('ec.schalter.an','an'):sag('ec.schalter.aus','aus'))+'</button><span></span></div>'; }
         h+='</div>'; return; }
       if(p.grad){ gradInit(e); const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=e.grad[e.kanal], cc=K[e.kanal][1];
         h+='<div style="margin:8px 0 2px"><div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(k=>'<button data-kanal="'+k+'" class="'+(e.kanal===k?'on':'')+'" style="flex:1'+(e.kanal===k?';color:'+K[k][1]:'')+'">'+K[k][0]+'</button>').join('')+'</div>';
         h+='<canvas class="tbs-grad-ed" width="447" height="276" data-farbe="'+cc+'" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
-        h+='<div class="tbs-seg" style="margin-top:6px"><button data-modus="gamma" class="'+(cur.modus==='gamma'?'on':'')+'" style="flex:1">Gamma</button><button data-modus="sig" class="'+(cur.modus==='sig'?'on':'')+'" style="flex:1">Sigmoidal</button></div>';
-        h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-tonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
-        h+='<div style="color:var(--schwach);font-size:10.5px">Marken unten = Schwarz-/Weißpunkt ziehen</div></div>'; return; }
+        h+='<div class="tbs-seg" style="margin-top:6px"><button data-modus="gamma" class="'+(cur.modus==='gamma'?'on':'')+'" style="flex:1">'+sag('ec.grad.gamma','Gamma')+'</button><button data-modus="sig" class="'+(cur.modus==='sig'?'on':'')+'" style="flex:1">'+sag('ec.grad.sigmoidal','Sigmoidal')+'</button></div>';
+        h+='<div class="tbs-regler" style="margin-top:6px"><span>'+sag('ec.grad.tonwert','Tonwert')+'</span><input type="range" class="tbs-zust" data-tonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
+        h+='<div style="color:var(--schwach);font-size:10.5px">'+sag('ec.grad.marken','Marken unten = Schwarz-/Weißpunkt ziehen')+'</div></div>'; return; }
       if(p.rampe){ const ramp=(e.palette==='Eigen')?e.rampe:(PALETTEN[e.palette]||PALETTEN['Abendrot']); const stops=ramp.map((cc,i)=>cc+' '+Math.round(i/Math.max(1,ramp.length-1)*100)+'%').join(',');
         h+='<div style="margin:8px 0 2px"><div class="tbs-rampe-bar" style="height:16px;border-radius:4px;border:1px solid var(--rand);background:linear-gradient(90deg,'+stops+')"></div>';
         if(e.palette==='Eigen'){ h+='<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;align-items:flex-start">';
@@ -5284,7 +5349,7 @@ function renderStapel(){
       else if(p.farbe){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="color" data-k="'+p.k+'" value="'+e[p.k]+'"><span></span></div>'; }
       else if(p.sel){ const pliste=p.selMehr ? p.sel.concat(p.selMehr(e)||[]) : p.sel;   /* `selMehr` haengt Werte an, die nur dieser Effekt traegt (der Altwert der Verdeckung) */
         h+='<div class="tbs-regler"><span>'+p.lbl+'</span><select data-k="'+p.k+'">'+pliste.map(([v,l])=>'<option value="'+v+'"'+(e[p.k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>'; }
-      else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
+      else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?sag('ec.schalter.an','an'):sag('ec.schalter.aus','aus'))+'</button><span></span></div>'; }
       /* `wert` beschriftet den Regler selbst, wo die blosse Zahl nichts sagt: der Anschlag links
          der Tiefengrenze ist kein Wert, sondern „von selbst" (16.09.2026). */
       else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':'';
@@ -5354,7 +5419,7 @@ function renderStapel(){
       if(an&&p.notiz){ let nz=null;
         try{ nz=p.notiz(e); }
         catch(x){ console.warn('Effektclip-Studio: notiz von '+p.k+' bei '+e.typ+' warf: '+(x&&x.message||x));
-          nz='<b>Diese Auskunft l\u00e4sst sich gerade nicht rechnen</b> \u2014 der Regler wirkt trotzdem. (' + String(x&&x.message||x) + ')'; }
+          nz=sag('ec.karte.notiz_fehler','<b>Diese Auskunft lässt sich gerade nicht rechnen</b> — der Regler wirkt trotzdem. ({fehler})',{fehler:String(x&&x.message||x)}); }
         if(nz) h+='<div class="tbs-graugrund">'+nz+'</div>'; }
       /* Waehrend die Karte unterwegs ist, bleiben die Zeilen BEDIENBAR und sagen das - einmal je
          Karte, unter demselben Traeger. `tbs-warte` sagt dem Nachziehen beim Schieben, dass diese
@@ -5380,8 +5445,8 @@ function renderStapel(){
        wirklich lesen (heute der Nebel) - eine Beschriftung ist ein Versprechen (Regel 11), und
        ein Regler, der nichts tut, waere eines, das nicht gehalten wird. Jeder Effekt, der die
        Karte spaeter benutzt, bekommt hier seine Zeile an derselben Stelle. */
-    if(T.art==='mal'||T.verrFrei) h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+verrOptionen(e.verr)+'</select></div>';   /* Vollbild-Ergebnisse vertragen nur Ueber */
-    if(!T.ohneStaerke) h+='<div class="tbs-regler" title="St\u00e4rke ist die Deckkraft: wie stark das fertige Ergebnis des Effekts ins Bild gemischt wird. Alle anderen Regler formen den Effekt."><span>Stärke</span><input type="range" data-staerke="1" min="0" max="1" step="0.05" value="'+Math.min(1,e.staerke)+'"><span class="tbs-wert">'+Math.round(Math.min(1,e.staerke)*100)+'%</span></div>';
+    if(T.art==='mal'||T.verrFrei) h+='<div class="tbs-regler"><span>'+sag('ec.karte.verrechnung','Verrechnung')+'</span><select data-verr="1">'+verrOptionen(e.verr)+'</select></div>';   /* Vollbild-Ergebnisse vertragen nur Ueber */
+    if(!T.ohneStaerke) h+='<div class="tbs-regler" title="'+sag('ec.karte.staerke.titel','Stärke ist die Deckkraft: wie stark das fertige Ergebnis des Effekts ins Bild gemischt wird. Alle anderen Regler formen den Effekt.')+'"><span>'+sag('ec.karte.staerke','Stärke')+'</span><input type="range" data-staerke="1" min="0" max="1" step="0.05" value="'+Math.min(1,e.staerke)+'"><span class="tbs-wert">'+Math.round(Math.min(1,e.staerke)*100)+'%</span></div>';
     c.innerHTML=h+'</div></div></div>';   /* rechte Spalte, Spaltenkasten, Inhalt */
     c.querySelector('.tbs-pw').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); kettekopfStand(); };
     const klapp=()=>{ offenId=(offenId===e.id)?null:e.id; soloFolgt(); renderStapel(); };
@@ -5459,19 +5524,19 @@ function renderStapel(){
          eine Stellung, die man nicht sehen kann, waehrend man sie stellt, waehlt man nach Text
          statt nach Augenschein, und das ist bei einer Schaerfefrage das falsche Sinnesorgan
          (kbVorfuehrung erklaert, warum es geht, ohne die stehende Buehne aufzugeben). */
-      if(sel.value==='scharf'){ KB_ZEIGT=null; pStat('Punkt '+(i+1)+': Scharf — der Zug dorthin schmiert nicht, und am Ziel ändert sich nichts.'); }
+      if(sel.value==='scharf'){ KB_ZEIGT=null; pStat(sag('ec.kb.fokus.scharf','Punkt {n}: Scharf — der Zug dorthin schmiert nicht, und am Ziel ändert sich nichts.',{n:i+1})); }
       else { KB_ZEIGT={ id:e.id, i, t0:performance.now() };
         const pl=kbPlanHier(e);
-        pStat('Punkt '+(i+1)+': '+(sel.value==='suche'?'Suche':'Unscharf')+' — die Bühne führt es '+KB_ZEIGT_RUNDEN+'-mal vor, das Bild bleibt dabei stehen.'
-          +((sel.value==='suche'&&pl&&!(pl.H>0))?' In diesem Clip bleibt kein Halt übrig, in dem gesucht werden könnte — die Vorführung zeigt genau das.':''));
+        pStat(sag('ec.kb.fokus.vorfuehrung','Punkt {n}: {fokus} — die Bühne führt es {runden}-mal vor, das Bild bleibt dabei stehen.',{n:i+1,fokus:(sel.value==='suche'?sag('ec.kb.fokus.suche','Suche'):sag('ec.kb.fokus.unscharf','Unscharf')),runden:KB_ZEIGT_RUNDEN})
+          +((sel.value==='suche'&&pl&&!(pl.H>0))?sag('ec.kb.fokus.kein_halt',' In diesem Clip bleibt kein Halt übrig, in dem gesucht werden könnte — die Vorführung zeigt genau das.'):''));
       }
       renderStapel(); });
     const kbNeu=c.querySelector('[data-kbneu]'); if(kbNeu) kbNeu.onclick=()=>{
       const P=kbPunkte(e).slice();
-      if(P.length>=KB_PUNKTE_MAX){ pStat('Fünf Zielpunkte sind die Grenze — ein Doppelklick auf eine Marke löst sie und macht Platz.'); return; }
+      if(P.length>=KB_PUNKTE_MAX){ pStat(sag('ec.kb.grenze','Fünf Zielpunkte sind die Grenze — ein Doppelklick auf eine Marke löst sie und macht Platz.')); return; }
       /* DIESELBE ENGE WIE BEIM KLICK AUF DIE BUEHNE: vom letzten Punkt geerbt, sonst die Vorgabe. */
       P.push(kbFreierOrt(P,P.length?P[P.length-1].z:KB_ENGE_DEF)); kbSetzen(e,P);
-      pStat('Zielpunkt '+P.length+' gesetzt — auf der Bühne lässt er sich ziehen, das Mausrad stellt seine Enge, ein Doppelklick löst ihn.');
+      pStat(sag('ec.kb.punkt_gesetzt','Zielpunkt {n} gesetzt — auf der Bühne lässt er sich ziehen, das Mausrad stellt seine Enge, ein Doppelklick löst ihn.',{n:P.length}));
       renderStapel(); };
     c.querySelectorAll('[data-lmform]').forEach(btn=>btn.onclick=()=>{ e.lmForm=btn.dataset.lmform; renderStapel(); });
     const qv=c.querySelector('canvas.tbs-qvor'); if(qv){ qv._e=e; quellVorschau(qv,e); }
@@ -5541,11 +5606,11 @@ function sunoTitelbild(id){ /* wie artworkBild im Haus, nur ohne den eigen.jpg-V
 const eigenNr = nr => (nr>1?'-'+nr:'');
 function medienUrl(id,art,nr){ const n=eigenNr(nr);
   return art==='bewegtbild'?'/media/'+id+'/artwork.mp4' : art==='video'?'/media/'+id+'/eigen'+n+'.mp4' : art==='bild'?'/media/'+id+'/eigen'+n+'.jpg' : sunoTitelbild(id); }
-function seitenVon(id,s){ const L=[{art:'titelbild',nr:1,lbl:'Titelbild',url:medienUrl(id,'titelbild',1)}];
-  if(s&&s.videoCoverUrl) L.push({art:'bewegtbild',nr:1,lbl:'Bewegtbild (Suno)',url:medienUrl(id,'bewegtbild',1),video:true});
+function seitenVon(id,s){ const L=[{art:'titelbild',nr:1,lbl:sag('ec.quelle.titelbild','Titelbild'),url:medienUrl(id,'titelbild',1)}];
+  if(s&&s.videoCoverUrl) L.push({art:'bewegtbild',nr:1,lbl:sag('ec.quelle.bewegtbild','Bewegtbild (Suno)'),url:medienUrl(id,'bewegtbild',1),video:true});
   const e=eigenVon(id);
-  e.videos.forEach(n=>L.push({art:'video',nr:n,lbl:'Eigenes Bewegtbild'+(e.videos.length>1?' '+n:''),url:medienUrl(id,'video',n),video:true}));
-  e.bilder.forEach(n=>L.push({art:'bild',nr:n,lbl:'Eigenes Titelbild'+(e.bilder.length>1?' '+n:''),url:medienUrl(id,'bild',n)}));
+  e.videos.forEach(n=>L.push({art:'video',nr:n,lbl:sag('ec.quelle.eigenes_bewegtbild','Eigenes Bewegtbild{nr}',{nr:(e.videos.length>1?' '+n:'')}),url:medienUrl(id,'video',n),video:true}));
+  e.bilder.forEach(n=>L.push({art:'bild',nr:n,lbl:sag('ec.quelle.eigenes_titelbild','Eigenes Titelbild{nr}',{nr:(e.bilder.length>1?' '+n:'')}),url:medienUrl(id,'bild',n)}));
   return L; }
 function grundVorgabe(seiten){ return seiten.find(p=>p.art==='bild'&&p.nr===1)||seiten[0]; }   /* wie artworkBild im Haus: eigen.jpg vor Sunos Bild */
 function seiteFinden(seiten,gr){ return (gr&&seiten.find(p=>p.art===gr.art&&(p.nr||1)===(gr.nr||1)))||null; }
@@ -5601,8 +5666,29 @@ const SCHLEIFE_PRINZIP={ keiner:'das ganze Video \u00fcber den ganzen Clip, am C
   unschaerfe:'in der Mitte des \u00dcbergangs, verdeckt von Unsch\u00e4rfe, tauscht das Ende gegen den Anfang', blende:'das letzte Bild blendet weich ins erste', kreuzzoom:'ein Zoom mit Unsch\u00e4rfe verdeckt den Tausch in der Mitte',
   wisch:'der Anfang schiebt das Ende nach links hinaus', schwarz:'abdunkeln bis Schwarz, dort der Tausch, wieder aufhellen', weiss:'aufhellen bis Wei\u00df, dort der Tausch, wieder zur\u00fcck',
   blitz:'harter Tausch unter einem kurzen Wei\u00dfblitz \u2013 f\u00fcr Grafik, bei gefilmtem Material hart', pixel:'das Bild zerf\u00e4llt in Kl\u00f6tzchen, darin der Tausch \u2013 f\u00fcr Grafik' };
-function schleifeOptionen(){ const nm=Object.fromEntries(SCHLEIFE_ARTEN), o=k=>'<option value="'+k+'" title="'+SCHLEIFE_PRINZIP[k]+'">'+nm[k]+'</option>';
-  return SCHLEIFE_GRUPPEN.map(([g,ks])=>g?'<optgroup label="'+g+'">'+ks.map(o).join('')+'</optgroup>':ks.map(o).join('')).join(''); }   /* Caspar_D, 15.09.2026: "baue bitte mehr uebergaenge ein, da waren doch noch mehr" - die Formen aus labor/videonaht/uebergaenge; Blitz und Pixel nur fuer Grafik ("werden wohl nicht meine freunde, koennen aber mit synthetischeren Videos funktionieren") */
+/* NAME, PRINZIP UND GRUPPE EINES UEBERGANGS IN DER SPRACHE DER OBERFLAECHE (17.10.2026). SCHLEIFE_ARTEN/_PRINZIP/_GRUPPEN
+   bleiben deutsch; gefragt wird ueber den Schluessel, nicht ueber den Wortlaut - "Blende" heisst beim Licht etwas anderes. */
+function schleifeName(k){ const W={ keiner:sag('ec.schleife.art.keiner','harter Schnitt'), ruecklauf:sag('ec.schleife.art.ruecklauf','Rücklauf mit Unschärfe'), abbremsen:sag('ec.schleife.art.abbremsen','Abbremsen'),
+    pendel:sag('ec.schleife.art.pendel','Pendel'), unschaerfe:sag('ec.schleife.art.unschaerfe','Unschärfe'), blende:sag('ec.schleife.art.blende','Blende'), kreuzzoom:sag('ec.schleife.art.kreuzzoom','Kreuzzoom'),
+    wisch:sag('ec.schleife.art.wisch','Wisch'), schwarz:sag('ec.schleife.art.schwarz','durch Schwarz'), weiss:sag('ec.schleife.art.weiss','durch Weiß'), blitz:sag('ec.schleife.art.blitz','Schnitt mit Blitz'), pixel:sag('ec.schleife.art.pixel','Pixel') };
+  return W[k]!=null?W[k]:((SCHLEIFE_ARTEN.find(x=>x[0]===k)||[0,''])[1]); }
+function schleifePrinzip(k){ const W={ keiner:sag('ec.schleife.prinzip.keiner','das ganze Video über den ganzen Clip, am Clipende springt es auf den Anfang'),
+    ruecklauf:sag('ec.schleife.prinzip.ruecklauf','vorwärts durchs Video, im Übergang schnell zurück an den Anfang – unter 8 % Unschärfe'),
+    pendel:sag('ec.schleife.prinzip.pendel','hin und her über einen Ausschnitt in echtem Tempo, an den Umkehrpunkten weich – es braucht keinen Übergang'),
+    abbremsen:sag('ec.schleife.prinzip.abbremsen','das Video kommt zum Stehen und blendet ins erste Bild'),
+    unschaerfe:sag('ec.schleife.prinzip.unschaerfe','in der Mitte des Übergangs, verdeckt von Unschärfe, tauscht das Ende gegen den Anfang'),
+    blende:sag('ec.schleife.prinzip.blende','das letzte Bild blendet weich ins erste'),
+    kreuzzoom:sag('ec.schleife.prinzip.kreuzzoom','ein Zoom mit Unschärfe verdeckt den Tausch in der Mitte'),
+    wisch:sag('ec.schleife.prinzip.wisch','der Anfang schiebt das Ende nach links hinaus'),
+    schwarz:sag('ec.schleife.prinzip.schwarz','abdunkeln bis Schwarz, dort der Tausch, wieder aufhellen'),
+    weiss:sag('ec.schleife.prinzip.weiss','aufhellen bis Weiß, dort der Tausch, wieder zurück'),
+    blitz:sag('ec.schleife.prinzip.blitz','harter Tausch unter einem kurzen Weißblitz – für Grafik, bei gefilmtem Material hart'),
+    pixel:sag('ec.schleife.prinzip.pixel','das Bild zerfällt in Klötzchen, darin der Tausch – für Grafik') };
+  return W[k]!=null?W[k]:(SCHLEIFE_PRINZIP[k]||''); }
+function schleifeGruppe(g){ const W={ 'Bewegung':sag('ec.schleife.gruppe.bewegung','Bewegung'), 'Neutralzustand':sag('ec.schleife.gruppe.neutral','Neutralzustand'), 'für Grafik':sag('ec.schleife.gruppe.grafik','für Grafik') };
+  return W[g]!=null?W[g]:g; }
+function schleifeOptionen(){ const o=k=>'<option value="'+k+'" title="'+schleifePrinzip(k)+'">'+schleifeName(k)+'</option>';
+  return SCHLEIFE_GRUPPEN.map(([g,ks])=>g?'<optgroup label="'+schleifeGruppe(g)+'">'+ks.map(o).join('')+'</optgroup>':ks.map(o).join('')).join(''); }   /* Caspar_D, 15.09.2026: "baue bitte mehr uebergaenge ein, da waren doch noch mehr" - die Formen aus labor/videonaht/uebergaenge; Blitz und Pixel nur fuer Grafik ("werden wohl nicht meine freunde, koennen aber mit synthetischeren Videos funktionieren") */
 
 const SCHLEIFE_UNSCHAERFE=0.08;   /* Anteil der Bildbreite am staerksten Punkt */
 /* DIE LAENGE DES UEBERGANGS VON HAND (Caspar_D, 15.09.2026: "kannst du den Anteil des Ueberblendens verkuerzen, bspw nur 1 sek von
@@ -5743,13 +5829,13 @@ function quellenUI(){ if(!root) return; const box=$('#tbs-quellen'); if(!box) re
     return luecke+'<button type="button" class="tbs-quelle'+(k===i?' on':'')+'" data-i="'+k+'" title="'+p.lbl+'">'+inner+'</button>'; }).join('');
   const tc=box.querySelector('canvas'); if(tc) tc.getContext('2d').drawImage(testbildBauen(),0,0,54,72);
   box.querySelectorAll('.tbs-quelle').forEach(b=>b.onclick=()=>quelleWaehlen(+b.dataset.i));
-  quellenNamen(); { const p=SEITEN[i]; standSetzen('Quelle', p?p.lbl+(p.test?' \u00b7 zum Pr\u00fcfen':''):'\u2026'); } }   /* Stand im Kopf der Stufe: derselbe Name wie unter dem Vorschaubild */
+  quellenNamen(); { const p=SEITEN[i]; standSetzen('Quelle', p?p.lbl+(p.test?sag('ec.quelle.zum_pruefen',' · zum Prüfen'):''):'…'); } }   /* Stand im Kopf der Stufe: derselbe Name wie unter dem Vorschaubild */
 /* Beschriftung unter den Vorschaubildern (Caspar_D, 11.09.2026): nur die gewaehlte Quelle traegt ihren
    Namen. Das linkeste Bild linksbuendig, das letzte rechtsbuendig, die mittleren mittig unter der
    senkrechten Bildachse - passt das nicht in die Zeile, ruecken sie an die Bildkante. */
 function quellenNamen(){ const box=$('#tbs-quellen'), row=$('#tbs-quellenNamen'); if(!box||!row) return; const i=seiteIndex();
   const th=[...box.querySelectorAll('.tbs-quelle')]; row.innerHTML=''; const b=th[i]; if(!b||!SEITEN[i]){ row.style.height='14px'; return; }
-  const s=document.createElement('span'); s.className='tbs-qname'; s.textContent=SEITEN[i].lbl; if(SEITEN[i].test) s.title='zum Pr\u00fcfen \u2014 wird nicht gesichert'; row.appendChild(s);
+  const s=document.createElement('span'); s.className='tbs-qname'; s.textContent=SEITEN[i].lbl; if(SEITEN[i].test) s.title=sag('ec.quelle.zum_pruefen.titel','zum Prüfen — wird nicht gesichert'); row.appendChild(s);
   const bl=box.getBoundingClientRect(), W=box.clientWidth, n=th.length, r=b.getBoundingClientRect(), L=r.left-bl.left, R=r.right-bl.left, w=s.offsetWidth; let x;
   if(i===0) x=L; else if(i===n-1) x=R-w; else { x=(L+R)/2-w/2; if(x<0) x=L; if(x+w>W) x=R-w; }
   x=Math.max(0,Math.min(W-w,x)); s.style.left=x+'px'; row.style.height=s.offsetHeight+'px'; }
@@ -6021,7 +6107,7 @@ function kbBuehneEinrichten(){
          SEINE ENGE ERBT ER VOM LETZTEN: wer gerade eine Enge eingestellt hat, will die naechste
          meist wieder so. Gibt es keinen, gilt die Vorgabe. */
       const P=kbPunkte(e).slice();
-      if(P.length>=KB_PUNKTE_MAX){ pStat('Fünf Zielpunkte sind die Grenze — ein Doppelklick auf eine Marke löst sie und macht Platz.'); return; }
+      if(P.length>=KB_PUNKTE_MAX){ pStat(sag('ec.kb.grenze','Fünf Zielpunkte sind die Grenze — ein Doppelklick auf eine Marke löst sie und macht Platz.')); return; }
       P.push(kbOrt({u:o.u,v:o.v,z:P.length?P[P.length-1].z:KB_ENGE_DEF}));
       kbSetzen(e,P); i=P.length-1;
       /* Gleich weiterziehen: gedrueckt halten und schieben setzt den Punkt genau dorthin, wo er
@@ -6060,7 +6146,7 @@ function kbBuehneEinrichten(){
       /* Ein Klick, der stillstand und auf dem Streifen keine Grenze getroffen hat, setzt eine
          neue. war===-2 heisst: er lag daneben und hat gedreht - dort wird nichts gesetzt. */
       if(!wanderte && war===-1){ const w=zonenGrenzeSetzen(vonPy);
-        if(w==='voll') pStat('Höchstens '+ZONEN_MAX_GRENZEN+' Grenzen — mehr Zonen kann man nicht auseinanderhalten');
+        if(w==='voll') pStat(sag('ec.zonen.hoechstens','Höchstens {n} Grenzen — mehr Zonen kann man nicht auseinanderhalten',{n:ZONEN_MAX_GRENZEN}));
         vorbStand(); vorbRender(); }
       else if(war>=0){ vorbStand(); vorbRender(); }
       return;
@@ -6070,12 +6156,12 @@ function kbBuehneEinrichten(){
     if(KB_ZIEHT<0) return; KB_ZIEHT=-1;
     lein.style.cursor=KB_STEHT_VOR?'crosshair':''; renderStapel(); };
   lein.ondblclick=ev=>{
-    { const te=tiKarteEffekt(); if(te){ tiMarkeVorgabe(te); TI_ZIEHT=false; renderStapel(); pStat('Ort des Textes auf die Vorgabe zurückgesetzt.'); return; } }
+    { const te=tiKarteEffekt(); if(te){ tiMarkeVorgabe(te); TI_ZIEHT=false; renderStapel(); pStat(sag('ec.text.ort_vorgabe','Ort des Textes auf die Vorgabe zurückgesetzt.')); return; } }
     const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
     const i=markeBei(e,o); if(i<0) return;
     const P=kbPunkte(e).slice(); P.splice(i,1); kbSetzen(e,P); KB_ZIEHT=-1;
-    pStat(P.length?('Zielpunkt gelöst — '+P.length+' '+(P.length===1?'bleibt':'bleiben')+'.')
-      :'Der letzte Zielpunkt ist gelöst — die Kamera steht jetzt auf dem Ganzbild.');
+    pStat(P.length?(P.length===1?sag('ec.kb.geloest.eins','Zielpunkt gelöst — {n} bleibt.',{n:P.length}):sag('ec.kb.geloest.mehr','Zielpunkt gelöst — {n} bleiben.',{n:P.length}))
+      :sag('ec.kb.geloest.letzter','Der letzte Zielpunkt ist gelöst — die Kamera steht jetzt auf dem Ganzbild.'));
     renderStapel(); ev.preventDefault(); };
   lein.onwheel=ev=>{
     { const le=lrKarteEffekt(); if(le){ const o=ortVon(ev); if(!o) return;
@@ -6126,8 +6212,8 @@ function brandZeigen(){ const el=$('#tbs-brand'); if(!el||!lein||lein.width<2||!
     const mehr=BRAND.anteil-BRAND.grund;
     if(mehr>=0.01){ if(jetzt-BRAND.spitzeT>2000||BRAND.anteil>=BRAND.spitze) BRAND.spitze=BRAND.anteil; BRAND.spitzeT=jetzt; }
     if(jetzt-BRAND.spitzeT<2000&&BRAND.spitze>0){
-      el.textContent='Ausgebrannt: '+Math.round(BRAND.spitze*100)+' % des Bildes'+(BRAND.grund>=0.005?' (die Quelle selbst: '+Math.round(BRAND.grund*100)+' %)':'');
-      el.title='So viele Bildpunkte standen zuletzt in mindestens einem Farbkanal am Anschlag (Spitze der letzten zwei Sekunden). Ab hier macht mehr Stärke das Bild nicht heller, nur die ausgebrannte Fläche größer.'; el.hidden=false; }
+      el.textContent=sag('ec.brand.anteil','Ausgebrannt: {p} % des Bildes',{p:Math.round(BRAND.spitze*100)})+(BRAND.grund>=0.005?sag('ec.brand.quelle',' (die Quelle selbst: {p} %)',{p:Math.round(BRAND.grund*100)}):'');
+      el.title=sag('ec.brand.titel','So viele Bildpunkte standen zuletzt in mindestens einem Farbkanal am Anschlag (Spitze der letzten zwei Sekunden). Ab hier macht mehr Stärke das Bild nicht heller, nur die ausgebrannte Fläche größer.'); el.hidden=false; }
     else { el.hidden=true; BRAND.spitze=0; }
   }catch(x){ el.hidden=true; } }
 function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(exportLaeuft) return; if(bereit&&lein&&lein.width<=2) groesse(); loopWache();
@@ -6295,10 +6381,10 @@ function kbParallaxeBild(kette, textur, quelle, bw, bh, sx, sy, cw, ch, Wn, Hn){
    ZU DIESER Reglerstellung - eine Zahl, die nur fuer eine Stellung gilt, nennt sie. */
 function kbParallaxeSatz(e){
   const s=kbParallaxeWert(e);
-  const gr='Der Weg endet bei '+kf(KB_PX_MAX.toFixed(1))+' %, und das ist gerechnet: aus dem größten Nähesprung je Bildpunkt (Median '+kf(KB_PX_SPRUNG.toFixed(4))+' über die 325 Tiefenkarten des Bestands) wären '+KB_PX_SICHTBAR+' Bildpunkte Lücke — die Breite, ab der die Randfortsetzung nachweislich nicht mehr trägt — bei '+kf(KB_PX_GRENZE.toFixed(2))+' % erreicht.';
-  if(!(s>0)) return 'Aus: das Bild wird gleichmäßig größer — ein vergrößertes Foto, keine Kamera, die sich bewegt. '+gr;
+  const gr=sag('ec.kb.px_grenze','Der Weg endet bei {max} %, und das ist gerechnet: aus dem größten Nähesprung je Bildpunkt (Median {sprung} über die 325 Tiefenkarten des Bestands) wären {sicht} Bildpunkte Lücke — die Breite, ab der die Randfortsetzung nachweislich nicht mehr trägt — bei {grenze} % erreicht.',{max:kf(KB_PX_MAX.toFixed(1)),sprung:kf(KB_PX_SPRUNG.toFixed(4)),sicht:KB_PX_SICHTBAR,grenze:kf(KB_PX_GRENZE.toFixed(2))});
+  if(!(s>0)) return sag('ec.kb.px_aus','Aus: das Bild wird gleichmäßig größer — ein vergrößertes Foto, keine Kamera, die sich bewegt. ')+gr;
   const px=s/100*STUDIO_FELD[0];
-  return 'Das Naheste eilt dem Fernsten um '+kf(s.toFixed(1))+' % der langen Bildkante voraus — im Studiomaß '+kf(px.toFixed(1))+' Bildpunkte —, und zwar dort, wo der Ausschnitt am weitesten gewandert ist; zur Mitte der Fahrt hin wird es weniger, denn die Verschiebung geht strahlig aus dem Punkt heraus, auf den sie zuläuft. Bei dieser Stellung reißt die schärfste Tiefenkante im Bild um '+kf(kbRiss(s,KB_PX_RISS).toFixed(1))+' Bildpunkte auf, bei jedem zehnten Titel um '+kf(kbRiss(s,KB_PX_RISS_P90).toFixed(1))+' — gemessen über alle 325 Tiefenkarten im Studiomaß, beim engsten Ausschnitt. Gefüllt wird der Riss aus der fernen Schicht. '+gr;
+  return sag('ec.kb.px_satz','Das Naheste eilt dem Fernsten um {s} % der langen Bildkante voraus — im Studiomaß {px} Bildpunkte —, und zwar dort, wo der Ausschnitt am weitesten gewandert ist; zur Mitte der Fahrt hin wird es weniger, denn die Verschiebung geht strahlig aus dem Punkt heraus, auf den sie zuläuft. Bei dieser Stellung reißt die schärfste Tiefenkante im Bild um {riss} Bildpunkte auf, bei jedem zehnten Titel um {riss90} — gemessen über alle 325 Tiefenkarten im Studiomaß, beim engsten Ausschnitt. Gefüllt wird der Riss aus der fernen Schicht. ',{s:kf(s.toFixed(1)),px:kf(px.toFixed(1)),riss:kf(kbRiss(s,KB_PX_RISS).toFixed(1)),riss90:kf(kbRiss(s,KB_PX_RISS_P90).toFixed(1))})+gr;
 }
 const KB_ERSATZ_SCHLAG=0.5, KB_ERSATZ_PROTAKT=4;
 /* Schlaege je Takt aus dem vorhandenen Feld: die Zaehlzeit steht im zweiten Feld jedes
@@ -6911,9 +6997,9 @@ function kbLupe(z){
    rechnet man nach. Dazwischen bleibt die Zahl stehen; erfunden wird kein Wort. */
 const KB_LUPE_WORT=[null,null,'zweifach','dreifach','vierfach','fünffach','sechsfach','siebenfach','achtfach'];
 function kbLupeWort(f){
-  if(Math.abs(f-1.5)<0.06) return 'anderthalbfach';
-  const r=Math.round(f); if(r>=2&&r<KB_LUPE_WORT.length&&Math.abs(f-r)<0.06) return KB_LUPE_WORT[r];
-  return kf(f.toFixed(1))+'-fach'; }
+  if(Math.abs(f-1.5)<0.06) return sag('ec.kb.lupe.anderthalb','anderthalbfach');
+  const r=Math.round(f); if(r>=2&&r<KB_LUPE_WORT.length&&Math.abs(f-r)<0.06) return sagNach(KB_LUPE_WORT[r]);
+  return sag('ec.kb.lupe.fach','{f}-fach',{f:kf(f.toFixed(1))}); }
 /* DIE ZEILE SAGT ES ERST, WENN ES ETWAS ZU SAGEN GIBT (Regel 4: was nicht gilt, steht nicht da).
    Unter 1:1 wird nichts vergroessert - dort ist die Auflösung kein Thema und die Zeile schweigt. */
 function kbLupenSatz(e){
@@ -6921,10 +7007,10 @@ function kbLupenSatz(e){
   const L0=kbLupe(1); if(!L0) return '';
   const ueber=[]; for(let i=0;i<P.length;i++){ const L=kbLupe(P[i].z); if(L&&L.f>1.005) ueber.push([i+1,L.f,P[i].z]); }
   if(!ueber.length) return '';
-  const teil=ueber.map(x=>'Punkt '+x[0]+' (Enge '+kf(x[2].toFixed(2))+') '+kbLupeWort(x[1]));
-  return 'Die Ausgabe ist '+L0.W+' × '+L0.H+' Bildpunkte, die Quelle '+L0.bw+' × '+L0.bh+' — bis Enge '
-    +kf(L0.eins.toFixed(2))+' wird nichts vergrößert. '
-    +(teil.length===1?teil[0]:(teil.slice(0,-1).join(', ')+' und '+teil[teil.length-1]))+' vergrößert.'; }
+  const teil=ueber.map(x=>sag('ec.kb.lupe.teil','Punkt {n} (Enge {z}) {wort}',{n:x[0],z:kf(x[2].toFixed(2)),wort:kbLupeWort(x[1])}));
+  return sag('ec.kb.lupe.satz','Die Ausgabe ist {W} × {H} Bildpunkte, die Quelle {bw} × {bh} — bis Enge {eins} wird nichts vergrößert. {teile} vergrößert.',
+    {W:L0.W,H:L0.H,bw:L0.bw,bh:L0.bh,eins:kf(L0.eins.toFixed(2)),
+     teile:(teil.length===1?teil[0]:(teil.slice(0,-1).join(', ')+sag('ec.kb.liste_und',' und ')+teil[teil.length-1]))}); }
 /* Lage in ECHTEN Schlaegen, gezaehlt ab der ersten Eins des Titels - das braucht nur das Pult.
    Driftfrei, weil die echten Schlagzeiten gezaehlt und nicht aus einem Median hochgerechnet
    werden; jeder Zyklus faengt deshalb auf einem gezaehlten Schlag an, und weil die Zykluslaenge
@@ -7568,26 +7654,26 @@ function kbFreierOrt(P,z){
 function kbNeuKnopf(n){
   const voll=n>=KB_PUNKTE_MAX;
   return '<div style="margin:0 0 6px"><button class="tbs-kbneu" data-kbneu="1"'+(voll?' disabled':'')
-    +' title="'+(voll?'F\u00fcnf Zielpunkte sind die Grenze':'Setzt einen Punkt an eine noch freie Stelle \u2014 dasselbe wie ein Klick in die freie Fl\u00e4che der B\u00fchne')
-    +'">+ Punkt hinzuf\u00fcgen</button>'
-    +(voll?'<div style="color:var(--schwach);font-size:10.5px;margin:3px 0 0">F\u00fcnf Zielpunkte sind die Grenze \u2014 ein Doppelklick auf eine Marke l\u00f6st sie und macht Platz.</div>':'')
+    +' title="'+(voll?sag('ec.kb.neu.voll','Fünf Zielpunkte sind die Grenze'):sag('ec.kb.neu.titel','Setzt einen Punkt an eine noch freie Stelle — dasselbe wie ein Klick in die freie Fläche der Bühne'))
+    +'">'+sag('ec.kb.neu.knopf','+ Punkt hinzufügen')+'</button>'
+    +(voll?'<div style="color:var(--schwach);font-size:10.5px;margin:3px 0 0">'+sag('ec.kb.grenze','Fünf Zielpunkte sind die Grenze — ein Doppelklick auf eine Marke löst sie und macht Platz.')+'</div>':'')
     +'</div>';
 }
 function kbListeHTML(e){
   const P=kbPunkte(e);
-  let h='<div class="tbs-abunter" style="margin-bottom:4px">Zielpunkte</div>';
-  if(!P.length) return h+'<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Kein Zielpunkt \u2014 ein Klick in die freie Fl\u00e4che der B\u00fchne setzt einen, der Knopf darunter auch.</div>'+kbNeuKnopf(0);
+  let h='<div class="tbs-abunter" style="margin-bottom:4px">'+sag('ec.kb.liste.kopf','Zielpunkte')+'</div>';
+  if(!P.length) return h+'<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">'+sag('ec.kb.liste.leer','Kein Zielpunkt — ein Klick in die freie Fläche der Bühne setzt einen, der Knopf darunter auch.')+'</div>'+kbNeuKnopf(0);
   h+='<div style="margin:0 0 6px">'
     +'<div style="display:flex;align-items:center;gap:6px;padding:0 0 2px;font-size:10px;color:var(--schwach)">'
-    +'<span style="flex:0 0 18px"></span><span style="flex:1 1 auto">Ort und Enge</span>'
-    +'<span style="flex:0 0 84px">Fokus bei Ankunft</span></div>';
+    +'<span style="flex:0 0 18px"></span><span style="flex:1 1 auto">'+sag('ec.kb.liste.ort','Ort und Enge')+'</span>'
+    +'<span style="flex:0 0 84px">'+sag('ec.kb.liste.fokus','Fokus bei Ankunft')+'</span></div>';
   for(let i=0;i<P.length;i++){ const p=P[i], fo=kbFokus(p);
     h+='<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px">'
       +'<span style="flex:0 0 18px;height:18px;line-height:18px;text-align:center;border-radius:9px;'
       +'border:1px solid '+KB_MARKE_FARBE+';color:'+KB_MARKE_FARBE+';font-weight:600">'+(i+1)+'</span>'
-      +'<span style="flex:1 1 auto;color:var(--schwach)">'+Math.round(p.u*100)+'\u2009% / '+Math.round(p.v*100)+'\u2009% \u00b7 Enge '+kf(p.z.toFixed(2))+'</span>'
+      +'<span style="flex:1 1 auto;color:var(--schwach)">'+Math.round(p.u*100)+' % / '+Math.round(p.v*100)+' % · '+sag('ec.kb.liste.enge','Enge {z}',{z:kf(p.z.toFixed(2))})+'</span>'
       +'<select class="tbs-kbfokus" data-kbfokus="'+i+'" style="flex:0 0 84px;font-size:10.5px">'
-      +KB_FOKUS.map(([v,l])=>'<option value="'+v+'"'+(fo===v?' selected':'')+'>'+l+'</option>').join('')
+      +KB_FOKUS.map(([v,l])=>'<option value="'+v+'"'+(fo===v?' selected':'')+'>'+sagNach(l)+'</option>').join('')
       +'</select></div>'; }
   return h+'</div>'+kbNeuKnopf(P.length);
 }
@@ -7607,17 +7693,20 @@ function kbPunkteSatz(e){
      Zahl aus kbPlan - derselben Rechnung, nach der kbWeg faehrt - und steht in Sekunden da. */
   const sek=b=>kf((b/BILDRATE_SCHLEIFE).toFixed(1));
   let s;
-  if(!n) s='Kein Zielpunkt — die Kamera steht auf dem Ganzbild. ';
-  else if(!pl) s=n+' '+(n===1?'Zielpunkt':'Zielpunkte')+': '+(n+1)+' Züge, dazu '+n+' '+(n===1?'Halt':'Halte')+' an '+(n===1?'dem Punkt':'den Punkten')+' und einer am Ganzbild. ';
-  else { s=n+' '+(n===1?'Zielpunkt':'Zielpunkte')+': '+(n+1)+' Züge zu je '+sek(pl.F)+' s. ';
-    s += pl.H>0 ? ('Die Kamera steht an '+(n===1?'dem Punkt':'jedem Punkt')+' '+sek(pl.H)+' s still — alle gleich lang — und am Ganzbild '+sek(pl.HA)+' s. ')
-       : pl.HA>0 ? ('Für die Punkte bleibt kein ganzer Schlag übrig — sie werden nur berührt; still steht allein das Ganzbild, '+sek(pl.HA)+' s. ')
-       : 'Die Züge füllen den ganzen Clip — es bleibt kein Halt, auch nicht am Ganzbild. '; }
-  s += (passt==null) ? 'Wie viele Punkte in die Cliplänge passen, steht fest, sobald der Titel seine Länge hat.'
-    : passt===0 ? ('In diese Cliplänge passt bei diesem Tempo kein einziger Punkt'+(Z>1?' — ein kleineres Tempo schafft Platz.':' — dieser Clip ist dafür zu kurz; die Fahrt läuft trotzdem, nur mit Zügen unter einem Schlag.'))
-    : ('In diese Cliplänge passen bei diesem Tempo '+passt+' '+(passt===1?'Punkt':'Punkte')
-       +(n>passt?(' — die übrigen fahren trotzdem mit, dafür werden die Züge kürzer als ein Schlag'+(Z>1?'; ein kleineres Tempo schafft Platz.':'.')):'.'));
-  if(n>=KB_PUNKTE_MAX) s+=' Fünf ist die Grenze: ein weiterer Klick auf die Bühne setzt keinen Punkt mehr, erst ein Doppelklick auf eine Marke macht Platz.';
+  if(!n) s=sag('ec.kb.ps.keiner','Kein Zielpunkt — die Kamera steht auf dem Ganzbild. ');
+  else if(!pl) s=n===1?sag('ec.kb.ps.ohneplan_1','{n} Zielpunkt: {z} Züge, dazu {n} Halt an dem Punkt und einer am Ganzbild. ',{n,z:n+1})
+    :sag('ec.kb.ps.ohneplan_n','{n} Zielpunkte: {z} Züge, dazu {n} Halte an den Punkten und einer am Ganzbild. ',{n,z:n+1});
+  else { s=n===1?sag('ec.kb.ps.zuege_1','{n} Zielpunkt: {z} Züge zu je {f} s. ',{n,z:n+1,f:sek(pl.F)})
+      :sag('ec.kb.ps.zuege_n','{n} Zielpunkte: {z} Züge zu je {f} s. ',{n,z:n+1,f:sek(pl.F)});
+    s += pl.H>0 ? (n===1?sag('ec.kb.ps.halt_1','Die Kamera steht an dem Punkt {h} s still — alle gleich lang — und am Ganzbild {ha} s. ',{h:sek(pl.H),ha:sek(pl.HA)})
+                        :sag('ec.kb.ps.halt_n','Die Kamera steht an jedem Punkt {h} s still — alle gleich lang — und am Ganzbild {ha} s. ',{h:sek(pl.H),ha:sek(pl.HA)}))
+       : pl.HA>0 ? sag('ec.kb.ps.nur_beruehrt','Für die Punkte bleibt kein ganzer Schlag übrig — sie werden nur berührt; still steht allein das Ganzbild, {ha} s. ',{ha:sek(pl.HA)})
+       : sag('ec.kb.ps.kein_halt','Die Züge füllen den ganzen Clip — es bleibt kein Halt, auch nicht am Ganzbild. '); }
+  s += (passt==null) ? sag('ec.kb.ps.passt_offen','Wie viele Punkte in die Cliplänge passen, steht fest, sobald der Titel seine Länge hat.')
+    : passt===0 ? (sag('ec.kb.ps.passt_0','In diese Cliplänge passt bei diesem Tempo kein einziger Punkt')+(Z>1?sag('ec.kb.ps.tempo_platz',' — ein kleineres Tempo schafft Platz.'):sag('ec.kb.ps.zu_kurz',' — dieser Clip ist dafür zu kurz; die Fahrt läuft trotzdem, nur mit Zügen unter einem Schlag.')))
+    : ((passt===1?sag('ec.kb.ps.passt_1','In diese Cliplänge passen bei diesem Tempo {n} Punkt',{n:passt}):sag('ec.kb.ps.passt_n','In diese Cliplänge passen bei diesem Tempo {n} Punkte',{n:passt}))
+       +(n>passt?(sag('ec.kb.ps.uebrige',' — die übrigen fahren trotzdem mit, dafür werden die Züge kürzer als ein Schlag')+(Z>1?sag('ec.kb.ps.tempo_platz_semi','; ein kleineres Tempo schafft Platz.'):'.')):'.'));
+  if(n>=KB_PUNKTE_MAX) s+=sag('ec.kb.ps.fuenf',' Fünf ist die Grenze: ein weiterer Klick auf die Bühne setzt keinen Punkt mehr, erst ein Doppelklick auf eine Marke macht Platz.');
   /* AM ANSCHLAG - UND DAS MUSS DASTEHEN (Oberflaechenprobe 18.09.2026). Ein Klick weit aussen setzt
      die Marke nicht dorthin, wo der Zeiger war, sondern an den Rand des erreichbaren Bereichs: ein
      Ausschnitt der Kantenlaenge z liegt nur dann ganz im Bild, wenn seine Mitte zwischen z/2 und
@@ -7625,7 +7714,9 @@ function kbPunkteSatz(e){
      Marke fuer stur. Also sagt die Zeile, wie weit es geht und was hilft. */
   const anschlag=P.filter(p=>Math.abs(p.u-0.5)>=(1-p.z)/2-1e-9||Math.abs(p.v-0.5)>=(1-p.z)/2-1e-9);
   if(anschlag.length){ const w=anschlag.reduce((a,b)=>a.z>b.z?a:b);
-    s+=' '+(anschlag.length===1?'Ein Punkt liegt':anschlag.length+' Punkte liegen')+' am Anschlag: eine Marke kann nur so weit von der Mitte weg, wie ihr Ausschnitt im Bild bleibt \u2014 bei Enge '+kf(w.z.toFixed(2))+' sind das '+kf(((1-w.z)/2*100).toFixed(0))+'\u2009% der Bildkante. Wer weiter hinaus will, dreht sie am Mausrad enger.'; }
+    const az=kf(w.z.toFixed(2)), ap=kf(((1-w.z)/2*100).toFixed(0));
+    s+=' '+(anschlag.length===1?sag('ec.kb.ps.anschlag_1','Ein Punkt liegt am Anschlag: eine Marke kann nur so weit von der Mitte weg, wie ihr Ausschnitt im Bild bleibt — bei Enge {z} sind das {p} % der Bildkante. Wer weiter hinaus will, dreht sie am Mausrad enger.',{z:az,p:ap})
+      :sag('ec.kb.ps.anschlag_n','{n} Punkte liegen am Anschlag: eine Marke kann nur so weit von der Mitte weg, wie ihr Ausschnitt im Bild bleibt — bei Enge {z} sind das {p} % der Bildkante. Wer weiter hinaus will, dreht sie am Mausrad enger.',{n:anschlag.length,z:az,p:ap})); }
   /* WAS DIE FOKUSSPALTE GERADE BEWIRKT - und zwar nur, wenn sie etwas bewirkt (19.09.2026). Bei der
      Vorgabe "Scharf" steht hier nichts: es gibt nichts zu sagen, wenn sich nichts aendert.
      UND "SUCHE" VERSPRICHT NUR, WAS DIESER CLIP HERGIBT (Gegenlesen 19.09.2026). Der Satz fragte
@@ -7649,23 +7740,23 @@ function kbPunkteSatz(e){
       if(f==='tiefe'&&!karteDa) un.push(i+1);
       else if(f==='tiefe') ti.push(i+1);
       else if(f==='unscharf') un.push(i+1); else if(f==='suche') su.push(i+1); }
-    const liste=a=>(a.length===1?'Punkt ':'den Punkten ')+(a.length>1?a.slice(0,-1).join(', ')+' und '+a[a.length-1]:a[0]);
-    const mal=m=>m===1?'einmal':m===2?'zweimal':m+'-mal';
-    if(un.length) s+=' Der Zug zu '+liste(un)+' schmiert und ist bei der Ankunft sofort wieder scharf.';
+    const liste=a=>(a.length===1?sag('ec.kb.ps.punkt','Punkt '):sag('ec.kb.ps.den_punkten','den Punkten '))+(a.length>1?a.slice(0,-1).join(', ')+sag('ec.kb.liste_und',' und ')+a[a.length-1]:a[0]);
+    const mal=m=>m===1?sag('ec.kb.ps.einmal','einmal'):m===2?sag('ec.kb.ps.zweimal','zweimal'):sag('ec.kb.ps.mmal','{m}-mal',{m});
+    if(un.length) s+=sag('ec.kb.ps.un',' Der Zug zu {liste} schmiert und ist bei der Ankunft sofort wieder scharf.',{liste:liste(un)});
     if(su.length){
-      if(pl&&!(pl.H>0)) s+=' Der Zug zu '+liste(su)+' schmiert — gesucht wird in diesem Clip aber NICHT: an den Punkten bleibt kein Halt übrig, und der Schärfezieher lebt im Halt. „Suche“ wirkt hier genau wie „Unscharf“. Ein Punkt weniger'+(T>1?' oder ein kleineres Tempo':'')+' schafft den Halt. In der Vorschau ohne Clip steht an jeder Station ein Takt still — dort sucht sie sichtbar, im Clip nicht.';
-      else s+=' Der Zug zu '+liste(su)+' schmiert, und am Ziel sucht die Schärfe den Punkt: sie geht darüber hinaus und fängt sich, '+(pl?mal(kbSuchAusschlaege(pl.H))+' in den '+sek(pl.H)+' s des Halts':'dreimal innerhalb des Halts')+' und jedes Mal kleiner.'; }
+      if(pl&&!(pl.H>0)) s+=sag('ec.kb.ps.su_ohnehalt',' Der Zug zu {liste} schmiert — gesucht wird in diesem Clip aber NICHT: an den Punkten bleibt kein Halt übrig, und der Schärfezieher lebt im Halt. „Suche“ wirkt hier genau wie „Unscharf“. Ein Punkt weniger{tempo} schafft den Halt. In der Vorschau ohne Clip steht an jeder Station ein Takt still — dort sucht sie sichtbar, im Clip nicht.',{liste:liste(su),tempo:(T>1?sag('ec.kb.ps.oder_tempo',' oder ein kleineres Tempo'):'')});
+      else s+=sag('ec.kb.ps.su',' Der Zug zu {liste} schmiert, und am Ziel sucht die Schärfe den Punkt: sie geht darüber hinaus und fängt sich, {wie} und jedes Mal kleiner.',{liste:liste(su),wie:(pl?sag('ec.kb.ps.su_wie','{mal} in den {h} s des Halts',{mal:mal(kbSuchAusschlaege(pl.H)),h:sek(pl.H)}):sag('ec.kb.ps.su_dreimal','dreimal innerhalb des Halts'))}); }
     if(ti.length){
-      s+=' An '+liste(ti)+' bleibt bei der Ankunft die Tiefenebene des Punktes scharf, und der Rest wird weicher, je weiter er in der Tiefe davon entfernt liegt \u2014 die n\u00e4here Umgebung des Zielpunkts, 20\u2009% der Gesamttiefe, h\u00e4lt die Sch\u00e4rfe.';
-      if(pl&&!(pl.H>0)) s+=' In diesem Clip ist davon NICHTS zu sehen: an den Punkten bleibt kein Halt \u00fcbrig, und die Tiefenebene lebt im Halt. Ein Punkt weniger'+(T>1?' oder ein kleineres Tempo':'')+' schafft ihn. In der Vorschau ohne Clip steht an jeder Station ein Takt still \u2014 dort ist sie zu sehen, im Clip nicht.';
-      else s+=' Sie kommt und geht: sie zieht \u00fcber den Halt auf'+(pl?' \u2014 in den '+sek(pl.H)+' s dieses Halts':'')+' und l\u00f6st sich zu seinem Ende wieder, sodass der n\u00e4chste Zug ohne Rest anf\u00e4ngt. Im Zug selbst \u00e4ndert sie nichts, und im Ganzbild am Anfang und am Ende ist alles scharf.';
-      s+=' Wie weich der Rest wird, rechnet die Software \u2014 kein Regler daf\u00fcr.'; }
+      s+=sag('ec.kb.ps.ti',' An {liste} bleibt bei der Ankunft die Tiefenebene des Punktes scharf, und der Rest wird weicher, je weiter er in der Tiefe davon entfernt liegt — die nähere Umgebung des Zielpunkts, 20 % der Gesamttiefe, hält die Schärfe.',{liste:liste(ti)});
+      if(pl&&!(pl.H>0)) s+=sag('ec.kb.ps.ti_ohnehalt',' In diesem Clip ist davon NICHTS zu sehen: an den Punkten bleibt kein Halt übrig, und die Tiefenebene lebt im Halt. Ein Punkt weniger{tempo} schafft ihn. In der Vorschau ohne Clip steht an jeder Station ein Takt still — dort ist sie zu sehen, im Clip nicht.',{tempo:(T>1?sag('ec.kb.ps.oder_tempo',' oder ein kleineres Tempo'):'')});
+      else s+=sag('ec.kb.ps.ti_kommt',' Sie kommt und geht: sie zieht über den Halt auf{dauer} und löst sich zu seinem Ende wieder, sodass der nächste Zug ohne Rest anfängt. Im Zug selbst ändert sie nichts, und im Ganzbild am Anfang und am Ende ist alles scharf.',{dauer:(pl?sag('ec.kb.ps.ti_dauer',' — in den {h} s dieses Halts',{h:sek(pl.H)}):'')});
+      s+=sag('ec.kb.ps.ti_weich',' Wie weich der Rest wird, rechnet die Software — kein Regler dafür.'); }
     if(un.length&&!karteDa&&kbPunkte(e).some(q=>kbFokus(q)==='tiefe'))
-      s+=' „Tiefenebene\u201c ist dabei: daf\u00fcr fehlt diesem Bild die Tiefenkarte, also schmiert der Zug stattdessen und ist bei der Ankunft sofort wieder scharf. Die Einstellung bleibt gespeichert und wirkt, sobald eine Karte da ist.';
-    if(un.length||su.length) s+=' Wie stark es schmiert, rechnet die Software aus der Geschwindigkeit der Kamera — steht sie, ist es scharf, kein Regler dafür. Der Rückweg auf das Ganzbild ist immer scharf. Ein Blick auf das Auswahlfeld führt es auf der stehenden Bühne vor.'; }
+      s+=sag('ec.kb.ps.ti_ohnekarte',' „Tiefenebene“ ist dabei: dafür fehlt diesem Bild die Tiefenkarte, also schmiert der Zug stattdessen und ist bei der Ankunft sofort wieder scharf. Die Einstellung bleibt gespeichert und wirkt, sobald eine Karte da ist.');
+    if(un.length||su.length) s+=sag('ec.kb.ps.schmiert',' Wie stark es schmiert, rechnet die Software aus der Geschwindigkeit der Kamera — steht sie, ist es scharf, kein Regler dafür. Der Rückweg auf das Ganzbild ist immer scharf. Ein Blick auf das Auswahlfeld führt es auf der stehenden Bühne vor.'); }
   { const ls=kbLupenSatz(e); if(ls) s+=' '+ls; }
   { const vs=kbVorschlagSatz(e); if(vs) s+=' '+vs; }
-  s+=' Gesetzt werden sie auf der Bühne: Klick in die freie Fläche setzt einen, Ziehen verschiebt, Mausrad über einer Marke stellt ihre Enge, Doppelklick löst sie; beim Ziehen zeigt ein feiner Rahmen, wie weit diese Marke kann. Der Knopf unter der Liste setzt einen an eine noch freie Stelle.';
+  s+=sag('ec.kb.ps.bedienung',' Gesetzt werden sie auf der Bühne: Klick in die freie Fläche setzt einen, Ziehen verschiebt, Mausrad über einer Marke stellt ihre Enge, Doppelklick löst sie; beim Ziehen zeigt ein feiner Rahmen, wie weit diese Marke kann. Der Knopf unter der Liste setzt einen an eine noch freie Stelle.');
   return s;
 }
 /* WOHER DIE BEIDEN PUNKTE KAMEN, DIE BEIM EINFUEGEN MITKAMEN - oder dass sie geraten sind
@@ -7680,24 +7771,25 @@ function kbVorschlagSatz(e){
   /* 'nochnicht' IST EIN EIGENER ZUSTAND UND SCHWIEG BIS HEUTE (Gegenlesen 18.09.2026): zwei
      geratene Punkte standen in der Liste UND als Marken auf der Buehne, nichts sagte, dass sie
      vorlaeufig sind, und sie wurden spaeter stumm durch die gefundenen ersetzt. */
-  if(g==='nochnicht') return 'Die beiden Punkte sind VORLÄUFIG geraten: die Quelle ist noch nicht gelesen. Sobald sie da ist, schlägt das Bild selbst zwei Punkte vor und ersetzt diese.';
-  const warum = g==='unlesbar' ? ('dieses Bild ließ sich nicht auslesen'+(e._kbGeratenFehler?' ('+e._kbGeratenFehler+')':''))
-    : g==='flach' ? 'dieses Bild hebt nichts hervor, worauf sich zufahren ließe'
-    : 'dieses Bild gab kein zweites Ziel her, das weit genug entfernt liegt';
-  return 'Die beiden Punkte beim Einfügen sind GERATEN, nicht gefunden: '+warum+'. Sie stehen auf den Drittelpunkten, so weit auseinander, wie die Enge es zulässt.';
+  if(g==='nochnicht') return sag('ec.kb.vs.vorlaeufig','Die beiden Punkte sind VORLÄUFIG geraten: die Quelle ist noch nicht gelesen. Sobald sie da ist, schlägt das Bild selbst zwei Punkte vor und ersetzt diese.');
+  const warum = g==='unlesbar' ? (sag('ec.kb.vs.unlesbar','dieses Bild ließ sich nicht auslesen')+(e._kbGeratenFehler?' ('+e._kbGeratenFehler+')':''))
+    : g==='flach' ? sag('ec.kb.vs.flach','dieses Bild hebt nichts hervor, worauf sich zufahren ließe')
+    : sag('ec.kb.vs.kein_zweites','dieses Bild gab kein zweites Ziel her, das weit genug entfernt liegt');
+  return sag('ec.kb.vs.geraten','Die beiden Punkte beim Einfügen sind GERATEN, nicht gefunden: {warum}. Sie stehen auf den Drittelpunkten, so weit auseinander, wie die Enge es zulässt.',{warum});
 }
 /* DIE ZEILE UNTER DEM TEMPO-REGLER. Sie sagt, was dieser Titel hergibt und was daraus folgt -
    in Zahlen statt als Behauptung, und wo ein Ersatzmass gilt, steht das Ersatzmass da. */
 function kbSatz(e){ const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); const ohneZaehlzeit=!(P>=2); if(ohneZaehlzeit) P=KB_ERSATZ_PROTAKT;
   const hz=schlagHz(), sch=hz>0?1/hz:KB_ERSATZ_SCHLAG, takt=P*sch, Z=kbZugSchlaege(e), teile=[];
-  teile.push(!S.length ? 'Dieser Titel hat kein Schlagraster — Ersatzmaß '+kf(KB_ERSATZ_SCHLAG.toFixed(2))+' s je Schlag'
-    : hz>0 ? Math.round(60/sch)+' Schläge je Minute'
-    : 'zu wenige Schläge für ein Tempo — Ersatzmaß '+kf(KB_ERSATZ_SCHLAG.toFixed(2))+' s je Schlag');
-  teile.push(ohneZaehlzeit ? 'keine Taktzählung — Ersatzmaß vier Schläge je Takt' : P+' Schläge je Takt');
+  teile.push(!S.length ? sag('ec.kb.tempo.kein_raster','Dieser Titel hat kein Schlagraster — Ersatzmaß {s} s je Schlag',{s:kf(KB_ERSATZ_SCHLAG.toFixed(2))})
+    : hz>0 ? sag('ec.kb.tempo.bpm','{n} Schläge je Minute',{n:Math.round(60/sch)})
+    : sag('ec.kb.tempo.zu_wenige','zu wenige Schläge für ein Tempo — Ersatzmaß {s} s je Schlag',{s:kf(KB_ERSATZ_SCHLAG.toFixed(2))}));
+  teile.push(ohneZaehlzeit ? sag('ec.kb.tempo.keine_zaehlung','keine Taktzählung — Ersatzmaß vier Schläge je Takt') : sag('ec.kb.tempo.je_takt','{n} Schläge je Takt',{n:P}));
   const n=kbPunkte(e).length, L=n+1, runde=L*Z*sch+(n+1)*takt;
-  return teile.join(', ')+'; ein Schlag '+kf(sch.toFixed(2))+' s, ein Takt '+kf(takt.toFixed(2))+' s. Ein Zug '+Z+' '+(Z===1?'Schlag':'Schläge')+' ('+kf((Z*sch).toFixed(1))
-    +' s), diese Fahrt hat '+L+' '+(L===1?'Zug':'Züge')+' — im Pult '+kf(runde.toFixed(1))+' s je Runde (je Station ein Takt Halt).'
-    +' Im Clip füllen die Halte den Rest der Cliplänge, und passt die Fahrt nicht hinein, läuft sie über so viele Schläge, wie hineinpassen.'; }
+  return teile.join(', ')+sag('ec.kb.tempo.schlag_takt','; ein Schlag {s} s, ein Takt {t} s.',{s:kf(sch.toFixed(2)),t:kf(takt.toFixed(2))})
+    +(Z===1?sag('ec.kb.tempo.zug_1',' Ein Zug {z} Schlag ({d} s),',{z:Z,d:kf((Z*sch).toFixed(1))}):sag('ec.kb.tempo.zug_n',' Ein Zug {z} Schläge ({d} s),',{z:Z,d:kf((Z*sch).toFixed(1))}))
+    +(L===1?sag('ec.kb.tempo.fahrt_1',' diese Fahrt hat {l} Zug — im Pult {r} s je Runde (je Station ein Takt Halt).',{l:L,r:kf(runde.toFixed(1))}):sag('ec.kb.tempo.fahrt_n',' diese Fahrt hat {l} Züge — im Pult {r} s je Runde (je Station ein Takt Halt).',{l:L,r:kf(runde.toFixed(1))}))
+    +sag('ec.kb.tempo.clip',' Im Clip füllen die Halte den Rest der Cliplänge, und passt die Fahrt nicht hinein, läuft sie über so viele Schläge, wie hineinpassen.'); }
 /* roh (nur aus rahmen(), V gehalten in der Vorbereitung): die Quelle mit Vorbereitung, aber ohne Kette. Ohne roh ist der Weg bitgleich. */
 /* ===================== DIE GEOMETRIE DIESES BILDES (18.09.2026) =====================
    Caspar_D, 18.09.2026 (Rauchtest): ein Teilchen wurde von einer Flaeche verdeckt, DIE WOANDERS
@@ -8055,7 +8147,7 @@ function dioramaMass(kette,bw,bh,Wn,Hn){
    die immer dasteht, liest niemand mehr. */
 let DIO_GEMELDET='';
 function dioStandSatz(){ const d=DIO_STAND; if(!d||d.grund!=='vorrat') return '';
-  return 'Diorama '+d.dw+'\u00d7'+d.dh+' \u2014 der Speichervorrat deckelt es; aus der Quelle '+d.bw+'\u00d7'+d.bh+' w\u00e4re mehr zu holen, die Fahrt ist an der Ankunft weicher als n\u00f6tig'; }
+  return sag('ec.dio.vorrat','Diorama {dw}×{dh} — der Speichervorrat deckelt es; aus der Quelle {bw}×{bh} wäre mehr zu holen, die Fahrt ist an der Ankunft weicher als nötig',{dw:d.dw,dh:d.dh,bw:d.bw,bh:d.bh}); }
 function dioStandZeigen(){ const txt=dioStandSatz(), el=$('#tbs-diostand');
   if(el){ el.textContent=txt; el.hidden=!txt; }
   if(txt!==DIO_GEMELDET){ DIO_GEMELDET=txt; if(txt) console.info('Effektclip-Diorama: '+txt); } }
@@ -8412,7 +8504,7 @@ function zeichneFrame(t,roh){
   /* Den Stand nennt der Kopf der Stufe. Geloescht wird im Panel neben Auto-Niveaus - niemand loescht, was er nicht sieht
      (Caspar_D, 11.09.2026). Der eigene Klappschalter mit "n Anpassungen - ansehen" fiel mit dem Akkordeon (15.09.2026). */
   function vorbStand(){ const n=vorbAenderungen(VORB), lb=$('#tbs-vorbKoerper [data-vloeschen]'); if(lb) lb.disabled=n===0;
-    standSetzen('Vorb', n===0?'keine Anpassung':n===1?'1 Anpassung aktiv':n+' Anpassungen aktiv');
+    standSetzen('Vorb', n===0?sag('ec.vorb.stand_keine','keine Anpassung'):n===1?sag('ec.vorb.stand_eine','1 Anpassung aktiv'):sag('ec.vorb.stand_n','{n} Anpassungen aktiv',{n}));
     fussStand(); }
   /* Sichern erst, wenn etwas angewendet ist (Effekt, Vorbereitung oder eine andere Quelle als die Vorgabe);
      Loesen nur, wenn beim Titel ein Rezept liegt. Sonst ist der Fuss gedimmt (Caspar_D, 11.09.2026). */
@@ -8443,40 +8535,43 @@ function zeichneFrame(t,roh){
   try{ window.addEventListener('storage',ev=>{ if(ev.key!==ABLAGE_SPEICHER) return;
     try{ const o=JSON.parse(ev.newValue||'null'); ABLAGE=(o&&typeof o==='object'&&Array.isArray(o.effekte))?o:null; }catch(e){ ABLAGE=null; }
     if(offen) fussStand(); }); }catch(e){}
-  function quellName(q){ const p=seiteFinden(SEITEN,q); if(p) return p.lbl; const n=QUELLNAMEN[q&&q.art]; return n?(n+((q.nr||1)>1?' '+q.nr:'')):'eine unbekannte Quelle'; }
-  function ablageHer(){ const t=String((ABLAGE&&ABLAGE.her&&ABLAGE.her.titel)||''); return t.length>26?t.slice(0,25)+'\u2026':t; }
+  function quellName(q){ const p=seiteFinden(SEITEN,q); if(p) return p.lbl; const n=QUELLNAMEN[q&&q.art]; if(n){ const nr=(q.nr||1)>1?' '+q.nr:'';
+    return q.art==='titelbild'?sag('ec.quelle.titelbild','Titelbild')+nr:q.art==='bewegtbild'?sag('ec.quelle.bewegtbild','Bewegtbild (Suno)')+nr
+      :q.art==='video'?sag('ec.quelle.eigenes_bewegtbild','Eigenes Bewegtbild{nr}',{nr}):sag('ec.quelle.eigenes_titelbild','Eigenes Titelbild{nr}',{nr}); }
+    return sag('ec.ablage.unbekannte_quelle','eine unbekannte Quelle'); }
+  function ablageHer(){ const t=String((ABLAGE&&ABLAGE.her&&ABLAGE.her.titel)||''); return t.length>26?t.slice(0,25)+'…':t; }
   /* Was drinsteckt, in Nutzerwoertern - ohne die Quelle: die steht getrennt daneben, weil nur sie danebengehen kann. */
   function ablageInhalt(o){ const R=rezeptLesen(o), n=R.effekte.length, v=vorbAenderungen(vorbAus(R.vorbereitung)), art=(R.schleife&&R.schleife.art)||'keiner';
-    const t=[n?(n===1?'1 Effekt':n+' Effekte'):'keine Effekte']; if(v) t.push(v===1?'1 Anpassung':v+' Anpassungen');
-    if(art!=='keiner'){ const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===art)||[0,''])[1]; if(nm) t.push(nm); }
-    return t.join(' \u00b7 '); }
+    const t=[n?(n===1?sag('ec.ablage.ein_effekt','1 Effekt'):sag('ec.ablage.n_effekte','{n} Effekte',{n})):sag('ec.ablage.keine_effekte','keine Effekte')]; if(v) t.push(v===1?sag('ec.ablage.eine_anpassung','1 Anpassung'):sag('ec.ablage.n_anpassungen','{n} Anpassungen',{n:v}));
+    if(art!=='keiner'){ const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===art)||[0,''])[1]; if(nm) t.push(schleifeName(art)); }
+    return t.join(' · '); }
   /* Regel 3 am Knopf: leer sagt er, warum er nicht geht; voll sagt er, woher das Rezept kommt. Die Erklaerung
      im Titel nennt das Prinzip (was mitkommt, was nicht, dass nichts gesichert wird), nicht den Namen. */
   function ablageStand(a){ const bk=$('#tbs-pKopie'), be=$('#tbs-pEin'); if(!bk||!be) return;
     bk.disabled=!a;
-    bk.title=a?'Den jetzigen Stand des Studios merken \u2014 Quelle, Vorbereitung, Effektkette und Schleife \u2014, um ihn auf einen anderen Titel zu legen. Die Ablage hat einen Platz und \u00fcberdauert das Neuladen.'
-             :'Hier ist nichts eingestellt, was sich kopieren lie\u00dfe \u2014 erst eine andere Quelle w\u00e4hlen, etwas vorbereiten, einen Effekt hinzuf\u00fcgen oder einen \u00dcbergang setzen.';
+    bk.title=a?sag('ec.ablage.kopieren_titel','Den jetzigen Stand des Studios merken — Quelle, Vorbereitung, Effektkette und Schleife —, um ihn auf einen anderen Titel zu legen. Die Ablage hat einen Platz und überdauert das Neuladen.')
+             :sag('ec.ablage.kopieren_leer','Hier ist nichts eingestellt, was sich kopieren ließe — erst eine andere Quelle wählen, etwas vorbereiten, einen Effekt hinzufügen oder einen Übergang setzen.');
     const her=ablageHer();
-    be.disabled=!ABLAGE; be.textContent=(ABLAGE&&her)?('Einf\u00fcgen aus \u201e'+her+'\u201c'):'Einf\u00fcgen';
-    be.title=ABLAGE?('Das gemerkte Rezept auf diesen Titel legen: Effektkette, Vorbereitung und Schleife kommen immer mit, die Quelle nur, wenn es sie bei diesem Titel auch gibt. Gesichert wird dabei nichts \u2014 das entscheidet danach \u201eF\u00fcr diesen Titel sichern\u201c.'
-      +((ABLAGE.her&&ABLAGE.her.wann)?' Gemerkt am '+new Date(ABLAGE.her.wann).toLocaleString('de-DE')+'.':''))
-      :'In der Ablage liegt nichts \u2014 erst bei einem Titel \u201eKopieren\u201c dr\u00fccken.'; }
+    be.disabled=!ABLAGE; be.textContent=(ABLAGE&&her)?sag('ec.ablage.einfuegen_aus','Einfügen aus „{her}“',{her}):sag('ec.ablage.einfuegen','Einfügen');
+    be.title=ABLAGE?(sag('ec.ablage.einfuegen_titel','Das gemerkte Rezept auf diesen Titel legen: Effektkette, Vorbereitung und Schleife kommen immer mit, die Quelle nur, wenn es sie bei diesem Titel auch gibt. Gesichert wird dabei nichts — das entscheidet danach „Für diesen Titel sichern“.')
+      +((ABLAGE.her&&ABLAGE.her.wann)?sag('ec.ablage.gemerkt_am',' Gemerkt am {wann}.',{wann:new Date(ABLAGE.her.wann).toLocaleString(istEn()?'en-GB':'de-DE')}):''))
+      :sag('ec.ablage.leer','In der Ablage liegt nichts — erst bei einem Titel „Kopieren“ drücken.'); }
   function kopieren(){ const o=JSON.parse(presetJSON()); o.her={id:songId,titel:(DATA&&DATA.titel)||'',wann:Date.now()};
     /* Privater Modus oder volles Fach: die Ablage gilt dann nur in dieser Sitzung. Dann muss aber auch die ALTE von der
        Platte weg - sonst kaeme nach dem naechsten Neuladen nicht nichts zurueck, sondern das vorige Rezept unter seinem
        vorigen Namen, und der Knopf fuegte etwas anderes ein, als zuletzt kopiert wurde (Gegenlesen 16.09.2026). */
     ABLAGE=o; let nurSitzung=false;
     try{ localStorage.setItem(ABLAGE_SPEICHER,JSON.stringify(o)); }catch(e){ nurSitzung=true; try{ localStorage.removeItem(ABLAGE_SPEICHER); }catch(e2){} }
-    fussStand(); pStat('kopiert: '+ablageInhalt(o)+' \u00b7 Quelle: '+quellName(o.quelle)+' \u2014 jetzt einen anderen Titel \u00f6ffnen und \u201eEinf\u00fcgen\u201c dr\u00fccken'+(nurSitzung?' (nur f\u00fcr diese Sitzung gemerkt \u2014 der Browser nimmt nichts an)':'')); }
+    fussStand(); pStat(sag('ec.ablage.kopiert','kopiert: {inhalt} · Quelle: {quelle} — jetzt einen anderen Titel öffnen und „Einfügen“ drücken',{inhalt:ablageInhalt(o),quelle:quellName(o.quelle)})+(nurSitzung?sag('ec.ablage.nur_sitzung',' (nur für diese Sitzung gemerkt — der Browser nimmt nichts an)'):'')); }
   /* Dasselbe in denselben Woertern wie ablageInhalt(), nur aus dem, was JETZT im Studio steht. */
   function studioInhalt(){ const n=STAPEL.length, v=vorbAenderungen(VORB), art=SCHLEIFE.art||'keiner';
-    const t=[n?(n===1?'1 Effekt':n+' Effekte'):'keine Effekte']; if(v) t.push(v===1?'1 Anpassung':v+' Anpassungen');
-    if(art!=='keiner'){ const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===art)||[0,''])[1]; if(nm) t.push(nm); }
-    return t.join(' \u00b7 '); }
+    const t=[n?(n===1?sag('ec.ablage.ein_effekt','1 Effekt'):sag('ec.ablage.n_effekte','{n} Effekte',{n})):sag('ec.ablage.keine_effekte','keine Effekte')]; if(v) t.push(v===1?sag('ec.ablage.eine_anpassung','1 Anpassung'):sag('ec.ablage.n_anpassungen','{n} Anpassungen',{n:v}));
+    if(art!=='keiner'){ const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===art)||[0,''])[1]; if(nm) t.push(schleifeName(art)); }
+    return t.join(' · '); }
   function einfuegen(){ if(!ABLAGE) return; const R=rezeptLesen(ABLAGE); const alt={art:grund.art,nr:grund.nr||1}; let qtext='';
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund);
-      if(p){ grund={art:p.art,nr:p.nr}; qtext=' \u00b7 Quelle: '+p.lbl; }
-      else { const bleibt=SEITEN[seiteIndex()]; qtext=' \u00b7 Quelle: '+quellName(R.grund)+' gibt es hier nicht \u2014 '+((bleibt&&bleibt.lbl)||'die eigene Quelle')+' bleibt'; } }
+      if(p){ grund={art:p.art,nr:p.nr}; qtext=sag('ec.ablage.q_quelle',' · Quelle: {q}',{q:p.lbl}); }
+      else { const bleibt=SEITEN[seiteIndex()]; qtext=sag('ec.ablage.q_fehlt',' · Quelle: {q} gibt es hier nicht — {bleibt} bleibt',{q:quellName(R.grund),bleibt:((bleibt&&bleibt.lbl)||sag('ec.ablage.eigene_quelle','die eigene Quelle'))}); } }
     /* DER UEBERGANG GEHT DENSELBEN WEG WIE DIE QUELLE (Gegenlesen 16.09.2026): es gibt ihn nur fuer Bewegtbilder.
        Bedingungslos uebernommen stand er auf einem Titelbild-Titel unsichtbar da - die Wahl ist dort gesperrt
        (schleifeUI: s.disabled=!vid), der Stufenkopf nennt ihn nicht, und allein dieses unerreichbare Pendel schaltete
@@ -8487,12 +8582,13 @@ function zeichneFrame(t,roh){
     if(!zielVideo&&((SCHLEIFE.art||'keiner')!=='keiner'||SCHLEIFE.fenster>0)){
       const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===(SCHLEIFE.art||'keiner'))||[0,''])[1];
       SCHLEIFE={art:'keiner',schlaege:SCHLEIFE.schlaege||0};
-      utext=' \u00b7 \u00dcbergang'+(nm?' \u201e'+nm+'\u201c':'')+' gibt es nur f\u00fcr Bewegtbilder \u2014 hier bleibt der harte Schnitt'; }
+      utext=nm?sag('ec.ablage.uebergang_name',' · Übergang „{nm}“ gibt es nur für Bewegtbilder — hier bleibt der harte Schnitt',{nm:schleifeName(SCHLEIFE.art||'keiner')})
+        :sag('ec.ablage.uebergang',' · Übergang gibt es nur für Bewegtbilder — hier bleibt der harte Schnitt'); }
     { const vi=VORB._id; VORB=vorbAus(R.vorbereitung); VORB._id=vi;
       /* Die Zonen aus den Effekten nachziehen, falls das Rezept aelter ist als die Vorbereitung
          sie kennt. Ein Rezept, das sie schon oben traegt, wird nicht ueberschrieben. */
       if(!R.vorbereitung || R.vorbereitung.trennung===undefined) zonenUebernehmen(R.effekte); }   /* das _id behalten wie in vorbLoeschen: sonst bliebe je Einfuegen ein <filter> im kurvenraum stehen */
-    SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1;   /* wie beim Wechsel des \u00dcbergangs: die gerechnete Lage holt sich loopWache */
+    SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1;   /* wie beim Wechsel des Übergangs: die gerechnete Lage holt sich loopWache */
     soloId=null; offenId=null; presetSetzen(R.effekte,R.alt,R.fassung);
     if(grund.art!==alt.art||(grund.nr||1)!==(alt.nr||1)) grundLaden();   /* nur bei echtem Wechsel - sonst finge ein laufendes Video von vorn an */
     quellenUI(); if(stufeOffen==='Vorb') vorbRender(); vorbStand(); schleifeUI(); ungesichert=true; fussStand();
@@ -8501,12 +8597,12 @@ function zeichneFrame(t,roh){
        Sonst versprach die Zeile mehr Effekte, als der Kopf der Kette gleich daneben zeigte. Und der zweite Satz haengt
        an angewendet(): steht nach dem Einfuegen nichts mehr da, ist genau der Knopf grau, auf den er verwies. */
     const fehlt=R.effekte.length-STAPEL.length, her=ablageHer(), a=angewendet();
-    pStat('eingef\u00fcgt'+(her?' aus \u201e'+her+'\u201c':'')+': '+studioInhalt()+qtext+utext
-      +(fehlt>0?' \u00b7 '+(fehlt===1?'1 Effekt kennt dieser Stand nicht mehr und blieb weg':fehlt+' Effekte kennt dieser Stand nicht mehr und blieben weg'):'')
+    pStat((her?sag('ec.ablage.eingefuegt_aus','eingefügt aus „{her}“: ',{her}):sag('ec.ablage.eingefuegt','eingefügt: '))+studioInhalt()+qtext+utext
+      +(fehlt>0?' · '+(fehlt===1?sag('ec.ablage.fehlt_1','1 Effekt kennt dieser Stand nicht mehr und blieb weg'):sag('ec.ablage.fehlt_n','{n} Effekte kennt dieser Stand nicht mehr und blieben weg',{n:fehlt})):'')
       +rezeptHinweise(R.effekte,R.fassung)   /* was BEIM LESEN verloren ging, zaehlt `fehlt` nicht mit: ein Effekt, dem nur der sechste Zielpunkt fehlt, steht ja noch da */
-      +' \u00b7 '+(a?'noch nicht gesichert. \u201eF\u00fcr diesen Titel sichern\u201c legt es ab; Schlie\u00dfen und wieder \u00d6ffnen holt das gesicherte Rezept zur\u00fcck.'
-        :rezeptDa?'hier steht jetzt nichts mehr \u2014 beim Titel liegt weiter das alte Rezept. \u201eL\u00f6schen\u201c nimmt es weg, Schlie\u00dfen und wieder \u00d6ffnen holt es zur\u00fcck.'
-        :'hier steht jetzt nichts mehr \u2014 und beim Titel liegt auch nichts.')); }
+      +' · '+(a?sag('ec.ablage.nicht_gesichert','noch nicht gesichert. „Für diesen Titel sichern“ legt es ab; Schließen und wieder Öffnen holt das gesicherte Rezept zurück.')
+        :rezeptDa?sag('ec.ablage.leer_altes_rezept','hier steht jetzt nichts mehr — beim Titel liegt weiter das alte Rezept. „Löschen“ nimmt es weg, Schließen und wieder Öffnen holt es zurück.')
+        :sag('ec.ablage.leer_nichts','hier steht jetzt nichts mehr — und beim Titel liegt auch nichts.'))); }
   function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if(stufeOffen==='Vorb') vorbRender(); vorbStand(); }
   let vorbReg='kurve';
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
@@ -8521,15 +8617,15 @@ function zeichneFrame(t,roh){
        FEINHEITEN, NICHT FARBE: dort stehen Belichtung, Kontrast, Lichter und Schatten - das ist
        Tonwert, nicht Farbe. Und TIEFE ist kein Bildregler: sie sagt der Software, wie das Motiv im
        Raum steht, einmal je Quelle. */
-    let h='<div class="tbs-seg tbs-vorbReg">'+[['kurve','Kurve'],['farbe','Feinheiten'],['tiefe','Tiefe']]
+    let h='<div class="tbs-seg tbs-vorbReg">'+[['kurve',sag('ec.vorb.reg.kurve','Kurve')],['farbe',sag('ec.vorb.reg.feinheiten','Feinheiten')],['tiefe',sag('ec.vorb.reg.tiefe','Tiefe')]]
       .map(([rk,rl])=>'<button type="button" data-vreg="'+rk+'" class="'+(vorbReg===rk?'on':'')+'" style="flex:1">'+rl+'</button>').join('')+'</div>';
     h+='<div class="tbs-vorbBlatt">';
     if(vorbReg==='kurve'){
-        h+='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button><button type="button" data-vloeschen="1" title="Alle Anpassungen der Vorbereitung auf neutral zur\u00fccksetzen - das L\u00f6schen im Fu\u00df betrifft dagegen den gesicherten Effektclip" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>Zur\u00fccksetzen</button></div>';
+        h+='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="'+sag('ec.vorb.auto_titel','Schwarz- und Weißpunkt aus dem Histogramm (0,5 % / 99,5 %)')+'" style="flex:2">'+sag('ec.vorb.auto','Auto-Niveaus')+'</button><button type="button" data-vloeschen="1" title="'+sag('ec.vorb.zuruecksetzen_titel','Alle Anpassungen der Vorbereitung auf neutral zurücksetzen - das Löschen im Fuß betrifft dagegen den gesicherten Effektclip')+'" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>'+sag('ec.vorb.zuruecksetzen','Zurücksetzen')+'</button></div>';
     h+='<canvas class="tbs-grad-ed" id="tbs-vorbGrad" width="447" height="276" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
     h+='<div class="tbs-seg" style="margin-top:6px"><button type="button" data-vmodus="gamma" class="'+(cur.modus==='gamma'?'on':'')+'" style="flex:1">Gamma</button><button type="button" data-vmodus="sig" class="'+(cur.modus==='sig'?'on':'')+'" style="flex:1">Sigmoidal</button></div>';
-    h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-vtonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
-    h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Marken unten = Schwarz-/Wei\u00dfpunkt ziehen</div>';
+    h+='<div class="tbs-regler" style="margin-top:6px"><span>'+sag('ec.vorb.tonwert','Tonwert')+'</span><input type="range" class="tbs-zust" data-vtonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
+    h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">'+sag('ec.vorb.marken','Marken unten = Schwarz-/Weißpunkt ziehen')+'</div>';
     }
     if(vorbReg==='tiefe') zonenVorschlagen();
     zonenSichtAn(vorbReg==='tiefe' && stufeOffen==='Vorb');
@@ -8539,64 +8635,60 @@ function zeichneFrame(t,roh){
        SZENE: wie tief der Raum ist, den dieses Bild zeigt. Zwei Leuchten darin muessen dieselbe
        Zahl sehen, und der Nebel braucht sie ebenso, sobald er das Licht auf seinem Weg daempft.
        Sie ist abgesetzt, weil sie kein Farbregler ist - sie faerbt nichts, sie masst. */
-    h+='<div class="tbs-vorbAbschnitt">Der Raum</div>';
-    h+='<div class="tbs-regler"><span>Raumtiefe</span><input type="range" data-vrt="1" min="0.1" max="5" step="0.1" value="'+(v.raumtiefe||1)+'"><span class="tbs-wert">'+kf(Number(v.raumtiefe||1).toFixed(1))+'\u00d7</span></div>';
-    h+='<div style="color:var(--schwach);font-size:10.5px;line-height:1.55;margin-bottom:8px">Die per KI ermittelte Tiefe des Raums vermittelt nur Information \u00fcber die <i>Reihenfolge</i> der Objekte von vorn nach hinten. Das Messen von Abst\u00e4nden ist nicht m\u00f6glich. Darum mu\u00df die Tiefe in Bildbreiten definiert werden \u2014 ein Portr\u00e4t ist etwa 0,2 Bildbreiten tief, eine Landschaft 3 und mehr. Es h\u00e4ngt meist vom Bild ab.</div>';
+    h+='<div class="tbs-vorbAbschnitt">'+sag('ec.vorb.raum','Der Raum')+'</div>';
+    h+='<div class="tbs-regler"><span>'+sag('ec.vorb.raumtiefe','Raumtiefe')+'</span><input type="range" data-vrt="1" min="0.1" max="5" step="0.1" value="'+(v.raumtiefe||1)+'"><span class="tbs-wert">'+kf(Number(v.raumtiefe||1).toFixed(1))+'×</span></div>';
+    h+='<div style="color:var(--schwach);font-size:10.5px;line-height:1.55;margin-bottom:8px">'+sag('ec.vorb.raumtiefe_satz','Die per KI ermittelte Tiefe des Raums vermittelt nur Information über die <i>Reihenfolge</i> der Objekte von vorn nach hinten. Das Messen von Abständen ist nicht möglich. Darum muß die Tiefe in Bildbreiten definiert werden — ein Porträt ist etwa 0,2 Bildbreiten tief, eine Landschaft 3 und mehr. Es hängt meist vom Bild ab.')+'</div>';
     /* DIE ZONEN, IN DER REIHENFOLGE VON DER KAMERA NACH HINTEN - so, wie man den Raum abschreitet.
        Das ist keine Schoenheit: wer Zahlen einstellt, die einen Raum beschreiben, muss sie in der
        Ordnung des Raumes vorfinden, sonst denkt er bei jedem Regler neu nach. */
     /* DER SPRUCH STEHT NEBEN DEM BILD, NICHT IM BILD (Caspar_D, 21.09.2026, Wortlaut von ihm).
        Er erklaert in einem Zug, was da zu sehen ist und wie man es bedient - und er steht nur
        hier, wo man es braucht, nicht als Dauerhinweis irgendwo. */
-    h+='<div class="tbs-vorbAbschnitt">Die Zonen</div>';
+    h+='<div class="tbs-vorbAbschnitt">'+sag('ec.vorb.zonen','Die Zonen')+'</div>';
     h+='<div style="color:var(--schwach);font-size:11px;line-height:1.55;margin:-2px 0 8px">'
-      + 'In der per KI aus dem Titelbild gewonnenen Tiefenkarte k\u00f6nnen mit dem Tiefen-Histogramm '
-      + 'am rechten Bildrand Zonen f\u00fcr Effekte festgelegt werden \u2014 wie auf einem B\u00fchnenbild. '
-      + 'Man verschiebt einfach die vorausgew\u00e4hlten Grenzen, setzt mit einem <b>Einfachklick</b> '
-      + 'neue oder nimmt sie mit einem <b>Doppelklick</b> wieder weg. F\u00fcr eine bessere '
-      + 'Orientierung dreht man das Relief mit der Maus; ein Doppelklick stellt es wieder gerade.'
+      + sag('ec.vorb.zonen_satz','In der per KI aus dem Titelbild gewonnenen Tiefenkarte können mit dem Tiefen-Histogramm am rechten Bildrand Zonen für Effekte festgelegt werden — wie auf einem Bühnenbild. Man verschiebt einfach die vorausgewählten Grenzen, setzt mit einem <b>Einfachklick</b> neue oder nimmt sie mit einem <b>Doppelklick</b> wieder weg. Für eine bessere Orientierung dreht man das Relief mit der Maus; ein Doppelklick stellt es wieder gerade.')
       + '</div>';
     /* WIE DER RAUM VON VORN NACH HINTEN AUFGEBAUT IST (Caspar_D, 21.09.2026: „wir sollten aber
        noch erklaeren, wie der 3D-Raum von vorn nach hinten strukturiert wird - Effektscheibe,
        Effektraum, Zonen, alle aufzaehlen"). Die Aufzaehlung steht hier und nicht in einem
        Handbuch: Sie ist die Liste, aus der jeder Effekt seine Kaestchen ankreuzt, und wer sie
        einmal gelesen hat, versteht die Kaestchen ohne weitere Erklaerung. */
-    h+='<div class="tbs-raumfolge"><div class="tbs-raumkopf">Der Raum von vorn nach hinten</div>';
+    h+='<div class="tbs-raumfolge"><div class="tbs-raumkopf">'+sag('ec.vorb.raumfolge','Der Raum von vorn nach hinten')+'</div>';
     RAUM_VOR_SZENE.forEach(n=>{
-      h+='<div class="tbs-raumzeile"><span class="tbs-raumname">'+n+'</span>'
-       + '<span class="tbs-raumwas">'+RAUM_BESCHREIBUNG[n]+'</span></div>'; });
+      h+='<div class="tbs-raumzeile"><span class="tbs-raumname">'+sagNach(n)+'</span>'
+       + '<span class="tbs-raumwas">'+sagNach(RAUM_BESCHREIBUNG[n])+'</span></div>'; });
     /* Auch hier nur, was dieses Bild wirklich hat - die Liste beschreibt SEINEN Raum, nicht den
        Vorrat an moeglichen Namen. */
     { const zl=zonenListe()||[];
       const da={}; zl.forEach(z=>da[z.name]=(da[z.name]||0)+z.anteil);
       ZONEN_BEREICHE.forEach(([n,a,b])=>{
         if(da[n]==null) return;
-        h+='<div class="tbs-raumzeile hier"><span class="tbs-raumname">'+n+'</span>'
-         + '<span class="tbs-raumwas">'+Math.round(da[n])+'\u2009% der Tiefe</span></div>'; }); }
-    h+='<div class="tbs-raumfuss">Alles davon liegt <b>vor der Linse</b> und f\u00e4hrt bei einer Kamerafahrt mit. Korn und Vignette entstehen erst dahinter, im Film und im Objektiv \u2014 sie kleben am Bild und werden nicht gezoomt.</div></div>';
+        h+='<div class="tbs-raumzeile hier"><span class="tbs-raumname">'+sagNach(n)+'</span>'
+         + '<span class="tbs-raumwas">'+sag('ec.vorb.anteil_tiefe','{p} % der Tiefe',{p:Math.round(da[n])})+'</span></div>'; }); }
+    h+='<div class="tbs-raumfuss">'+sag('ec.vorb.raumfuss','Alles davon liegt <b>vor der Linse</b> und fährt bei einer Kamerafahrt mit. Korn und Vignette entstehen erst dahinter, im Film und im Objektiv — sie kleben am Bild und werden nicht gezoomt.')+'</div></div>';
     { const zl=zonenListe();
-      if(!zl) h+='<div class="tbs-graugrund">Dieses Bild hat keine Tiefenkarte \u2014 ohne sie gibt es keine Zonen.</div>';
-      else if(zl.length<2) h+='<div class="tbs-graugrund">Zur Zeit ist <b>eine einzige Zone</b> festgelegt: Die Tiefenwerte dieses Bildes bilden nur eine H\u00e4ufung, es gibt also kein Tal, an dem sich zwei Ebenen trennen lie\u00dfen. Du kannst trotzdem eine Grenze von Hand setzen.</div>';
+      if(!zl) h+='<div class="tbs-graugrund">'+sag('ec.vorb.keine_karte','Dieses Bild hat keine Tiefenkarte — ohne sie gibt es keine Zonen.')+'</div>';
+      else if(zl.length<2) h+='<div class="tbs-graugrund">'+sag('ec.vorb.eine_zone','Zur Zeit ist <b>eine einzige Zone</b> festgelegt: Die Tiefenwerte dieses Bildes bilden nur eine Häufung, es gibt also kein Tal, an dem sich zwei Ebenen trennen ließen. Du kannst trotzdem eine Grenze von Hand setzen.')+'</div>';
       else {
-        h+='<div style="font-size:11.5px;margin-bottom:5px">Zur Zeit sind <b>'+zl.length+' Zonen</b> festgelegt</div>';
+        h+='<div style="font-size:11.5px;margin-bottom:5px">'+sag('ec.vorb.n_zonen','Zur Zeit sind <b>{n} Zonen</b> festgelegt',{n:zl.length})+'</div>';
         h+='<div class="tbs-zonenliste">';
         zl.forEach((z,i)=>{
           const f=zsichtFarbeFuerListe(i,zl.length);
           h+='<div class="tbs-zonenzeile"><span class="tbs-zonenpunkt" style="background:rgb('+f+')"></span>'
-            + '<span class="tbs-zonenmass">'+Math.round(z.anteil)+'\u2009%</span>'
-            + '<span>der Tiefe des Bildes \u2014 <b>'+z.name+'</b></span></div>';
+            + '<span class="tbs-zonenmass">'+Math.round(z.anteil)+' %</span>'
+            + '<span>'+sag('ec.vorb.zone_name','der Tiefe des Bildes — <b>{name}</b>',{name:sagNach(z.name)})+'</span></div>';
         });
         h+='</div>';
         if(zl.length-1>=ZONEN_MAX_GRENZEN)
-          h+='<div style="color:var(--schwach);font-size:10.5px;margin-top:4px">'+ZONEN_MAX_GRENZEN+' Grenzen sind das H\u00f6chste \u2014 mehr Ebenen kann ein Betrachter nicht mehr auseinanderhalten.</div>';
+          h+='<div style="color:var(--schwach);font-size:10.5px;margin-top:4px">'+sag('ec.vorb.max_grenzen','{n} Grenzen sind das Höchste — mehr Ebenen kann ein Betrachter nicht mehr auseinanderhalten.',{n:ZONEN_MAX_GRENZEN})+'</div>';
       } }
     { const zr=(k,lbl,mn,mx,st,wert,hinweis)=>{
         const w=(v[k]==null?mn:v[k]);
         h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" data-vz="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+w+'"><span class="tbs-wert">'+wert(w)+'</span></div>';
         if(hinweis) h+='<div style="color:var(--schwach);font-size:10.5px;margin:-2px 0 8px">'+hinweis+'</div>'; };
-      const vA=x=>(x==null||x<0)?'von selbst':Math.round(x*255)+' von 255';
-      zr('leerraum','Leerraum vorn',0,1,0.05,x=>kf(Math.round(x*100))+'\u2009%',
-         'Der leere Vorraum zwischen Kamera und Motiv \u2014 dort schweben Teilchen und Nebel <i>vor</i> allem.');
+      const vA=x=>(x==null||x<0)?sag('ec.vorb.von_selbst','von selbst'):sag('ec.vorb.von_255','{n} von 255',{n:Math.round(x*255)});
+      zr('leerraum',sag('ec.vorb.leerraum','Leerraum vorn'),0,1,0.05,x=>kf(Math.round(x*100))+' %',
+         sag('ec.vorb.leerraum_satz','Der leere Vorraum zwischen Kamera und Motiv — dort schweben Teilchen und Nebel <i>vor</i> allem.'));
       /* HIER STANDEN „TRENNUNG" UND „WEICHHEIT DER TRENNUNG" (bis 21.09.2026).
          Sie waren EINE Zonengrenze, als es nur zwei Zonen gab - die Zeile versprach sogar noch
          „jeder Effekt waehlt selbst, auf welcher Seite er wirkt", was seit der Ankreuzliste nicht
@@ -8627,7 +8719,7 @@ function zeichneFrame(t,roh){
          sie wandert mit der Talsuche dorthin, wo im Bild wirklich die letzte Ebene liegt. */ }
     }
     if(vorbReg==='farbe'){
-    VORB_REGLER.forEach(([kk,lbl,mn,mx])=>{ h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(mn<0?'tbs-zust':'')+'" data-vk="'+kk+'" min="'+mn+'" max="'+mx+'" step="0.02" value="'+v[kk]+'"><span class="tbs-wert">'+kf(v[kk].toFixed(2))+'</span></div>'; });
+    VORB_REGLER.forEach(([kk,lbl,mn,mx])=>{ h+='<div class="tbs-regler"><span>'+sagNach(lbl,null,'ec.vorb.regler.'+kk)+'</span><input type="range" class="'+(mn<0?'tbs-zust':'')+'" data-vk="'+kk+'" min="'+mn+'" max="'+mx+'" step="0.02" value="'+v[kk]+'"><span class="tbs-wert">'+kf(v[kk].toFixed(2))+'</span></div>'; });
     }
     h+='</div>';
     k.innerHTML=h;
@@ -8647,14 +8739,14 @@ function zeichneFrame(t,roh){
     k.querySelectorAll('[data-vmodus]').forEach(b=>b.onclick=()=>{ v.grad[v.kanal].modus=b.dataset.vmodus; vorbRender(); });
     const tw=k.querySelector('[data-vtonwert]'); if(tw) tw.oninput=()=>{ v.grad[v.kanal].tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); vorbStand(); };
     { const lb=k.querySelector('[data-vloeschen]'); if(lb) lb.onclick=vorbLoeschen; }
-    { const ab=k.querySelector('[data-vauto]'); if(ab) ab.onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat('Auto-Niveaus: kein Histogramm'); }; }
+    { const ab=k.querySelector('[data-vauto]'); if(ab) ab.onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat(sag('ec.vorb.auto_kein_histo','Auto-Niveaus: kein Histogramm')); }; }
     k.querySelectorAll('[data-vz]').forEach(inp=>inp.oninput=()=>{ const kk=inp.dataset.vz; v[kk]=+inp.value;
       const w=inp.parentElement.querySelector('.tbs-wert');
       /* HIER STANDEN ZWEIGE FUER trennWeich UND flaecheAb (21.09.2026 abends entfernt).
          Beide Regler sind mit den Zonen weggefallen; ihre Beschriftungszweige blieben stehen
          und konnten von keinem Regler mehr erreicht werden. Uebrig ist der Leerraum. */
-      if(w) w.textContent = kk==='leerraum' ? kf(Math.round(+inp.value*100))+'\u2009%'
-        : ((+inp.value<0)?'von selbst':Math.round(+inp.value*255)+' von 255');
+      if(w) w.textContent = kk==='leerraum' ? kf(Math.round(+inp.value*100))+' %'
+        : ((+inp.value<0)?sag('ec.vorb.von_selbst','von selbst'):sag('ec.vorb.von_255','{n} von 255',{n:Math.round(+inp.value*255)}));
       /* WER AN DER TRENNUNG ZIEHT, BEKOMMT SIE ZU SEHEN - und nur dann (Understatement,
          17.09.2026). Das Bild entfaerbt sich und zeigt rot, was als vorn gilt, blau, was als
          hinten gilt; der Streifen darunter zieht mit. Kein Knopf und keine Dauerschicht: liegt
@@ -8663,7 +8755,7 @@ function zeichneFrame(t,roh){
          keine Trennung, und eine Ansicht, die dabei erschiene, zeigte die falsche Groesse. */
       vorbStand(); bildNeu(); });   /* bildNeu statt malen() - malen ist der Effektmaler (Gegenlesen 25.09.2026) */
     k.querySelectorAll('[data-vrt]').forEach(inp=>inp.oninput=()=>{ v.raumtiefe=Math.max(0.1,Math.min(5,+inp.value));
-      inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'\u00d7'; vorbStand(); bildNeu(); });
+      inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'×'; vorbStand(); bildNeu(); });
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
     vorbStand(); }
   function grundLaden(){ quelleWeg(bild); bereit=false; HISTO=null;
@@ -8675,7 +8767,7 @@ function zeichneFrame(t,roh){
         if(stufeOffen==='Vorb') vorbRender();   /* das Histogramm gehoert zur neuen Quelle */
         if(loopWunsch){ loopWunsch=false; if(stufeOffen==='Loop'&&!loopAn&&!exportLaeuft&&DATA&&DATA.id===songId) loopSchalten(true); }   /* die Stufe ging auf, bevor die Quelle da war */
         else if(loopAn&&!exportLaeuft&&x.tagName==='VIDEO'){ VIDEO_GENAU=true; schleifeStills(x,(loopSicht||loopLageNeu()).lage).catch(()=>{}); } },   /* Quelle gewechselt (Pfeiltasten) bei laufender Loop-Ansicht: das neue Video vermessen wie beim Einschalten */
-      x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat('Quelle „'+seite.lbl+'“ fehlt — Titelbild gezeigt');
+      x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat(sag('ec.quelle.fehlt_titelbild','Quelle „{q}“ fehlt — Titelbild gezeigt',{q:seite.lbl}));
         /* DIE TIEFENZEILEN GEHOEREN ZUR QUELLE, ALSO ZIEHEN SIE MIT (Gegenlesen 17.09.2026). Bis das
            Titelbild geladen ist, stuenden sie sonst auf dem Stand der ausgefallenen Quelle - grau,
            wo es jetzt eine Karte gibt, oder bedienbar, wo es keine mehr gibt. Genau der Weg, den
@@ -8907,16 +8999,21 @@ function zeichneFrame(t,roh){
     if(z.leer){ VORB.leerraum=z.leer.wert; n++; }
     return z; }
   function zonenHinweis(arr){ const z=zonenAusRezept(arr); let h='';
-    const sag=(o,was)=>{ if(!o) return;
-      h+=' \u2014 '+was+' stand an '+(o.n===1?'einem Effekt':o.n+' Effekten')+' und gilt jetzt f\u00fcr die ganze Szene (Vorbereitung \u203a Tiefe)';
-      if(o.sorten>1) h+=', wobei '+o.sorten+' verschiedene Werte dastanden \u2014 \u00fcbernommen ist der h\u00e4ufigste'; };
-    sag(z.grenze,'die Trennung'); sag(z.weich,'ihre Weichheit'); sag(z.leer,'der Leerraum');
+    const teil=(o,was)=>{ if(!o) return;
+      h+=' \u2014 '+(o.n===1?sag('ec.rezept.zone_einer','{was} stand an einem Effekt und gilt jetzt f\u00fcr die ganze Szene (Vorbereitung \u203a Tiefe)',{was})
+                            :sag('ec.rezept.zone_mehrere','{was} stand an {n} Effekten und gilt jetzt f\u00fcr die ganze Szene (Vorbereitung \u203a Tiefe)',{was,n:o.n}));
+      if(o.sorten>1) h+=sag('ec.rezept.zone_sorten',', wobei {n} verschiedene Werte dastanden \u2014 \u00fcbernommen ist der h\u00e4ufigste',{n:o.sorten}); };
+    teil(z.grenze,sag('ec.rezept.zone_trennung','die Trennung')); teil(z.weich,sag('ec.rezept.zone_weichheit','ihre Weichheit')); teil(z.leer,sag('ec.rezept.zone_leerraum','der Leerraum'));
     return h; }
   function rezeptHinweise(arr,fassung){ let h=zonenHinweis(arr);
-    { const nv=verdeckenAltZahl(arr); if(nv) h+=' — '+(nv===1?'ein Effekt trug':nv+' Effekte trugen')+' „Tiefe aus der Bildzeile“; der Regler ist gestrichen, der Wert wirkt nicht mehr'; }
-    { const nf=fahrtAltZahl(arr); if(nf) h+=' — '+(nf===1?'ein Effekt war':nf+' Effekte waren')+' die alte „Fahrt“; sie ist gestrichen und wurde entfernt — die Ken Burns Fahrt kann, was sie konnte'; }
-    { const nz=kbUeberzaehlig(arr); if(nz) h+=' — '+(nz===1?'ein Zielpunkt lag':nz+' Zielpunkte lagen')+' über der Grenze von fünf und '+(nz===1?'wurde':'wurden')+' nicht gelesen'; }
-    { const ne=kbAltEngZahl(arr,fassung); if(ne) h+=' — '+(ne===1?'ein Zielpunkt fährt':ne+' Zielpunkte fahren')+' enger als unter der alten Fassung: die Enge durfte damals nicht unter 0,50, jetzt bis 0,25 — mit ihr liegt auch '+(ne===1?'seine Mitte':'ihre Mitte')+' anders'; }
+    { const nv=verdeckenAltZahl(arr); if(nv) h+=' — '+(nv===1?sag('ec.rezept.bildzeile_alt_eins','ein Effekt trug „Tiefe aus der Bildzeile“; der Regler ist gestrichen, der Wert wirkt nicht mehr')
+                                                            :sag('ec.rezept.bildzeile_alt_n','{n} Effekte trugen „Tiefe aus der Bildzeile“; der Regler ist gestrichen, der Wert wirkt nicht mehr',{n:nv})); }
+    { const nf=fahrtAltZahl(arr); if(nf) h+=' — '+(nf===1?sag('ec.rezept.fahrt_alt_eins','ein Effekt war die alte „Fahrt“; sie ist gestrichen und wurde entfernt — die Ken Burns Fahrt kann, was sie konnte')
+                                                     :sag('ec.rezept.fahrt_alt_n','{n} Effekte waren die alte „Fahrt“; sie ist gestrichen und wurde entfernt — die Ken Burns Fahrt kann, was sie konnte',{n:nf})); }
+    { const nz=kbUeberzaehlig(arr); if(nz) h+=' — '+(nz===1?sag('ec.rezept.zielpunkt_ueber_eins','ein Zielpunkt lag über der Grenze von fünf und wurde nicht gelesen')
+                                                       :sag('ec.rezept.zielpunkt_ueber_n','{n} Zielpunkte lagen über der Grenze von fünf und wurden nicht gelesen',{n:nz})); }
+    { const ne=kbAltEngZahl(arr,fassung); if(ne) h+=' — '+(ne===1?sag('ec.rezept.zielpunkt_enger_eins','ein Zielpunkt fährt enger als unter der alten Fassung: die Enge durfte damals nicht unter 0,50, jetzt bis 0,25 — mit ihr liegt auch seine Mitte anders')
+                                                             :sag('ec.rezept.zielpunkt_enger_n','{n} Zielpunkte fahren enger als unter der alten Fassung: die Enge durfte damals nicht unter 0,50, jetzt bis 0,25 — mit ihr liegt auch ihre Mitte anders',{n:ne})); }
     return h; }
   /* DAS ALTE REZEPT BEHAELT SEIN BILD (16.09.2026). Bis Fassung 3 hiess ein Aufenthalt vorn/hinten
      am Partikel-Effekt: schneide die Zone weich aus, ohne Betretungsverbot. Das ist keines der
@@ -9279,13 +9376,13 @@ function zeichneFrame(t,roh){
   async function video(){ if(exportLaeuft) return; exportLaeuft=true; const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true; vollStand();
     exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; dioFlaechenWeg(); if(knopf) knopf.disabled=false; fussStand(); QUELLE_WIRKUNG=null; if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); } if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
   async function videoLauf(){
-    if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
-    if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat('Dieser Browser kann keine Videos aufnehmen'); return; }
+    if(!bereit){ pStat(sag('ec.export.quelle_nicht_da','Quelle ist noch nicht da')); return; }
+    if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat(sag('ec.export.kein_aufnehmen','Dieser Browser kann keine Videos aufnehmen')); return; }
     const typ=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));
-    if(!typ){ pStat('Kein Videoformat verfügbar'); return; }
+    if(!typ){ pStat(sag('ec.export.kein_format','Kein Videoformat verfügbar')); return; }
     if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) await GL.vierLaden();   /* das 4D-Rauschen der Exportform vor dem ersten Bild - loopNein fragt danach */
     /* Die Suche nach der Laenge dauert beim ersten Export eines Lieds bis knapp eine halbe Sekunde (Eins-Karte) - vorher sagen, was passiert */
-    pStat('suche die Länge, die im Takt bleibt …'); await new Promise(r=>setTimeout(r,0));
+    pStat(sag('ec.export.suche_laenge','suche die Länge, die im Takt bleibt …')); await new Promise(r=>setTimeout(r,0));
     const lage=ausschnitt(), {t0,L,N}=lage; const [W,H]=ausgabeMass();
     const namen=f=>[...new Set(STAPEL.filter(e=>aktiv(e)&&f(e)).map(e=>EFFEKTE[e.typ].label))];
     const stand=!lage.M&&!!(DATA&&DATA.schlaege&&DATA.schlaege.length);   /* Schlaege, aber zu wenige fuer ein Raster: siehe exportBuendel */
@@ -9293,7 +9390,8 @@ function zeichneFrame(t,roh){
       steht:stand?namen(e=>(e.typ==='risse'&&e.wachsen==='takt')||e.typ==='einschlag'||((e.typ==='licht'||e.typ==='schatten')&&e.rmBewegung==='schritt')):[],
       frequenz:stand?namen(e=>['takt','eins','zufall'].includes(e.lmQuelle)):[], bewegt:!!(bild&&bild.tagName==='VIDEO'), schleife:SCHLEIFE.art, L,
       sitzt:lage.anzeige, grund:lage.grund, kodiert:false };
-    pStat('nehme auf: '+W+'×'+H+', '+L.toFixed(2)+' s'+(lage.M?' ('+lage.M+' Schläge)':'')+', '+N+' Bilder …');
+    pStat(lage.M?sag('ec.export.nehme_auf_schlaege','nehme auf: {w}×{h}, {l} s ({m} Schläge), {n} Bilder …',{w:W,h:H,l:L.toFixed(2),m:lage.M,n:N})
+                 :sag('ec.export.nehme_auf','nehme auf: {w}×{h}, {l} s, {n} Bilder …',{w:W,h:H,l:L.toFixed(2),n:N}));
     const gemerkt=bundel(), m=exportBuendel(gemerkt,lage,W,H), cv=m.lein;
     m.lage=lage; m.schleife=!!(bild&&bild.tagName==='VIDEO'); if(m.schleife){ VIDEO_GENAU=true; await schleifeStills(bild,lage); }   /* Video bildgenau: jede Clipzeit bekommt ihre Videozeit */
     /* Jedes Bild wird EINZELN angefordert. Nur so entspricht Bild i in der Datei auch Bild i des Clips;
@@ -9303,17 +9401,17 @@ function zeichneFrame(t,roh){
        laeuft der alte Weg darunter unveraendert weiter - es geht also nichts verloren. */
     if(await kodiererDa()){
       let k=null; LOOP=L;
-      try{ k=await kodieren(m,gemerkt,t0,N,W,H,BILDRATE,(i,z)=>pStat(i<0?'bereite die Spur vor: '+(-i)+' von '+z+' …':'kodiere Bild '+(i+1)+' von '+z+' … (die Uhr spielt dabei keine Rolle)')); }
+      try{ k=await kodieren(m,gemerkt,t0,N,W,H,BILDRATE,(i,z)=>pStat(i<0?sag('ec.export.spur_vor','bereite die Spur vor: {k} von {z} …',{k:-i,z}):sag('ec.export.kodiere','kodiere Bild {i} von {z} … (die Uhr spielt dabei keine Rolle)',{i:i+1,z}))); }
       catch(x){ console.warn('Effektclip-Export:',x); k=null; }
       finally{ LOOP=0; setzen(gemerkt); }
       if(k&&k.bytes>1000){
-        pStat('baue die Datei …');
+        pStat(sag('ec.export.baue_datei','baue die Datei …'));
         try{ const a=await fetch('/api/effektclip-bauen?bilder='+N+'&rate='+BILDRATE+'&id='+encodeURIComponent(songId||''),
                                  {method:'POST',headers:{'Content-Type':'video/h264'},body:k.blob});
           if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000) return ausliefern(b2,'mp4',true,N,Object.assign({},urteil,{ kodiert:true })); }
         }catch(x){ console.warn('Effektclip-Export:',x); }
       }
-      pStat('Kodierer ging nicht — nehme auf wie bisher …');
+      pStat(sag('ec.export.kodierer_nicht','Kodierer ging nicht — nehme auf wie bisher …'));
     }
     const strom=cv.captureStream(0), spur=strom.getVideoTracks()[0];
     const mr=new MediaRecorder(strom,{ mimeType:typ, videoBitsPerSecond: Math.min(12000000, Math.round(W*H*BILDRATE*0.12)) });
@@ -9322,7 +9420,7 @@ function zeichneFrame(t,roh){
     LOOP=L; let bilder=0; m.vorgelaufen=false;   /* ein abgebrochener Kodierlauf liess die Spur irgendwo stehen - neu vorlaufen */
     try{
       await zeichenBereit(W,H);   /* VOR der Uhr und vor dem ersten Bild - siehe zeichenHolen */
-      await vorlaufen(m,gemerkt,(k,z)=>pStat('bereite die Spur vor: '+k+' von '+z+' …'));   /* VOR der Uhr: sonst liegen alle Zeitstempel um die Vorlaufdauer zu spaet */
+      await vorlaufen(m,gemerkt,(k,z)=>pStat(sag('ec.export.spur_vor','bereite die Spur vor: {k} von {z} …',{k,z})));   /* VOR der Uhr: sonst liegen alle Zeitstempel um die Vorlaufdauer zu spaet */
       mr.start();
       const start=performance.now();
       /* Bild fuer Bild, nicht nach der Uhr: der Inhalt jedes Bildes steht fest, die Uhr bestimmt nur,
@@ -9360,10 +9458,10 @@ function zeichneFrame(t,roh){
      Der Aufnahmeweg (MediaRecorder) kam bei Suno verbogen zurueck, 32 ms laenger (VIDEO-PLAN §3 Nachtrag) - nach
      einer Minute Lied laege der Schlag daneben, also dort keine Zahl, sondern die Warnung. */
   function taktSatz(sitzt,grund,kodiert){ if(sitzt==null) return '';
-    if(!kodiert) return ' · im Notweg aufgenommen: ob der Takt über das ganze Lied mitläuft, ist nicht sicher';
-    const warum=grund==='tempowechsel'?'das Tempo wechselt im Lied':grund==='frei'?'das Tempo ist frei gespielt':'';
-    if(sitzt<ZUFALL_BODEN) return ' · keine Länge bleibt über das Lied im Takt – die Pulse laufen im Suno-Video gegen die Musik'+(warum?' — '+warum:'');   /* Caspar_D, 15.09.2026 */
-    return ' · sitzt auf '+Math.round(sitzt*100)+' % des Lieds im Takt'+(warum?' ('+warum+')':''); }
+    if(!kodiert) return ' · '+sag('ec.takt.notweg','im Notweg aufgenommen: ob der Takt über das ganze Lied mitläuft, ist nicht sicher');
+    const warum=grund==='tempowechsel'?sag('ec.takt.tempowechsel','das Tempo wechselt im Lied'):grund==='frei'?sag('ec.takt.tempo_frei','das Tempo ist frei gespielt'):'';
+    if(sitzt<ZUFALL_BODEN) return ' · '+sag('ec.takt.keine_laenge','keine Länge bleibt über das Lied im Takt – die Pulse laufen im Suno-Video gegen die Musik')+(warum?' — '+warum:'');   /* Caspar_D, 15.09.2026 */
+    return ' · '+sag('ec.takt.sitzt','sitzt auf {p} % des Lieds im Takt',{p:Math.round(sitzt*100)})+(warum?' ('+warum+')':''); }
   /* ---- DAS GANZE LIED ALS VIDEO, ERSTE STUFE (Caspar_D, 16.09.2026: "Okay, gib das Vollzeitvideo so einfach wie
      moeglich aus, aber nicht so, dass man sich damit blamiert."). Ausgegeben wird dasselbe Bild, das die Kachel malt,
      ueber die ganze Liedlaenge, mit dem Ton des Titels. NICHT in dieser Stufe: Abschnittslogik, eingebrannter
@@ -9433,21 +9531,21 @@ function zeichneFrame(t,roh){
      Quelle, Vorbereitung, Effektkette, Schleife. Die Koepfe des Akkordeons bleiben anklickbar - hinsehen aendert nichts -,
      und der Fuss behaelt "Abbrechen". Die Sperre sagt in einem Satz, warum sie da ist; eine graue Flaeche ohne Grund waere
      dasselbe Raetsel wie vorher (Hausregel: die App erklaert sich selbst). */
-  const SPERRGRUND='W\u00e4hrend der Ausgabe stehen Quelle, Vorbereitung, Effektkette und Schleife still: eine \u00c4nderung mitten im Lauf w\u00fcrde das Bild im fertigen Video wechseln. Auch der Fu\u00df nimmt bis zum Ende keine Entscheidung an \u2014 nur \u201eAbbrechen\u201c geht. Die \u00fcbrige App l\u00e4uft weiter \u2014 Player, Album und die anderen Ansichten bleiben bedienbar.';
+  /* Der Satz steht als sag('ec.sperre.pult', ...) in pultSperren() - in der Sprache, die beim Sperren gilt. */
   /* Derselbe Grund noch einmal kurz, als Erklaerung an den gesperrten Fussknoepfen: ein grauer Knopf, an dem die alte
      Werbung stehenblieb ("Hier ist nichts eingestellt, was sich kopieren liesse"), log ueber den Grund seiner Sperre
      (Gegenlesen 16.09.2026). Grau nur mit Grund - und mit dem richtigen. */
-  const SPERRGRUND_FUSS='W\u00e4hrend der Ausgabe nimmt der Fu\u00df keine Entscheidung an \u2014 nur \u201eAbbrechen\u201c geht. Danach ist der Knopf wieder da.';
+  /* Der Satz steht als sag('ec.sperre.fuss', ...) in fussTitel(), zweimal: beim Sperren gesetzt, beim Aufschliessen verglichen. */
   const FUSS_TITEL={};   /* die eigene Erklaerung des Knopfes, gemerkt beim Sperren und beim Aufschliessen zurueckgelegt */
   function fussTitel(b,an){ if(!b||!b.id) return;
-    if(an){ if(FUSS_TITEL[b.id]===undefined) FUSS_TITEL[b.id]=b.title||''; b.title=SPERRGRUND_FUSS; }
-    else if(FUSS_TITEL[b.id]!==undefined&&b.title===SPERRGRUND_FUSS) b.title=FUSS_TITEL[b.id]; }
+    if(an){ if(FUSS_TITEL[b.id]===undefined) FUSS_TITEL[b.id]=b.title||''; b.title=sag('ec.sperre.fuss','Während der Ausgabe nimmt der Fuß keine Entscheidung an — nur „Abbrechen“ geht. Danach ist der Knopf wieder da.'); }
+    else if(FUSS_TITEL[b.id]!==undefined&&b.title===sag('ec.sperre.fuss','Während der Ausgabe nimmt der Fuß keine Entscheidung an — nur „Abbrechen“ geht. Danach ist der Knopf wieder da.')) b.title=FUSS_TITEL[b.id]; }
   function pultSperren(an){ if(!root) return; const z=$('#tbs-pultSperre');
-    if(z){ z.textContent=an?SPERRGRUND:''; z.hidden=!an; }
+    if(z){ z.textContent=an?sag('ec.sperre.pult','Während der Ausgabe stehen Quelle, Vorbereitung, Effektkette und Schleife still: eine Änderung mitten im Lauf würde das Bild im fertigen Video wechseln. Auch der Fuß nimmt bis zum Ende keine Entscheidung an — nur „Abbrechen“ geht. Die übrige App läuft weiter — Player, Album und die anderen Ansichten bleiben bedienbar.'):''; z.hidden=!an; }
     root.querySelectorAll('.tbs-stufenkoerper').forEach(k=>{ k.inert=an; k.classList.toggle('gesperrt',an); });
     /* Der Grund haengt am KOPF der Stufe, nicht am Koerper: ein inerter Koerper nimmt keine Maus mehr an und zeigte
        seinen eigenen Hinweis nie. Der Kopf bleibt anklickbar - auf- und zuklappen aendert am Bild nichts. */
-    root.querySelectorAll('.tbs-stufenkopf').forEach(k=>{ if(an) k.title=SPERRGRUND; else k.removeAttribute('title'); }); }
+    root.querySelectorAll('.tbs-stufenkopf').forEach(k=>{ if(an) k.title=sag('ec.sperre.pult','Während der Ausgabe stehen Quelle, Vorbereitung, Effektkette und Schleife still: eine Änderung mitten im Lauf würde das Bild im fertigen Video wechseln. Auch der Fuß nimmt bis zum Ende keine Entscheidung an — nur „Abbrechen“ geht. Die übrige App läuft weiter — Player, Album und die anderen Ansichten bleiben bedienbar.'); else k.removeAttribute('title'); }); }
   const VOLL_TEIL=600;   /* Bilder je Paket: 20 s Film. So liegt nie der ganze Film im Speicher (/api/vollvideo/teil) */
   let VOLL={ laeuft:false, abbruch:false, ton:true, tonDa:null, msBild:0, kennung:null };
   const mmss=t=>{ const s=Math.max(0,Math.round(t)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
@@ -9497,15 +9595,15 @@ function zeichneFrame(t,roh){
       vollFortschritt(''); fussStand(); if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
   async function vollLauf(){
     const dauer=(DATA&&DATA.dauer)||0;
-    if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
-    if(!(dauer>1)){ pStat('Die Länge dieses Titels steht nicht im Katalog — ohne sie gibt es kein Vollzeitvideo'); return; }
+    if(!bereit){ pStat(sag('ec.export.quelle_nicht_da','Quelle ist noch nicht da')); return; }
+    if(!(dauer>1)){ pStat(sag('ec.voll.keine_laenge','Die Länge dieses Titels steht nicht im Katalog — ohne sie gibt es kein Vollzeitvideo')); return; }
     if(typeof VideoEncoder==='undefined'||typeof VideoFrame==='undefined'){
-      pStat('Dieser Browser hat keinen Bildkodierer (WebCodecs). Ein ganzes Lied ließe sich nur in Echtzeit abfilmen — dabei wandern die Zeitstempel, und das Bild läuft gegen die Musik. Darum wird hier nichts ausgegeben.'); return; }
+      pStat(sag('ec.voll.kein_kodierer','Dieser Browser hat keinen Bildkodierer (WebCodecs). Ein ganzes Lied ließe sich nur in Echtzeit abfilmen — dabei wandern die Zeitstempel, und das Bild läuft gegen die Musik. Darum wird hier nichts ausgegeben.')); return; }
     const [W,H]=ausgabeMass(), N=Math.round(dauer*BILDRATE), rate=BILDRATE, vid=!!(bild&&bild.tagName==='VIDEO');
     /* Die Runde und der Ausschnitt: dafuer muss die Aenderungskurve des Videos gemessen sein (dieselbe Messung wie
        in der Loop-Ansicht, sie merkt sich ihr Ergebnis je Quelle). */
     let runde=null, lageP=null, von=0, dv=0, nullpunkt=0, fenster=null, pendel=false;
-    if(vid){ VIDEO_GENAU=true; pStat('vermesse das Video …'); await schleifeStills(bild,null);
+    if(vid){ VIDEO_GENAU=true; pStat(sag('ec.voll.vermesse','vermesse das Video …')); await schleifeStills(bild,null);
       dv=Math.max(0.05,(bild.duration||0)-1/60);
       const S=(DATA&&DATA.schlaege)||[], {takt,einsen}=taktLaenge(S), schlag=schlagMedian(S), beat=schlag>0.02?schlag:(takt>0.05?takt/4:0.5);
       runde=vollRunde(dv,takt,dauer);
@@ -9520,19 +9618,19 @@ function zeichneFrame(t,roh){
          Formen laufen durch einen Ausschnitt, und der bekommt sein eigenes Stueck der Aenderungskurve. */
       von=pendel?0:schleifePendelVon(runde.quell,dv);
       fenster=pendel?null:{ von, laenge:runde.quell, gesamt:dv }; }
-    pStat('melde den Lauf beim Haus an …');
+    pStat(sag('ec.voll.anmelden','melde den Lauf beim Haus an …'));
     let lauf=null, abgelehnt='', tonBestellt=!!(VOLL.ton&&VOLL.tonDa!==false);
     /* OB WIRKLICH EINE audio.mp3 DALIEGT, WEISS NUR DAS HAUS. Der HEAD in tonPruefen() geht durch liefere() und sagt
        auch dann ja, wenn der Ton nur im Behaelter liegt - gebaut wird aber aus der Datei. Das Haus sieht nach und
        schickt tonDa mit; die Pille stellt sich danach um, bevor vier Minuten umsonst gemalt werden. */
     try{ const a=await fetch('/api/vollvideo/start',{method:'POST',headers:{'Content-Type':'application/json'},
            body:JSON.stringify({ id:songId, rate, breite:W, hoehe:H, ton:tonBestellt })});
-      if(a.status===409) abgelehnt='Für diesen Titel läuft schon eine Ausgabe — eine zur Zeit reicht';
+      if(a.status===409) abgelehnt=sag('ec.voll.laeuft_schon','Für diesen Titel läuft schon eine Ausgabe — eine zur Zeit reicht');
       else if(a.ok){ const j=await a.json(); lauf=j&&j.lauf;
         if(j&&j.tonDa===false){ VOLL.tonDa=false; tonBestellt=false; vollStand(); } } }catch(e){}
-    if(!lauf){ pStat(abgelehnt||'Das Haus kann kein Vollzeitvideo bauen (/api/vollvideo antwortet nicht) — nichts ausgegeben'); return; }
+    if(!lauf){ pStat(abgelehnt||sag('ec.voll.haus_kann_nicht','Das Haus kann kein Vollzeitvideo bauen (/api/vollvideo antwortet nicht) — nichts ausgegeben')); return; }
     const cfg=await avcKonfig(W,H,rate);
-    if(!cfg){ await vollAbbrechenMelden(lauf); pStat('Der Bildkodierer nimmt dieses Format nicht ('+W+'×'+H+')'); return; }
+    if(!cfg){ await vollAbbrechenMelden(lauf); pStat(sag('ec.voll.format_nicht','Der Bildkodierer nimmt dieses Format nicht ({w}×{h})',{w:W,h:H})); return; }
     VOLL.kennung=lauf;   /* ab hier weiss der Abschied beim Schliessen des Tabs, was abzumelden ist */
     await zeichenBereit(W,H);   /* VOR dem ersten Bild - siehe zeichenHolen */
     await schriftenBereit();    /* VOR dem ersten Bild - die Paketschrift, sonst malte der Anfang mit dem Rueckfall (Nacht 25.09.2026) */
@@ -9542,7 +9640,8 @@ function zeichneFrame(t,roh){
        (DATA.lyrik), damit ein Nachzuegler den laufenden Export nicht mehr aendert. */
     const lyrikStandExport=await lyrikBereit();
     if(lyrikStandExport!=='ohne'&&lyrikStandExport!=='da'){ await vollAbbrechenMelden(lauf); VOLL.kennung=null;
-      pStat('Karaoke: '+((DATA&&DATA.instrumental)?'dieser Titel hat keinen Gesang':(lyrikStandExport==='unterwegs'?'die bereinigte Lyrik kam nicht rechtzeitig':(LYRIKGRUND[DATA&&DATA.id]||'keine bereinigte Lyrik')))+' — nichts ausgegeben. Karaoke-Karte ausschalten'+((DATA&&DATA.instrumental)?'.':' oder die Lyrik rechnen lassen.')); return; }
+      pStat((DATA&&DATA.instrumental)?sag('ec.voll.karaoke_abbruch_instr','Karaoke: {grund} — nichts ausgegeben. Karaoke-Karte ausschalten.',{grund:sag('ec.voll.kein_gesang','dieser Titel hat keinen Gesang')})
+        :sag('ec.voll.karaoke_abbruch','Karaoke: {grund} — nichts ausgegeben. Karaoke-Karte ausschalten oder die Lyrik rechnen lassen.',{grund:lyrikStandExport==='unterwegs'?sag('ec.voll.lyrik_zu_spaet','die bereinigte Lyrik kam nicht rechtzeitig'):(LYRIKGRUND[DATA&&DATA.id]||sag('ec.voll.keine_lyrik','keine bereinigte Lyrik'))})); return; }
     const gemerkt=bundel(), m=vollBuendel(gemerkt,W,H,N); m.lage=lageP; m.schleife=vid;
     m.DATA.lyrik=(DATA&&LYRIK[DATA.id])||null;   /* eingefroren fuer diesen Lauf; der Maler liest DATA.lyrik, wenn es gesetzt ist */
     let teile=[], bytes=0, nr=1, nullBasiert=false, fehler=null, geschickt=0;
@@ -9568,9 +9667,9 @@ function zeichneFrame(t,roh){
        Bytes - die Schaetzung wird waehrend des Laufs laufend nachgebessert, nicht einmal geraten. */
     const tonBytes=tonBestellt?192000*dauer/8:0;   /* dieselbe Formel wie vollKosten() - sonst sprang die Zahl beim Start nach UNTEN, obwohl die Datei groesser wird */
     const melden=i=>{ const ms=i>0?(performance.now()-uhr)/i:0; if(i>=60&&ms>0) VOLL.msBild=ms;
-      vollFortschritt(mmss(i/rate)+' von '+mmss(dauer)
-        +(ms>0&&i>=30?' · noch etwa '+vollRest((N-i)*ms/1000):' · die Rechenzeit wird noch gemessen …')
-        +(bytes>0&&i>=30?' · etwa '+Math.round((bytes/i*N+tonBytes)/1048576)+' MB':'')); };
+      vollFortschritt(sag('ec.voll.fortschritt','{a} von {b}',{a:mmss(i/rate),b:mmss(dauer)})
+        +' · '+(ms>0&&i>=30?sag('ec.voll.noch_etwa','noch etwa {r}',{r:vollRest((N-i)*ms/1000)}):sag('ec.voll.rechenzeit_misst','die Rechenzeit wird noch gemessen …'))
+        +(bytes>0&&i>=30?' · '+sag('ec.voll.etwa_mb','etwa {mb} MB',{mb:Math.round((bytes/i*N+tonBytes)/1048576)}):'')); };
     melden(0);
     FEIN=true;   /* hier haengt nichts an einer Uhr - die Maler duerfen teuer rechnen */
     let atem=performance.now(), meldUhr=performance.now();
@@ -9591,7 +9690,7 @@ function zeichneFrame(t,roh){
            nachkommt, hat der Lauf ohnehin nichts zu tun, und die Seite bekommt den Faden. */
         while(enc.encodeQueueSize>6 && !fehler){ await atemzug(); atem=performance.now(); }
         if(fehler) break;
-        if(i>0&&i%VOLL_TEIL===0){ if(!await teilSchicken()){ fehler=fehler||new Error('Paket '+nr+' kam nicht an'); break; } atem=performance.now(); }
+        if(i>0&&i%VOLL_TEIL===0){ if(!await teilSchicken()){ fehler=fehler||new Error(sag('ec.voll.paket_fehlt','Paket {nr} kam nicht an',{nr})); break; } atem=performance.now(); }
         const jetzt=performance.now();
         if(jetzt-meldUhr>=MELD_MS){ meldUhr=jetzt; melden(i); }   /* die Fortschrittszeile nach der Uhr, nicht nach der Bildzahl: bei teuren Bildern stand sie sonst sekundenlang */
         if(jetzt-atem>=ATEM_MS){ await atemzug(); atem=performance.now(); }   /* HIER bekommt die Seite den Faden zurueck */
@@ -9603,63 +9702,63 @@ function zeichneFrame(t,roh){
     /* ABBRUCH UND FEHLER GEHEN DENSELBEN WEG: der Kodierer zu, der halbe Rohstrom im Haus geloescht, nichts liegt herum. */
     if(VOLL.abbruch||fehler){ try{ enc.close(); }catch(e){}
       await vollAbbrechenMelden(lauf);
-      pStat(VOLL.abbruch?'abgebrochen — das halb gebaute Video ist gelöscht, es liegt nichts herum'
-                        :'abgebrochen: '+((fehler&&fehler.message)||'der Kodierer oder die Übertragung ging schief')+' — das halb gebaute Video ist gelöscht');
+      pStat(VOLL.abbruch?sag('ec.voll.abgebrochen','abgebrochen — das halb gebaute Video ist gelöscht, es liegt nichts herum')
+                        :sag('ec.voll.abgebrochen_fehler','abgebrochen: {grund} — das halb gebaute Video ist gelöscht',{grund:(fehler&&fehler.message)||sag('ec.voll.kodierer_schief','der Kodierer oder die Übertragung ging schief')}));
       return; }
     try{ await enc.flush(); enc.close(); }catch(e){}
-    if(!await teilSchicken()){ await vollAbbrechenMelden(lauf); pStat('Das letzte Paket kam nicht an — abgebrochen, es liegt nichts herum'); return; }
+    if(!await teilSchicken()){ await vollAbbrechenMelden(lauf); pStat(sag('ec.voll.letztes_paket','Das letzte Paket kam nicht an — abgebrochen, es liegt nichts herum')); return; }
     /* AB HIER IST DER ABBRUCH VORBEI. Das Haus baut, und die Antwort bringt die fertige Datei; der Server verweigert
        einen Abbruch in diesem Fenster ohnehin (409 "wird gerade gebaut"). Ein Knopf, der "breche ab" schreibt und
        dann doch 170 MB herunterlaedt, ist eine Luege - also wird er gesperrt und die Zeile sagt warum. */
     { const st=$('#tbs-vollStop'); if(st) st.disabled=true; }
-    vollFortschritt('das Haus baut die Datei — das läßt sich jetzt nicht mehr abbrechen …');
+    vollFortschritt(sag('ec.voll.haus_baut','das Haus baut die Datei — das läßt sich jetzt nicht mehr abbrechen …'));
     let j=null;
     try{ const a=await fetch('/api/vollvideo/fertig?lauf='+encodeURIComponent(lauf)+'&bilder='+N,{method:'POST'}); if(a.ok) j=await a.json(); }catch(e){}
-    if(!j||!j.ok||!j.url){ await vollAbbrechenMelden(lauf); pStat('Das Haus konnte die Datei nicht bauen — abgebrochen, es liegt nichts herum'); return; }
+    if(!j||!j.ok||!j.url){ await vollAbbrechenMelden(lauf); pStat(sag('ec.voll.haus_baute_nicht','Das Haus konnte die Datei nicht bauen — abgebrochen, es liegt nichts herum')); return; }
     VOLL.kennung=null;   /* die Datei liegt bereit und wird gleich geholt - ab jetzt nicht mehr blind abmelden */
     /* Geholt wird ueber die Adresse, die das Haus nennt - kein Riesen-Blob im Speicher. Den Dateinamen setzt das
        Haus (Content-Disposition), nach derselben Regel wie ausliefern(). Gebucht wird hier nichts: in library/
        schreibt nur der Server. */
     const a=document.createElement('a'); a.href=j.url; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove();
     const brauchte=(performance.now()-uhr)/1000; VOLL.msBild=brauchte*1000/Math.max(1,N);
-    const uname=(SCHLEIFE_ARTEN.find(x=>x[0]===(SCHLEIFE.art||'keiner'))||[0,''])[1];
-    pStat('ausgegeben: der ganze Titel · '+mmss(j.sekunden||dauer)+' · '+((j.bytes||geschickt)/1048576).toFixed(1)+' MB · '+W+'×'+H+' · '+N+' Bilder · '
-      +(j.ton?'mit Ton':'ohne Ton'+(j.ohneTon?' ('+j.ohneTon+')':''))   /* der BEFUND des Hauses (ffprobe auf der fertigen Datei), nicht die Bestellung: ein stummes Video, das sich als vertont meldet, blamiert vor Publikum */
-      +(vid?' · Video in Runden von '+kf(runde.L.toFixed(1))+' s'
-            +(pendel?', hin und her in echtem Tempo'   /* das Pendel dehnt nichts und nimmt sich sein Stueck selbst (schleifePendelVon) */
-                    :', '+(runde.dehnung>=1?'gedehnt':'geschrumpft')+' auf '+Math.round(runde.dehnung*100)+' %'
-                     +(runde.ausschnitt?' (Ausschnitt ab '+mmss(von)+', nicht vorgespult)':'')+(runde.geklemmt?' — mehr als ein Drittel, die Quelle paßt in keinen Takt':''))
-            +(nullpunkt>0.01?' · Runden ab der ersten Eins bei '+kf(nullpunkt.toFixed(2))+' s':'')
-            +' · Übergang: '+uname:'')
-      +' — ins Download-Verzeichnis, gerechnet in '+vollRest(brauchte)); }
+    const uname=schleifeName(SCHLEIFE.art||'keiner');
+    pStat(sag('ec.voll.fertig','ausgegeben: der ganze Titel · {dauer} · {mb} MB · {w}×{h} · {n} Bilder',{dauer:mmss(j.sekunden||dauer),mb:((j.bytes||geschickt)/1048576).toFixed(1),w:W,h:H,n:N})+' · '
+      +(j.ton?sag('ec.voll.mit_ton','mit Ton'):sag('ec.voll.ohne_ton','ohne Ton')+(j.ohneTon?' ('+j.ohneTon+')':''))   /* der BEFUND des Hauses (ffprobe auf der fertigen Datei), nicht die Bestellung: ein stummes Video, das sich als vertont meldet, blamiert vor Publikum */
+      +(vid?' · '+sag('ec.voll.runden','Video in Runden von {l} s',{l:kf(runde.L.toFixed(1))})
+            +(pendel?', '+sag('ec.voll.pendel','hin und her in echtem Tempo')   /* das Pendel dehnt nichts und nimmt sich sein Stueck selbst (schleifePendelVon) */
+                    :', '+(runde.dehnung>=1?sag('ec.voll.gedehnt','gedehnt auf {p} %',{p:Math.round(runde.dehnung*100)}):sag('ec.voll.geschrumpft','geschrumpft auf {p} %',{p:Math.round(runde.dehnung*100)}))
+                     +(runde.ausschnitt?' ('+sag('ec.voll.ausschnitt_ab','Ausschnitt ab {von}, nicht vorgespult',{von:mmss(von)})+')':'')+(runde.geklemmt?' — '+sag('ec.voll.geklemmt','mehr als ein Drittel, die Quelle paßt in keinen Takt'):''))
+            +(nullpunkt>0.01?' · '+sag('ec.voll.runden_eins','Runden ab der ersten Eins bei {t} s',{t:kf(nullpunkt.toFixed(2))}):'')
+            +' · '+sag('ec.voll.uebergang','Übergang: {name}',{name:uname}):'')
+      +' — '+sag('ec.voll.download','ins Download-Verzeichnis, gerechnet in {dauer}',{dauer:vollRest(brauchte)})); }
   /* Die Fortschrittszeile mit dem Abbrechen-Knopf: sie ist da, solange etwas laeuft, und sonst weg. */
   function vollFortschritt(x){ const z=$('#tbs-vollLauf'), el=$('#tbs-vollText'), st=$('#tbs-vollStop');
     if(el) el.textContent=x||''; if(z) z.hidden=!x; if(st&&!x) st.disabled=false; }   /* die Sperre aus dem Bau gilt nur fuer diesen Lauf */
   function vollStand(){ pultSperren(!!exportLaeuft);   /* beide Ausgabewege kommen hier durch: video() und vollvideo() melden sich hier an und wieder ab */
     const b=$('#tbs-pVoll'); if(!b) return;
     const p=$('#tbs-pVollTon'), v=$('#tbs-pVideo'), s=$('#tbs-pSave'), d=$('#tbs-pDrop'), kp=$('#tbs-pKopie'), ei=$('#tbs-pEin'), k=$('#tbs-vollKosten'), laeuft=!!exportLaeuft;
-    b.disabled=laeuft||!bereit; b.textContent=VOLL.laeuft?'gibt den Titel aus …':'ganzen Titel ausgeben';
+    b.disabled=laeuft||!bereit; b.textContent=VOLL.laeuft?sag('ec.voll.knopf_laeuft','gibt den Titel aus …'):sag('ec.voll.knopf','ganzen Titel ausgeben');
     /* Waehrend eines Laufs ist die uebrige Fussleiste zu. Das Sperren KOMMT AUF die Entscheidung von fussStand()
        obendrauf (vollStand steht am Ende von fussStand), das Aufschliessen ueberlaesst es wieder ihr - sonst ginge
        "Für diesen Titel sichern" nach einem Lauf auf, obwohl gar kein Rezept angewendet ist. */
     if(v) v.disabled=laeuft; [s,d,kp,ei].forEach(b=>{ if(!b) return; if(laeuft) b.disabled=true; fussTitel(b,laeuft); });
     if(p){ const an=!!VOLL.ton&&VOLL.tonDa!==false; p.disabled=laeuft||VOLL.tonDa===false;
       p.classList.toggle('an',an); p.setAttribute('aria-pressed',an?'true':'false');
-      p.textContent=VOLL.tonDa===false?'Ton dazu — keine Datei':'Ton dazu';
-      p.title=VOLL.tonDa===false?'Zu diesem Titel liegt keine audio.mp3 im Archiv — das Video bleibt stumm'
-             :VOLL.tonDa===null?'Es wird noch nachgesehen, ob eine audio.mp3 zu diesem Titel da ist'
-             :'Die audio.mp3 des Titels kommt als Tonspur ins Video (AAC, 192 kbit/s)'; }
+      p.textContent=VOLL.tonDa===false?sag('ec.voll.ton_keine_datei','Ton dazu — keine Datei'):sag('ec.voll.ton_dazu','Ton dazu');
+      p.title=VOLL.tonDa===false?sag('ec.voll.ton_titel_fehlt','Zu diesem Titel liegt keine audio.mp3 im Archiv — das Video bleibt stumm')
+             :VOLL.tonDa===null?sag('ec.voll.ton_titel_pruefen','Es wird noch nachgesehen, ob eine audio.mp3 zu diesem Titel da ist')
+             :sag('ec.voll.ton_titel','Die audio.mp3 des Titels kommt als Tonspur ins Video (AAC, 192 kbit/s)'); }
     if(k) k.textContent=vollKosten(); }
   function vollKosten(){ const dauer=(DATA&&DATA.dauer)||0; if(!bereit||!(dauer>1)) return '';
     const [W,H]=ausgabeMass(), mb=(vollBitrate(W,H,BILDRATE)*dauer/8+((VOLL.ton&&VOLL.tonDa!==false)?192000*dauer/8:0))/1048576;
     const rechnen=VOLL.msBild>0?VOLL.msBild*Math.round(dauer*BILDRATE)/1000:0;
-    return 'ganzer Titel: '+mmss(dauer)+' · '+W+'×'+H+' · etwa '+Math.round(mb)+' MB · '
-      +(rechnen>0?'etwa '+vollRest(rechnen)+' Rechenzeit (nach der letzten Messung)':'wie lange gerechnet wird, steht nach den ersten 60 Bildern')
-      +' · das Studio steht so lange still'
-      +((STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke')&&((DATA&&DATA.instrumental)||(lyrikStand(DATA&&DATA.id)!=='da'&&lyrikStand(DATA&&DATA.id)!=='unterwegs')))?' · Karaoke-Karte ohne Lyrik — die Ausgabe würde abbrechen':''); }
+    return sag('ec.voll.kosten','ganzer Titel: {dauer} · {w}×{h} · etwa {mb} MB',{dauer:mmss(dauer),w:W,h:H,mb:Math.round(mb)})+' · '
+      +(rechnen>0?sag('ec.voll.kosten_rechnen','etwa {r} Rechenzeit (nach der letzten Messung)',{r:vollRest(rechnen)}):sag('ec.voll.kosten_unbekannt','wie lange gerechnet wird, steht nach den ersten 60 Bildern'))
+      +' · '+sag('ec.voll.studio_steht','das Studio steht so lange still')
+      +((STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke')&&((DATA&&DATA.instrumental)||(lyrikStand(DATA&&DATA.id)!=='da'&&lyrikStand(DATA&&DATA.id)!=='unterwegs')))?' · '+sag('ec.voll.karaoke_ohne_lyrik','Karaoke-Karte ohne Lyrik — die Ausgabe würde abbrechen'):''); }
   /* ---- DIE VIERTE STUFE: LOOP VERBINDEN (Caspar_D, 15.09.2026: "momentan gibt es ja in unserem Effektclip Quellenwahl-, den
      Vorbereitungs-, den Effektgeneration part, dann muss es noch den Videoloop-Verbinden Part geben am Ende" - und "ein
-     Modusknopf im Studio - 10 Sek. Loop waere gut"). Der Name der Stufe steht nur in LOOP_STUFE.
+     Modusknopf im Studio - 10 Sek. Loop waere gut"). Der Name der Stufe steht nur in STUFE_NAMEN in bauen().
      ANZEIGE: die Lage, die der Export jetzt waehlen wuerde - ausschnitt() und taktSatz(), keine zweite Rechnung. Neu gerechnet
      wird, wenn sich loopBedarf(), der Titel oder seine Schlaege aendern, entprellt (ein Regler, der gezogen wird, fragt
      sonst je Bild taktLage, und die erste Suche eines Lieds kostet bis eine halbe Sekunde). t0 bleibt dabei stehen, bis
@@ -9672,21 +9771,17 @@ function zeichneFrame(t,roh){
      laeuft wie im Export vor, aber in Happen von zehn Bildern je Vorschaubild, damit die Seite nicht steht; solange
      bleibt das letzte Bild stehen. Gleiches Clipbild zweimal wird nicht neu gemalt (die Vorschau laeuft mit 60, der
      Clip mit 30 Bildern, und die Spur des Nachzieheffekts saehe jedes Bild sonst doppelt). */
-  const LOOP_STUFE='Effektclip als Schleife',   /* Caspar_D, 15.09.2026: erst "Schleife schliessen", seit dem Akkordeon "Effektclip als Schleife" (Taufnotiz in docs/haus/HAUSREGELN.md) */
-    LOOP_ENTPRELLEN=300;
-  const STUFEN=['Quelle','Vorb','Kette','Loop'], STUFE_SPEICHER='mysuno-tbs-stufe', STUFE_NAMEN={ Quelle:'Quelle', Vorb:'Vorbereitung', Kette:'Effektkette', Loop:LOOP_STUFE };
-  /* Die Erklaertexte oben in jeder offenen Stufe, Wortlaut von Caspar_D (15.09.2026), ein Eintrag je Absatz */
-  const STUFE_ERKLAER={
-    Quelle:['Hier können Bilder oder Videos für den Effektclip ausgewählt werden.'],
-    Vorb:['Wenn nötig kann das Aussehen der Quelle und deren Tiefeninformation hier optimiert werden. <b>Kurve</b> ermöglicht die Optimierung der Gesamt-Tonwertkurve oder der Kurve je Kanal. Mit <b>Feinheiten</b> können Belichtung, Kontrast, Lichter, Schatten, Farbe, Schärfe und anderes verbessert werden. Die Daten selbst werden direkt verarbeitet, aber nur in der Ansicht verändert. <b>Tiefe</b> legt fest, wie Bilder als Raum wahrgenommen werden sollen; einige Effekte brauchen Zonenzuweisungen, wo sie im Raum wirken sollen.'],
-    Kette:['Jeder Effekt legt eine Schicht auf die ausgesuchte Quelle. Sie wirken von oben nach unten. Jede Schicht legt einen Effekt auf alle vorher definierten Effekte.','Pulse schlagen im Takt des Lieds.','Das Soloabzeichen zeigt einen Effekt allein.','Die Kombination aus Effekt und Quelle bildet den Effektclip.'],
-    Loop:['Suno spielt das Video zum Lied in einer Endlosschleife und erlaubt höchstens 10 Sekunden. Damit die Pulse über das ganze Lied im Takt bleiben, wird der Clip synchron zu ganzen Takt-Schlägen gebaut. Die Software wählt die Länge so, dass der Clip längstmöglich mit der Musik synchron läuft.','Am Clipende muss das Bild genau wieder am Anfang ankommen: Effekte schaffen das automatisch ohne Ruckler oder Nähte. Videos werden entsprechend getrimmt (Geschwindigkeit) und, falls sich Anfang und Ende unterscheiden, mit einem Übergang versehen.'] };
+  /* Der Name der vierten Stufe ist Caspar_Ds Taufname "Effektclip als Schleife" (15.09.2026: erst "Schleife schliessen", seit dem
+     Akkordeon "Effektclip als Schleife"; Taufnotiz in docs/haus/HAUSREGELN.md). Er steht mit den anderen Stufennamen und den
+     Erklaertexten in bauen() (STUFE_NAMEN, STUFE_ERKLAER) - dort, wo sie angezeigt werden, mit Schluessel fuer den Sprachwechsel. */
+  const LOOP_ENTPRELLEN=300;
+  const STUFEN=['Quelle','Vorb','Kette','Loop'], STUFE_SPEICHER='mysuno-tbs-stufe';
   let loopAn=false, loopSicht=null, loopSchluessel='', loopFaellig=0;   /* loopSicht: { lage, m (das Buendel), i (zuletzt gemaltes Clipbild) } */
   function loopSchluesselJetzt(){ return (DATA?DATA.id+'|'+(DATA.schlaege?DATA.schlaege.length:0)+'|'+(DATA.dauer||0):'-')+'|'+JSON.stringify(loopBedarf()); }
   function loopLageText(lage){ if(!lage) return '…';
-    const sek=lage.L.toFixed(2).replace('.',',')+' s';
-    if(!lage.M) return sek+' · '+((DATA&&DATA.schlaege&&DATA.schlaege.length)?'zu wenige Schläge für einen Takt':'keine Schlagerkennung');
-    return sek+' · '+(lage.ganzeTakte?kf(lage.takte)+' '+(lage.takte===1?'Takt':'Takte'):lage.M+' Schläge')+taktSatz(lage.anzeige,lage.grund,true); }
+    const sek=kf(lage.L.toFixed(2))+' s';
+    if(!lage.M) return sek+' · '+((DATA&&DATA.schlaege&&DATA.schlaege.length)?sag('ec.loop.zu_wenige_schlaege','zu wenige Schläge für einen Takt'):sag('ec.loop.keine_schlagerkennung','keine Schlagerkennung'));
+    return sek+' · '+(lage.ganzeTakte?(lage.takte===1?sag('ec.loop.takt_1','{n} Takt',{n:kf(lage.takte)}):sag('ec.loop.takte_n','{n} Takte',{n:kf(lage.takte)})):sag('ec.loop.schlaege_n','{n} Schläge',{n:lage.M}))+taktSatz(lage.anzeige,lage.grund,true); }
   function loopLageNeu(){ loopSchluessel=loopSchluesselJetzt(); loopFaellig=0;
     loopSicht={ lage:ausschnitt(), m:null, i:-1 };
     const el=$('#tbs-loopLage'); if(el) el.textContent=loopLageText(loopSicht.lage); schleifeUI(); return loopSicht; }
@@ -9714,24 +9809,24 @@ function zeichneFrame(t,roh){
     finally{ LOOP=0; FEIN=false; }
     g.save(); g.setTransform(1,0,0,1,0,0); g.globalAlpha=1; g.filter='none'; g.globalCompositeOperation='copy'; g.drawImage(m.lein,0,0); g.restore();
     return i; }
-  function loopZeile(s,i){ const el=$('#tbs-loopWo'); if(!el||!loopSicht) return; const L=loopSicht.lage.N/BILDRATE, mm=Math.floor(s/60), ss=(s-mm*60).toFixed(1).replace('.',',');
-    el.textContent='Lied '+mm+':'+(ss.length<4?'0':'')+ss+' · Durchlauf '+(Math.floor(s/L)+1)+' · Bild '+(i+1)+' von '+loopSicht.lage.N+(uhrEcht?'':' · der Player steht, es läuft eine freie Uhr'); }
+  function loopZeile(s,i){ const el=$('#tbs-loopWo'); if(!el||!loopSicht) return; const L=loopSicht.lage.N/BILDRATE, mm=Math.floor(s/60), ss=kf((s-mm*60).toFixed(1));
+    el.textContent=sag('ec.loop.wo','Lied {zeit} · Durchlauf {d} · Bild {i} von {n}',{zeit:mm+':'+(ss.length<4?'0':'')+ss,d:Math.floor(s/L)+1,i:i+1,n:loopSicht.lage.N})+(uhrEcht?'':' · '+sag('ec.loop.freie_uhr','der Player steht, es läuft eine freie Uhr')); }
   function schleifeUI(){ const s=$('#tbs-schleife'), h=$('#tbs-schleifeHinweis'), vid=!!(bild&&bild.tagName==='VIDEO'), art=SCHLEIFE.art||'keiner', lg=loopSicht&&loopSicht.lage;
-    const kz=v=>String(v).replace('.',','), pend=art==='pendel', fGilt=vid&&art!=='keiner', L=lg?lg.N/BILDRATE:0, beat=(lg&&lg.M)?L/lg.M:0, D=(lg&&fGilt)?schleifeFenster(L,lg):0;
+    const kz=kf, pend=art==='pendel', fGilt=vid&&art!=='keiner', L=lg?lg.N/BILDRATE:0, beat=(lg&&lg.M)?L/lg.M:0, D=(lg&&fGilt)?schleifeFenster(L,lg):0;
     fussStand();
-    if(s){ s.value=art; s.disabled=!vid; s.title=vid?SCHLEIFE_PRINZIP[art]:'nur für Bewegtbilder'; }
+    if(s){ s.value=art; s.disabled=!vid; s.title=vid?schleifePrinzip(art):sag('ec.loop.nur_bewegtbilder','nur für Bewegtbilder'); }
     ['#tbs-fWeniger','#tbs-fMehr','#tbs-fSelbst'].forEach(q=>{ const b=$(q); if(b) b.disabled=!fGilt; });
     { const z=$('#tbs-fZeile'); if(z) z.classList.toggle('grau',!fGilt); const b=$('#tbs-fSelbst'); if(b) b.classList.toggle('an',fGilt&&!(SCHLEIFE.fenster>0)); }
     { const b=$('#tbs-mSelbst'); if(b) b.classList.toggle('an',!(SCHLEIFE.schlaege>0)); const z=$('#tbs-mZahl'); if(z) z.textContent=(lg&&lg.M)?String(lg.M):'–'; }
-    { const z=$('#tbs-fZahl'); if(z){ const n=beat?Math.round(D/beat*2)/2:0; z.textContent=!vid?'–':art==='keiner'?'0 s':!lg?'–':beat?kz(n)+(n===1?' Schlag':' Schläge'):kz(D.toFixed(2))+' s'; }
-      const lb=$('#tbs-fLabel'); if(lb) lb.textContent=pend?'Länge des Ausschnitts':'Länge des Übergangs'; }
+    { const z=$('#tbs-fZahl'); if(z){ const n=beat?Math.round(D/beat*2)/2:0; z.textContent=!vid?'–':art==='keiner'?'0 s':!lg?'–':beat?(n===1?sag('ec.loop.schlag_1','{n} Schlag',{n:kz(n)}):sag('ec.loop.schlaege_n','{n} Schläge',{n:kz(n)})):kz(D.toFixed(2))+' s'; }
+      const lb=$('#tbs-fLabel'); if(lb) lb.textContent=pend?sag('ec.loop.laenge_ausschnitt','Länge des Ausschnitts'):sag('ec.loop.laenge_uebergang','Länge des Übergangs'); }
     { const k=$('#tbs-loopKosten'); if(k) k.hidden=!vid; }
-    { const li=$('#tbs-leisteLinks'), re=$('#tbs-leisteRechts'); if(li) li.textContent=!lg?'':vid?'Die linke Achse bildet von unten nach oben die Zeitskala des Videomaterials ab, die waagerechte Achse von links nach rechts die von KlangTresor geschleifte Version. Die Striche unten sind die Schl\u00e4ge.':'Die waagerechte Achse bildet von links nach rechts die von KlangTresor geschleifte Version ab, die Striche sind die Schl\u00e4ge. Ein Titelbild hat keine Videozeit.';   /* Caspar_D, 15.09.2026: "die linke Achse von unten nach oben bildet die Zeitskala des Videomaterials ab, die waagerechte Achse von links nach rechts die von Klangtresor geschleifte Version" - das muss dastehen */
+    { const li=$('#tbs-leisteLinks'), re=$('#tbs-leisteRechts'); if(li) li.textContent=!lg?'':vid?sag('ec.loop.leiste_video','Die linke Achse bildet von unten nach oben die Zeitskala des Videomaterials ab, die waagerechte Achse von links nach rechts die von KlangTresor geschleifte Version. Die Striche unten sind die Schläge.'):sag('ec.loop.leiste_bild','Die waagerechte Achse bildet von links nach rechts die von KlangTresor geschleifte Version ab, die Striche sind die Schläge. Ein Titelbild hat keine Videozeit.');   /* Caspar_D, 15.09.2026: "die linke Achse von unten nach oben bildet die Zeitskala des Videomaterials ab, die waagerechte Achse von links nach rechts die von Klangtresor geschleifte Version" - das muss dastehen */
       { const xr=$('#tbs-xRechts'); if(xr) xr.textContent=lg?kz(L.toFixed(2))+' s':''; }
-      if(re) re.textContent=!lg?'':!vid?'':pend?'Ausschnitt '+kz(D.toFixed(2))+' s, hin und her':fGilt?'Übergang '+kz(D.toFixed(2))+' s':'harter Schnitt am Clipende'; }
-    if(h) h.textContent=vid?SCHLEIFE_PRINZIP[art]:'Übergänge gibt es nur für Bewegtbilder – beim Titelbild schließen die Effekte die Schleife von selbst';
-    { const nm=(SCHLEIFE_ARTEN.find(a=>a[0]===art)||[0,''])[1];   /* Stand im Kopf der Stufe: Laenge, Schlaege, beim Video der Uebergang */
-      standSetzen('Loop', !lg?'…':kz(L.toFixed(2))+' s'+(lg.M?' · '+lg.M+(lg.M===1?' Schlag':' Schläge'):'')+(vid&&nm?' · '+nm:'')); }
+      if(re) re.textContent=!lg?'':!vid?'':pend?sag('ec.loop.ausschnitt_pendel','Ausschnitt {d} s, hin und her',{d:kz(D.toFixed(2))}):fGilt?sag('ec.loop.uebergang_s','Übergang {d} s',{d:kz(D.toFixed(2))}):sag('ec.loop.harter_schnitt','harter Schnitt am Clipende'); }
+    if(h) h.textContent=vid?schleifePrinzip(art):sag('ec.loop.nur_video_uebergang','Übergänge gibt es nur für Bewegtbilder – beim Titelbild schließen die Effekte die Schleife von selbst');
+    { const nm=schleifeName(art);   /* Stand im Kopf der Stufe: Laenge, Schlaege, beim Video der Uebergang */
+      standSetzen('Loop', !lg?'…':kz(L.toFixed(2))+' s'+(lg.M?' · '+(lg.M===1?sag('ec.loop.schlag_1','{n} Schlag',{n:lg.M}):sag('ec.loop.schlaege_n','{n} Schläge',{n:lg.M})):'')+(vid&&nm?' · '+nm:'')); }
     leisteMalen(); }
   /* DIE ZEITLEISTE DES CLIPS: schwarzer Datenbereich (Regel 8), unten die Schlaege, darueber die Kurve "Videobild ueber Clipzeit"
      und der Uebergang als Flaeche mit Kontur (Formsprache: Flaeche gedaempft, Kontur in voller Staerke, aufgehellt). In der
@@ -9739,7 +9834,7 @@ function zeichneFrame(t,roh){
   /* Bis 15.09.2026 las die Leiste ihre Farben aus $('#tbs') - root IST #tbs, querySelector sucht nur darunter: null, getComputedStyle
      warf nach dem Schwarz, und Schlaege, Kurve, Uebergang und Abspielstrich kamen nie. */
   function leisteMalen(){ const c=$('#tbs-leiste'); if(!c||!c.clientWidth) return; const dpr=window.devicePixelRatio||1, W=Math.round(c.clientWidth*dpr), H=Math.round((c.clientHeight||96)*dpr);
-    { const ya=$('#tbs-yAchse'), yo=$('#tbs-yOben'), dv=(bild&&bild.tagName==='VIDEO'&&bild.duration>0)?bild.duration:0, t=dv?String(dv.toFixed(2)).replace('.',',')+' s':''; if(ya&&ya.hidden!==!dv) ya.hidden=!dv; if(yo&&yo.textContent!==t) yo.textContent=t; }
+    { const ya=$('#tbs-yAchse'), yo=$('#tbs-yOben'), dv=(bild&&bild.tagName==='VIDEO'&&bild.duration>0)?bild.duration:0, t=dv?kf(dv.toFixed(2))+' s':''; if(ya&&ya.hidden!==!dv) ya.hidden=!dv; if(yo&&yo.textContent!==t) yo.textContent=t; }
     if(c.width!==W||c.height!==H){ c.width=W; c.height=H; } const x=c.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.globalAlpha=1; x.fillStyle='#000'; x.fillRect(0,0,W,H);
     const lg=loopSicht&&loopSicht.lage; if(!lg||!lg.N) return;
     const farbe=(css,weiss)=>{ x.fillStyle=css; const f=x.fillStyle; if(f[0]!=='#') return f; const n=parseInt(f.slice(1),16), m=v=>Math.round(v+(255-v)*weiss); return 'rgb('+m(n>>16)+','+m(n>>8&255)+','+m(n&255)+')'; };
@@ -9793,24 +9888,24 @@ function zeichneFrame(t,roh){
   /* V HALTEN: DIE QUELLE OHNE EFFEKTE (Caspar_D, 15.09.2026) - nur in der offenen Vorbereitung und nur fuer die Vorschau: rahmen()
      reicht roh an zeichneFrame(). STAPEL, Rezept, Export, Kachel und Buehne sehen davon nichts; die Marke liegt ueber der Leinwand. */
   function ohneSetzen(an){ an=!!an&&offen&&stufeOffen==='Vorb'; if(an===ohneEffekte) return; ohneEffekte=an; if(loopSicht) loopSicht.i=-1; const m=$('#tbs-ohneMarke'); if(m) m.hidden=!an; }
-  function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L,sitzt,grund,kodiert}=urteil, sek=L.toFixed(1).replace('.',',');
+  function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L,sitzt,grund,kodiert}=urteil, sek=kf(L.toFixed(1));
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),20000);
-    pStat('ausgegeben: '+name+' · '+(blob.size/1048576).toFixed(1)+' MB · '+N+' Bilder'
-      +(STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke')?' — ohne Karaoke (nur im ganzen Titel)':'')
-      +(nicht.length?' — ohne Loop: '+nicht.join(', ')
-        :!geschnitten?' — Loop ungenau, das Haus hat nicht geschnitten'
-        :bewegt?(urteil.schleife&&urteil.schleife!=='keiner'?' — das Video schließt die Schleife: '+((SCHLEIFE_ARTEN.find(a=>a[0]===urteil.schleife)||[0,''])[1]):' — die Effekte schliessen, das Video springt am Übergang (harter Schnitt)')
-        :' — nahtlos')
+    pStat(sag('ec.export.fertig','ausgegeben: {name} · {mb} MB · {n} Bilder',{name,mb:(blob.size/1048576).toFixed(1),n:N})
+      +(STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke')?' — '+sag('ec.export.ohne_karaoke','ohne Karaoke (nur im ganzen Titel)'):'')
+      +(nicht.length?' — '+sag('ec.export.ohne_loop','ohne Loop: {namen}',{namen:nicht.join(', ')})
+        :!geschnitten?' — '+sag('ec.export.loop_ungenau','Loop ungenau, das Haus hat nicht geschnitten')
+        :bewegt?(urteil.schleife&&urteil.schleife!=='keiner'?' — '+sag('ec.export.video_schliesst','das Video schließt die Schleife: {name}',{name:schleifeName(urteil.schleife)}):' — '+sag('ec.export.video_springt','die Effekte schliessen, das Video springt am Übergang (harter Schnitt)'))
+        :' — '+sag('ec.export.nahtlos','nahtlos'))
       +taktSatz(sitzt,grund,kodiert)
-      +(stolpern.length?' · '+stolpern.join(', ')+': der Rhythmus geht in '+sek+' s nicht ganz auf, am Übergang kommt ein Schlag einmal früher':'')
-      +(ruck.length?' · '+ruck.join(', ')+': die Schläge gehen in '+sek+' s nicht paarweise auf, am Übergang ruckt es zweimal in dieselbe Richtung':'')
-      +((steht.length||frequenz.length)?' · zu wenige Schläge für einen Takt: '+[steht.length?steht.join(', ')+' '+(steht.length>1?'stehen':'steht')+' im Video still':'', frequenz.length?frequenz.join(', ')+' '+(frequenz.length>1?'laufen':'läuft')+' auf der eigenen Frequenz':''].filter(Boolean).join(', '):''));
+      +(stolpern.length?' · '+sag('ec.export.stolpern','{namen}: der Rhythmus geht in {s} s nicht ganz auf, am Übergang kommt ein Schlag einmal früher',{namen:stolpern.join(', '),s:sek}):'')
+      +(ruck.length?' · '+sag('ec.export.ruck','{namen}: die Schläge gehen in {s} s nicht paarweise auf, am Übergang ruckt es zweimal in dieselbe Richtung',{namen:ruck.join(', '),s:sek}):'')
+      +((steht.length||frequenz.length)?' · '+sag('ec.loop.zu_wenige_schlaege','zu wenige Schläge für einen Takt')+': '+[steht.length?(steht.length>1?sag('ec.export.stehen_still','{namen} stehen im Video still',{namen:steht.join(', ')}):sag('ec.export.steht_still','{namen} steht im Video still',{namen:steht.join(', ')})):'', frequenz.length?(frequenz.length>1?sag('ec.export.laufen_frequenz','{namen} laufen auf der eigenen Frequenz',{namen:frequenz.join(', ')}):sag('ec.export.laeuft_frequenz','{namen} läuft auf der eigenen Frequenz',{namen:frequenz.join(', ')})):''].filter(Boolean).join(', '):''));
   }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
-      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; ungesichert=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
-  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gelöscht — der Titel zeigt wieder das Standbild'); rezeptDa=false; ungesichert=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('Löschen ging nicht'); } }
+      if(!d.ok){ pStat(d.grund||sag('ec.rezept.ging_schief','ging schief')); return; } pStat(sag('ec.rezept.gesichert','gesichert · {n} Zeichen — {was}',{n:s.length,was:STAPEL.length?sag('ec.rezept.malt_live','der Titel malt es jetzt live'):sag('ec.rezept.nur_grund','nur der Grund, keine Effekte')})); rezeptDa=true; ungesichert=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat(sag('ec.rezept.speichern_nicht','Speichern ging nicht')); } }
+  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat(sag('ec.rezept.geloescht','gelöscht — der Titel zeigt wieder das Standbild')); rezeptDa=false; ungesichert=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat(sag('ec.rezept.loeschen_nicht','Löschen ging nicht')); } }
   function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase();
     /* V halten in der Vorbereitung - auch wenn ein Schieber den Fokus hat (nach dem Ziehen behaelt er ihn, und genau dann will man
        vergleichen); Textfelder und Listen bekommen ihr V. Haus und Studio belegen V sonst nicht. */
@@ -9823,56 +9918,70 @@ function zeichneFrame(t,roh){
     if(ev.key==='ArrowLeft'||ev.key==='ArrowRight'){ ev.stopPropagation(); ev.preventDefault(); blaettern(ev.key==='ArrowRight'?1:-1); return; }
     if(ev.key==='ArrowUp'||ev.key==='ArrowDown'){ ev.stopPropagation(); return; }   /* rollt das Pult; das Haus wuerde die Lautstaerke verstellen */
   }
-  function bauen(){ GL.noiseLaden();
-    const stufeKopf=k=>'<button type="button" class="tbs-stufenkopf" id="tbs-sk'+k+'" data-stufe="'+k+'" aria-expanded="false" aria-controls="tbs-sb'+k+'"><span class="tbs-chev" aria-hidden="true">▸</span><span class="tbs-stufentitel">'+STUFE_NAMEN[k]+'</span><span class="tbs-stufenstand" id="tbs-ss'+k+'"></span></button>';
-    const stufeAuf=k=>'<div class="tbs-stufenkoerper" id="tbs-sb'+k+'" role="region" aria-labelledby="tbs-sk'+k+'" hidden><div class="tbs-erklaer">'+STUFE_ERKLAER[k].map(p=>'<p>'+p+'</p>').join('')+'</div>';
+  function bauen(){ GL.noiseLaden(); effekteSprache();   /* Registry in der Sprache der Oberflaeche, bevor das erste Markup sie liest */
+    /* DIE STUFEN: Name und Erklaertexte (Wortlaut von Caspar_D, 15.09.2026, ein Eintrag je Absatz) - je Eintrag [Schluessel, Text],
+       damit der Sprachwechsel das einmal gebaute Pult ohne Neuaufbau umschreiben kann (data-i18n). "Effektclip als Schleife" ist
+       Caspar_Ds Taufname der vierten Stufe (Taufnotiz in docs/haus/HAUSREGELN.md). Die Schluessel der Stufen (STUFEN) bleiben deutsch. */
+    const STUFE_NAMEN={ Quelle:['ec.stufe.quelle',sag('ec.stufe.quelle','Quelle')], Vorb:['ec.stufe.vorb',sag('ec.stufe.vorb','Vorbereitung')],
+      Kette:['ec.stufe.kette',sag('ec.stufe.kette','Effektkette')], Loop:['ec.stufe.loop',sag('ec.stufe.loop','Effektclip als Schleife')] };
+    const STUFE_ERKLAER={
+      Quelle:[['ec.stufe.quelle.erklaer',sag('ec.stufe.quelle.erklaer','Hier können Bilder oder Videos für den Effektclip ausgewählt werden.')]],
+      Vorb:[['ec.stufe.vorb.erklaer',sag('ec.stufe.vorb.erklaer','Wenn nötig kann das Aussehen der Quelle und deren Tiefeninformation hier optimiert werden. <b>Kurve</b> ermöglicht die Optimierung der Gesamt-Tonwertkurve oder der Kurve je Kanal. Mit <b>Feinheiten</b> können Belichtung, Kontrast, Lichter, Schatten, Farbe, Schärfe und anderes verbessert werden. Die Daten selbst werden direkt verarbeitet, aber nur in der Ansicht verändert. <b>Tiefe</b> legt fest, wie Bilder als Raum wahrgenommen werden sollen; einige Effekte brauchen Zonenzuweisungen, wo sie im Raum wirken sollen.')]],
+      Kette:[['ec.stufe.kette.erklaer1',sag('ec.stufe.kette.erklaer1','Jeder Effekt legt eine Schicht auf die ausgesuchte Quelle. Sie wirken von oben nach unten. Jede Schicht legt einen Effekt auf alle vorher definierten Effekte.')],
+        ['ec.stufe.kette.erklaer2',sag('ec.stufe.kette.erklaer2','Pulse schlagen im Takt des Lieds.')],
+        ['ec.stufe.kette.erklaer3',sag('ec.stufe.kette.erklaer3','Das Soloabzeichen zeigt einen Effekt allein.')],
+        ['ec.stufe.kette.erklaer4',sag('ec.stufe.kette.erklaer4','Die Kombination aus Effekt und Quelle bildet den Effektclip.')]],
+      Loop:[['ec.stufe.loop.erklaer1',sag('ec.stufe.loop.erklaer1','Suno spielt das Video zum Lied in einer Endlosschleife und erlaubt höchstens 10 Sekunden. Damit die Pulse über das ganze Lied im Takt bleiben, wird der Clip synchron zu ganzen Takt-Schlägen gebaut. Die Software wählt die Länge so, dass der Clip längstmöglich mit der Musik synchron läuft.')],
+        ['ec.stufe.loop.erklaer2',sag('ec.stufe.loop.erklaer2','Am Clipende muss das Bild genau wieder am Anfang ankommen: Effekte schaffen das automatisch ohne Ruckler oder Nähte. Videos werden entsprechend getrimmt (Geschwindigkeit) und, falls sich Anfang und Ende unterscheiden, mit einem Übergang versehen.')]] };
+    const stufeKopf=k=>'<button type="button" class="tbs-stufenkopf" id="tbs-sk'+k+'" data-stufe="'+k+'" aria-expanded="false" aria-controls="tbs-sb'+k+'"><span class="tbs-chev" aria-hidden="true">▸</span><span class="tbs-stufentitel" data-i18n="'+STUFE_NAMEN[k][0]+'">'+STUFE_NAMEN[k][1]+'</span><span class="tbs-stufenstand" id="tbs-ss'+k+'"></span></button>';
+    const stufeAuf=k=>'<div class="tbs-stufenkoerper" id="tbs-sb'+k+'" role="region" aria-labelledby="tbs-sk'+k+'" hidden><div class="tbs-erklaer">'+STUFE_ERKLAER[k].map(([sk,p])=>'<p data-i18n="'+sk+'"'+(p.indexOf('<')>=0?' data-i18n-html':'')+'>'+p+'</p>').join('')+'</div>';
     root=document.createElement('div'); root.id='tbs'; root.hidden=true;
     root.innerHTML=
       '<div id="tbs-kasten">'
-      +'<div id="tbs-kopf"><h3>Effektclip-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
-      +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas><div id="tbs-ohneMarke" hidden>ohne Effekte</div><div id="tbs-brand" hidden></div></div><div id="tbs-pult">'
+      +'<div id="tbs-kopf"><h3><span style="color:inherit;font-weight:inherit;margin-left:0" data-i18n="ec.studio.titel">'+sag('ec.studio.titel','Effektclip-Studio')+'</span> <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" data-i18n-title="ec.studio.spielen_titel" title="'+sag('ec.studio.spielen_titel','Den Titel im Player starten — dann bedient der echte Song den Puls')+'" data-i18n="ec.studio.spielen">'+sag('ec.studio.spielen','▶ Titel abspielen')+'</button><button type="button" id="tbs-zu" data-i18n-title="ec.studio.schliessen_titel" title="'+sag('ec.studio.schliessen_titel','Schließen (Esc)')+'">\u2715</button></div>'
+      +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas><div id="tbs-ohneMarke" hidden data-i18n="ec.studio.ohne_effekte">'+sag('ec.studio.ohne_effekte','ohne Effekte')+'</div><div id="tbs-brand" hidden></div></div><div id="tbs-pult">'
       +'<div class="tbs-unter tbs-sperrgrund" id="tbs-pultSperre" hidden></div>'
       +'<div class="tbs-abschnitt" id="tbs-abQuelle">'+stufeKopf('Quelle')+stufeAuf('Quelle')
       +'<div id="tbs-quellen" class="tbs-quellen"></div><div id="tbs-quellenNamen"></div></div></div>'
       +'<div class="tbs-abschnitt" id="tbs-abVorb">'+stufeKopf('Vorb')+stufeAuf('Vorb')
       +'<div id="tbs-vorbKoerper"></div></div></div>'
       +'<div class="tbs-abschnitt" id="tbs-abKette">'+stufeKopf('Kette')+stufeAuf('Kette')
-      +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
-      +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
+      +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" data-i18n-title="ec.kette.presets_titel" title="'+sag('ec.kette.presets_titel','Presets — leise Kombinationen als Ausgangspunkt')+'"><option value="" data-i18n="ec.kette.presets">'+sag('ec.kette.presets','Presets …')+'</option></select></div>'
+      +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" data-i18n-title="ec.kette.alle_an_aus" title="'+sag('ec.kette.alle_an_aus','alle an / alle aus')+'"></span><span></span><span></span><span class="tbs-kk" data-i18n="ec.kette.kopf_effekt">'+sag('ec.kette.kopf_effekt','Effekt')+'</span><span class="tbs-kk" data-i18n-title="ec.kette.kopf_nr_titel" title="'+sag('ec.kette.kopf_nr_titel','Nummer, wenn ein Effekt mehrfach hängt')+'" data-i18n="ec.kette.kopf_nr">'+sag('ec.kette.kopf_nr','Nr.')+'</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" data-i18n-title="ec.kette.alle_weg_titel" title="'+sag('ec.kette.alle_weg_titel','alle entfernen — fragt nach')+'">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" data-i18n-title="ec.kette.alle_zu_titel" title="'+sag('ec.kette.alle_zu_titel','alle zuklappen')+'">\u21c5</button></div>'
       +'<div id="tbs-stufenhinweis" hidden></div><div id="tbs-diostand" hidden></div>'
       +'<div id="tbs-stapel"></div></div></div>'
       +'<div class="tbs-abschnitt" id="tbs-abLoop">'+stufeKopf('Loop')+stufeAuf('Loop')
       /* EINE SPALTE IN DER REIHENFOLGE VON CASPAR_D (15.09.2026): Erklaerung, Lage, Ansicht, Schlaege, Uebergang mit Prinzip, seine Laenge,
          dann die Zeitleiste als Ergebnis (Regel 24). Was nicht gilt, wird grau statt versteckt (Regel 3); "von selbst" und die
          Ansicht sind Zustaende und darum Pillen (Regel 18/19). Die zwei Spalten dieser Stufe (14.09.) fielen damit. */
-      +'<div class="tbs-zeile" id="tbs-loopLage" title="Die Länge, die „10 s ausgeben“ jetzt wählen würde, und wie viel vom Lied der Clip im Takt trifft">…</div>'
-      +'<div class="tbs-zeile"><button type="button" class="tbs-togp" id="tbs-loopAn" aria-pressed="false" title="Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt. Geht an, wenn diese Stufe aufgeht, und aus, wenn eine andere aufgeht.">als 10-s-Clip zeigen</button></div>'
-      +'<div class="tbs-regler"><span>Schläge im Clip</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-mWeniger" title="weniger Schläge – kürzerer Clip, das Video läuft schneller">−</button><b id="tbs-mZahl">–</b><button type="button" class="tbs-mini" id="tbs-mMehr" title="mehr Schläge – längerer Clip (höchstens 10 s), das Video läuft ruhiger">+</button><button type="button" class="tbs-togp" id="tbs-mSelbst" title="die Schlagzahl wählen lassen, die über das ganze Lied am besten im Takt sitzt">von selbst</button></span></div>'
-      +'<div class="tbs-regler"><span>Übergang an den Schleifenenden</span><select id="tbs-schleife">'+schleifeOptionen()+'</select></div>'
+      +'<div class="tbs-zeile" id="tbs-loopLage" data-i18n-title="ec.loop.lage_titel" title="'+sag('ec.loop.lage_titel','Die Länge, die „10 s ausgeben“ jetzt wählen würde, und wie viel vom Lied der Clip im Takt trifft')+'">…</div>'
+      +'<div class="tbs-zeile"><button type="button" class="tbs-togp" id="tbs-loopAn" aria-pressed="false" data-i18n-title="ec.loop.ansicht_titel" title="'+sag('ec.loop.ansicht_titel','Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt. Geht an, wenn diese Stufe aufgeht, und aus, wenn eine andere aufgeht.')+'" data-i18n="ec.loop.ansicht">'+sag('ec.loop.ansicht','als 10-s-Clip zeigen')+'</button></div>'
+      +'<div class="tbs-regler"><span data-i18n="ec.loop.schlaege_im_clip">'+sag('ec.loop.schlaege_im_clip','Schläge im Clip')+'</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-mWeniger" data-i18n-title="ec.loop.weniger_titel" title="'+sag('ec.loop.weniger_titel','weniger Schläge – kürzerer Clip, das Video läuft schneller')+'">−</button><b id="tbs-mZahl">–</b><button type="button" class="tbs-mini" id="tbs-mMehr" data-i18n-title="ec.loop.mehr_titel" title="'+sag('ec.loop.mehr_titel','mehr Schläge – längerer Clip (höchstens 10 s), das Video läuft ruhiger')+'">+</button><button type="button" class="tbs-togp" id="tbs-mSelbst" data-i18n-title="ec.loop.selbst_schlaege_titel" title="'+sag('ec.loop.selbst_schlaege_titel','die Schlagzahl wählen lassen, die über das ganze Lied am besten im Takt sitzt')+'" data-i18n="ec.loop.von_selbst">'+sag('ec.loop.von_selbst','von selbst')+'</button></span></div>'
+      +'<div class="tbs-regler"><span data-i18n="ec.loop.uebergang_enden">'+sag('ec.loop.uebergang_enden','Übergang an den Schleifenenden')+'</span><select id="tbs-schleife">'+schleifeOptionen()+'</select></div>'
       +'<div class="tbs-unter" id="tbs-schleifeHinweis"></div>'
-      +'<div class="tbs-regler" id="tbs-fZeile"><span id="tbs-fLabel">Länge des Übergangs</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-fWeniger" title="kürzer – in halben Schlägen; der Clip bleibt so lang, das Video bekommt die Zeit">−</button><b id="tbs-fZahl">–</b><button type="button" class="tbs-mini" id="tbs-fMehr" title="länger – höchstens ein Drittel des Clips">+</button><button type="button" class="tbs-togp" id="tbs-fSelbst" title="die Länge des Übergangs aus dem Takt wählen lassen: ein Takt, bei langen Takten ein halber">von selbst</button></span></div>'
-      +'<div class="tbs-leistrahmen"><div class="tbs-yachse" id="tbs-yAchse" title="die Zeitskala des Videomaterials, von unten nach oben"><span id="tbs-yOben"></span><span class="tbs-yname">Video</span><span>0 s</span></div>'
-      +'<canvas id="tbs-leiste" title="Waagerecht die von KlangTresor geschleifte Version, senkrecht die Zeit im Videomaterial: die Kurve zeigt, welches Videobild zu welcher Clipzeit l\u00e4uft, die Fl\u00e4che den \u00dcbergang, die Striche unten die Schl\u00e4ge"></canvas>'
-      +'<div class="tbs-xachse" title="die von KlangTresor geschleifte Version, von links nach rechts"><span>0 s</span><span>geschleifter Clip</span><span id="tbs-xRechts"></span></div></div>'
+      +'<div class="tbs-regler" id="tbs-fZeile"><span id="tbs-fLabel">'+sag('ec.loop.laenge_uebergang','Länge des Übergangs')+'</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-fWeniger" data-i18n-title="ec.loop.kuerzer_titel" title="'+sag('ec.loop.kuerzer_titel','kürzer – in halben Schlägen; der Clip bleibt so lang, das Video bekommt die Zeit')+'">−</button><b id="tbs-fZahl">–</b><button type="button" class="tbs-mini" id="tbs-fMehr" data-i18n-title="ec.loop.laenger_titel" title="'+sag('ec.loop.laenger_titel','länger – höchstens ein Drittel des Clips')+'">+</button><button type="button" class="tbs-togp" id="tbs-fSelbst" data-i18n-title="ec.loop.selbst_uebergang_titel" title="'+sag('ec.loop.selbst_uebergang_titel','die Länge des Übergangs aus dem Takt wählen lassen: ein Takt, bei langen Takten ein halber')+'" data-i18n="ec.loop.von_selbst">'+sag('ec.loop.von_selbst','von selbst')+'</button></span></div>'
+      +'<div class="tbs-leistrahmen"><div class="tbs-yachse" id="tbs-yAchse" data-i18n-title="ec.loop.yachse_titel" title="'+sag('ec.loop.yachse_titel','die Zeitskala des Videomaterials, von unten nach oben')+'"><span id="tbs-yOben"></span><span class="tbs-yname" data-i18n="ec.loop.yachse_name">'+sag('ec.loop.yachse_name','Video')+'</span><span>0 s</span></div>'
+      +'<canvas id="tbs-leiste" data-i18n-title="ec.loop.leiste_titel" title="'+sag('ec.loop.leiste_titel','Waagerecht die von KlangTresor geschleifte Version, senkrecht die Zeit im Videomaterial: die Kurve zeigt, welches Videobild zu welcher Clipzeit läuft, die Fläche den Übergang, die Striche unten die Schläge')+'"></canvas>'
+      +'<div class="tbs-xachse" data-i18n-title="ec.loop.xachse_titel" title="'+sag('ec.loop.xachse_titel','die von KlangTresor geschleifte Version, von links nach rechts')+'"><span>0 s</span><span data-i18n="ec.loop.xachse_name">'+sag('ec.loop.xachse_name','geschleifter Clip')+'</span><span id="tbs-xRechts"></span></div></div>'
       +'<div class="tbs-leistunter"><span id="tbs-leisteLinks"></span><span id="tbs-leisteRechts"></span></div>'
-      +'<div class="tbs-unter" id="tbs-loopKosten" hidden>beim ersten Einschalten wird das Video einmal vermessen (einige Sekunden); mit Video dauert „10 s ausgeben“ länger</div>'
+      +'<div class="tbs-unter" id="tbs-loopKosten" hidden data-i18n="ec.loop.kosten">'+sag('ec.loop.kosten','beim ersten Einschalten wird das Video einmal vermessen (einige Sekunden); mit Video dauert „10 s ausgeben“ länger')+'</div>'
       +'<div class="tbs-unter" id="tbs-loopWo" hidden></div>'
       +'</div></div>'
-      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektclip</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung, Effektkette und Schleife beim Titel ablegen - Kachel und Bühne malen es dann live, im Takt des Songs">Für diesen Titel sichern</button><span class="tbs-unter" id="tbs-pUngesichert" hidden title="Im Studio steht etwas, das so nicht beim Titel liegt \u2014 \u201eF\u00fcr diesen Titel sichern\u201c legt es ab, Schlie\u00dfen und wieder \u00d6ffnen holt das gesicherte Rezept zur\u00fcck">noch nicht gesichert</span><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Den beim Titel gesicherten Effektclip löschen (Quelle, Vorbereitung, Effektkette und Schleife) - Kachel und Bühne zeigen wieder das Standbild. Gelöscht wird nur das gesicherte Rezept: Titelbild und Videos bleiben, und was hier im Studio eingestellt ist, bleibt stehen und lässt sich wieder sichern.">Löschen</button>'
+      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl" data-i18n="ec.fuss.effektclip">'+sag('ec.fuss.effektclip','Effektclip')+'</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="'+sag('ec.fuss.sichern_titel','Quelle, Vorbereitung, Effektkette und Schleife beim Titel ablegen - Kachel und Bühne malen es dann live, im Takt des Songs')+'" data-i18n="ec.fuss.sichern">'+sag('ec.fuss.sichern','Für diesen Titel sichern')+'</button><span class="tbs-unter" id="tbs-pUngesichert" hidden data-i18n-title="ec.fuss.ungesichert_titel" title="'+sag('ec.fuss.ungesichert_titel','Im Studio steht etwas, das so nicht beim Titel liegt — „Für diesen Titel sichern“ legt es ab, Schließen und wieder Öffnen holt das gesicherte Rezept zurück')+'" data-i18n="ec.fuss.ungesichert">'+sag('ec.fuss.ungesichert','noch nicht gesichert')+'</span><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="'+sag('ec.fuss.loeschen_titel','Den beim Titel gesicherten Effektclip löschen (Quelle, Vorbereitung, Effektkette und Schleife) - Kachel und Bühne zeigen wieder das Standbild. Gelöscht wird nur das gesicherte Rezept: Titelbild und Videos bleiben, und was hier im Studio eingestellt ist, bleibt stehen und lässt sich wieder sichern.')+'" data-i18n="ec.fuss.loeschen">'+sag('ec.fuss.loeschen','Löschen')+'</button>'
       /* KOPIEREN/EINFUEGEN NEBEN SICHERN UND LOESCHEN (Caspar_D, 16.09.2026): sie gehoeren zum Rezept, nicht zur Ausgabe.
          Beschriftung und Erklaerung setzt ablageStand() - der Einfuegen-Knopf nennt, woher das Gemerkte kommt. */
-      +'<button class="tbs-mini" id="tbs-pKopie" style="width:auto;padding:0 10px" title="Den jetzigen Stand des Studios merken, um ihn auf einen anderen Titel zu legen">Kopieren</button>'
-      +'<button class="tbs-mini" id="tbs-pEin" style="width:auto;padding:0 10px" title="Das gemerkte Rezept auf diesen Titel legen - gesichert wird dabei nichts">Einf\u00fcgen</button>'
-      +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button>'
+      +'<button class="tbs-mini" id="tbs-pKopie" style="width:auto;padding:0 10px" title="'+sag('ec.fuss.kopieren_titel','Den jetzigen Stand des Studios merken, um ihn auf einen anderen Titel zu legen')+'" data-i18n="ec.fuss.kopieren">'+sag('ec.fuss.kopieren','Kopieren')+'</button>'
+      +'<button class="tbs-mini" id="tbs-pEin" style="width:auto;padding:0 10px" title="'+sag('ec.fuss.einfuegen_titel','Das gemerkte Rezept auf diesen Titel legen - gesichert wird dabei nichts')+'">'+sag('ec.fuss.einfuegen','Einfügen')+'</button>'
+      +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" data-i18n-title="ec.fuss.video_titel" title="'+sag('ec.fuss.video_titel','Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen')+'" data-i18n="ec.fuss.video">'+sag('ec.fuss.video','10 s ausgeben')+'</button>'
       /* DER ZWEITE KNOPF, WEIL ES ZWEI SEHR VERSCHIEDEN TEURE DINGE SIND (Hausregel "Was es kostet, steht am Knopf"):
          zehn Sekunden kosten Sekunden, das ganze Lied Minuten und Dutzende Megabyte. Der Preis steht darunter, nicht im
          Kleingedruckten, und wird waehrend des Laufs nachgebessert. "Ton dazu" ist ein Zustand, also eine Pille (Regel 18). */
-      +'<button class="tbs-mini" id="tbs-pVoll" style="width:auto;padding:0 10px" title="Das ganze Lied als MP4 ins Download-Verzeichnis: dasselbe Bild wie in der Kachel, über die volle Länge, im Format der Quelle, mit Hauszeichen. Das Studio steht so lange still.">ganzen Titel ausgeben</button>'
-      +'<button type="button" class="tbs-togp" id="tbs-pVollTon" aria-pressed="true" title="Die audio.mp3 des Titels kommt als Tonspur ins Video">Ton dazu</button></div>'
+      +'<button class="tbs-mini" id="tbs-pVoll" style="width:auto;padding:0 10px" data-i18n-title="ec.fuss.voll_titel" title="'+sag('ec.fuss.voll_titel','Das ganze Lied als MP4 ins Download-Verzeichnis: dasselbe Bild wie in der Kachel, über die volle Länge, im Format der Quelle, mit Hauszeichen. Das Studio steht so lange still.')+'">'+sag('ec.voll.knopf','ganzen Titel ausgeben')+'</button>'
+      +'<button type="button" class="tbs-togp" id="tbs-pVollTon" aria-pressed="true" title="'+sag('ec.voll.ton_titel_kurz','Die audio.mp3 des Titels kommt als Tonspur ins Video')+'">'+sag('ec.voll.ton_dazu','Ton dazu')+'</button></div>'
       +'<div class="tbs-unter" id="tbs-vollKosten"></div>'
-      +'<div class="tbs-zeile" id="tbs-vollLauf" hidden><span id="tbs-vollText"></span><button type="button" class="tbs-mini" id="tbs-vollStop" style="width:auto;padding:0 10px" title="Den Lauf abbrechen — das halb gebaute Video wird im Haus gelöscht, es liegt nichts herum">Abbrechen</button></div>'
+      +'<div class="tbs-zeile" id="tbs-vollLauf" hidden><span id="tbs-vollText"></span><button type="button" class="tbs-mini" id="tbs-vollStop" style="width:auto;padding:0 10px" data-i18n-title="ec.voll.abbrechen_titel" title="'+sag('ec.voll.abbrechen_titel','Den Lauf abbrechen — das halb gebaute Video wird im Haus gelöscht, es liegt nichts herum')+'" data-i18n="ec.voll.abbrechen">'+sag('ec.voll.abbrechen','Abbrechen')+'</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
-      +'<div class="tbs-unter">Gesichert werden Quelle, Vorbereitung, Effektkette und Schleife. Läuft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>←</kbd><kbd>→</kbd> Quelle · <kbd>V</kbd> halten: ohne Effekte (in der Vorbereitung) · <kbd>Esc</kbd> schließen</div></div>'
+      +'<div class="tbs-unter" data-i18n="ec.fuss.hilfe" data-i18n-html>'+sag('ec.fuss.hilfe','Gesichert werden Quelle, Vorbereitung, Effektkette und Schleife. Läuft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>←</kbd><kbd>→</kbd> Quelle · <kbd>V</kbd> halten: ohne Effekte (in der Vorbereitung) · <kbd>Esc</kbd> schließen')+'</div></div>'
       +'</div></div></div>';
     document.body.appendChild(root);
     root.onclick=(ev)=>{ if(ev.target===root) schliessen(); };
@@ -9881,14 +9990,14 @@ function zeichneFrame(t,roh){
     lein=$('#tbs-lein'); g=lein.getContext('2d'); kbBuehneEinrichten();   /* die Geste des Glockenstuhls auf der Buehne - einmal je Studio, sie fragt selbst, ob eine Ken-Burns-Karte offen ist */
     stapelBox=$('#tbs-stapel');
     const psel=$('#tbs-preset');
-    Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; psel.appendChild(o); });
+    Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=sagNach(n); psel.appendChild(o); });
     psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); soloId=null; offenId=null; renderStapel(); } psel.value=''; psel.blur(); };
     const vorrat=$('#tbs-vorrat');
     /* Eigene Auswahlliste statt <select>: eine native Liste kann keine Symbole zeigen. Gruppenkoepfe mit
        Gruppensymbol, jeder Effekt mit seinem Symbol in seiner Farbe; Esc oder Klick daneben schliesst. */
-    const bauVorrat=()=>{ let h='<button type="button" class="tbs-wahl tbs-vorratKnopf" id="tbs-vorratKnopf" aria-haspopup="listbox" aria-expanded="false">Effekt hinzuf\u00fcgen \u2026<span class="tbs-pfeil">\u25be</span></button><div class="tbs-vorratListe" id="tbs-vorratListe" hidden role="listbox">';
+    const bauVorrat=()=>{ let h='<button type="button" class="tbs-wahl tbs-vorratKnopf" id="tbs-vorratKnopf" aria-haspopup="listbox" aria-expanded="false"><span data-i18n="ec.kette.hinzufuegen">'+sag('ec.kette.hinzufuegen','Effekt hinzufügen …')+'</span><span class="tbs-pfeil">\u25be</span></button><div class="tbs-vorratListe" id="tbs-vorratListe" hidden role="listbox">';
       EGRUPPEN.forEach(([gname,typen])=>{ const da=typen.filter(x=>EFFEKTE[x]); if(!da.length) return;
-        h+='<div class="tbs-vgruppe">'+ikonGruppe(gname)+'<span>'+gname+'</span></div>'+da.map(x=>'<button type="button" class="tbs-veintrag" role="option" data-typ="'+x+'" title="'+EFFEKTE[x].besch.replace(/"/g,'&quot;')+'">'+ikon(x)+'<span>'+EFFEKTE[x].label+'</span></button>').join(''); });
+        h+='<div class="tbs-vgruppe">'+ikonGruppe(gname)+'<span>'+sagNach(gname)+'</span></div>'+da.map(x=>'<button type="button" class="tbs-veintrag" role="option" data-typ="'+x+'" title="'+EFFEKTE[x].besch.replace(/"/g,'&quot;')+'">'+ikon(x)+'<span>'+EFFEKTE[x].label+'</span></button>').join(''); });
       vorrat.innerHTML=h+'</div>';
       const knopf=vorrat.querySelector('#tbs-vorratKnopf'), liste=vorrat.querySelector('#tbs-vorratListe');
       const zu=()=>{ liste.hidden=true; knopf.setAttribute('aria-expanded','false'); document.removeEventListener('pointerdown',draussen,true); };
@@ -9901,7 +10010,7 @@ function zeichneFrame(t,roh){
           if(x==='titel'&&STAPEL.some(y=>y&&y.typ==='karaoke'&&y.an)) ne.ortY=0.12;
           STAPEL.push(ne); offenId=ne.id; soloFolgt(); renderStapel(); } knopf.blur(); });
       liste.addEventListener('keydown',ev=>{ if(ev.key==='Escape'){ ev.stopPropagation(); zu(); knopf.focus(); } }); };
-    bauVorrat();
+    bauVorrat(); vorratNeu=bauVorrat;   /* der Sprachwechsel baut die Liste neu */
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
     $('#tbs-pKopie').onclick=kopieren;
@@ -9909,7 +10018,7 @@ function zeichneFrame(t,roh){
     $('#tbs-pVideo').onclick=video;
     $('#tbs-pVoll').onclick=vollvideo;
     $('#tbs-pVollTon').onclick=()=>{ if(VOLL.tonDa===false) return; VOLL.ton=!VOLL.ton; vollStand(); };
-    $('#tbs-vollStop').onclick=()=>{ if(!VOLL.laeuft) return; VOLL.abbruch=true; vollFortschritt('breche ab …'); };
+    $('#tbs-vollStop').onclick=()=>{ if(!VOLL.laeuft) return; VOLL.abbruch=true; vollFortschritt(sag('ec.voll.breche_ab','breche ab …')); };
     $('#tbs-loopAn').onclick=()=>loopSchalten(!loopAn);
     const schlagSchritt=d=>{ const lg=(loopSicht&&loopSicht.lage)||ausschnitt(); if(!lg||!lg.M) return; const e=lg.einheit||1, sp=lg.spanne||[lg.M,lg.M];
       SCHLEIFE.schlaege=Math.max(sp[0],Math.min(sp[1],lg.M+d*e)); SCHLEIFE_STILL.schluessel=''; loopLageNeu(); schleifeUI(); };
@@ -9926,7 +10035,7 @@ function zeichneFrame(t,roh){
     root.querySelectorAll('.tbs-stufenkopf').forEach(b=>b.onclick=()=>stufeSetzen(stufeOffen===b.dataset.stufe?null:b.dataset.stufe));
     const kk=$('#tbs-kettekopf');
     kk.querySelector('.tbs-pwAlle').onclick=()=>{ const alle=STAPEL.length>0&&STAPEL.every(x=>x.an); STAPEL.forEach(x=>x.an=!alle); soloId=null; renderStapel(); };
-    kk.querySelector('[data-alle="weg"]').onclick=()=>{ if(!STAPEL.length) return; if(!confirm('Alle '+STAPEL.length+' Effekte aus der Kette entfernen?')) return; STAPEL=[]; soloId=null; offenId=null; renderStapel(); };
+    kk.querySelector('[data-alle="weg"]').onclick=()=>{ if(!STAPEL.length) return; if(!confirm(sag('ec.kette.alle_weg_frage','Alle {n} Effekte aus der Kette entfernen?',{n:STAPEL.length}))) return; STAPEL=[]; soloId=null; offenId=null; renderStapel(); };
     kk.querySelector('[data-alle="zu"]').onclick=()=>{ offenId=null; renderStapel(); };
     window.addEventListener('resize',()=>{ if(offen){ groesse(); if(stufeOffen==='Quelle') quellenNamen(); } });
     document.addEventListener('keydown',tasten,true);
@@ -9942,7 +10051,7 @@ function zeichneFrame(t,roh){
     if(!root) bauen();
     /* Waehrend eines Exports stellt jedes Exportbild DATA, STAPEL und Quelle des alten Titels wieder her - ein neuer
        Titel dazwischen wuerde ueberschrieben (Gegenpruefung 15.09.2026). Also erst fertig bauen, dann wechseln. */
-    if(exportLauf){ pStat('das Video wird noch fertig gebaut …'); try{ await exportLauf; }catch(e){} }
+    if(exportLauf){ pStat(sag('ec.export.noch_fertig','das Video wird noch fertig gebaut …')); try{ await exportLauf; }catch(e){} }
     songId=id; nachSichern=cb||null; soloId=null; grund={art:'titelbild',nr:1}; SEITEN=[]; quellenUI();
     ohneSetzen(false); loopWunsch=false; loopSchalten(false); loopSicht=null; loopSchluessel=''; loopFaellig=0; { const el=$('#tbs-loopLage'); if(el){ el.textContent='\u2026'; el.classList.remove('gedimmt'); } }   /* jeder Titel beginnt ohne Loop-Ansicht, seine Lage rechnet die Wache */
     /* Erst zeigen, dann laden: Ein Cover aus dem Browser-Vorrat laedt sofort - und
@@ -9962,9 +10071,9 @@ function zeichneFrame(t,roh){
     DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[], abschnitte:(s&&s.abschnitte)||null, instrumental:songInstrumental(s) };   /* abschnitte: die Taktlage gewichtet Refrains; instrumental: fuer das Karaoke (kein Gesang, keine Zeile) */
     PALETTEN['Cover-Akzente']=[DATA.farben.akzent||'#9a9aa0', DATA.farben.akzent2||DATA.farben.akzent||'#c9c9cd'];
     VOLL.abbruch=false; VOLL.msBild=0; tonPruefen(id);   /* die Ton-Pille braucht die Antwort nicht sofort */
-    $('#tbs-titel').textContent=DATA.titel; $('#tbs-unter').textContent=(DATA.schlaege.length?DATA.schlaege.length+' Schl\u00e4ge \u00b7 ':'keine Schlagerkennung \u00b7 ')+Math.round(DATA.dauer)+' s';
+    $('#tbs-titel').textContent=DATA.titel; $('#tbs-unter').textContent=(DATA.schlaege.length?sag('ec.loop.schlaege_n','{n} Schläge',{n:DATA.schlaege.length}):sag('ec.loop.keine_schlagerkennung','keine Schlagerkennung'))+' · '+Math.round(DATA.dauer)+' s';
     /* Zum Pruefen: das Testbild aus Code und zwei Testportraets (web/testbild/HERKUNFT.md) - nie gesichert. */
-    SEITEN=seitenVon(id,s).concat([{art:'test',nr:1,lbl:'Testbild',test:true},{art:'testportraet',nr:1,lbl:'Testportr\u00e4t',test:true,url:'/testbild/portraet.jpg'},{art:'testfarbe',nr:1,lbl:'Testportr\u00e4t (Farbe)',test:true,url:'/testbild/portraet-farbe.jpg'}]); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr}; }
+    SEITEN=seitenVon(id,s).concat([{art:'test',nr:1,lbl:sag('ec.quelle.testbild','Testbild'),test:true},{art:'testportraet',nr:1,lbl:sag('ec.quelle.testportraet','Testporträt'),test:true,url:'/testbild/portraet.jpg'},{art:'testfarbe',nr:1,lbl:sag('ec.quelle.testportraet_farbe','Testporträt (Farbe)'),test:true,url:'/testbild/portraet-farbe.jpg'}]); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr}; }
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
     if(lauf!==oeffnenLauf||!offen) return;
     const R=rezeptLesen(rezept); let hinweis=''; { const vi=VORB._id; VORB=vorbAus(R.vorbereitung); VORB._id=vi;
@@ -9972,11 +10081,11 @@ function zeichneFrame(t,roh){
          sie kennt. Ein Rezept, das sie schon oben traegt, wird nicht ueberschrieben. */
       if(!R.vorbereitung || R.vorbereitung.trennung===undefined) zonenUebernehmen(R.effekte); }   /* das _id behalten: sonst bliebe je geoeffnetem Titel ein <filter> im kurvenraum stehen */
     SCHLEIFE=R.schleife||{art:'keiner'}; SCHLEIFE_STILL.schluessel='';
-    if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
+    if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' — '+sag('ec.rezept.quelle_fehlt','seine Quelle fehlt, Titelbild gezeigt'); }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     rezeptDa=!!(R.effekte.length||R.grund);
     hinweis+=rezeptHinweise(R.effekte,R.fassung);   /* dieselben Woerter wie beim Einfuegen aus der Ablage */
-    if(rezeptDa){ presetSetzen(R.effekte,R.alt,R.fassung); pStat('Effektclip des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Effektclip beim Titel'); }
+    if(rezeptDa){ presetSetzen(R.effekte,R.alt,R.fassung); pStat(sag('ec.rezept.geladen','Effektclip des Titels geladen')+hinweis); } else { STAPEL=[]; renderStapel(); pStat(sag('ec.rezept.keiner','noch kein Effektclip beim Titel')); }
     quellenUI(); vorbStand(); stufeSetzen(stufeGemerkt());   /* Akkordeon: die zuletzt geoeffnete Stufe, beim ersten Mal die Quelle */
     t0=performance.now();
     grundLaden();
@@ -10470,10 +10579,10 @@ function zeichneFrame(t,roh){
       xs.push(x); ys.push(y); }
     const grund = xs.length ? null
       : (spanne<BODEN_SPANNE
-        ? 'Diese Tiefenkarte trennt nichts (Spanne '+Math.round(spanne*255)+' von 255) — auf ihr gibt es keine Bodenfläche, aus der etwas aufsteigen könnte.'
+        ? sag('ec.tiefe.boden_trennt_nicht','Diese Tiefenkarte trennt nichts (Spanne {s} von 255) — auf ihr gibt es keine Bodenfläche, aus der etwas aufsteigen könnte.',{s:Math.round(spanne*255)})
         : (ohneRaum
-          ? 'Diese Karte hat eine Bodenfläche ('+ohneRaum+' Rasterzellen), aber über keiner ihrer Zellen liegt der gewählte Aufenthaltsbereich — dort ist kein Platz für ein Teilchen.'
-          : 'Auf dieser Karte wird kein Punkt nach oben hin ferner — sie hat keine bodenartige Fläche.'));
+          ? sag('ec.tiefe.boden_ohne_raum','Diese Karte hat eine Bodenfläche ({n} Rasterzellen), aber über keiner ihrer Zellen liegt der gewählte Aufenthaltsbereich — dort ist kein Platz für ein Teilchen.',{n:ohneRaum})
+          : sag('ec.tiefe.boden_keiner','Auf dieser Karte wird kein Punkt nach oben hin ferner — sie hat keine bodenartige Fläche.')));
     const v={ n:xs.length, x:new Int32Array(xs), y:new Int32Array(ys),
       spanne, boden, ohneRaum, grund, punkte:tp.w*(tp.h-1) };
     BODENZELLEN.unshift({k,v}); if(BODENZELLEN.length>BZ_PLAETZE) BODENZELLEN.length=BZ_PLAETZE;
@@ -10576,7 +10685,7 @@ function zeichneFrame(t,roh){
     }
     return ZONENLAGE[k]={ erlaubt:erlaubt/tp.z.length, ganzWeg:ganzWeg/tp.z.length, punkte:tp.z.length };
   }
-  const vH=v=>(v*100).toFixed(v<0.1?1:0).replace('.',',')+' %';
+  const vH=v=>kf((v*100).toFixed(v<0.1?1:0))+' %';
   /* u,v in Bildanteilen; 1 heisst nah, 0 heisst fern. */
   function tiefeBei(tp, u, v){
     const x = Math.max(0, Math.min(tp.w - 1, Math.round(u * tp.w)));
@@ -10757,11 +10866,11 @@ function zeichneFrame(t,roh){
     if(tt<z.ab1) return { art, ein:false, k:(tt-z.ab0)/ausD };
     return { art, weg:true }; }
   function auftrittNotiz(e){ try{ if(!titelAuftritt(e)) return null;
-      const z=titelAuftrittZeiten(e), hier=(DATA&&DATA.instrumental)?'Dieser Titel ist instrumental: der Titel geht nach vier Takten.':(z.erste!=null?'Hier endet der Abgang bei '+z.ab1.toFixed(1).replace('.',',')+' s, vor der ersten Zeile.':'Ohne bereinigte Lyrik geht er nach vier Takten.');
-      if(titelAuftritt(e)==='partikel') return 'Nur im ganzen Titel: der Titel ballt sich über zwei Takte aus Teilchen der Art in der Kette zusammen, steht, und löst sich über zwei Takte in Windrichtung auf — Art, Farbe, Größe, Wind und Schwere kommen vom Partikel-Effekt. '+hier;
-      return 'Nur im ganzen Titel: ein Schlag herein, stehen, einen Schlag vor der ersten Gesangszeile fort (frühestens nach zwei Takten). Einsatz weich aus, Abgang weich ein — kein Regler dafür. '+hier; }catch(x){ return null; } }
-  function auftrittHinweis(e){ try{ if(!titelAuftritt(e)) return null; if(LOOP>0) return 'Im Zehnsekünder steht der Titel — Auftritt und Abgang laufen nur im ganzen Titel.';
-      if(titelAuftritt(e)==='partikel'&&!titelPartikelQuelle()) return 'Aus den Partikeln braucht einen Partikel-Effekt in der Kette — Asche, Staub, Funken, Glitzer, Schnee, Pusteblume oder Glühwürmchen. Bis dahin steht der Titel.';
+      const z=titelAuftrittZeiten(e), hier=(DATA&&DATA.instrumental)?sag('ec.titel.abgang_instrumental','Dieser Titel ist instrumental: der Titel geht nach vier Takten.'):(z.erste!=null?sag('ec.titel.abgang_bei','Hier endet der Abgang bei {t} s, vor der ersten Zeile.',{t:kf(z.ab1.toFixed(1))}):sag('ec.titel.abgang_ohne_lyrik','Ohne bereinigte Lyrik geht er nach vier Takten.'));
+      if(titelAuftritt(e)==='partikel') return sag('ec.titel.auftritt_partikel','Nur im ganzen Titel: der Titel ballt sich über zwei Takte aus Teilchen der Art in der Kette zusammen, steht, und löst sich über zwei Takte in Windrichtung auf — Art, Farbe, Größe, Wind und Schwere kommen vom Partikel-Effekt. {hier}',{hier});
+      return sag('ec.titel.auftritt','Nur im ganzen Titel: ein Schlag herein, stehen, einen Schlag vor der ersten Gesangszeile fort (frühestens nach zwei Takten). Einsatz weich aus, Abgang weich ein — kein Regler dafür. {hier}',{hier}); }catch(x){ return null; } }
+  function auftrittHinweis(e){ try{ if(!titelAuftritt(e)) return null; if(LOOP>0) return sag('ec.titel.zehnsekuender','Im Zehnsekünder steht der Titel — Auftritt und Abgang laufen nur im ganzen Titel.');
+      if(titelAuftritt(e)==='partikel'&&!titelPartikelQuelle()) return sag('ec.titel.partikel_fehlt','Aus den Partikeln braucht einen Partikel-Effekt in der Kette — Asche, Staub, Funken, Glitzer, Schnee, Pusteblume oder Glühwürmchen. Bis dahin steht der Titel.');
       return null; }catch(x){ return null; } }
   /* AUS DEN PARTIKELN (25.09.2026; Caspar_D: "wenn man Partikel angewendet hat, dann koennte sich der Titel
      auch daraus zusammenballen und sich wieder aufloesen"). Der Titel malt EIGENE Teilchen - Art, Farbe (partikelSatz),
@@ -10908,12 +11017,12 @@ function zeichneFrame(t,roh){
   /* Die verdeckten Zonen der Hochformat-Plattformen (Reels, TikTok, Shorts: unten rund ein Fuenftel) -
      eine ehrliche Notiz, kein Regler; nur wenn die Ausgabe hochkant ist und der Ort dort liegt. */
   function hochformatNotiz(oY){ try{ if(!bereit||!bild) return null; const [W,H]=ausgabeMass(); if(!(W<H)) return null; if(!(oY>0.78)) return null;
-      return 'Hochformat: Reels, TikTok und Shorts legen unten rund ein Fünftel Bedienung über das Bild — bis Ort Y 0,78 bleibt der Text frei.'; }catch(x){ return null; } }
+      return sag('ec.titel.hochformat','Hochformat: Reels, TikTok und Shorts legen unten rund ein Fünftel Bedienung über das Bild — bis Ort Y 0,78 bleibt der Text frei.'); }catch(x){ return null; } }
   /* Der Titel im Band des Karaoke: die Karte sagt es, statt dass der Nutzer es erst im Film sieht. */
   function titelHinweis(e){ try{ if(!STAPEL) return null; const k=STAPEL.find(x=>x!==e&&x.typ==='karaoke'&&x.an); if(!k) return null;
       const drei=String(k.zeilen==null?'3':k.zeilen)!=='1', kOy=(k.ortY==null?1:k.ortY), bandOben=kOy-(drei?0.36:0.22), tOy=(e.ortY==null?0.85:e.ortY);
       if(tOy<bandOben-0.05) return null;
-      return 'Der Titel steht im Karaoke-Band — Ort Y nach oben (etwa 0,12) legt ihn darüber.'; }catch(x){ return null; } }
+      return sag('ec.titel.im_karaoke_band','Der Titel steht im Karaoke-Band — Ort Y nach oben (etwa 0,12) legt ihn darüber.'); }catch(x){ return null; } }
   /* BEREINIGTE LYRIK FUER DAS KARAOKE (24.09.2026) - dasselbe Muster wie die Tiefenkarte: einmal je
      Titel geholt, waehrenddessen null, und die Karte berichtigt sich, wenn die Antwort da ist.
      /api/lyrik antwortet dreierlei: die Zeilen; {zurueckgestellt, grund} (unter 60 % Deckung); null
@@ -10925,9 +11034,9 @@ function zeichneFrame(t,roh){
   const LYRIK={}, LYRIKLAUF={}, LYRIKGRUND={}, LYRIKFEHLER={}, LYRIKGEZEIGT={}, LYRIKINFO={}, LYRIK_TITEL_GEZEIGT={};
   /* Der Rueckstellgrund in Nutzerwoertern (Nacht 25.09.2026): "nur 45 % gedeckt" ist ein Wort aus bin/lyrik.js. */
   function lyrikGrundSatz(g){ const s=String(g||''); const m=s.match(/nur\s+(\d+)\s*%\s*gedeckt/i);
-    if(m) return 'Whisper hat nur '+m[1]+' % der Wörter wiedergefunden — zu wenig für sichere Zeiten';
-    if(/japan/i.test(s)) return 'Text in japanischer Schrift — Whisper schreibt Umschrift, kein Abgleich möglich';
-    return 'die bereinigte Lyrik ist zurückgestellt'+(s?' ('+s+')':''); }
+    if(m) return sag('ec.lyrik.deckung_gering','Whisper hat nur {p} % der Wörter wiedergefunden — zu wenig für sichere Zeiten',{p:m[1]});
+    if(/japan/i.test(s)) return sag('ec.lyrik.japanisch','Text in japanischer Schrift — Whisper schreibt Umschrift, kein Abgleich möglich');
+    return sag('ec.lyrik.zurueckgestellt','die bereinigte Lyrik ist zurückgestellt')+(s?' ('+s+')':''); }
   function lyrikVon(id){
     if(!id) return null;
     if(LYRIK[id]!==undefined) return LYRIK[id];
@@ -10946,9 +11055,9 @@ function zeichneFrame(t,roh){
       const zahl=v=>Array.isArray(v)?v.length:((typeof v==='number')?v:0);
       LYRIKINFO[id]=d?{ deckung:(typeof d.deckung==='number')?d.deckung:null, geschaetzt:zahl(d.geschaetzt), gestrichen:zahl(d.gestrichen) }:null;
       if(zeilen.length){ LYRIK[id]=zeilen; LYRIKGRUND[id]=null; }
-      else { LYRIK[id]=null; LYRIKGRUND[id]=(d&&d.zurueckgestellt)?lyrikGrundSatz(d.grund):'für diesen Titel ist keine bereinigte Lyrik gerechnet — sie entsteht im Morgenlauf unter „Karaoke-Zeitanker mit Whisper“ (Whisper muss eingerichtet sein, siehe START-HIER.md); fremde Titel haben keine'; }
+      else { LYRIK[id]=null; LYRIKGRUND[id]=(d&&d.zurueckgestellt)?lyrikGrundSatz(d.grund):sag('ec.lyrik.nie_gerechnet','für diesen Titel ist keine bereinigte Lyrik gerechnet — sie entsteht im Morgenlauf unter „Karaoke-Zeitanker mit Whisper“ (Whisper muss eingerichtet sein, siehe START-HIER.md); fremde Titel haben keine'); }
       delete LYRIKFEHLER[id]; fertig();
-    }).catch(()=>{ LYRIKFEHLER[id]=performance.now(); LYRIKGRUND[id]='die bereinigte Lyrik ließ sich nicht laden — in 30 s wird es noch einmal versucht'; fertig(); });
+    }).catch(()=>{ LYRIKFEHLER[id]=performance.now(); LYRIKGRUND[id]=sag('ec.lyrik.laden_fehler','die bereinigte Lyrik ließ sich nicht laden — in 30 s wird es noch einmal versucht'); fertig(); });
     return null;
   }
   /* „da" | „unterwegs" | „keine" - bei „keine" steht der Grund in LYRIKGRUND. */
@@ -10957,7 +11066,7 @@ function zeichneFrame(t,roh){
   function lyrikHinweis(){
     const id=DATA&&DATA.id; if(!id) return null;
     let satz=null, s='keine';
-    if(DATA.instrumental){ satz='<b>Keine Zeile zu malen</b> — dieser Titel hat keinen Gesang.'; }
+    if(DATA.instrumental){ satz=sag('ec.lyrik.kein_gesang','<b>Keine Zeile zu malen</b> — dieser Titel hat keinen Gesang.'); }
     else {
       lyrikVon(id);   /* drosselt selbst: da, unterwegs oder ein Fehlschlag juenger als 30 s - dann tut es nichts. So loest auch die Karte den Neuversuch aus, den ihr Satz verspricht. */
       s=lyrikStand(id);
@@ -10966,17 +11075,17 @@ function zeichneFrame(t,roh){
            Server mit - vor einem Vier-Minuten-Export soll der Nutzer wissen, was ihn erwartet. Bei 100 %
            und nichts geschaetzt oder gestrichen steht kein Satz. */
         const i=LYRIKINFO[id], teile=[];
-        if(i&&typeof i.deckung==='number'&&i.deckung<0.995) teile.push('Whisper hat '+Math.round(i.deckung*100)+' % der Wörter wiedergefunden');
-        if(i&&i.geschaetzt>0) teile.push(i.geschaetzt+(i.geschaetzt===1?' Zeile mit geschätzter Zeit':' Zeilen mit geschätzter Zeit'));
-        if(i&&i.gestrichen>0) teile.push(i.gestrichen+(i.gestrichen===1?' Zeile nicht gesungen, weggelassen':' Zeilen nicht gesungen, weggelassen'));
-        satz=teile.length?('Zeitanker aus dem Morgenlauf: '+teile.join(' · ')+'.'):null; }
-      else if(s==='unterwegs') satz='Die bereinigte Lyrik dieses Titels wird gerade geladen.';
-      else satz='<b>Keine Zeile zu malen</b> — '+(LYRIKGRUND[id]||'für diesen Titel gibt es keine bereinigte Lyrik')+'.';
+        if(i&&typeof i.deckung==='number'&&i.deckung<0.995) teile.push(sag('ec.lyrik.deckung','Whisper hat {p} % der Wörter wiedergefunden',{p:Math.round(i.deckung*100)}));
+        if(i&&i.geschaetzt>0) teile.push(i.geschaetzt===1?sag('ec.lyrik.geschaetzt_1','{n} Zeile mit geschätzter Zeit',{n:i.geschaetzt}):sag('ec.lyrik.geschaetzt_n','{n} Zeilen mit geschätzter Zeit',{n:i.geschaetzt}));
+        if(i&&i.gestrichen>0) teile.push(i.gestrichen===1?sag('ec.lyrik.gestrichen_1','{n} Zeile nicht gesungen, weggelassen',{n:i.gestrichen}):sag('ec.lyrik.gestrichen_n','{n} Zeilen nicht gesungen, weggelassen',{n:i.gestrichen}));
+        satz=teile.length?sag('ec.lyrik.zeitanker','Zeitanker aus dem Morgenlauf: {teile}.',{teile:teile.join(' · ')}):null; }
+      else if(s==='unterwegs') satz=sag('ec.lyrik.wird_geladen','Die bereinigte Lyrik dieses Titels wird gerade geladen.');
+      else satz=sag('ec.lyrik.keine_zeile','<b>Keine Zeile zu malen</b> — {grund}.',{grund:LYRIKGRUND[id]||sag('ec.lyrik.keine_fuer_titel','für diesen Titel gibt es keine bereinigte Lyrik')});
     }
     /* Was die Loop-Ansicht und der stehende Player mit der Zeile machen, sagt die Karte selbst (Nacht 25.09.2026). */
     const dazu=[];
-    try{ if(loopAn) dazu.push('In der Loop-Ansicht und im Zehnsekünder wird die Zeile weggelassen — sie gehört in den ganzen Titel.');
-      else if(s==='da'&&!UHR_PULT&&!exportLaeuft) dazu.push('Der Player steht — die Zeilen laufen auf einer freien Uhr. Titel abspielen, dann sitzt die Zeile zum Gesang.'); }catch(x){}
+    try{ if(loopAn) dazu.push(sag('ec.lyrik.loop_weg','In der Loop-Ansicht und im Zehnsekünder wird die Zeile weggelassen — sie gehört in den ganzen Titel.'));
+      else if(s==='da'&&!UHR_PULT&&!exportLaeuft) dazu.push(sag('ec.lyrik.freie_uhr','Der Player steht — die Zeilen laufen auf einer freien Uhr. Titel abspielen, dann sitzt die Zeile zum Gesang.')); }catch(x){}
     const alle=[satz].concat(dazu).filter(Boolean), out=alle.length?alle.join('<br>'):null;
     LYRIKGEZEIGT[id]=out; return out;
   }
@@ -11018,7 +11127,7 @@ function zeichneFrame(t,roh){
      steht einmal je Effektkarte, unter demselben Traeger wie der Wartesatz. */
   function tiefeLeihe(){
     try{ const q=tiefeQuelle(); if(!q||q.art!=='bewegtbild'||tiefeStand()!=='da') return null;
-      return 'Die Tiefenkarte dieser Quelle ist <b>vom Titelbild geliehen</b> \u2014 Sunos Bewegtbild ist aus ihm entstanden, die Geometrie bleibt in etwa dieselbe. Wo das Video davon abweicht, weicht auch die Tiefe ab.'; }
+      return sag('ec.tiefe.geliehen','Die Tiefenkarte dieser Quelle ist <b>vom Titelbild geliehen</b> — Sunos Bewegtbild ist aus ihm entstanden, die Geometrie bleibt in etwa dieselbe. Wo das Video davon abweicht, weicht auch die Tiefe ab.'); }
     catch(x){ return null; }
   }
 
@@ -11706,5 +11815,28 @@ function zeichneFrame(t,roh){
      abwerfen - die App haengt sie ueber markieren() frisch wieder ein. */
   function clipNeu(id){ delete songCache[id]; clips.filter(m=>m.songId===id).forEach(m=>clipAus(m.kasten)); }
   try{ schriftenBereit(); }catch(x){}   /* die Paketschriften gleich beim Start holen - die erste Kachel soll nicht mit dem Rueckfall malen */
-  return { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt };
+  /* SPRACHWECHSEL (17.10.2026). Das Haus ruft das nach t()-Wechsel (spracheNachziehen in index.html); statisches Markup mit
+     data-i18n hat spracheAnwenden da schon umgeschrieben. Hier alles, was das Studio selbst baut: die Registry, die einmal
+     gebauten Listen (Effektvorrat, Presets, Schleifen-Uebergaenge), die Quellnamen und - bei offenem Studio - Karten,
+     Staende und Fuss. Laeuft ein Export, wartet es: die Sperrtitel vergleicht fussTitel mit dem Satz der alten Sprache. */
+  let vorratNeu=null;
+  function spracheNachziehen(){
+    effekteSprache(); if(!root||exportLaeuft) return;
+    if(vorratNeu) vorratNeu();
+    { const ps=$('#tbs-preset'); if(ps) ps.querySelectorAll('option').forEach(o=>{ if(o.value) o.textContent=sagNach(o.value); });   /* die leere Kopfzeile traegt data-i18n */ }
+    { const sl=$('#tbs-schleife'); if(sl){ const v=sl.value; sl.innerHTML=schleifeOptionen(); sl.value=v; } }
+    { const zahl={}; SEITEN.forEach(q=>zahl[q.art]=(zahl[q.art]||0)+1);
+      SEITEN.forEach(q=>{ const nr=zahl[q.art]>1?' '+q.nr:'';
+        if(q.art==='titelbild') q.lbl=sag('ec.quelle.titelbild','Titelbild');
+        else if(q.art==='bewegtbild') q.lbl=sag('ec.quelle.bewegtbild','Bewegtbild (Suno)');
+        else if(q.art==='video') q.lbl=sag('ec.quelle.eigenes_bewegtbild','Eigenes Bewegtbild{nr}',{nr});
+        else if(q.art==='bild') q.lbl=sag('ec.quelle.eigenes_titelbild','Eigenes Titelbild{nr}',{nr});
+        else if(q.art==='test') q.lbl=sag('ec.quelle.testbild','Testbild');
+        else if(q.art==='testportraet') q.lbl=sag('ec.quelle.testportraet','Testporträt');
+        else if(q.art==='testfarbe') q.lbl=sag('ec.quelle.testportraet_farbe','Testporträt (Farbe)'); }); }
+    if(!offen) return;
+    if(DATA){ const u=$('#tbs-unter'); if(u) u.textContent=(DATA.schlaege.length?sag('ec.loop.schlaege_n','{n} Schläge',{n:DATA.schlaege.length}):sag('ec.loop.keine_schlagerkennung','keine Schlagerkennung'))+' · '+Math.round(DATA.dauer)+' s'; }
+    quellenUI(); renderStapel(); vorbStand(); if(stufeOffen==='Vorb') vorbRender(); fussStand(); vollStand(); schleifeUI();
+  }
+  return { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt, spracheNachziehen };
 })();

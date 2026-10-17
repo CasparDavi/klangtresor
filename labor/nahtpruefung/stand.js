@@ -19,7 +19,7 @@ const SITE = path.join(__dirname, 'site');
 /* Seit dem 27.09.2026 ist das Studio eine eigene Datei: web/tbs-modul.js und web/tbs.css werden gelesen,
    nicht mehr aus web/index.html zwischen Marken geschnitten. */
 const BLOECKE = [{ datei: 'tbs.css' }, { datei: 'tbs-modul.js' }];
-const RUECKGABE = '  return { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt };';
+const RUECKGABE = '  return { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt, spracheNachziehen };';
 
 function bauen() {
   /* Fehlt der Katalogauszug, legt "daten" ihn an. Der Befehl schreibt nur _songs.json, labor-eigen.json und
