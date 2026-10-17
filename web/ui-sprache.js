@@ -1577,7 +1577,7 @@
     ['bilder.fuss.start', 'Die Areale starten an den Sternen im Klangraum ({verf}). Klick auf ein Bild spielt den Titel.', 'The areas start at the stars in the Sound Space ({verf}). A click on a picture plays the title.'],
     ['bilder.vermessen', 'Die Bilder werden vermessen … {n} von {von}', 'Measuring the pictures … {n} of {von}'],
     ['bilder.aufhaengen', 'Die Galerie wird aufgehängt …', 'Hanging the gallery …'],
-    ['bilder.passt_nicht', 'Die Bilder passen nicht auf die Wand.', 'The pictures do not fit on the wall.'],
+    ['bilder.passt_nicht', 'Für so viele Bilder ist die Wand zu klein. Zieh das Fenster größer, nimm das Vollbild oder zeig weniger Titel (Filter oben).', 'The wall is too small for this many pictures. Enlarge the window, switch to full screen, or show fewer titles (filter above).'],
     ['bilder.fuss.zoom', '{n} Titel aus „{gruppe}"{zusatz}', '{n} titles from “{gruppe}”{zusatz}'],
     ['mess.wozu.1', 'Was aus den Lautsprechern kommt, weicht immer von dem ab, was der Rechner losgeschickt hat. Zwischen Musikdatei und Ohr liegen der Lautsprecher, der Raum und dein Platz darin. Ein Regler, den du um 6 dB hochziehst, kann am Ohr mit 2 dB ankommen — oder mit 8, wenn eine stehende Welle mitmischt.', 'What comes out of the speakers always differs from what the computer sent. Between the music file and the ear lie the speaker, the room and your place in it. A slider you raise by 6 dB may arrive at the ear as 2 dB — or as 8, if a standing wave joins in.'],
     ['mess.wozu.2', 'Diese Messung findet heraus, welche Anteile des akustischen Signals tatsächlich bei dir ankommen. Dafür läuft ein (nervtötender) Ton über deine Lautsprecher, und das Mikrofon, was du konfiguriert hast, hört zu. Das passiert einmal neutral in den Standardeinstellungen und dann mit Variationen in den Einstellungen. Was beide Male gleich ist, kürzt sich heraus; übrig bleibt die Wahrheit über deinen Hörplatz.', 'This measurement finds out which parts of the acoustic signal actually reach you. For that, a (nerve-racking) tone plays over your speakers, and the microphone you have configured listens. This happens once neutrally in the default settings and then with variations in the settings. Whatever is the same both times cancels out; what remains is the truth about your listening position.'],
@@ -1629,7 +1629,7 @@
     ['studio.eqleg.punkte', '<b style="color:var(--text)">Die roten Punkte sind die Regler:</b> senkrecht ziehen, Doppelklick stellt auf 0. An der grauen Decke rasten sie ein.', '<b style="color:var(--text)">The red dots are the controls:</b> drag vertically, double-click sets to 0. They snap at the grey ceiling.'],
     ['studio.eqleg.farbig', '<span style="color:var(--akzent)">Farbig:</span> Frequenzprofil nach Regelung — die Kurve ist das echte Ergebnis der runden Filter, die Punkte sind die Einstellung je Band (Analyse blockig, Filterung glockig)', '<span style="color:var(--akzent)">Coloured:</span> frequency profile after adjustment — the curve is the real result of the rounded filters, the dots are the setting per band (analysis in blocks, filtering in bells)'],
     ['studio.eqleg.grau', '<span style="color:#fff">Grau:</span> die Decke — wie viel Luft ein Band noch bis zum Vollpegel hat, geschätzt aus Bandprofil und True Peak', '<span style="color:#fff">Grey:</span> the ceiling — how much room a band has left up to full level, estimated from band profile and true peak'],
-    ['studio.eqleg.gefuellt', '<span style="color:#fff;background:color-mix(in srgb, var(--akzent) 50%, transparent);border:1px solid #fff;border-radius:999px;padding:0 8px">Gefüllt</span>: die Kurve liegt über der Decke — der Titel würde übersteuern (Verzerrungen, Überschreien)', '<span style="color:#fff;background:color-mix(in srgb, var(--akzent) 50%, transparent);border:1px solid #fff;border-radius:999px;padding:0 8px">Filled</span>: the curve lies above the ceiling — the title would clip (distortion, shouting over)'],
+    ['studio.eqleg.gefuellt', '<span style="color:#fff;background:color-mix(in srgb, var(--akzent) 50%, transparent);border:1px solid #fff;border-radius:999px;padding:0 8px">Gefüllt</span>: die Kurve liegt über der Decke — der Titel würde übersteuern (Verzerrungen, Überschreien)', '<span style="color:#fff;background:color-mix(in srgb, var(--akzent) 50%, transparent);border:1px solid #fff;border-radius:999px;padding:0 8px">Filled</span>: the curve lies above the ceiling — the title would clip (distortion, overdrive)'],
     ['studio.eqleg.kreise', 'Die Kreise darunter: <b style="color:var(--text)">Solo</b> — hier das Messband von Trennfrequenz zu Trennfrequenz, im Glockenstuhl die Glocke selbst; Invers spielt alle anderen.', 'The circles below: <b style="color:var(--text)">Solo</b> — here the measurement band from crossover to crossover, in the Bell Frame the bell itself; Invert plays all the others.'],
     ['studio.eqleg.quelle', 'Bandprofil und True Peak stammen aus der Klanganalyse des Titels — vorgerechnet von der Titel-Analyse, keine Live-Messung.', 'Band profile and true peak come from the title’s sound analysis — precomputed by the title analysis, not a live measurement.'],
     ['studio.eqleg.achtung', 'Achtung: dieser Titel reizt sein Budget schon unverändert aus (True Peak ≥ 0).', 'Caution: this title already uses up its budget unchanged (true peak ≥ 0).'],
@@ -1660,11 +1660,11 @@
     ['komp.erkl.legende', '<b>Das graue Gebirge</b>: das Lautheitshistogramm — wie laut ist wieviel Prozent des Liedes. <b>Die Stäbe</b> (Eingangsachse): die Lautheit des ganzen Titels (LUFS) und — für den Limiter — seine Spitze. <b>Die Marken</b> (Ausgangsachse): die Ziele — Vollpegel, Streaming-Richtwert, die Lautheit seiner Stilgruppe. Forme die Kurve so, dass die Stäbe auf die Ziele treffen: liegt die projizierte Lautheit innerhalb von 1 dB einer Marke, leuchtet die Marke und nennt den Rest; landet die Spitze über Voll, wird das gefüllt markiert. <b>Der weiße Ring</b>: die gehörgewichtete Lautheit gerade jetzt, mit Gedächtnis geglättet — über der Diagonale wird angehoben, darunter abgesenkt.', '<b>The grey mountain range</b>: the loudness histogram — how loud is what percentage of the song. <b>The bars</b> (input axis): the loudness of the whole title (LUFS) and — for the limiter — its peak. <b>The marks</b> (output axis): the targets — full level, streaming guideline, the loudness of its style group. Shape the curve so that the bars hit the targets: if the projected loudness lies within 1 dB of a mark, the mark lights up and names the remainder; if the peak lands above full, that is marked filled. <b>The white ring</b>: the hearing-weighted loudness right now, smoothed with memory — above the diagonal it is raised, below it lowered.'],
     ['komp.hg.1', 'Die Kennlinie oben zeigt es. Ab der <i>Schwelle</i> knickt die Kurve: aus 4 dB über der Schwelle wird bei 4:1 genau 1 dB. Im Log-Raum eine Gerade, in Amplituden ein Potenzgesetz (γ = 1/Verhältnis) — die Mathematik der Gammakorrektur.<span class="nurgradation"> Das linke Bild zeigt es. Das <b>Gamma</b> des Gradationskompressors wirkt auf der dB-Achse zwischen Leise- und Lautpunkt (γ = ¼ … 4) — nicht dasselbe γ wie 1/Verhältnis der Knickkurve, aber dieselbe Idee.</span>', 'The curve above shows it. From the <i>threshold</i> the curve bends: 4 dB above the threshold becomes exactly 1 dB at 4:1. A straight line in log space, a power law in amplitudes (γ = 1/ratio) — the mathematics of gamma correction.<span class="nurgradation"> The left picture shows it. The <b>gamma</b> of the Gradation Compressor acts on the dB axis between quiet and loud point (γ = ¼ … 4) — not the same γ as 1/ratio of the knee curve, but the same idea.</span>'],
     ['komp.hg.2', 'Der Unterschied zum Bild: Gamma wirkt statisch pro Pixel — der Kompressor verfolgt stattdessen die <i>Hüllkurve</i> und regelt langsam nach; <i>Attack</i> und <i>Release</i> sind die Adaptionszeiten dieser Belichtungsautomatik (das <b>Gedächtnis</b>, in beiden Werkzeugen gleich). Bei flacher Oberkante (Limiter) greift Attack nicht mehr: Spitzen werden sofort gefasst, nur Release gilt.', 'The difference from the picture: gamma acts statically per pixel — the compressor instead follows the <i>envelope</i> and adjusts slowly; <i>attack</i> and <i>release</i> are the adaptation times of this auto-exposure (the <b>memory</b>, the same in both tools). With a flat top edge (limiter) attack no longer applies: peaks are caught at once, only release counts.'],
-    ['komp.hg.3', '<b>Limiter</b> = 20:1 ab −3 dB mit harter Kappe am Vollpegel — nicht die weiche Schulter der Fotokurve, sondern ihr abgeschnittenes Ende. Eine flache Oberkante (auch Aufholen bis ans Dach) macht aus dem Kompressor automatisch einen Limiter: er hält dann die Spitzen, schaut einen Block voraus und kappt als letzte Sicherheit hart am Dach.', '<b>Limiter</b> = 20:1 from −3 dB with a hard cap at full level — not the soft shoulder of the film curve, but its cut-off end. A flat top edge (also makeup up to the ceiling) automatically turns the compressor into a limiter: it then holds the peaks, looks one block ahead and, as a last safeguard, caps hard at the ceiling.'],
-    ['komp.hg.4', '<b>Lautpunkt</b> = der Weißpunkt des Grafikers, also der Limiter: alles darüber wird Voll. Der Regler hält die Spitzen, weil er im Limiter-Fall die Spitze regelt, nicht das Mittel — mit einem Block Vorausschau und harter Kappe am Dach.', '<b>Loud point</b> = the graphic artist’s white point, that is, the limiter: everything above it becomes full. The control holds the peaks because in the limiter case it regulates the peak, not the average — with one block of look-ahead and a hard cap at the ceiling.'],
+    ['komp.hg.3', '<b>Limiter</b> = 20:1 ab −3 dB mit harter Kappung am Vollpegel — nicht die weiche Schulter der Fotokurve, sondern ihr abgeschnittenes Ende. Eine flache Oberkante (auch Aufholen bis ans Dach) macht aus dem Kompressor automatisch einen Limiter: er hält dann die Spitzen, schaut einen Block voraus und kappt als letzte Sicherheit hart am Dach.', '<b>Limiter</b> = 20:1 above −3 dB with a hard clip at full scale — not the soft shoulder of the film curve, but its cut-off end. A flat top edge (also makeup up to the ceiling) automatically turns the compressor into a limiter: it then holds the peaks, looks one block ahead and, as a last safeguard, hard-clips at the ceiling.'],
+    ['komp.hg.4', '<b>Lautpunkt</b> = der Weißpunkt des Grafikers, also der Limiter: alles darüber wird Voll. Der Regler hält die Spitzen, weil er im Limiter-Fall die Spitze regelt, nicht das Mittel — mit einem Block Vorausschau und harter Kappung am Dach.', '<b>Loud point</b> = the graphic artist’s white point, that is, the limiter: everything above it becomes full. The control holds the peaks because in the limiter case it regulates the peak, not the average — with one block of look-ahead and a hard clip at the ceiling.'],
     ['komp.hg.5', 'Die Messwerte in der Zeile darüber erklären sich per Tooltip. Lautheit, Spanne, True Peak, Korrelation und Clipping sind vorgerechnet (Klanganalyse); nur <i>Ausgang Spitze</i> ist live — erreicht sie 0 dBFS, zündet im Ghettoblaster die CLIP-Lampe.', 'The readings in the row above explain themselves by tooltip. Loudness, range, true peak, correlation and clipping are precomputed (sound analysis); only <i>output peak</i> is live — if it reaches 0 dBFS, the CLIP lamp lights up in the Boombox.'],
     ['komp.hg.kopf', 'Hintergrund — <b>Der Kompressor ist eine Gammakorrektur der Lautheit — mit Gedächtnis.</b>', 'Background — <b>The compressor is a gamma correction of loudness — with memory.</b>'],
-    ['komp.marke.voll', 'Voll — Überschreien', 'Full — shouting over'],
+    ['komp.marke.voll', 'Voll — Überschreien', 'Full — Overdrive'],
     ['komp.marke.streaming', 'Streaming-Richtwert', 'Streaming guideline'],
     ['komp.marke.gruppe', '≈ Stilgruppe ({lufs})', '≈ style group ({lufs})'],
     ['komp.marke.spitze', 'Spitze heute', 'peak today'],
@@ -1677,7 +1677,7 @@
     ['komp.mw.spanne', 'Spanne', 'Range'],
     ['komp.mw.spanne.titel', 'Kontrastumfang zwischen leisen und lauten Passagen', 'contrast range between quiet and loud passages'],
     ['komp.mw.truepeak', 'True Peak', 'True peak'],
-    ['komp.mw.truepeak.titel', 'die hellste einzelne Spitze — über 0 dBTP brennt es aus (Verzerrungen, Überschreien)', 'the brightest single peak — above 0 dBTP it burns out (distortion, shouting over)'],
+    ['komp.mw.truepeak.titel', 'die hellste einzelne Spitze — über 0 dBTP brennt es aus (Verzerrungen, Überschreien)', 'the brightest single peak — above 0 dBTP it burns out (distortion, overdrive)'],
     ['komp.mw.korrelation', 'Korrelation', 'Correlation'],
     ['komp.mw.korrelation.titel', '1 = mono-kompatibel, negativ = Auslöschungsgefahr', '1 = mono-compatible, negative = risk of cancellation'],
     ['komp.mw.tempo', 'Tempo', 'Tempo'],
@@ -1715,7 +1715,7 @@
     ['plakat.feder.noch', 'Die Federzeichnungen laufen noch ({n} von {von}) – fehlende sind schraffiert; beim nächsten Öffnen geht es weiter.', 'The pen drawings are still running ({n} of {von}) – missing ones are hatched; it carries on the next time you open it.'],
     ['plakat.feder.modell', 'Das Modell für die Federzeichnungen ließ sich nicht laden (kein Netz?) – der nächste Morgenlauf holt es; bis dahin sind die Kacheln schraffiert.', 'The model for the pen drawings could not be loaded (no network?) – the next Morning Routine fetches it; until then the tiles are hatched.'],
     ['plakat.stand.aufhaengen', 'Die Galerie wird fürs Plakat aufgehängt …', 'Hanging the gallery for the poster …'],
-    ['plakat.stand.passt_nicht', 'Die Bilder passen nicht auf das Plakat.', 'The pictures do not fit on the poster.'],
+    ['plakat.stand.passt_nicht', 'Für so viele Bilder ist das Blatt zu klein. Wähl ein größeres Format oder zeig weniger Titel (Filter oben).', 'The sheet is too small for this many pictures. Choose a larger format or show fewer titles (filter above).'],
     ['plakat.stand.legen', 'Der Schaum wird für das Plakat gelegt …', 'Laying the foam for the poster …'],
     ['plakat.stand.legen_s', 'Der Schaum wird für das Plakat gelegt … {s} s', 'Laying the foam for the poster … {s} s'],
     ['plakat.stand.legen_fehler', 'Der Schaum ließ sich nicht legen.', 'The foam could not be laid.'],
@@ -1864,13 +1864,13 @@
     ['skizze.takte', '{n} Takte', '{n} bar|{n} bars'],
     ['skizze.geschrieben', 'geschrieben am {datum}', 'written on {datum}'],
     ['skizze.instr.guitar', 'Gitarre', 'guitar'],
-    ['skizze.instr.drums', 'Schlagwerk', 'drums'],
-    ['skizze.instr.synthesizer', 'Synthesizer', 'synthesiser'],
+    ['skizze.instr.drums', 'Schlagwerk', 'percussion'],
+    ['skizze.instr.synthesizer', 'Synthesizer', 'synthesizer'],
     ['skizze.instr.bass', 'Bass', 'bass'],
     ['skizze.instr.electricguitar', 'E-Gitarre', 'electric guitar'],
     ['skizze.instr.piano', 'Klavier', 'piano'],
     ['skizze.instr.acousticguitar', 'Akustikgitarre', 'acoustic guitar'],
-    ['skizze.instr.keyboard', 'Tasten', 'keys'],
+    ['skizze.instr.keyboard', 'Tasten', 'keyboard'],
     ['skizze.instr.strings', 'Streicher', 'strings'],
     ['skizze.instr.violin', 'Geige', 'violin'],
     ['skizze.instr.cello', 'Cello', 'cello'],
@@ -1925,7 +1925,7 @@
     ['skizze.lupe.i_martelli', 'Hammerreihe, Waagebalken, Tasten', 'row of hammers, balance rail, keys'],
     ['skizze.lupe.la_piastra', 'Gussrahmen, Stimmstifte, Dämpfer', 'cast frame, tuning pins, dampers'],
     ['skizze.studie.gitarre', 'Gitarre ohne Luft, die doch singt', 'a guitar without air that still sings'],
-    ['skizze.studie.drums', 'Schlagwerk, lauter als jede Bombarde', 'drums louder than any bombard'],
+    ['skizze.studie.drums', 'Schlagwerk, lauter als jede Bombarde', 'Percussion louder than any bombard'],
     ['skizze.studie.synthesizer', 'Orgel ohne Blasebalg – der Blitz spielt mit', 'an organ without bellows – the lightning plays along'],
     ['skizze.studie.bass', 'E-Bass, der Mailands Fenster zittern lässt', 'an electric bass that makes Milan’s windows tremble'],
     ['skizze.studie.klavier', 'Hammerklavier, offen – man sieht, wie es schlägt', 'a fortepiano, open – you see how it strikes'],
@@ -1955,7 +1955,7 @@
     ['karte.palette.polar', 'Polarlicht', 'Aurora'],
     ['karte.palette.mond', 'Mondlicht', 'Moonlight'],
     ['karte.palette.glut', 'Sonnenglut', 'Sun glow'],
-    ['karte.palette.borg', 'Borg', 'Borg'],
+    ['karte.palette.borg', 'Kubus', 'Cube'],
     ['karte.palette.rabe', 'Rabe', 'Raven']
     /* Ende Runde 2 */
   ];
@@ -1978,7 +1978,7 @@
   let sprache = spracheLesen();
 
   function localeTag() {
-    return sprache === 'en' ? 'en' : 'de-DE';
+    return sprache === 'en' ? 'en-GB' : 'de-DE';
   }
 
   function tZahl(n, opt) {
@@ -2022,7 +2022,7 @@
 
   function spracheAnwenden(wurzelEl) {
     const wurz = wurzelEl || document;
-    document.documentElement.lang = sprache === 'en' ? 'en' : 'de';
+    document.documentElement.lang = sprache === 'en' ? 'en-GB' : 'de';
     wurz.querySelectorAll('[data-i18n]').forEach(function (el) {
       /* Canvas und SVG sind Zeichenflächen: textContent würde in Zen/Gecko
          den Kontext zerstören oder den Aufbau abbrechen, und die Analyse
@@ -2080,7 +2080,7 @@
   wurzel.monatName = monatName;
   wurzel.WOERTER = WOERTER;
 
-  if (document.documentElement) document.documentElement.lang = sprache === 'en' ? 'en' : 'de';
+  if (document.documentElement) document.documentElement.lang = sprache === 'en' ? 'en-GB' : 'de';
   /* Das Skript sitzt hinter dem Markup: der Kopf ist schon im Baum. */
   spracheAnwenden();
 })(window);
