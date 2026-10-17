@@ -1739,6 +1739,7 @@
     ['plakat.stand.druckfenster', 'Im Druckfenster „Als PDF sichern“ wählen.', 'In the print window choose “Save as PDF”.'],
     ['plakat.stand.bilder_zeigen', 'Bitte die Bilderschau einmal anzeigen lassen, dann das Plakat öffnen.', 'Please let the Picture Wall show once, then open the poster.'],
     ['plakat.stand.bilder_neu', 'Die Bilderschau wird am Schirm neu gehängt – das Plakat folgt gleich.', 'The Picture Wall is being rehung on screen – the poster follows shortly.'],
+    ['plakat.feder.pergament', 'Feder braucht hellen Grund – das Plakat bleibt auf Pergament.', 'Pen drawing needs a light ground – the poster stays on parchment.'],
     ['plakat.feder.fehlen', '{n} Federzeichnungen fehlen noch – sie sind schraffiert; beim nächsten Öffnen geht es weiter.', '{n} pen drawings are still missing – they are hatched; it carries on the next time you open it.'],
     ['plakat.stand.ecke_dunkel', 'Die Ecke bleibt dunkler als das übrige Bild (Leuchtdichte {ist} statt {soll}): unter der Schrift nur so hell, dass sie {k} : 1 Kontrast behält.', 'The corner stays darker than the rest of the picture (luminance {ist} instead of {soll}): under the text only as bright as keeps {k} : 1 contrast.'],
     ['plakat.art.groupies', 'Groupieschaum', 'Groupie Foam'],

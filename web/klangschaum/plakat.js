@@ -1438,7 +1438,7 @@ async function bauen(g){
     blattDaten = daten; blattBildnisse = bn;
     druck.skizze = { papier: skizzeKreide(), tintePapier: skizzePapier(), feder: fb.karte, mass: SKIZZE_MASS, fsMin: 2.6 * g.kurz / 500, fsMax: 12 * g.kurz / 500, strich: 0.29 * g.kurz / 500, linie: 0.25 * g.kurz / 500 };
     Object.assign(druck, { kissen: false, schatten: 0, vignette: 0, wackeln: 0 });
-    skHinweis = [fb.hinweis || (skizzePapier() !== E.grund ? 'Feder braucht hellen Grund – das Plakat bleibt auf Pergament.' : ''), bnHinweis].filter(Boolean).join(' · ');
+    skHinweis = [fb.hinweis || (skizzePapier() !== E.grund ? sag('plakat.feder.pergament') : ''), bnHinweis].filter(Boolean).join(' · ');
   } else {
   const bereit = await bilderBereit(aktuell.art, aktuell.j.zeilen, t => { if (lauf === bauLauf) standSetzen(t); });
   if (lauf !== bauLauf) return;
