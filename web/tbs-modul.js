@@ -5635,8 +5635,8 @@ function testbildBauen(){ if(TESTBILD) return TESTBILD; const W=900,H=1200, c=do
   const lg=x.createLinearGradient(0,H*0.1,0,H*0.66); lg.addColorStop(0,'#ffffff'); lg.addColorStop(1,'#000000'); x.fillStyle=lg; x.fillRect(W*0.045,H*0.1,W*0.025,H*0.56);
   x.strokeStyle='#e8e8e8'; x.lineCap='round'; const fx=W*0.935, fy=H*0.665, fr=W*0.17; for(let i=0;i<=12;i++){ const a=Math.PI+(i/12)*Math.PI/2; x.lineWidth=1.6-i*0.09; x.beginPath(); x.moveTo(fx+Math.cos(a)*fr*0.25,fy+Math.sin(a)*fr*0.25); x.lineTo(fx+Math.cos(a)*fr,fy+Math.sin(a)*fr); x.stroke(); }
   const farben=['#e63946','#f4c430','#3fb950','#2ec4b6','#3a86ff','#d64fbb'], sw=W*0.06, sy=H*0.83; farben.forEach((f,i)=>{ x.fillStyle=f; x.fillRect(W*0.08+i*(sw+W*0.02),sy,sw,sw*0.8); });
-  x.fillStyle='rgba(255,255,255,0.16)'; x.textAlign='right'; x.font='700 54px system-ui,-apple-system,Segoe UI,Roboto,sans-serif'; x.fillText('Testbild',W*0.92,H*0.925);
-  x.font='400 22px system-ui,-apple-system,Segoe UI,Roboto,sans-serif'; x.fillStyle='rgba(255,255,255,0.22)'; x.fillText('nur zum Pr\u00fcfen der Effekte',W*0.92,H*0.958);
+  x.fillStyle='rgba(255,255,255,0.16)'; x.textAlign='right'; x.font='700 54px system-ui,-apple-system,Segoe UI,Roboto,sans-serif'; x.fillText(sag('ec.testbild.wz1','Testbild'),W*0.92,H*0.925);
+  x.font='400 22px system-ui,-apple-system,Segoe UI,Roboto,sans-serif'; x.fillStyle='rgba(255,255,255,0.22)'; x.fillText(sag('ec.testbild.wz2','nur zum Pr\u00fcfen der Effekte'),W*0.92,H*0.958);
   x.strokeStyle='rgba(255,255,255,0.12)'; x.lineWidth=2; x.strokeRect(W*0.03,H*0.03,W*0.94,H*0.94);
   TESTBILD=c; return c; }
 function quelleBauen(seite,beiFertig,beiFehler){
@@ -7744,11 +7744,11 @@ function kbPunkteSatz(e){
     const mal=m=>m===1?sag('ec.kb.ps.einmal','einmal'):m===2?sag('ec.kb.ps.zweimal','zweimal'):sag('ec.kb.ps.mmal','{m}-mal',{m});
     if(un.length) s+=sag('ec.kb.ps.un',' Der Zug zu {liste} schmiert und ist bei der Ankunft sofort wieder scharf.',{liste:liste(un)});
     if(su.length){
-      if(pl&&!(pl.H>0)) s+=sag('ec.kb.ps.su_ohnehalt',' Der Zug zu {liste} schmiert — gesucht wird in diesem Clip aber NICHT: an den Punkten bleibt kein Halt übrig, und der Schärfezieher lebt im Halt. „Suche“ wirkt hier genau wie „Unscharf“. Ein Punkt weniger{tempo} schafft den Halt. In der Vorschau ohne Clip steht an jeder Station ein Takt still — dort sucht sie sichtbar, im Clip nicht.',{liste:liste(su),tempo:(T>1?sag('ec.kb.ps.oder_tempo',' oder ein kleineres Tempo'):'')});
+      if(pl&&!(pl.H>0)) s+=sag('ec.kb.ps.su_ohnehalt',' Der Zug zu {liste} schmiert — gesucht wird in diesem Clip aber NICHT: an den Punkten bleibt kein Halt übrig, und der Schärfezieher lebt im Halt. „Suche“ wirkt hier genau wie „Unscharf“. Ein Punkt weniger{tempo} schafft den Halt. In der Vorschau ohne Clip steht an jeder Station ein Takt still — dort sucht sie sichtbar, im Clip nicht.',{liste:liste(su),tempo:(Z>1?sag('ec.kb.ps.oder_tempo',' oder ein kleineres Tempo'):'')});
       else s+=sag('ec.kb.ps.su',' Der Zug zu {liste} schmiert, und am Ziel sucht die Schärfe den Punkt: sie geht darüber hinaus und fängt sich, {wie} und jedes Mal kleiner.',{liste:liste(su),wie:(pl?sag('ec.kb.ps.su_wie','{mal} in den {h} s des Halts',{mal:mal(kbSuchAusschlaege(pl.H)),h:sek(pl.H)}):sag('ec.kb.ps.su_dreimal','dreimal innerhalb des Halts'))}); }
     if(ti.length){
       s+=sag('ec.kb.ps.ti',' An {liste} bleibt bei der Ankunft die Tiefenebene des Punktes scharf, und der Rest wird weicher, je weiter er in der Tiefe davon entfernt liegt — die nähere Umgebung des Zielpunkts, 20 % der Gesamttiefe, hält die Schärfe.',{liste:liste(ti)});
-      if(pl&&!(pl.H>0)) s+=sag('ec.kb.ps.ti_ohnehalt',' In diesem Clip ist davon NICHTS zu sehen: an den Punkten bleibt kein Halt übrig, und die Tiefenebene lebt im Halt. Ein Punkt weniger{tempo} schafft ihn. In der Vorschau ohne Clip steht an jeder Station ein Takt still — dort ist sie zu sehen, im Clip nicht.',{tempo:(T>1?sag('ec.kb.ps.oder_tempo',' oder ein kleineres Tempo'):'')});
+      if(pl&&!(pl.H>0)) s+=sag('ec.kb.ps.ti_ohnehalt',' In diesem Clip ist davon NICHTS zu sehen: an den Punkten bleibt kein Halt übrig, und die Tiefenebene lebt im Halt. Ein Punkt weniger{tempo} schafft ihn. In der Vorschau ohne Clip steht an jeder Station ein Takt still — dort ist sie zu sehen, im Clip nicht.',{tempo:(Z>1?sag('ec.kb.ps.oder_tempo',' oder ein kleineres Tempo'):'')});
       else s+=sag('ec.kb.ps.ti_kommt',' Sie kommt und geht: sie zieht über den Halt auf{dauer} und löst sich zu seinem Ende wieder, sodass der nächste Zug ohne Rest anfängt. Im Zug selbst ändert sie nichts, und im Ganzbild am Anfang und am Ende ist alles scharf.',{dauer:(pl?sag('ec.kb.ps.ti_dauer',' — in den {h} s dieses Halts',{h:sek(pl.H)}):'')});
       s+=sag('ec.kb.ps.ti_weich',' Wie weich der Rest wird, rechnet die Software — kein Regler dafür.'); }
     if(un.length&&!karteDa&&kbPunkte(e).some(q=>kbFokus(q)==='tiefe'))
@@ -11821,7 +11821,7 @@ function zeichneFrame(t,roh){
      Staende und Fuss. Laeuft ein Export, wartet es: die Sperrtitel vergleicht fussTitel mit dem Satz der alten Sprache. */
   let vorratNeu=null;
   function spracheNachziehen(){
-    effekteSprache(); if(!root||exportLaeuft) return;
+    effekteSprache(); if(!exportLaeuft) TESTBILD=null; if(!root||exportLaeuft) return;   /* das Testbild traegt seine Unterschrift in der Sprache */
     if(vorratNeu) vorratNeu();
     { const ps=$('#tbs-preset'); if(ps) ps.querySelectorAll('option').forEach(o=>{ if(o.value) o.textContent=sagNach(o.value); });   /* die leere Kopfzeile traegt data-i18n */ }
     { const sl=$('#tbs-schleife'); if(sl){ const v=sl.value; sl.innerHTML=schleifeOptionen(); sl.value=v; } }

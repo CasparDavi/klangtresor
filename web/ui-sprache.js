@@ -3121,6 +3121,8 @@
     ['ec.export.noch_fertig', 'das Video wird noch fertig gebaut …', 'the video is still being finished …'],
 
     ['ec.quelle.testbild', 'Testbild', 'Test card'],
+    ['ec.testbild.wz1', 'Testbild', 'Test card'],
+    ['ec.testbild.wz2', 'nur zum Prüfen der Effekte', 'only for checking the effects'],
     ['ec.quelle.testportraet', 'Testporträt', 'Test portrait'],
     ['ec.quelle.testportraet_farbe', 'Testporträt (Farbe)', 'Test portrait (colour)'],
 
