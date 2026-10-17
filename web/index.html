@@ -4582,7 +4582,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
-<script src="/ui-sprache.js?v=8"></script>
+<script src="/ui-sprache.js?v=9"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.85"></script>
 <script>
@@ -20148,7 +20148,7 @@ function capMarke(s){
    Stelle, an der die privaten ihr Plus tragen - dieselbe Ecke, dieselbe Form, andere Bedeutung. */
 function sunoZeichen(id, titel){
   return `<a class="capzeichen suno" href="https://suno.com/song/${id}" target="_blank" rel="noopener"`
-    + ` title="${esc(titel || 'Bei Suno öffnen')}">Suno ↗</a>`;
+    + ` title="${esc(titel || t('cap.suno.oeffnen'))}">Suno ↗</a>`;
 }
 function capAuf(id){
   const s = songVonId.get(id); if (!s) return;
@@ -20158,24 +20158,24 @@ function capAuf(id){
      rechts die drei privaten. Ueber den Suno-Kacheln zwei Spalten breit die Beschreibung, ueber
      den privaten zwei Spalten breit die Notiz, und der verbleibende Platz nimmt die Tonfassung.
      Was fehlt, ist nicht leer, sondern gedaempft: die Kachel zeigt, WAS dort hingehoerte. */
-  c.innerHTML = `<button type="button" id="capzu" class="capzu" title="Schließen (Esc)">✕</button>`
+  c.innerHTML = `<button type="button" id="capzu" class="capzu" title="${esc(t('cap.zu'))}">✕</button>`
     + `<h4>${esc(s.titel)}</h4>`
     + `<div class="capgal">`
-    +   `<div class="capkopf" style="grid-column:1/3">Auf Suno</div>`
-    +   `<div class="capkopf capstart" style="grid-column:4/7">Auf KlangTresor ergänzt <small>— dominiert die Suno-Daten</small></div>`
+    +   `<div class="capkopf" style="grid-column:1/3">${t('cap.auf_suno')}</div>`
+    +   `<div class="capkopf capstart" style="grid-column:4/7">${t('cap.ergaenzt')} <small>${t('cap.ergaenzt.klein')}</small></div>`
     /* DAS ABZEICHEN STEHT AUCH AUF DEM VOLLEN KASTEN (Caspar_D, 14.09.2026: "aber auch wenn eine
        Caption da ist, vielleicht will ich die ja aendern auf Suno"). Der Kasten ist kein Schaukasten
        fuer Geholtes, sondern das Fenster dorthin, wo es geaendert wird. */
     +   `<div style="grid-column:1/3;grid-row:3">`
     +     `<div class="captextfeld${s.beschriftung ? '' : ' leer'}">`
-    +       (s.beschriftung ? esc(s.beschriftung) : 'Keine Suno-Caption vorhanden')
-    +       sunoZeichen(id, 'Bei Suno öffnen — dort läßt sich die Caption ändern') + `</div>`
-    +     `<div class="capkachelname">Kurzbeschreibung (Caption) auf Suno</div></div>`
+    +       (s.beschriftung ? esc(s.beschriftung) : t('cap.caption.leer'))
+    +       sunoZeichen(id, t('cap.suno.caption')) + `</div>`
+    +     `<div class="capkachelname">${t('cap.caption.name')}</div></div>`
     +   `<div class="capstart" style="grid-column:4/6;grid-row:3">`
     +     `<div class="captextfeld">`
-    +       `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
+    +       `<textarea id="capnotiz" placeholder="${esc(t('cap.notiz'))}">${esc(n ? n.text : '')}</textarea>`
     +     `</div>`
-    +     `<div class="capkachelname">eigene Werknotiz (bleibt in KlangTresor)</div>`
+    +     `<div class="capkachelname">${t('cap.notiz.name')}</div>`
     +   `</div>`
     /* DER INSTRUMENTAL-SCHALTER ZIEHT ZUR TONFLAECHE (Caspar_D, 14.09.2026: "die Instrumental-
        Schaltflaeche gehoert wohin, eigentlich in die Naehe der Tonflaeche, sie darf aber das
@@ -20190,13 +20190,13 @@ function capAuf(id){
     +       `<div class="capinstr">`
     +       `<button type="button" id="capinstr" class="pille${istInstrumental(s) ? ' an' : ''}"`
     +         ` aria-pressed="${istInstrumental(s) ? 'true' : 'false'}"`
-    +         ` title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">instrumental</button>`
+    +         ` title="${esc(t('cap.instrumental.titel'))}">${t('cap.instrumental')}</button>`
     +         `<span class="fussnote" id="capinstrstand">${
-                  instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
+                  instrumentalHand[id] ? t('cap.von_hand') : (istInstrumental(s) ? t('cap.erkannt') : '')}</span>`
     +       `</div>`
     +     `</div>`
-    +     `<div class="capkachelname">ersetzende Tonfassung`
-    +       `<small class="capkleingedruckt">Solange sie hier liegt, ersetzt sie in KlangTresor die Suno-Fassung.</small>`
+    +     `<div class="capkachelname">${t('cap.ton.name')}`
+    +       `<small class="capkleingedruckt">${t('cap.ton.klein')}</small>`
     +     `</div></div>`
     /* Reihe der Kacheln. Links zum Lesen, rechts zum Aendern - dieselbe Reihenfolge in beiden
        Haelften, damit das Auge die Paare von selbst findet. */
@@ -20206,8 +20206,8 @@ function capAuf(id){
        this.remove() statt textContent - sonst nimmt die Fehlerbehandlung das Abzeichen mit. */
     +   `<div style="grid-column:1;grid-row:2"><div class="capkachel ruhig">`
     +     `<img src="/media/${id}/cover.jpg" alt="" onerror="this.parentNode.classList.add('leerkachel');this.remove()">`
-    +     sunoZeichen(id, 'Bei Suno öffnen — dort läßt sich das Titelbild ändern') + `</div>`
-    +     `<div class="capkachelname">Titelbild</div></div>`
+    +     sunoZeichen(id, t('cap.suno.bild')) + `</div>`
+    +     `<div class="capkachelname">${t('cap.titelbild')}</div></div>`
     /* KEIN BEWEGTBILD HEISST NICHT „keins": dahinter liegt das Titelbild, schwach - die Kachel
        zeigt damit, WAS dort hingehoerte, statt ein Wort hinzuschreiben. Das Video liegt darueber
        und deckt es zu, sobald es da ist. Frueher loeschte die Fehlerbehandlung den ganzen
@@ -20218,14 +20218,14 @@ function capAuf(id){
           ? `<video src="/media/${id}/artwork.mp4" muted loop autoplay playsinline preload="auto"`
              + ` onerror="this.remove()"></video>`
           : ``)
-    +     sunoZeichen(id, 'Bei Suno öffnen — dort läßt sich ein Bewegtbild anfügen') + `</div>`
-    +     `<div class="capkachelname">Bewegtbild</div></div>`
+    +     sunoZeichen(id, t('cap.suno.bewegt')) + `</div>`
+    +     `<div class="capkachelname">${t('cap.bewegtbild')}</div></div>`
     +   `<div class="capstart" style="grid-column:4;grid-row:2"><div class="capkachel" id="capartbild" data-art="bild"></div>`
-    +     `<div class="capkachelname">Titelbild</div></div>`
+    +     `<div class="capkachelname">${t('cap.titelbild')}</div></div>`
     +   `<div style="grid-column:5;grid-row:2"><div class="capkachel" id="capartvideo" data-art="video"></div>`
-    +     `<div class="capkachelname">Bewegtbild</div></div>`
+    +     `<div class="capkachelname">${t('cap.bewegtbild')}</div></div>`
     +   `<div style="grid-column:6;grid-row:2"><div class="capkachel" id="capartstudio" data-art="effekt"></div>`
-    +     `<div class="capkachelname">Effektclip</div></div>`
+    +     `<div class="capkachelname">${t('cap.effektclip')}</div></div>`
     + `</div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
@@ -20258,7 +20258,7 @@ function capAuf(id){
      schreiben: Ein Feld, das beim Verlassen ins Leere speichert, waere
      eine Falle. Ebenso der Haken und die Ablageflaechen weiter unten. */
   const eingefroren = archivEingefroren();
-  if (eingefroren){ feld.readOnly = true; feld.placeholder = 'Archiv eingefroren — keine Notizen'; }
+  if (eingefroren){ feld.readOnly = true; feld.placeholder = t('cap.eingefroren.notiz'); }
   /* Speichern beim Verlassen des Felds oder Schliessen - kein Knopf. */
   const sichern = async () => {
     if (eingefroren) return;
@@ -20289,7 +20289,7 @@ function capAuf(id){
         feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '') + ' hat';
         /* Zeitstempel dahinter, damit der Browser nach dem Austauschen
            nicht das alte aus seinem Speicher zeigt. */
-        const t = '?t=' + Date.now();
+        const frisch = '?t=' + Date.now();
         if (art === 'video'){
           /* MEHRERE EIGENE VIDEOS (11.09.2026): Nr. 1 = eigen.mp4, dann eigen-2.mp4 ...
              Das juengste spielt (Vorgabe); jedes laesst sich einzeln entfernen, ein
@@ -20306,12 +20306,12 @@ function capAuf(id){
           const nrn = (Array.isArray(e.videos) && e.videos.length) ? e.videos : [1];
           if (!(feld._vidIdx >= 0) || feld._vidIdx >= nrn.length) feld._vidIdx = nrn.length - 1;
           const idx = feld._vidIdx, zeigt = nrn[idx];
-          feld.innerHTML = `<video src="/media/${id}/${eigenVideoName(zeigt)}${t}" muted loop autoplay playsinline></video>`
+          feld.innerHTML = `<video src="/media/${id}/${eigenVideoName(zeigt)}${frisch}" muted loop autoplay playsinline></video>`
             + (nrn.length > 1
-               ? `<span class="capzahl" title="Bewegtbild ${idx + 1} von ${nrn.length} — mit den Pfeilen durchschalten">${idx + 1}/${nrn.length}</span>`
-                 + `<span class="pfeil li" title="vorheriges">‹</span><span class="pfeil re" title="nächstes">›</span>`
+               ? `<span class="capzahl" title="${esc(t('cap.bewegt', { i: idx + 1, n: nrn.length }))}">${idx + 1}/${nrn.length}</span>`
+                 + `<span class="pfeil li" title="${esc(t('cap.vorheriges'))}">‹</span><span class="pfeil re" title="${esc(t('cap.naechstes'))}">›</span>`
                : '')
-            + (eingefroren ? '' : `<div class="capfuss"><span class="weg" data-nr="${zeigt}">entfernen</span></div>`);
+            + (eingefroren ? '' : `<div class="capfuss"><span class="weg" data-nr="${zeigt}">${t('cap.entfernen')}</span></div>`);
           feld.querySelectorAll('.pfeil').forEach(pf => pf.onclick = (ev) => {
             ev.stopPropagation();
             const schritt = pf.classList.contains('li') ? -1 : 1;
@@ -20340,11 +20340,11 @@ function capAuf(id){
            zweite Tonquelle neben der des Hauses -
            und an der haengt alles, von der Analyse bis zu AirPlay. Also kein zweiter. */
         feld.innerHTML = (art === 'video'
-            ? `<video src="/media/${id}/${datei}${t}" muted loop autoplay playsinline></video>`
+            ? `<video src="/media/${id}/${datei}${frisch}" muted loop autoplay playsinline></video>`
             : art === 'ton'
-            ? `<span>Eigene Tonfassung<br><small>sie wird gespielt</small></span>`
-            : `<img src="/media/${id}/${datei}${t}" alt="">`)
-          + (eingefroren ? '' : `<div class="capfuss"><span class="weg">entfernen</span></div>`);
+            ? `<span>${t('cap.ton.da')}</span>`
+            : `<img src="/media/${id}/${datei}${frisch}" alt="">`)
+          + (eingefroren ? '' : `<div class="capfuss"><span class="weg">${t('cap.entfernen')}</span></div>`);
         if (art === 'ton') feld.onclick = (ev) => {
           if (ev.target.classList.contains('weg')) return;
           try { spielenNachId(id); } catch (err) {}
@@ -20366,9 +20366,9 @@ function capAuf(id){
            kann. Ein gestrichelter Kasten mit einer Aufforderung darin liest sich als Formular;
            fuenf davon nebeneinander erst recht. */
         feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
-        feld.innerHTML = eingefroren ? 'Archiv eingefroren'
+        feld.innerHTML = eingefroren ? t('cap.eingefroren')
           : (art === 'ton'
-             ? `<span>eine bessere Tondatei hierherziehen</span><span class="capzeichen plus">+</span>`
+             ? `<span>${t('cap.ton.ziehen')}</span><span class="capzeichen plus">+</span>`
              : `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
                + `<div class="schatten"></div><span class="capzeichen plus">+</span>`);
       }
@@ -20399,15 +20399,15 @@ function capAuf(id){
                 : (/^image\//.test(typ) || /\.(png|jpe?g|gif|webp)$/i.test(name));
     if (!passt){
       feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
-      feld.textContent = art === 'video' ? 'Das ist kein Video.'
-                       : art === 'ton'   ? 'Das ist keine Tondatei.'
-                       : 'Das ist kein Bild.';
+      feld.textContent = art === 'video' ? t('cap.kein_video')
+                       : art === 'ton'   ? t('cap.keine_tondatei')
+                       : t('cap.kein_bild');
       setTimeout(artZeichnen, 2200); return;
     }
     const DECKEL = 2 * 1024 * 1024 * 1024;
     if (datei.size > DECKEL){
       feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
-      feld.textContent = 'Datei zu groß (höchstens 2 GB).';
+      feld.textContent = t('cap.zu_gross');
       setTimeout(artZeichnen, 3200); return;
     }
     feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
@@ -20419,7 +20419,7 @@ function capAuf(id){
       const a = await fetch('/api/eigen-artwork/' + id + (art === 'bild' ? '?nr=1' : ''),
         { method: 'PUT', headers: koepfe, body: datei });
       const d = await a.json().catch(() => ({}));
-      if (!d.ok){ feld.textContent = d.grund || (a.status === 413 ? 'Datei zu groß (höchstens 2 GB).' : 'ging schief'); setTimeout(artZeichnen, 3200); return; }
+      if (!d.ok){ feld.textContent = d.grund || (a.status === 413 ? t('cap.zu_gross') : t('cap.schief')); setTimeout(artZeichnen, 3200); return; }
       _eigenArt = _eigenArt || {};
       _eigenArt[id] = Object.assign({}, _eigenArt[id], { [art]: true });
       if (art === 'ton' && d.datei) _eigenArt[id].tonDatei = d.datei;
@@ -20434,7 +20434,7 @@ function capAuf(id){
          sobald eine eigene Fassung da ist - und verliert ihn wieder,
          wenn sie geht. */
       if (art === 'ton' && typeof quellenAnbieten === 'function') quellenAnbieten();
-    } catch (err) { feld.textContent = 'ging schief'; setTimeout(artZeichnen, 2600); }
+    } catch (err) { feld.textContent = t('cap.schief'); setTimeout(artZeichnen, 2600); }
   };
 
   for (const [art, feld, annehmen] of artFelder){
@@ -20480,10 +20480,10 @@ function capAuf(id){
        Kachel malt (clipAn); ein zweiter waere eine zweite Wahrheit. */
     studioFeld.innerHTML = hatE
       ? `<div class="capartclip"></div><div class="capfuss">`
-        + `<span class="weg" data-tu="oeffnen">bearbeiten</span>`
-        + (eingefroren ? '' : `<span class="weg klein" data-tu="weg" title="Effektclip entfernen">✕</span>`)
+        + `<span class="weg" data-tu="oeffnen">${t('cap.bearbeiten')}</span>`
+        + (eingefroren ? '' : `<span class="weg klein" data-tu="weg" title="${esc(t('cap.effekt_weg'))}">✕</span>`)
         + `</div>`
-      : (eingefroren ? 'Archiv eingefroren'
+      : (eingefroren ? t('cap.eingefroren')
          : `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
            + `<div class="schatten"></div><span class="capzeichen plus">+</span>`);
     if (hatE){ const kasten = studioFeld.querySelector('.capartclip');
@@ -20503,7 +20503,7 @@ function capAuf(id){
     const wert = !haken.classList.contains('an');
     haken.classList.toggle('an', wert); haken.setAttribute('aria-pressed', wert ? 'true' : 'false');
     const stand = c.querySelector('#capinstrstand');
-    if (stand) stand.textContent = 'wird gesetzt …';
+    if (stand) stand.textContent = t('cap.wird_gesetzt');
     try {
       const a = await (await fetch('/api/instrumental/' + id, {
         method: 'PUT', body: JSON.stringify({ wert })
@@ -20512,8 +20512,8 @@ function capAuf(id){
       /* Was gelöscht wurde, wird benannt - wer die Pille drückt, soll
          sehen, was er bewirkt hat. */
       if (stand) stand.textContent = (a.geloescht && a.geloescht.length)
-        ? 'gelöscht: ' + a.geloescht.join(', ')
-        : 'von Hand';
+        ? t('cap.geloescht', { liste: a.geloescht.join(', ') })
+        : t('cap.von_hand');
       const so = songVonId.get(id);
       if (so) { so.instrumental = wert; if (wert) so.hatGesang = false; }
       zeichnen();
@@ -20521,7 +20521,7 @@ function capAuf(id){
       /* Der Zustand geht zurueck, wenn das Setzen nicht ankam: eine Pille, die AN zeigt,
          waehrend im Archiv nichts steht, luegt (Wahrheit der Darstellung). */
       haken.classList.toggle('an', !wert); haken.setAttribute('aria-pressed', !wert ? 'true' : 'false');
-      if (stand) stand.textContent = 'ging nicht';
+      if (stand) stand.textContent = t('cap.ging_nicht');
     }
   };
   /* DREI WEGE HINAUS, EIN GRIFF: das Kreuz oben rechts (Regel 21), die Esc-Taste und der Klick
