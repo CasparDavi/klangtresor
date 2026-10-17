@@ -10576,7 +10576,7 @@ let schaumLetzterAuftrag = null;
 function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.84').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
-  schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
+  const auftrag = schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
   const stand = $('schaumstand');
   /* Beim Wechsel zwischen Klang- und Groupieschaum stand sonst bis zum Fertigrechnen das Bild des
      anderen im Feld - Avatare unter der Ueberschrift „Klangschaum". */
@@ -10600,7 +10600,7 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
       let netz = null;
       const netzVon = (M) => netz || (netz = M.morphNetz(res, k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null,
                                                           k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt)));
-      const f = { svg, ids, tipps, art, lage, netz: netzVon, form: schaumForm(lage), striche: SCHAUM_STRICHE,
+      const f = { svg, ids, tipps, art, lage, auftrag, netz: netzVon, form: schaumForm(lage), striche: SCHAUM_STRICHE,
                   W: res.width, H: res.height };
       schaumFertig.set(schluessel, f);
       if (register === 'karte' && (raumJetzt === 'schaum' || raumJetzt === 'groupies')){ stand.textContent = ''; schaumZeichnen(); }
@@ -10658,6 +10658,9 @@ function schaumForm(lage){ const p = String(lage || '').split('|'); return p[0] 
 function schaumEinsetzen(f){
   const alt = schaumGezeigt, bild = $('schaumbild'), lauf = ++schaumMorphLauf;
   schaumGezeigt = f;
+  /* das Plakat legt, was zu sehen ist: aus dem Zwischenspeicher gezeigt (etwa Groupie- → Klangschaum) galt sonst noch der Auftrag des
+     anderen Schaums, und das Studio meldete „Bitte den Schaum einmal anzeigen lassen“ (bis 1.0.83) */
+  if (f.auftrag) schaumLetzterAuftrag = f.auftrag;
   if (alt && alt !== f && alt.art === f.art && alt.lage !== f.lage && alt.form === f.form && alt.netz && f.netz && alt.W === f.W && alt.H === f.H
       && bild.querySelector('svg') && !document.hidden && !matchMedia('(prefers-reduced-motion: reduce)').matches)
     return schaumMorph(bild, alt, f, lauf);
