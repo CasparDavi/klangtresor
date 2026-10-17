@@ -9322,3 +9322,17 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
 - NOCH DEUTSCH: Einmessen (live, Plan, Ergebnisse) und das Messdokument (~560 Stellen, scratchpad/deutsch-reste.md) – eigener Block.
 - Regel-25a-Liste für diese Teile: scratchpad/reste-25a.md (36 Vorschläge, nicht eingebaut; drei brauchen Bauarbeit: Bild-im-Bild
   scheitert stumm, Latenz-Hinweis nur in der Konsole, Kuriositäten raten bei zu wenig Daten zum Neustart).
+
+## 105. 17.10.2026 (abends, Jörg 12 h weg, freie Hand): 1.0.87 – Einmessen auf Englisch, Durchklick-Gegenprobe, Prüfstand
+- **Einmessen, Messdokument und Messfeld** zweisprachig (532 neue mess.*-Schlüssel); Deutsch unverändert. Was in Messdateien
+  gespeichert wird (Testlauf-Protokoll, Mikrofonname „unbekannt“, Dateinamen), bleibt deutsch.
+- **Durchklick-Gegenprobe** im Sandkasten (KlangTresor auf Englisch, jeder sichtbare Knopf/Reiter/Auswahl, dazu gezielt Detail,
+  Morgenlauf, Tonstudio-Laschen, Medien, Reaktionen, Alben, Bühne, Effektclip-Studio): außer Daten (Titel, Kommentare, Stil-Prompts,
+  Geschichten-Themen) nur zwei Reste – Überschrift „Was hat sich geändert?“ im Morgenlauf, „unter „…““ in der Community-Zeile – behoben.
+- **Sprachwechsel** zeichnet jetzt das offene Tonstudio nach (EQ-Legende, Spielraum-Satz, Startprüfung des Einmessens).
+- **Prüfstand voll** (naht.mjs --neu --jobs 2, 254 Fälle, 1883 s, Worktree auf der SSD): kein Abbruch, kein Fehler, kein „gl NEIN“;
+  max gleich 0,092; einziger Fall über 0,3: laserraum-strahl-kegel gleichFolge 0,308 – zweimal wiederholt stabil 0,31, auf v1.0.84
+  ebenfalls 0,31 → Altwert, nicht durch die Übersetzung.
+- **Effektclip-Deutsch nachgerechnet:** von ~870 deutschen Textstücken des Moduls (1.0.84) sind alle im neuen Stand wiederzufinden
+  (die zunächst fehlenden 30 nur anders mit „·“/„—“ zusammengesetzt; Stichproben im Code).
+- Regel-25a-Vorschläge (nicht eingebaut): scratchpad/mess-25a.md (25), reste-25a.md (36).
