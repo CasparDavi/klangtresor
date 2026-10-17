@@ -9300,3 +9300,13 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
   Testbild-Schrift wird beim 10-s-Export eingebrannt (Frage A/B an Jörg offen); Altfehler kbPunkteSatz (T undefiniert).
 - Server-Schrittnamen (Klangprofil, stehende Töne, Kerbfilter) und Messdokument (~6000 Zeilen, nur deutsch) noch nicht nach Begriffsbuch.
 - Stilgruppe „chillout“ klein (fehlt in klang-woerter) – Backlog.
+
+## 103. 17.10.2026: 1.0.85 – Effektclip-Studio auf Englisch
+- Effektclip-Studio zweisprachig: 1103 Schlüssel `ec.*` in ui-sprache.js; `sag(key, deutsch)` im Modul – Englisch nur, wenn das Deutsch im
+  Paar noch gleich ist (sonst Deutsch statt veraltetem Englisch); ohne ui-sprache.js (Labor, Prüfstand) bleibt das Studio deutsch.
+  Effektnamen/Registry beim Bau und beim Sprachwechsel (`spracheNachziehen` des Moduls); ins Rezept geht weiter Deutsch.
+- Deutsch im Studio unverändert (Jörg: „im Effektclip Deutsch nicht ändern“). Befunde E01–E35 (Fachwörter, Meldungen ohne Ausweg)
+  liegen als Zwischenstand auf der Abnahme-Seite – Jörg fasst sie später an.
+- Testbild-Unterschrift zweisprachig („Test card / only for checking the effects“); Altfehler kbPunkteSatz (T statt Z) behoben.
+- Browserprobe im Sandkasten: Studio DE/EN, Presets, Effektkette ohne deutsche Reste; bekannt: die Statuszeile wechselt die Sprache erst
+  mit der nächsten Meldung. Jörg: „ein Englisch mit leichten Fehlern ist besser als gar kein Englisch“.
