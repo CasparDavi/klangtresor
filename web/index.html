@@ -30262,6 +30262,11 @@ function spracheNachziehen(){
   if ($('buehne') && $('buehne').classList.contains('auf') && bText === 'analyzer' && typeof promptsFuellen === 'function' && bSong)
     promptsFuellen();
   fassungStandNachziehen();
+  /* das offene Tonstudio schreibt Legende, Spielraum-Satz und Startprüfung selbst - neu zeichnen (17.10.2026) */
+  if ($('studio') && getComputedStyle($('studio')).display !== 'none'){
+    if (typeof studioZeichnen === 'function') { try { studioZeichnen(); } catch (e) {} }
+    if (typeof messStartZeigen === 'function' && $('messleg')) { try { messStartZeigen(); } catch (e) {} }
+  }
   /* Einmessen und Messdokument schreiben Legende, Wegweiser, Fazit und
      Kopf selbst - sie ziehen sich nach (17.10.2026). Laufende Ansagen
      folgen beim naechsten Schritt von allein. */
