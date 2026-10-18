@@ -713,7 +713,7 @@
 <div class="grid g4">
   <div class="card"><div class="val" id="v-lufs">—</div><div class="lbl"><span data-i18n="sa.lbl.lufs">Wie laut insgesamt?</span> <i>LUFS</i></div></div>
   <div class="card"><div class="val" id="v-lra">—</div><div class="lbl"><span data-i18n="sa.lbl.lra">Atmet der Song?</span> <i data-i18n="sa.lbl.lra.i">Lautheitsumfang LU</i></div></div>
-  <div class="card"><div class="val" id="v-tp">—</div><div class="lbl"><span data-i18n="sa.lbl.tp">Wie nah am Vollpegel?</span> <i data-i18n="sa.lbl.tp.i">True Peak dBTP</i></div></div>
+  <div class="card"><div class="val" id="v-tp">—</div><div class="lbl"><span data-i18n="sa.lbl.tp">Wie nah am Vollpegel?</span> <i data-i18n="sa.lbl.tp.i">Spitze (True Peak) dBTP</i></div></div>
   <div class="card" data-i18n-title="sa.lbl.plr.tipp"><div class="val" id="v-plr">—</div><div class="lbl"><span data-i18n="sa.lbl.plr">Wie weit ragen die Spitzen heraus?</span> <i data-i18n="sa.lbl.plr.i">über der Lautheit · dB</i></div></div>
   <div class="card" data-i18n-title="sa.lbl.psr.tipp"><div class="val" id="v-psr">—</div><div class="lbl"><span data-i18n="sa.lbl.psr">… an der lautesten Stelle</span> <i data-i18n="sa.lbl.psr.i">dB</i></div></div>
   <div class="card"><div class="val" id="v-check">—</div><div class="lbl"><span data-i18n="sa.lbl.check">Technisch sauber?</span> <i data-i18n="sa.lbl.check.i">Vollausschläge · Gleichspannung · Phase</i></div></div>
