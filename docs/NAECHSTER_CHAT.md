@@ -9336,3 +9336,35 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
 - **Effektclip-Deutsch nachgerechnet:** von ~870 deutschen Textstücken des Moduls (1.0.84) sind alle im neuen Stand wiederzufinden
   (die zunächst fehlenden 30 nur anders mit „·“/„—“ zusammengesetzt; Stichproben im Code).
 - Regel-25a-Vorschläge (nicht eingebaut): scratchpad/mess-25a.md (25), reste-25a.md (36).
+
+## 106. 18.–20.10.2026: Stand nach 1.0.87 – was offen ist (Übergabe, Kontingent knapp)
+### Auf diesem Stand (main, noch NICHT als Release ausgeliefert → 1.0.88)
+- Begriffsbuch nachgezogen: „Budget“ → „Spielraum“ (studio.spielraum.aus, studio.eqleg.achtung); „True Peak“ im Deutschen nur noch
+  in Klammern hinter „Spitze“ (komp.mw.truepeak, sa.lbl.tp.i, komp.hg.5 + Fallbacks in index.html/analyzer.js).
+- Vor dem Release: ?v= von ui-sprache.js und analyzer.js hochzählen, package.json 1.0.88, paket.js, gh release (zwei Zips).
+### Abnahme-Formular (Jörg geht es täglich portionsweise durch)
+- https://claude.ai/artifact/CtNg6cCNZkosZVXAmW3Na2 – Quelle scratchpad/texte-seite (Session 37f6b667), db-Sammlung „entscheidungen“
+  (doc-id = Schlüssel mit Nicht-[A-Za-z0-9_-] → „_“; Felder k, art vorschlag|eigen|tarja, text, notiz). Knopf „Anmerkung an Claude
+  schicken“ (comments.sendToClaude) – Antwort im Kommentarfaden, Vorschlag auf der Seite anpassen, neu veröffentlichen.
+- Abschnitte: Begriffsbuch (fertig → docs/haus/BEGRIFFE.md); Meldungen mit Ausweg (A01–A43, eingebaut); Meldungen mit Ausweg 2
+  (M01–M76: Einmessen, übrige Teile, Medien-Dialog, Lesezeichen-DE – offen); Tonstudio neu formuliert (N…, eingebaut, orange =
+  ungesehen); Effektclip deutsche Texte E01–E35 (Zwischenstand, Deutsch dort NICHT ändern ohne Jörg) und englische Übersetzung (89 offen).
+- Entscheidungen später einbauen: Schlüssel steht hinter „ · “; Lesezeichen-Einträge sind Texte in browser/morgens.js (L(de,en)).
+### Offen (Entwicklung)
+- Übersetzung: Server-Meldungen (server.js, bin/aufbereiten.js – Ergebniszeilen des Lesezeichens, Upload-Gründe, Morgenlauf-Schritt-
+  namen „Klangprofil“, „stehende Töne“, „Kerbfilter“ → nach Begriffsbuch), Einrichtung (web/einrichtung, mit Tarja), Nebenseiten
+  bahn.html/bahn3d.html/wurmloch.html, hitstrom.js, englische START-HIER.
+- Vorläufige Entscheidungen von Claude (Jörg kann umsteuern): Bänder mit Frequenz statt Namen, Analyse-Urteil nur „gekappt“,
+  „Mikrofon überschreit“. Frage A/B offen: Testbild-Schrift in exportierten Clips (A weglassen, B Export mit Testbild sperren).
+  „EQ Output“ ist im Deutschen englisch beschriftet (25b: „EQ-Ausgang“?).
+- Kleine Fehler: Bild-im-Bild scheitert stumm; Latenz-Hinweis nur in der Konsole; Kuriositäten raten bei zu wenig Daten zum Neustart;
+  Effektclip-Statuszeile wechselt die Sprache erst mit der nächsten Meldung; Whisper-Schritt wirkt 30 min wie stehengeblieben
+  (Fortschrittsanzeige zählt nicht mit).
+- Backlog: „chillout“ klein (fehlt in klang-woerter), hfoam statt foamtree-Kopie („nicht jetzt“), Rechteck-Areale (Zweig rechteck-areale).
+- Werkzeug-Idee: Suno-Kennung aus der MP3 in eine WAV ohne Kennung schreiben (am 19.10. einmal von Hand für „Weißer Atem (NDH)“ gemacht:
+  LIST/INFO/ICMT „made with suno; created=…; id=…“ vor dem data-Block; Länge geprüft) – als bin/-Werkzeug, wenn es öfter vorkommt.
+### Stand der Dinge
+- Neue Titel „Weißer Atem (NDH)“ (c3172795…) und „KlangTresor“ (47dfffbc…) im Katalog, alle Schritte durch. Bühne für „KlangTresor“
+  öffnet im Sandkasten fehlerfrei – bei Jörg vermutlich Fenster älter als der Morgenlauf (F5).
+- Release-Direktlink: https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip
+- Prüfstand voll am 17.10. sauber (Ergebnis /Volumes/Extreme_SSD/Entwicklung/_pruefstand-ergebnisse/).
