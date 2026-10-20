@@ -9368,3 +9368,4 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
   öffnet im Sandkasten fehlerfrei – bei Jörg vermutlich Fenster älter als der Morgenlauf (F5).
 - Release-Direktlink: https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip
 - Prüfstand voll am 17.10. sauber (Ergebnis /Volumes/Extreme_SSD/Entwicklung/_pruefstand-ergebnisse/).
+- Morgenlauf-Reihenfolge: whisper-zeitmarken läuft NACH dem Schritt „katalog“ – neue Zeitmarken (z. B. „KlangTresor“, 20.10.) kommen erst beim nächsten Lauf in den Katalog (hatTiming=false, Karaoke grau). Bauaufgabe: nach Whisper die Zeitmarken im selben Lauf eintragen (aufbereiten erneut oder gezielt).

@@ -1,7 +1,8 @@
 # Konzept: die Effektclip-Tafel
 
-Stand 29.09.2026. Entstanden am 26.09. aus dem Brainstorm mit Caspar_D, ergänzt am 29.09. nach
-einer Rückmeldung aus dem Umfeld (Übergabe §39). Es ist noch nichts gebaut. Das Blatt sammelt, was
+Stand 19.10.2026. Entstanden am 26.09. aus dem Brainstorm mit Caspar_D, ergänzt am 29.09. nach
+einer Rückmeldung aus dem Umfeld (Übergabe §39) und am 19.10. um den Videoschnitt-Fall und den
+Bestand ringsum (Kapitel 11). Es ist noch nichts gebaut. Das Blatt sammelt, was
 entschieden ist (mit Wortlaut) und was daraus folgt. Wer etwas anderes baut, ändert erst dieses
 Blatt.
 
@@ -232,7 +233,8 @@ die Quelle des Zielabschnitts.
    zweier fertiger Bilder. Vorher messen: doppelte Malzeit im Wechsel, Kachel und Bühne. Probe:
    Prüfstand mit Fällen über eine Grenze (Naht und Vorschau; Anteil 0 und Anteil 1 bitgleich zum
    einzelnen Effektclip).
-5. **Anreißer**: zwei Marken, Fenster als Export; Sunos Regeln stehen in Kapitel 6.
+5. **Anreißer**: zwei Marken, Fenster als Export; Sunos Regeln stehen in Kapitel 6. Prüffall: der
+   Zusammenschnitt vom 19.10. (Kapitel 11).
 6. **Bildmaterial**: Upload durch die App, Tiefe im Morgenlauf, Quelle je Effektclip aus dem Bildmaterial.
 
 Reihenfolge nach Nutzen und Risiko; jeder Schritt lässt den vorigen Stand nutzbar zurück.
@@ -242,3 +244,123 @@ Reihenfolge nach Nutzen und Risiko; jeder Schritt lässt den vorigen Stand nutzb
 Kurven je Parameter, Keyframes, eine Zeitleiste je Effekt. Verschiedene Ketten je Ausgabe. Medien
 von Hand im Archiv. Einzelne Effekte über eine Grenze hinweg paaren. Ein Morph von einer Form in die
 andere. Drei Bilder zugleich.
+
+## 11. Der Videoschnitt-Fall und der Bestand ringsum (19.10.2026)
+
+Nachgesehen am 19.10.2026 in Backlog, Effektclip-Dokumenten, Übergabe und Code, nur gelesen. Was
+die Tafel in den Kapiteln 1 bis 10 schon selbst sagt, steht hier nicht noch einmal. Caspar_D:
+*„bitte kein neues dokument sondern alles zur Tafel hinzufügen, damit wir nicht in immer neuen
+Dokumenten ertrinken"*.
+
+### Der Fall
+
+Claude hatte für „Ein bisschen doch" vier Schleifen aus einem Videogenerator (imagineX)
+aneinandergehängt. Caspar_D: *„das sollte in den Klangtresor eingebaut sein, aber dazu brauchen
+wir eine Videoschnitt-Session"*. Von Hand hätte er rund 20 Minuten gebraucht.
+
+- **Material:** vier Schleifen zu je 10 s. Die Dateien sind 960×960 groß, haben 30 fps, h264
+  High mit 18–23 Mbit/s und keinen Ton. Anfangs- und Endbild sind gleich, im Generator war
+  dasselbe Standbild als Start und als Ende gesetzt.
+- **Gemacht:** Die Reihenfolge richtet sich nach der Download-Zeit. Einmal aneinandergehängt
+  ergibt das 40 s und 101 MB, das Ganze zweimal 80 s und 202 MB. Verbunden wurde mit
+  `ffmpeg -f concat -c copy`, ohne Neukodierung.
+- **Naht:** Letztes gegen erstes Bild je Schleife ergibt PSNR 39,5–39,7 dB. Fürs Auge sind die
+  Bilder gleich. An jeder Fuge stand deshalb ein Bild doppelt.
+
+Was daraus folgt:
+
+1. Das ist der Anreißer aus Tarjas Rückmeldung (Kapitel 1, Übergabe NAECHSTER_CHAT.md:7329–7330),
+   hier mit vier Stücken Bildmaterial und mit Wiederholung. Er gehört zu den Schritten 5 und 6.
+2. Eine Folge n-mal wiederholen gehört dazu.
+3. **Das letzte Bild jeder Schleife fällt weg**, wenn Schleifen aneinanderstoßen. Das ist Caspar_Ds
+   Regel vom 10.09. für den Zehnsekünder: *„aber es muss doch das letzte bild fehlen, damit das
+   erste = das letzte ist"* (server/server.js:1811–1812). Am 19.10. ist das noch nicht so gemacht
+   worden.
+4. Videos aus fremden Generatoren sind Bildmaterial wie eigene Videos (heute `eigen-N.mp4`). Der
+   Effektclip des Studios ist kein solches Stück.
+5. **Größe:** Caspar_D arbeitet mit höchstens 200 MB, eine Datei heißt „…_final_200mb.mp4".
+   Kopieren statt neu kodieren, solange es passt.
+6. **Offen:** Der Fall war quadratisch, der Anreißer verlangt 9:16 (Kapitel 6). Nicht entschieden
+   ist, was mit quadratischem oder querem Bildmaterial im Hochformat geschieht: Rand, Ausschnitt
+   oder unscharfer Hintergrund.
+
+### Was schon gebaut ist und die Tafel benutzen kann
+
+- **Schleife mit zwölf Übergangsarten** (`SCHLEIFE_ARTEN`, web/tbs-modul.js:5662). Abgenommen am
+  15.09.: *„ja sehr schön geworden, genehmigt"* (NAECHSTER_CHAT.md:4368). Dazu gehört der
+  Rücklauf mit 8 % Unschärfe. RIFE ist bei Posenwechseln verworfen
+  (KONZEPT-LANGE-VIDEOS.md:47–50).
+- **Wiederholungsregel des ganzen Titels:** *„dehnen oder schrumpfen (nie mehr als 1/3) oder
+  mehrmals loopen"* (KONZEPT-LANGE-VIDEOS.md:145), gebaut als `vollRunde()`
+  (tbs-modul.js:9565–9584). An jeder Wiederholungsnaht liegt ein Übergang der Schleife.
+- **Ganzer Titel:** Knopf und `/api/vollvideo/*` (server.js:1352–1378, 1890–2050). Gerechnet
+  wird in Paketen zu 600 Bildern, höchstens 2 GB je Lauf. Der Ton ist optional (AAC 192k).
+  `-shortest` verliert bei Annex-B-Eingang die Tonspur (server.js:1983–1989).
+- **Zehnsekünder:** WebCodecs-Kodierer, der Server muxt nur (`-c:v copy`, server.js:1852–1855).
+  Dazu `taktLage()` (tbs-modul.js:9099) mit dem Zufallsboden 44 %.
+- **Mehrere eigene Videos je Titel** (`eigen.mp4`, `eigen-2.mp4` …, server.js:4226–4230).
+  Entstanden ist das, weil Tarja das eine eigene Video für Hooks *„missbraucht"*
+  (NAECHSTER_CHAT.md:2354–2355). Die Bühne wechselt im Modus „alle" hart an den
+  Abschnittsgrenzen, ohne Blende (index.html:22596–22631).
+- **Sprungkopie** (`/api/sprungkopie`, server.js:2120–2165) für bildgenaues Springen.
+- **Ausgabebuch** `library/effektclips.json` mit `bin/effektclip-buch.js`. Es erkennt eigene
+  Ausgaben, wenn sie über Suno zurückkommen; `bin/laden.js` markiert sie nur.
+- **Suno-Hook-Felder** `hookBildUrl` und `hatHook` (bin/aufbereiten.js:159–160) werden gesammelt,
+  aber nirgends benutzt. Die Endpunkte `/api/video/hooks/…` sind nur gelesen
+  (docs/suno/WEGE.md:518), `/hooks/create` ist nie betreten.
+- **imagineX** kennt das Haus nur als Dateinamenmuster (`imaginexvideo`, bin/eigen-artwork.js:129).
+
+### Was vor dem Bau zu beachten ist
+
+- **Die Sprungkopie lehnt über 60 s ab.** Begründung: *„Hookmaterial sind Schnipsel von 5 bis
+  20 Sekunden (Caspar_D, 11.09.2026)"* (server.js:2154). Der Anreißer darf aber bis zu 4 min
+  lang sein, der Fall hatte 80 s.
+- **Werkzeug** (VIDEOSTUDIO-RECHERCHE.md:236–285):
+  - Bildgenau dekodieren mit `VideoDecoder` und dazu Mediabunny (MPL-2.0) oder mp4box.js, dann
+    GL-Übergänge, *„mit drei bis fünf Dateien anfangen"*.
+  - ffmpeg `xfade` und `concat` nur als Rückfall für harte Schnitte.
+  - Nie: ffmpeg.wasm, Remotion, Code aus GPL oder LGPL.
+  - Offen ist dort, wo man anfängt und ob Mediabunny oder mp4box.js (Z. 297–299).
+  - Im Haus gibt es `concat` und `xfade` heute nicht, nur im Labor
+    (`labor/videonaht/uebergaenge/arbeit/bau.py`).
+- **Teilstück-Rendern:** Abschnitte einzeln kodieren und am Server per Kopie verbinden
+  (VIDEOSTUDIO-RECHERCHE.md:271–272). Das passt zum Wechsel als Schnitt.
+- **Suno kodiert neu** und behält dabei Bildzahl und Bildrate; L·30 muss ganzzahlig sein
+  (VIDEO-PLAN.md:243–255). Ob Suno Song und Video bildgenau zusammen startet, ist ungeprüft
+  (VIDEO-PLAN.md:336–338).
+- **Nahtmaß:** Der Nahtquotient ist der Sprung an der Naht geteilt durch das 95. Perzentil der
+  normalen Bildwechsel; unter 1 ist die Naht unsichtbar (VIDEO-PLAN.md:479–494). Prüfstand:
+  `labor/nahtpruefung/`. Archiv-Statistik: `labor/videonaht/`, 91 Videos, davon brauchen 63
+  keinen Übergang.
+- **Abschnittsgrenzen** (zu Kapitel 7): Suno bestätigt 52 % der Textgrenzen, der Zufallsboden
+  liegt bei 23 %. Das Taktraster ist bei 136 von 325 Titeln unsauber
+  (KONZEPT-LANGE-VIDEOS.md:193–195).
+
+### Offene Wünsche ringsum, die hineinspielen
+
+- Ansicht in der Songanalyse: BPM gegen 10-s-Clip, schlecht sitzende Clips rot (Backlog, 15.09.).
+- Ablaufartefakte im Takt wie Stottern oder Rückläufe (Backlog: *„Erst besprechen, dann bauen."*).
+- Wiederholtes Abschnittsvideo: Laufen die Effekte mit oder weiter? (VIDEO-PLAN.md:791–796)
+- Die Nahtsuche („bester Ausschnitt") fehlt in der App (NAECHSTER_CHAT.md:4252).
+- Effekte im Video-Übergang sind nicht getestet, sieben Loop-Abweichungen warten aufs Ansehen
+  (NAECHSTER_CHAT.md:4261–4266).
+- Die RIFE-Messung M1 (GPU gegen CPU) ist nicht gelaufen (Backlog).
+- Zum Lyric-Video steht Caspar_Ds Urteil über die Beispielvideos aus (Wiedervorlage 22).
+
+### Widersprüche, die die Tafel auflöst oder noch auflösen muss
+
+- **Wörter:** „Snippet, Hook" steht noch im Backlog und in der Übergabe
+  (NAECHSTER_CHAT.md:7128–7135). Es gelten Zehnsekünder und Anreißer (Kapitel 3).
+- **Kanten des Anreißers:** VIDEO-PLAN.md:85 gibt dem Hook „offene Kanten", dagegen steht
+  *„10-Sekünder und Hook sind je eine Szene — geschlossen"* (KONZEPT-LANGE-VIDEOS.md:184). Die
+  Tafel gibt dem Anreißer Auftritt und Abgang (Kapitel 6). Zu entscheiden ist, ob er außerdem
+  als Schleife schließen muss. Im Fall vom 19.10. tat er es.
+- **Takt im Zehnsekünder:** Kapitel 6 sagt „fällt nach der ersten Runde". Seit dem 15.09. sitzt
+  der Zehnsekünder aber auf Songzeit 0, und `taktLage` hält im Median 98 % des Lieds im Takt
+  (EFFEKTCLIP-REGELN.md:220–226, Regel 18). Die Zeile in Kapitel 6 ist zu prüfen.
+- **Überholt im VIDEO-PLAN:**
+  - VIDEO-PLAN.md:3–5 („nichts gebaut") gilt für Schleife, Takt und Dunst nicht mehr.
+  - VIDEO-PLAN.md:53–74 (Zehnsekünder nicht taktsynchron) ist durch VIDEO-PLAN.md:223–227
+    überholt.
+  - „nicht heimlich ein Schnittprogramm" (VIDEO-PLAN.md:1448) ist abgelöst durch *„es darf
+    durchaus eines werden, es muss nur bedienbar sein"* (KONZEPT-LANGE-VIDEOS.md:29).
