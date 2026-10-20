@@ -1,20 +1,23 @@
 /* KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE */
-/* Sprache der Oberfläche. Nur DE und EN, als Textkürzel, keine Flaggen.
+/* Sprache der Oberfläche. DE, EN und RU-ai, als Textkürzel, keine Flaggen.
    Nicht aus dem Browser erraten: wer nichts gewählt hat, sieht Deutsch.
-   Dritte Sprache: SPRACHEN um den Code erweitern und WOERTER.xx füllen.
-   Fehlendes Englisch fällt auf Deutsch zurück, nie auf den Rohschlüssel.
+   Russisch (21.10.2026) ist eine reine KI-Übersetzung aus dem Englischen; sie steht
+   in web/ui-sprache-ru.js (window.UI_RU, Schlüssel → Satz), das VOR dieser Datei lädt.
+   Fehlendes Russisch fällt auf Englisch zurück, fehlendes Englisch auf Deutsch, nie auf den Rohschlüssel.
    Plural: „1 Titel|{n} Titel“ — links Einzahl, rechts Mehrzahl (auch 0).
+   Russisch hat drei Formen „one|few|many“ (1/21 · 2–4/22 · 0/5–20), gewählt über Intl.PluralRules.
    Einsetzen: t('zahl.titel', { n: 3 }) → „3 Titel“. */
 (function (wurzel) {
   'use strict';
 
   const SPRACHE_MERK = 'klangtresor-sprache';
   const SPRACHE_ANFANG = 'de';
-  const SPRACHEN = ['de', 'en'];
+  const SPRACHEN = ['de', 'en', 'ru'];
 
   const WOERTER = {
     de: {},
-    en: {}
+    en: {},
+    ru: {}
   };
 
   /* Paare: [schlüssel, deutsch, englisch]. Ein Ort, damit kein Schlüssel
@@ -4074,6 +4077,7 @@
     WOERTER.de[k] = de;
     WOERTER.en[k] = en;
   }
+  if (wurzel.UI_RU) Object.assign(WOERTER.ru, wurzel.UI_RU);
 
   const FEHLT = new Set();
 
@@ -4088,7 +4092,7 @@
   let sprache = spracheLesen();
 
   function localeTag() {
-    return sprache === 'en' ? 'en-GB' : 'de-DE';
+    return sprache === 'en' ? 'en-GB' : sprache === 'ru' ? 'ru-RU' : 'de-DE';
   }
 
   function tZahl(n, opt) {
@@ -4097,14 +4101,23 @@
 
   function dezimal(x) {
     const s = String(x);
-    return sprache === 'en' ? s.replace(',', '.') : s.replace('.', ',');
+    return sprache === 'en' ? s.replace(',', '.') : s.replace('.', ',');   /* Russisch schreibt das Komma wie Deutsch */
   }
 
-  function fuellen(satz, vars) {
+  const RU_PLURAL = (typeof Intl !== 'undefined' && Intl.PluralRules) ? new Intl.PluralRules('ru') : null;
+  /* Russisch, drei Formen one|few|many; ohne Intl dieselbe Regel von Hand. */
+  function ruForm(n) {
+    if (RU_PLURAL) { const f = RU_PLURAL.select(n); return f === 'one' ? 0 : f === 'few' ? 1 : 2; }
+    const z = Math.abs(n) % 100, e = z % 10;
+    return (e === 1 && z !== 11) ? 0 : (e >= 2 && e <= 4 && (z < 12 || z > 14)) ? 1 : 2;
+  }
+
+  function fuellen(satz, vars, spr) {
     if (satz.indexOf('|') >= 0 && vars && vars.n != null) {
       const teile = satz.split('|');
       const n = Number(vars.n);
-      satz = teile.length === 3
+      satz = (spr === 'ru' && teile.length === 3) ? teile[ruForm(n)]
+        : teile.length === 3
         ? (n === 0 ? teile[0] : n === 1 ? teile[1] : teile[2])
         : (n === 1 ? teile[0] : teile[1]);
     }
@@ -4120,9 +4133,10 @@
       FEHLT.add(schluessel);
       console.warn('ui-sprache: fehlt', schluessel);
     }
-    const satz = (WOERTER[sprache] && WOERTER[sprache][schluessel]) || de;
+    const eigen = WOERTER[sprache] && WOERTER[sprache][schluessel];
+    const satz = eigen || (sprache === 'ru' && WOERTER.en[schluessel]) || de;
     if (satz == null) return schluessel;
-    return fuellen(satz, vars);
+    return fuellen(satz, vars, eigen ? sprache : null);
   }
 
   function knotenSetzen(el, satz, html) {
@@ -4132,7 +4146,7 @@
 
   function spracheAnwenden(wurzelEl) {
     const wurz = wurzelEl || document;
-    document.documentElement.lang = sprache === 'en' ? 'en-GB' : 'de';
+    document.documentElement.lang = sprache === 'en' ? 'en-GB' : sprache === 'ru' ? 'ru' : 'de';
     wurz.querySelectorAll('[data-i18n]').forEach(function (el) {
       /* Canvas und SVG sind Zeichenflächen: textContent würde in Zen/Gecko
          den Kontext zerstören oder den Aufbau abbrechen, und die Analyse
@@ -4181,6 +4195,7 @@
 
   wurzel.SPRACHEN = SPRACHEN;
   wurzel.t = t;
+  wurzel.satzFuellen = fuellen;
   wurzel.sprache = function () { return sprache; };
   wurzel.spracheSetzen = spracheSetzen;
   wurzel.spracheAnwenden = spracheAnwenden;
@@ -4190,7 +4205,7 @@
   wurzel.monatName = monatName;
   wurzel.WOERTER = WOERTER;
 
-  if (document.documentElement) document.documentElement.lang = sprache === 'en' ? 'en-GB' : 'de';
+  if (document.documentElement) document.documentElement.lang = sprache === 'en' ? 'en-GB' : sprache === 'ru' ? 'ru' : 'de';
   /* Das Skript sitzt hinter dem Markup: der Kopf ist schon im Baum. */
   spracheAnwenden();
 })(window);

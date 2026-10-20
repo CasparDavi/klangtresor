@@ -9369,3 +9369,33 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
 - Release-Direktlink: https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip
 - Prüfstand voll am 17.10. sauber (Ergebnis /Volumes/Extreme_SSD/Entwicklung/_pruefstand-ergebnisse/).
 - Morgenlauf-Reihenfolge: whisper-zeitmarken läuft NACH dem Schritt „katalog“ – neue Zeitmarken (z. B. „KlangTresor“, 20.10.) kommen erst beim nächsten Lauf in den Katalog (hatTiming=false, Karaoke grau). Bauaufgabe: nach Whisper die Zeitmarken im selben Lauf eintragen (aufbereiten erneut oder gezielt).
+
+## 107. 21.10.2026: 1.0.88 – Russisch (RU-ai), Installationsanleitung auf Russisch
+
+**Warum:** Henry (Discord, Suno-Nutzerin, Russin) soll KlangTresor auf Russisch benutzen und die Übersetzung nebenher
+prüfen. Caspar_D: lieber eine fertige, rein maschinelle Übersetzung („in vielen Details wahrscheinlich zum Lachen, aber
+es würde funktionieren“) plus eine Seite zum Abhaken, als Stichproben ohne Zusammenhang. Entscheidungen: Umschalter
+**DE | EN | RU-ai**, sichtbar für alle; Umfang Hauptseite **und** Effektclip-Studio; Henrys Ergebnisse baut Claude ein und
+liefert sie mit dem nächsten Release aus.
+
+**Was drin ist:**
+- `web/ui-sprache-ru.js` (neu, ~490 KB): `window.UI_RU`, alle 3 867 Schlüssel, KI-Übersetzung aus dem Englischen
+  (zehn Sonnet-Agenten, Glossar und Regeln: Platzhalter, HTML, Mehrzahl). Lädt VOR `ui-sprache.js`.
+- `web/ui-sprache.js`: dritte Sprache `ru`; Rückfall ru → en → de; Mehrzahl in drei Formen `one|few|many` über
+  `Intl.PluralRules('ru')` (nur für Sätze, die wirklich aus WOERTER.ru kommen); `localeTag` ru-RU; Dezimalkomma;
+  `window.satzFuellen` für das Studio.
+- `web/tbs-modul.js`: `sag`/`sagNach` lesen WOERTER.ru (sonst Englisch); Komma im Russischen.
+- `web/index.html`: Knopf RU-ai; Stilwörter (Klang-Etiketten) im Russischen englisch; Lesezeichen spricht im Russischen
+  Englisch (morgens.js hat kein RU); Datum/Wand-Schlüssel für alle Nicht-Deutschen. Nebenbei behoben: `artworkBild`
+  warf vor dem Katalog (Sprachwechsel während des Ladens).
+- `web/klangschaum/plakat.js`, `skizze-blatt.js`: Ortskennung über `localeTag`; Genitiv im Russischen = Name unverändert.
+- `docs/ru/USTANOVKA.md`: Installation auf Russisch; die Einrichtungsseite selbst ist weiter deutsch, darum erklärt die
+  Anleitung jeden Schritt mit den deutschen Knopftexten. Hinweis oben in START-HIER.md.
+- Durchsichtsseite für Henry: `~/Downloads/KlangTresor-Russisch-Durchsicht.html` (alle Texte, Suchfeld, OK / Not OK /
+  My text, Kommentar; „Save result“ gibt nur angefasste Karten als JSON aus, Schlüssel k, art, text, kommentar).
+  Rückläufer: `text` bei art=eigen in `web/ui-sprache-ru.js` eintragen, Kommentare lesen, nächstes Release.
+
+**Offen / Wiedervorlage:**
+- Einrichtungsseite und Server-Meldungen sind nicht übersetzt (weder EN noch RU).
+- Ändert jemand einen deutschen/englischen Satz, bleibt der russische alt – kein Wächter. Neue Schlüssel ohne RU zeigen Englisch.
+- Henrys Rückmeldungen einarbeiten, sobald sie kommen.

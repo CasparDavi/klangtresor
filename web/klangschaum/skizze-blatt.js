@@ -98,7 +98,7 @@ function ausgewogen(text, breiteEm, em){
   for (let i = 1; i < w.length - 1; i++) for (let j = i + 1; j < w.length; j++){ const l = [z(0, i), z(i, j), z(j)], m = Math.max(...l.map(em)); if (m < best.m) best = { l, m }; }
   return best.l;
 }
-const tausend = (n) => Math.round(n).toLocaleString(englischB() ? 'en-GB' : 'de-DE');
+const tausend = (n) => Math.round(n).toLocaleString(typeof window.localeTag === 'function' ? window.localeTag() : englischB() ? 'en-GB' : 'de-DE');
 const mmss = (s) => { const t = Math.round(s); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };   /* erst runden, dann teilen - sonst „5:60" */
 /* Zahlwörter für Überschriften, die zählen („die fünf meistgehörten"): kleine Bestände haben weniger als fünf */
 const zahlwort = (n) => n <= 12 && n >= 1 ? sagB('skizze.zahlwoerter').split(',')[n - 1] : String(n);
@@ -313,7 +313,7 @@ export function blattSchmuck(ctx){
       if (legende){ sv += txt(6 * f + wl, ty + 10.5 * f, 3 * f, legende, { anker: 'end', deck: 0.6 });
         if (gipfelDa){ const xg = 6 * f + wl - em(sagB('skizze.gipfel')) * 3 * f - 1.4 * f; sv += `<path d="M${n2(xg - 0.9 * f)},${n2(ty + 8.4 * f)} l${n2(1.8 * f)},0 l${n2(-0.9 * f)},${n2(1.8 * f)} Z" fill="${SEP}" fill-opacity="0.6"/>`; } } }
     /* Kennzahlen und Refrain */
-    const d = new Date(S.erstellt), datum = d.toLocaleDateString(englischB() ? 'en-GB' : 'de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+    const d = new Date(S.erstellt), datum = d.toLocaleDateString(typeof window.localeTag === 'function' ? window.localeTag() : englischB() ? 'en-GB' : 'de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
     const zeilenK = [zusatzDaneben ? '' : zusatz, `${sagB('skizze.herzen', { n: S.likes || 0 })} · ${sagB('skizze.stimmen', { n: S.kommentare || 0 })} · ${sagB('skizze.gehoert', { n: S.plays || 0, z: tausend(S.plays || 0) })}`,
       [dauer ? sagB('skizze.lang', { d: mmss(dauer) }) : '', S.bpm ? sagB('skizze.bpm', { n: S.bpm }) : '', S.takte ? sagB('skizze.takte', { n: S.takte }) : ''].filter(Boolean).join(' · '),
       isNaN(d) ? '' : sagB('skizze.geschrieben', { datum }), (S.genre || []).map(x => x[0]).join(' · '), (S.instrumente || []).map(x => INSTR_DE[x[0]] ? sagB('skizze.instr.' + x[0]) : x[0]).join(' · ')].filter(Boolean);

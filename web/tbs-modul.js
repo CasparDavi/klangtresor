@@ -58,7 +58,14 @@ var EffektclipStudio = (() => {
    sagNach(deutsch): dasselbe ueber den deutschen Wortlaut statt einen Schluessel - fuer Namen, die zugleich Daten
    sind (Effektnamen und Reglerzeilen der Registry, Paletten, Presets, Gruppen): sie bleiben im Rezept deutsch, nur
    die Anzeige wechselt. */
-const istEn = () => typeof window!=='undefined' && typeof window.sprache==='function' && window.sprache()==='en';
+/* Russisch (21.10.2026): wie Englisch, aber aus WOERTER.ru; fehlt dort ein Satz, kommt der englische.
+   Die Mehrzahl rechnet dann satzFuellen aus ui-sprache.js (drei russische Formen). */
+const sprNow = () => (typeof window!=='undefined' && typeof window.sprache==='function') ? window.sprache() : 'de';
+const istEn = () => sprNow()!=='de';
+function fremdSatz(W,k,v){
+  const s=sprNow(); if(s!=='en'&&W[s]&&W[s][k]!=null) return typeof window.satzFuellen==='function'?window.satzFuellen(W[s][k],v||null,s):satzFuellen(W[s][k],v);
+  return W.en[k]!=null?satzFuellen(W.en[k],v):null;
+}
 function satzFuellen(satz,v){
   if(!v) return satz;
   if(satz.indexOf('|')>=0 && v.n!=null){ const teile=satz.split('|'), n=Number(v.n);
@@ -66,19 +73,19 @@ function satzFuellen(satz,v){
   return satz.replace(/\{(\w+)\}/g,(_,k)=>v[k]!=null?String(v[k]):'');
 }
 function sag(k,de,v){
-  if(istEn()){ const W=window.WOERTER; if(W&&W.de&&W.en&&W.de[k]===de&&W.en[k]!=null) return satzFuellen(W.en[k],v); }
+  if(istEn()){ const W=window.WOERTER; if(W&&W.de&&W.en&&W.de[k]===de){ const f=fremdSatz(W,k,v); if(f!=null) return f; } }
   return satzFuellen(de,v);
 }
 let SPRACH_INDEX=null;   /* deutscher Wortlaut -> Schluessel, nur ec.*; einmal gebaut, WOERTER aendert sich nicht mehr */
 function sagNach(de,v,vorrang){   /* vorrang: ein Schluessel, der vor dem Wortlaut gilt, wenn derselbe deutsche Text zwei Dinge meint (Schatten: Effekt / Regler) */
   if(!istEn()||typeof de!=='string') return v?satzFuellen(de,v):de;
   const W=window.WOERTER; if(!W||!W.de||!W.en) return v?satzFuellen(de,v):de;
-  if(vorrang&&W.de[vorrang]===de&&W.en[vorrang]!=null) return satzFuellen(W.en[vorrang],v);
+  if(vorrang&&W.de[vorrang]===de){ const f=fremdSatz(W,vorrang,v); if(f!=null) return f; }
   if(!SPRACH_INDEX){ SPRACH_INDEX=new Map(); for(const k of Object.keys(W.de)) if(k.slice(0,3)==='ec.'&&!SPRACH_INDEX.has(W.de[k])) SPRACH_INDEX.set(W.de[k],k); }
-  const k=SPRACH_INDEX.get(de); return satzFuellen(k&&W.en[k]!=null?W.en[k]:de,v);
+  const k=SPRACH_INDEX.get(de); const f=k?fremdSatz(W,k,v):null; return f!=null?f:satzFuellen(de,v);
 }
-/* Dezimalkomma nur im Deutschen; im Englischen bleibt der Punkt. */
-const kf = v => istEn() ? String(v) : String(v).replace('.',',');
+/* Dezimalkomma im Deutschen und Russischen; im Englischen bleibt der Punkt. */
+const kf = v => sprNow()==='en' ? String(v) : String(v).replace('.',',');
 /* REGEL 9a: EIN REGLER WIRKT GLEICHMAESSIG UEBER SEINEN GANZEN WEG (23.09.2026). Manche Groessen
    wirken nicht linear - die Dicke eines Lichtschachts macht mit ihren ersten 3 % Reglerweg ein
    Viertel der ganzen Lichtwirkung. Ein Parameter kann darum eine `skala` tragen: Stuetzstellen
@@ -8554,7 +8561,7 @@ function zeichneFrame(t,roh){
     const her=ablageHer();
     be.disabled=!ABLAGE; be.textContent=(ABLAGE&&her)?sag('ec.ablage.einfuegen_aus','Einfügen aus „{her}“',{her}):sag('ec.ablage.einfuegen','Einfügen');
     be.title=ABLAGE?(sag('ec.ablage.einfuegen_titel','Das gemerkte Rezept auf diesen Titel legen: Effektkette, Vorbereitung und Schleife kommen immer mit, die Quelle nur, wenn es sie bei diesem Titel auch gibt. Gesichert wird dabei nichts — das entscheidet danach „Für diesen Titel sichern“.')
-      +((ABLAGE.her&&ABLAGE.her.wann)?sag('ec.ablage.gemerkt_am',' Gemerkt am {wann}.',{wann:new Date(ABLAGE.her.wann).toLocaleString(istEn()?'en-GB':'de-DE')}):''))
+      +((ABLAGE.her&&ABLAGE.her.wann)?sag('ec.ablage.gemerkt_am',' Gemerkt am {wann}.',{wann:new Date(ABLAGE.her.wann).toLocaleString(typeof window.localeTag==='function'?window.localeTag():'de-DE')}):''))
       :sag('ec.ablage.leer','In der Ablage liegt nichts — erst bei einem Titel „Kopieren“ drücken.'); }
   function kopieren(){ const o=JSON.parse(presetJSON()); o.her={id:songId,titel:(DATA&&DATA.titel)||'',wann:Date.now()};
     /* Privater Modus oder volles Fach: die Ablage gilt dann nur in dieser Sitzung. Dann muss aber auch die ALTE von der

@@ -22,10 +22,11 @@ import { TRANSFORMATIONEN, eckeFuellen } from './bilderschau.js';
    Zahlen und Daten (Englisch britisch: „16 October 2026"). Gemessen wird, was gesetzt wird (messen) - die Breiten folgen der Sprache. */
 const sag = (k, v) => window.t(k, v);
 const englisch = () => typeof window.sprache === 'function' && window.sprache() === 'en';
-const ort = () => englisch() ? 'en-GB' : 'de-DE';
+const ort = () => typeof window.localeTag === 'function' ? window.localeTag() : englisch() ? 'en-GB' : 'de-DE';
 const anz = (n) => typeof gruppenAnzeige === 'function' ? gruppenAnzeige(n) : n;
 /* Maß und Gliederung mitten in der Unterzeile: im Englischen klein („area by plays · grouped by kind of reaction"), im Deutschen wie benannt */
-const imSatz = (w) => englisch() && w ? w[0].toLowerCase() + w.slice(1) : w;
+const sprJetzt = () => typeof window.sprache === 'function' ? window.sprache() : 'de';
+const imSatz = (w) => sprJetzt() !== 'de' && w ? w[0].toLowerCase() + w.slice(1) : w;   /* Englisch und Russisch: mitten im Satz klein */
 const FORMATE = [
   { id: 'A3', name: 'A3', w: 297, h: 420 }, { id: 'A2', name: 'A2', w: 420, h: 594 },
   { id: 'A1', name: 'A1', w: 594, h: 841 }, { id: 'A0', name: 'A0', w: 841, h: 1189 },
@@ -804,7 +805,7 @@ const skizzeKreide = () => '#' + [1, 3, 5].map(j => { const v = parseInt(skizzeP
 
 /* Genitiv eines Namens ohne Deppenapostroph (Caspar_D: „uhä, ein Deppenapostroph … natürlich ohne Apostroph"): „Caspar_Ds";
    endet der Name auf s, ß, x, z oder ce, nur der Apostroph („Klaus’") - so die Rechtschreibung. */
-const genitiv = (n) => englisch() ? n + '\u2019s' : /(s|ß|x|z|ce)$/i.test(n) ? n + '\u2019' : n + 's';   /* englisch immer ’s: „Caspar_D’s Picture Wall" */
+const genitiv = (n) => sprJetzt() === 'ru' ? n : englisch() ? n + '\u2019s' : /(s|ß|x|z|ce)$/i.test(n) ? n + '\u2019' : n + 's';   /* englisch immer ’s: „Caspar_D’s Picture Wall" */
 const artName = () => plakatArt().replace(/\s+/g, '-');   /* Dateiname */
 const dauerText = (sek) => { const t = Math.round(sek), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, x = t % 60;
   return `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}`; };
@@ -2154,7 +2155,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   el('ps-pdf').onclick = () => pdf();
   el('ps-png').onclick = () => bildSichern();
   el('ps-zu').onclick = schliessen;
-  studio.dataset.sprache = englisch() ? 'en' : 'de';
+  studio.dataset.sprache = sprJetzt();
   if (lauscher) return;           /* nach einem Sprachwechsel baut oeffnen das Studio neu - die Lauscher am Dokument bleiben einmal */
   lauscher = true;
   document.addEventListener('bilderschau-gehaengt', () => { if (!wandWartet || !studio || studio.hidden || !bilderschau()) return;
@@ -2167,7 +2168,7 @@ function schliessen(){ if (studio) studio.hidden = true; document.documentElemen
 
 export function oeffnen(){
   /* Sprachwechsel seit dem letzten Öffnen: das Studio neu bauen (Bedienung) und neu legen (Vorschläge für Titel und Zeilen, Gedrucktes) */
-  if (studio && studio.dataset.sprache !== (englisch() ? 'en' : 'de')){
+  if (studio && studio.dataset.sprache !== sprJetzt()){
     studio.remove(); studio = null; const css = el('ps-stil'); if (css) css.remove(); aktuell = null;
     for (const k of ['kopfTitel', 'kopfUnter', 'schildName']) if (!E[k + 'Eigen']) E[k] = ''; }
   if (!studio) aufbauen();

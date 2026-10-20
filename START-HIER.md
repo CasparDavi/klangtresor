@@ -2,6 +2,8 @@
 
 > **Namenswechsel:** Das Projekt hieß bis zum 24.08.2026 *MySuno*. Es heißt jetzt **KlangTresor** — „Suno" ist seit dem 06.01.2026 eingetragene Marke von Suno Inc., ausdrücklich für Software zum Abspielen und Bearbeiten von Audioinhalten. Wo in Zitaten und in der Chronik noch der alte Name steht, bleibt er stehen.
 
+> **По-русски:** установка шаг за шагом — [docs/ru/USTANOVKA.md](docs/ru/USTANOVKA.md). В программе переключатель **RU-ai** (машинный перевод).
+
 Das hier ist ein lokales Archiv deiner auf Suno veröffentlichten Songs.
 Es lädt deine Musik, Artworks, Lyrics und Playlists auf deinen Rechner
 und gibt dir eine Website dafür, die im eigenen WLAN läuft — auch auf

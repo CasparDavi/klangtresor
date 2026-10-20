@@ -4149,6 +4149,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <span class="sprachewahl" role="group" data-i18n-aria="sprache.wahl">
       <button type="button" data-sprache="de" onclick="spracheSetzen('de')">DE</button>
       <button type="button" data-sprache="en" onclick="spracheSetzen('en')">EN</button>
+      <button type="button" data-sprache="ru" onclick="spracheSetzen('ru')" title="Русский — машинный перевод (AI)">RU-ai</button>
     </span>
   </div>
 
@@ -4570,7 +4571,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
      schon unter derselben Kennung im Browser lag (Zen hält ?v= sonst). -->
 <!-- Das Ablageformat zuerst: analyzer.js liest daraus. -->
 <script defer src="/fremd/analyse-ablage.js?v=1"></script>
-<script defer src="/fremd/analyzer.js?v=5"></script>
+<script defer src="/fremd/analyzer.js?v=6"></script>
 <!-- Der Rabe: dritte Gestalt des Fliegers (Caspar_D, 25.08.2026), als
      eigenes Modul wie der Analyzer - rabeZeichnen() wird erst zur
      Laufzeit gebraucht, defer reicht also. -->
@@ -4582,9 +4583,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
-<script src="/ui-sprache.js?v=11"></script>
+<!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
+<script src="/ui-sprache-ru.js?v=1"></script>
+<script src="/ui-sprache.js?v=12"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
-<script src="/tbs-modul.js?v=1.0.85"></script>
+<script src="/tbs-modul.js?v=1.0.88"></script>
 <script>
 // =============================================================
 //  Zustand
@@ -8020,7 +8023,7 @@ const GRUPPE_GANZ = { '(gemischte Gegend)': 'karte.gruppe.gemischt', 'ohne Stilg
   'keiner folgt': 'groupie.areal.keiner', 'unbekannt': 'groupie.areal.unbekannt', 'Zeit unbekannt': 'groupie.areal.zeit_unbekannt',
   'in den letzten 4 Wochen': 'groupie.areal.vier_wochen', 'davor': 'groupie.areal.davor' };
 function gruppenAnzeige(name){
-  if (name == null || sprache() !== 'en') return name;
+  if (name == null || sprache() === 'de') return name;   /* Russisch: Stilwörter englisch, wie das Modell sie liefert */
   const s = String(name);
   if (GRUPPE_GANZ[s]) return t(GRUPPE_GANZ[s]);
   const nr = s.match(/^Gruppe (\d+)$/);
@@ -8980,12 +8983,13 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
     auswahl.n < auswahl.M ? window.t('zahl.von', { n: tZahl(auswahl.n), m: tZahl(auswahl.M) }) : null]);
   $('schaumwas').textContent = (m.was || '') + ' ' + t.kurz + '.';
   /* „Areale je Stilgruppe": im Deutschen aus der Mehrzahl gekürzt (Stilgruppen, Genres, Modelle), im Englischen ohne das s */
-  const je = schaumZoom ? (sprache() === 'en' ? gl.unten.replace(/s$/, '').toLowerCase() : gl.unten.replace(/e$/, '').replace(/s$/, ''))
+  const je = sprache() === 'ru' ? (schaumZoom ? gl.unten : gl.oben).toLowerCase()   /* Russisch: das Wort, wie es ist */
+    : schaumZoom ? (sprache() === 'en' ? gl.unten.replace(/s$/, '').toLowerCase() : gl.unten.replace(/e$/, '').replace(/s$/, ''))
     : (sprache() === 'en' ? gl.oben.replace(/s$/, '').toLowerCase() : gl.oben.replace(/n$/, ''));
   fuss.textContent = window.t('bilder.fuss', { auswahl: schaumZoom ? window.t('bilder.fuss.zoom', { n: zeilen.length, gruppe: gruppenAnzeige(schaumZoom), zusatz: auswahl.zusatz }) : auswahl.text, trafo: t.kurz, mass: m.name, je })
     + (window.t('bilder.fuss.haengung.' + (flucht ? 'flucht' : bilderWahl.haengung)) || '')
     + (ohneWert.length ? window.t('schaum.fuss.ohne', { n: ohneWert.length, mass: m.name }) : '')
-    + (m.ernte && stamm ? window.t('schaum.fuss.zahlen', { datum: sprache() === 'en' ? new Date(stamm.slice(0, 10) + 'T00:00:00').toLocaleDateString(localeTag()) : `${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}` }) : '')
+    + (m.ernte && stamm ? window.t('schaum.fuss.zahlen', { datum: sprache() !== 'de' ? new Date(stamm.slice(0, 10) + 'T00:00:00').toLocaleDateString(localeTag()) : `${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}` }) : '')
     + window.t('bilder.fuss.start', { verf: karteVerf === 'umap' ? 'UMAP' : 'NMDS' });
   if (!zeilen.length){ bild.innerHTML = ''; schaumBildArt = null; bilderGezeigt = null; stand.textContent = auswahl.n ? window.t('schaum.kein_wert', { mass: m.name }) : titelLeerSatz(auswahl); return; }
   const feld = $('schaumfeld').getBoundingClientRect(), W = Math.round(feld.width), H = Math.round(feld.height);
@@ -8997,7 +9001,7 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
   /* die Auswahl selbst im Schluessel (die IDs), nicht nur Zahl und Summe: ein anderer Filter kann beides zufaellig gleich lassen */
   const schluessel = [m.id, t.id, gl.id, schaumZoom || '', W, H, bilderWahl.haengung, flucht, bilderWahl.rahmen, bilderWahl.kopf, bilderWahl.unter, karteVerf,
     zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length, zeilen.map(z => z.id).join(','),
-    ...(sprache() === 'en' ? ['en'] : [])].join('|');   /* englische Schilder sind anders breit - eigene Wand */
+    ...(sprache() !== 'de' ? [sprache()] : [])].join('|');   /* englische und russische Schilder sind anders breit - eigene Wand */
   const fertig = bilderFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; return bilderEinsetzen(fertig, farbe, m, zeilen); }
   /* Waehrend neu gehaengt wird (Fenster- oder Vollbildwechsel), bleibt die alte Wand stehen, auf das neue Feld gestreckt */
@@ -10557,7 +10561,7 @@ function schaumLageHolen(j, melde, ueberholbar){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.84').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.88').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   const auftrag = schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
@@ -13719,7 +13723,8 @@ function artworkBild(id){
   if (_eigenArt && _eigenArt[id] && _eigenArt[id].bild) return '/media/' + id + '/eigen.jpg';
   const liste = katalogInfo && katalogInfo.titelbild;
   if (liste !== _titelbildQuelle){ _titelbildQuelle = liste; _titelbildMenge = new Set(liste || []); }
-  return _titelbildMenge.has(id) ? '/media/' + id + '/titelbild.jpg' + kachelZusatz() : '/media/' + id + '/cover.jpg';
+  /* vor dem Katalog gibt es noch keine Menge - ein Sprachwechsel beim Laden zeichnet schon */
+  return (_titelbildMenge && _titelbildMenge.has(id)) ? '/media/' + id + '/titelbild.jpg' + kachelZusatz() : '/media/' + id + '/cover.jpg';
 }
 /* Fuer die Kacheln gibt es eine kleingerechnete Fassung (kachel.jpg).
    Ein selbst abgelegtes Titelbild hat die nicht - dann gilt es
@@ -21304,7 +21309,7 @@ function morgenLzAdresse(){
 /* Die Sprache der Oberflaeche reist im Lesezeichen mit: morgens.js laeuft auf
    suno.com und kennt ui-sprache.js nicht. Gilt fuer neu kopierte Lesezeichen. */
 function morgenLzSprache(){
-  return (typeof window.sprache === 'function' && window.sprache() === 'en') ? 'en' : 'de';
+  return (typeof window.sprache === 'function' && window.sprache() !== 'de') ? 'en' : 'de';   /* Russisch: das Lesezeichen spricht Englisch */
 }
 async function morgenLzKopieren(k){
   try { await navigator.clipboard.writeText(morgenLzAdresse());
@@ -26486,7 +26491,7 @@ function dokExport(){
   const wirt = document.getElementById('dokinhalt'); if (!wirt) return;
   const kopie = wirt.cloneNode(true);
   kopie.querySelectorAll('.dokknoepfe, button, select').forEach(e => e.remove());
-  const html = '<!doctype html><html lang="' + (window.sprache() === 'en' ? 'en-GB' : 'de') + '"><head><meta charset="utf-8">'
+  const html = '<!doctype html><html lang="' + document.documentElement.lang + '"><head><meta charset="utf-8">'
     + '<title>' + window.t('mess.dok.export.titel') + '</title>'
     + '<style>' + DOK_CSS.replace(/#messdok/g, 'body')
     + 'body{position:static;inset:auto;margin:0;padding:30px 16px;background:#0b0e14}'
