@@ -30259,6 +30259,8 @@ function spracheNachziehen(){
   if (typeof pmodiAufbauen === 'function') pmodiAufbauen();
   if (typeof bedienungAufbauen === 'function' && $('bmodi')) bedienungAufbauen();
   if (typeof pzahlSetzen === 'function' && typeof aktuellId !== 'undefined' && aktuellId) pzahlSetzen(song(aktuellId));
+  /* die Titel-EQ-Pille im Player: Aufschrift und Tooltip schreibt songEqAnzeigen beim Titelstart - beim Wechsel nachziehen */
+  if (typeof songEqAnzeigen === 'function') songEqAnzeigen();
   if (window.SunoAnalyzer && typeof window.SunoAnalyzer.spracheNachziehen === 'function')
     window.SunoAnalyzer.spracheNachziehen();
   /* das Effektclip-Studio baut seine Karten, Zeilen und Meldungen selbst - es zieht sich nach (17.10.2026) */
