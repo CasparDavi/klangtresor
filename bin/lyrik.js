@@ -788,7 +788,9 @@ function main() {
   const kat = K.lesen();
   if (!kat) { console.log('  Kein Katalog.'); process.exit(1); }
   const whisper = whisperLesen();
-  if (!whisper.size) { console.log('  Keine Whisper-Marken — library/whisper.ndjson fehlt.'); process.exit(1); }
+  /* Ohne Whisper-Marken gibt es nichts abzugleichen. Whisper ist optional - dann wird der Schritt
+     uebersprungen wie in bin/whisper.js (Exit 0), statt den Morgen rot zu faerben (Lutz, 23.10.2026). */
+  if (!whisper.size) { console.log('  Keine Whisper-Marken (library/whisper.ndjson fehlt) — übersprungen. Sobald Whisper eingerichtet ist, gleicht dieser Schritt die Liedtexte ab.'); process.exit(0); }
 
   const lieder = {};
   const unsicher = [];

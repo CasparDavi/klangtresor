@@ -788,6 +788,11 @@ async function main() {
       sag('  ' + e.message);
       sag('  Das Programm liegt, die Pakete musst du von Hand setzen: npm ci');
     }
+    /* Auch bei unveraendertem package-lock nachsehen: eine einmal unvollstaendige Installation blieb
+       es sonst fuer immer (Lutz, 23.10.2026, umap-js). bin/pakete.js holt nur, was fehlt. */
+    try { const rest = require('./pakete.js').nachholen(sag);
+          if (rest.length) sag('  Noch immer fehlen: ' + rest.join(', ') + ' — Ausweg: im KlangTresor-Ordner node bin/pakete.js --tun'); }
+    catch (e) { sag('  Paketprüfung: ' + e.message); }
     sag('');
     sag('  Fertig. Den laufenden Server einmal neu starten:');
     sag('    ./starten-linux.sh   oder starten-macos.command / starten-windows.cmd');

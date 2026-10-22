@@ -65,29 +65,48 @@ const DATEI   = path.join(WURZEL, 'library', 'whisper.ndjson');
    zuletzt Caspar_Ds eigener Bauplatz. Vorher stand hier nur sein Mac-Pfad als
    Vorgabe, und auf Tarjas Linux-Rechner fand das Skript darum nie etwas
    (23.08.2026). */
+/* WINDOWS (Lutz, 23.10.2026): dort heisst das Programm whisper-cli.exe, gesucht wird mit `where` statt
+   `which`, und der Werkzeugordner des Pakets heisst werkzeug/ (wie fuer node und ffmpeg) - gesucht wurde
+   nur werkzeuge/, Caspar_Ds Bauplatz. Das fertige Windows-Paket von whisper.cpp legt das Programm unter
+   Release\ ab; werkzeug/whisper/ darf also das ausgepackte Paket so enthalten, wie es kommt. */
+const EXE = process.platform === 'win32' ? '.exe' : '';
 const WO_WERKZEUG = [
   process.env.WHISPER_CLI,
-  path.join(WURZEL, 'library', 'modelle', 'whisper-cli'),
-  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'whisper-cli'),
+  path.join(WURZEL, 'library', 'modelle', 'whisper-cli' + EXE),
+  path.join(WURZEL, 'werkzeug', 'whisper', 'whisper-cli' + EXE),
+  path.join(WURZEL, 'werkzeug', 'whisper', 'Release', 'whisper-cli' + EXE),
+  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'whisper-cli' + EXE),
+  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'Release', 'whisper-cli' + EXE),
   /* Eine Ebene UEBER dem Projekt. Wer sich whisper.cpp selbst baut,
      legt es meist daneben statt hinein - es gehoert ja nicht dazu.
      Relativ und nicht absolut: so greift es bei jedem, und niemandes
      Plattenname steht im Quelltext. */
-  path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'whisper-cli'),
-  '/usr/local/bin/whisper-cli', '/opt/homebrew/bin/whisper-cli', '/usr/bin/whisper-cli',
+  path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'whisper-cli' + EXE),
+  path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'Release', 'whisper-cli' + EXE),
+  ...(EXE ? [] : ['/usr/local/bin/whisper-cli', '/opt/homebrew/bin/whisper-cli', '/usr/bin/whisper-cli']),
 ];
-const WO_MODELL = [
-  process.env.WHISPER_MODELL,
-  path.join(WURZEL, 'library', 'modelle', 'ggml-large-v3.bin'),
-  path.join(WURZEL, 'library', 'modelle', 'ggml-medium.bin'),
-  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'modelle', 'ggml-large-v3.bin'),
-  path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'modelle', 'ggml-large-v3.bin'),
-];
+/* Die Modelle in der Reihenfolge der Vorliebe: large-v3 rechnet am genauesten, large-v3-turbo ist auf
+   Rechnern ohne Grafikkarte um ein Vielfaches schneller (Lutz, 23.10.2026), medium ist der kleine Rest. */
+const MODELLNAMEN = ['ggml-large-v3.bin', 'ggml-large-v3-turbo.bin', 'ggml-medium.bin'];
+const MODELLORTE = [path.join(WURZEL, 'library', 'modelle'), path.join(WURZEL, 'werkzeug', 'whisper'),
+  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'modelle'), path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'modelle')];
+const WO_MODELL = [process.env.WHISPER_MODELL, ...MODELLNAMEN.flatMap((n) => MODELLORTE.map((o) => path.join(o, n)))];
 const daIst = (orte) => orte.find(o => o && fs.existsSync(o)) || null;
-const imPfad = (name) => { const r = spawnSync('which', [name], { encoding: 'utf8' });
-  return r.status === 0 && (r.stdout || '').trim() ? r.stdout.trim() : null; };
+const imPfad = (name) => { const r = spawnSync(EXE ? 'where' : 'which', [name], { encoding: 'utf8' });
+  return r.status === 0 && (r.stdout || '').trim() ? r.stdout.trim().split(/\r?\n/)[0] : null; };
 const WERKZEUG = daIst(WO_WERKZEUG) || imPfad('whisper-cli') || WO_WERKZEUG[1];
 const MODELL   = daIst(WO_MODELL) || WO_MODELL[1];
+/* DIE DTW-VORGABE GEHOERT ZUM MODELL. Fest stand hier large.v3 - mit dem Turbo- oder medium-Modell
+   rechnet whisper-cli dann die Wortzeiten mit den Aufmerksamkeitskoepfen eines ANDEREN Modells, und sie
+   werden falsch (Lutz, 23.10.2026). Der Name kommt aus der Datei: ggml-large-v3-turbo.bin -> large.v3.turbo,
+   ggml-medium.bin -> medium; ein Quantisierungsanhang (-q5_0) zaehlt nicht. Unbekannt: ohne DTW, dann
+   gelten die Segmentzeiten (woerterAusSegmenten faellt darauf zurueck). */
+const DTW_BEKANNT = ['tiny', 'tiny.en', 'base', 'base.en', 'small', 'small.en', 'medium', 'medium.en',
+  'large.v1', 'large.v2', 'large.v3', 'large.v3.turbo'];
+const DTW = (() => {
+  const n = path.basename(MODELL).replace(/^ggml-|\.bin$/g, '').replace(/-q\d.*$/i, '').replace(/-/g, '.');
+  return DTW_BEKANNT.includes(n) ? n : null;
+})();
 const THREADS = Math.max(2, os.cpus().length);
 
 const args   = process.argv.slice(2);
@@ -104,6 +123,12 @@ if (process.platform === 'darwin' && !process.env.WHISPER_WACH) {
 const nur    = args.find(a => /^[0-9a-f-]{36}$/.test(a));
 const still  = args.includes('--still');
 const anzahl = args.includes('--anzahl') ? +args[args.indexOf('--anzahl') + 1] : Infinity;
+/* --bis-minuten N: nach N Minuten keinen neuen Titel mehr anfangen (der laufende wird fertig). Der
+   Morgenlauf setzt das: bei rund 900 offenen Titeln auf einer CPU blockierte Whisper den Morgen sonst
+   tagelang (Lutz, 23.10.2026). Eine Zeit- statt einer Stueckgrenze passt sich dem Rechner an: ein
+   schneller schafft mehr. Der Rest folgt am naechsten Morgen, neueste Titel zuerst. */
+const bisMs = args.includes('--bis-minuten') ? +args[args.indexOf('--bis-minuten') + 1] * 60000 : Infinity;
+const losMs = Date.now();
 /* --alle: nicht nur die Songs ohne Sunos Zeitmarken, sondern jeder,
    der noch keine Whisper-Zeile hat - fuer die Spurwahl in der Buehne
    (Caspar_D, 20.08.2026: "whisper fuer die verbleibenden Songs
@@ -141,8 +166,10 @@ ${WO_WERKZEUG.filter(Boolean).map(o => '    ' + o).join('\n')}
   und als Sprachmodell:
 ${WO_MODELL.filter(Boolean).map(o => '    ' + o).join('\n')}
 
-  Am einfachsten: beides nach library/modelle/ legen (whisper-cli und
-  ggml-large-v3.bin) — dann findet es sich von selbst. Oder die Orte angeben:
+  Am einfachsten: beides nach werkzeug/whisper/ legen (das Programm whisper-cli,
+  unter Windows das ausgepackte whisper-bin-x64.zip, und ein Sprachmodell, etwa
+  ggml-large-v3.bin oder – ohne Grafikkarte viel schneller – ggml-large-v3-turbo.bin)
+  — dann findet es sich von selbst. Oder die Orte angeben:
     WHISPER_CLI=… WHISPER_MODELL=… node bin/whisper.js
   Ausführlich: START-HIER.md („Karaoke-Zeitmarken mit Whisper“) bzw. docs/suno/WHISPER.md`);
   process.exit(0);
@@ -266,7 +293,7 @@ function rechnen(s, tmp) {
      Build nicht; der erste Versuch damit liess whisper-cli sofort
      aussteigen, 42 Songs "JSON unlesbar", 20.08.2026.) */
   const argv = ['-m', MODELL, '-f', wav, '-l', sprache, '-t', String(THREADS), '-ojf', '-of', aus, '-np',
-                '-dtw', 'large.v3', '-nfa', '-mc', '0'];
+                ...(DTW ? ['-dtw', DTW, '-nfa'] : []), '-mc', '0'];
   if (prompt) argv.push('--prompt', prompt);
 
   const t0 = Date.now();
@@ -294,7 +321,7 @@ function rechnen(s, tmp) {
   return {
     id: s.id, titel: s.titel || '', stand: new Date().toISOString(),
     modell: path.basename(MODELL).replace(/^ggml-|\.bin$/g, ''),
-    zeitverfahren: 'dtw',
+    zeitverfahren: DTW ? 'dtw' : 'segmente',
     schleife,
     sprache: sprache !== 'auto' ? sprache : ((j.result && j.result.language) || null),
     sekundenGerechnet: Math.round(sek), dauer: Math.round(s.dauer || 0),
@@ -357,6 +384,10 @@ function rechnen(s, tmp) {
   fs.mkdirSync(path.dirname(DATEI), { recursive: true });
   let n = 0, schief = 0, gesamtSek = 0;
   for (const s of liste) {
+    if (Date.now() - losMs > bisMs) {
+      console.log(`  Zeitgrenze von ${Math.round(bisMs / 60000)} min erreicht — ${liste.length - n} Titel folgen am nächsten Morgen.`);
+      break;
+    }
     n++;
     const kopf = `  [${n}/${liste.length}] ${(s.titel || s.id).slice(0, 48)}  (${Math.floor((s.dauer||0)/60)}:${String(Math.round((s.dauer||0)%60)).padStart(2,'0')})`;
     /* Der Kopf kommt IMMER vor dem Rechnen, als eigene Zeile - auch mit

@@ -168,6 +168,17 @@
   const gut = t => sagen(t, '#16be5c');
   const schlecht = t => sagen(t, '#e31c79');
 
+  /* AM FALSCHEN ORT GLEICH SAGEN (Lutz, 23.10.2026). Auf einer anderen Seite als suno.com lief bisher
+     die Songliste durch, und erst der Albumblock meldete „kein Token" - ein Bedienfehler sah aus wie
+     ein Albumfehler. Jetzt steht es vor dem ersten Schritt, mit dem Weg. */
+  if (!/(^|\.)suno\.com$/.test(location.hostname)){
+    schlecht(L('Dieses Lesezeichen gehört auf eine Seite von suno.com — hier ist ' + (location.hostname || 'keine Webseite') + '.',
+               'This bookmark belongs on a suno.com page — this is ' + (location.hostname || 'no web page') + '.'));
+    sagen(L('So geht es: suno.com in diesem Browser öffnen, dort angemeldet sein und das Lesezeichen auf jener Seite noch einmal anklicken.',
+            'How to: open suno.com in this browser, be signed in there, and click the bookmark again on that page.'));
+    return;
+  }
+
   /* ---------------- Die Ernte ueberlebt den Tab ----------------
      Zweimal am 19.08.2026 war der Server genau dann nicht da, als das
      Lesezeichen sichern wollte - und zehn Minuten Ernte waren weg,
@@ -402,8 +413,8 @@
     if (!gesehen){
       try { return tokenMerken(await tokenUeberClerkApi(), L('Clerk-API unter ', 'Clerk API at ') + fapiHost().replace('https://', '')); }
       catch (e) {
-        tokenHolen.grund = L('window.Clerk gibt es in dieser Seite nicht mehr (seit 22.09.2026), und der Ersatzweg über Clerks API scheiterte: ' + (e && e.message || e) + '. Stand und Befund: docs/NAECHSTER_CHAT.md.',
-                             'window.Clerk no longer exists on this page (since 22.09.2026), and the fallback via Clerk’s API failed: ' + (e && e.message || e) + '. Reload the Suno page and click the bookmark again; background: docs/NAECHSTER_CHAT.md.');
+        tokenHolen.grund = L('window.Clerk gibt es in dieser Seite nicht mehr (seit 22.09.2026), und der Ersatzweg über Clerks API scheiterte: ' + (e && e.message || e) + '. Lade die Suno-Seite neu und klicke das Lesezeichen noch einmal; hilft das nicht, bring KlangTresor auf den neuesten Stand (im KlangTresor-Ordner aktualisieren-… doppelklicken).',
+                             'window.Clerk no longer exists on this page (since 22.09.2026), and the fallback via Clerk’s API failed: ' + (e && e.message || e) + '. Reload the Suno page and click the bookmark again; if that does not help, update KlangTresor (double-click aktualisieren-… in the KlangTresor folder).');
         return null;
       }
     }

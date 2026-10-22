@@ -195,7 +195,9 @@ async function einenRechnen(kern, id, titel, nurBilder){
   if (!fft) throw new Error('keine FFT-Nachricht');
 
   /* --- Die Meßreihen --- */
-  const paket = kern.ablageVerpacken({ id, nachrichten,
+  /* quelle: woraus gemessen wurde - steht im Kopf der Ablage. Bis zum 23.10.2026 fehlte es hier, und
+     eine Messung aus dem MP3 trug faelschlich „audio.wav" (Vorgabe in analyse-ablage.js). */
+  const paket = kern.ablageVerpacken({ id, nachrichten, quelle: path.basename(datei),
                                        sr, dauer: left.length/sr });
 
   /* --- Die beiden Bilder --- */
@@ -286,7 +288,9 @@ function fertig(id){
      Node schreibt PNG. Was da ist, ist da. */
   const da = e => fs.existsSync(path.join(ANALYSE, `${id}.${e}`));
   return da('bin') && (da('spektro.webp')||da('spektro.png'))
-                   && (da('stereo.webp') ||da('stereo.png'));
+                   && (da('stereo.webp') ||da('stereo.png'))
+                   /* aus dem MP3 gemessen, und inzwischen liegt die WAV da: neu rechnen (23.10.2026) */
+                   && !require('./ablage-quelle.js').veraltet(ANALYSE, SONGS, id);
 }
 
 /* NACHZUEGLER: Die Bilder fuer den rechten Kanal und die Summe kamen am

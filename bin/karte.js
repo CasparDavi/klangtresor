@@ -34,6 +34,8 @@
 'use strict';
 const fs   = require('node:fs');
 const path = require('node:path');
+/* Fehlt umap-js, wird es geholt statt jeden Morgen mit „Cannot find module" abzubrechen (Lutz, 23.10.2026). */
+if (!require('./pakete.js').brauche('umap-js')) process.exit(1);
 const { UMAP } = require('umap-js');
 
 const WURZEL = path.join(__dirname, '..');

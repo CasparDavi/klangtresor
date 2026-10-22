@@ -25,8 +25,8 @@
   },
   {
     "schluessel": "medien",
-    "name": "Medien laden (MP3, Titelbilder, Bewegtbilder)",
-    "was": "Holt für alle Titel im Katalog fehlende Audio- und Visual-Daten: Titelbild, das Bewegtbild, dazu dein Profilbild und die Albumbilder. MP3 steht mit auf der Liste, kommt aber seit dem 03.09.2026 nicht mehr, weil Suno die Adressen sperrt. Danach entsteht für jeden Titel ohne Kachel das Bild für die Übersicht mit den Werken, und aus jedem Titelbild, das noch keine Farben hat, werden die Farben für die Nutzeroberfläche von KlangTresor gezogen und in den Katalog geschrieben.",
+    "name": "Medien laden (MP3, Titelbilder, Bewegtbilder), Tiefenkarten rechnen und Gesichter suchen",
+    "was": "Holt für alle Titel im Katalog fehlende Audio- und Visual-Daten: Titelbild, das Bewegtbild, dazu dein Profilbild und die Albumbilder. MP3 steht mit auf der Liste, kommt aber seit dem 03.09.2026 nicht mehr, weil Suno die Adressen sperrt. Danach entsteht für jeden Titel ohne Kachel das Bild für die Übersicht mit den Werken, und aus jedem Titelbild, das noch keine Farben hat, werden die Farben für die Nutzeroberfläche von KlangTresor gezogen und in den Katalog geschrieben. Zuletzt bekommt jedes neue Titelbild seine Tiefenkarte (für die räumlichen Effekte), und in Titelbildern und Avataren werden Gesichter und Schrift gesucht, damit Schaum und Plakat die Bilder richtig in ihre Zelle rücken.",
     "kurzergebnis_muster": "→ <n> Titelbilder, <n> Bewegtbilder, <n> Albumbilder geladen; <n> Kacheln neu, Farben für <n> Titel gezogen. MP3: gesperrt. | → Alle Titel haben schon Titelbild und Bewegtbild, nichts zu tun. MP3: gesperrt."
   },
   {

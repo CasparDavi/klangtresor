@@ -4572,7 +4572,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
      schon unter derselben Kennung im Browser lag (Zen hält ?v= sonst). -->
 <!-- Das Ablageformat zuerst: analyzer.js liest daraus. -->
 <script defer src="/fremd/analyse-ablage.js?v=1"></script>
-<script defer src="/fremd/analyzer.js?v=6"></script>
+<script defer src="/fremd/analyzer.js?v=7"></script>
 <!-- Der Rabe: dritte Gestalt des Fliegers (Caspar_D, 25.08.2026), als
      eigenes Modul wie der Analyzer - rabeZeichnen() wird erst zur
      Laufzeit gebraucht, defer reicht also. -->
@@ -4585,8 +4585,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=2"></script>
-<script src="/ui-sprache.js?v=13"></script>
+<script src="/ui-sprache-ru.js?v=3"></script>
+<script src="/ui-sprache.js?v=14"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.88"></script>
 <script>
@@ -19091,7 +19091,9 @@ function analyseTonDatei(s){
   if (slim && slim.hatWav) return 'audio.wav';
   const e = _eigenArt && _eigenArt[s.id];
   if (e && e.ton && /\.wav$/i.test(e.tonDatei || '')) return e.tonDatei;
-  return null;
+  /* Zuletzt das MP3 (23.10.2026) - siehe „NEUE LAGE" beim Aufruf. Fehlt auch das, gibt es nichts zu messen. */
+  if (slim && slim.hatMp3 === false) return null;
+  return 'audio.mp3';
 }
 
 let bText  = localStorage.getItem('mysuno-text') || 'aus';
@@ -21484,19 +21486,30 @@ async function analyzerAufbauen(){
      Studio-Exporte ohne audio.wav (eigen.wav daneben) kamen später.
      analyseTonDatei() nimmt dann die eigene WAV — ebenfalls PCM.
      Fehlt auch die, bleibt die Fläche nicht bei „—", sondern sagt
-     den Grund (Hausregel 3). */
+     den Grund (Hausregel 3).
+
+     NEUE LAGE, NEUE ENTSCHEIDUNG (Caspar_D, 23.10.2026, auf Lutz' Meldung
+     „0 von 1010 WAVs"): Neue Bestände haben keine WAVs mehr - Suno gibt
+     sie nur noch einzeln über „Unlock & Download" heraus. „Lieber keine
+     Messung" hieß damit: für fast alle Nutzer nie eine Messung. Jetzt
+     misst die Ansicht aus dem MP3, wenn nichts anderes da ist, und SAGT
+     es: Vermerk über den Messungen, und die Karten, die aus dem MP3
+     nicht stimmen (Spitze, Abstand der Spitzen, Vollausschläge, Höhen),
+     stehen grau mit Grund (Hausregel 4). Die Ablage trägt `quelle:
+     audio.mp3`; kommt die WAV dazu, gilt die Messung als veraltet und
+     wird neu gerechnet (bin/ablage-quelle.js). */
   await eigenArtworkLaden();
   const datei = analyseTonDatei(bSong);
   if (!datei) {
     console.warn('Analyse übersprungen: für "' + (bSong.titel || bSong.id)
-      + '" liegt keine WAV vor. Aus dem MP3 wird nicht gemessen.');
+      + '" liegt keine Tondatei vor.');
     analyzerOhneMessung(true);
-    analyzerHerkunft(false);
+    analyzerHerkunft(null);
     analyseFuer = bSong.id;
     return;
   }
   analyzerOhneMessung(false);
-  analyzerHerkunft(datei !== 'audio.wav');
+  analyzerHerkunft(datei);
   /* Die STEHENDEN TÖNE kommen aus dem geprüften Detektor (bin/stoerfrequenz.js,
      FFT 16384 = 2,7 Hz), nicht aus dem Schimmer des Analyzers - der fand
      durchweg Musiktöne (Caspar_D, 23.08.2026: "die Suche nach stehenden Tönen
@@ -21569,22 +21582,35 @@ function analyzerOhneMessung(zeigen){
   h.textContent = t('sa.ohne_messung');
 }
 
-/* HERKUNFT NENNEN (Hausregel 24): misst die Analyse die eigene WAV statt
-   Sunos audio.wav, steht das sichtbar über den Messungen. */
-function analyzerHerkunft(eigen){
+/* HERKUNFT NENNEN (Hausregel 24): misst die Analyse nicht Sunos audio.wav,
+   steht das sichtbar über den Messungen - die eigene WAV, oder seit dem
+   23.10.2026 das MP3. Beim MP3 stehen die Karten, die es verfälscht, grau
+   mit Grund (Hausregel 4): seine Encoderkante schneidet die Höhen, und
+   das Dekodieren verschiebt Spitzen und Vollausschläge. */
+const MP3_UNGUELTIG = ['v-tp', 'v-plr', 'v-psr', 'v-check', 'v-clip', 'v-grenz'];
+function analyzerHerkunft(datei){
   const f = $('banalyse');
   if (!f) return;
+  const mp3 = /\.mp3$/i.test(datei || '');
+  const schluessel = !datei || datei === 'audio.wav' ? null : mp3 ? 'sa.herkunft.mp3' : 'sa.herkunft.eigen';
+  f.classList.toggle('aus-mp3', mp3);
+  for (const id of MP3_UNGUELTIG) {
+    const k = f.querySelector('#' + id); const c = k && k.closest('.card');
+    if (!c) continue;
+    if (mp3) { if (!c.dataset.titelVorMp3) c.dataset.titelVorMp3 = c.title || ''; c.title = t('sa.mp3.grau'); }
+    else if (c.dataset.titelVorMp3 !== undefined) { c.title = c.dataset.titelVorMp3; delete c.dataset.titelVorMp3; }
+  }
   let h = f.querySelector('#sa-herkunft');
-  if (!eigen) { if (h) h.remove(); return; }
+  if (!schluessel) { if (h) h.remove(); return; }
   if (!h) {
     h = document.createElement('div');
     h.id = 'sa-herkunft';
     h.className = 'fussnote';
     h.style.margin = '0 0 6px';
-    h.setAttribute('data-i18n', 'sa.herkunft.eigen');
     f.insertBefore(h, f.firstChild);
   }
-  h.textContent = t('sa.herkunft.eigen');
+  h.setAttribute('data-i18n', schluessel);
+  h.textContent = t(schluessel);
 }
 
 function analyzerAbraeumen(){

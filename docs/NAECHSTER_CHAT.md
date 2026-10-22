@@ -9415,3 +9415,39 @@ KI-Fassung – nicht mehr weitergeben; Henry arbeitet mit der Tabelle.
 
 **Wiedervorlage:** Henrys zweiter Durchgang für Zeilen 1502–2499 und 3651–3868 steht aus. Neue/geänderte Schlüssel seit
 1.0.88 haben kein Russisch (Rückfall Englisch) – für Henry eine neue Tabelle mit genau diesen Zeilen erzeugen.
+
+## 109. 23.10.2026: 1.0.91 – Lutz' Fehlerliste (Windows 11, aber fast alles allgemein)
+
+Lutz (Discord, „Lutz Tig & der Arno Nüm [TrYa]“) hat mit KI-Hilfe zehn Befunde geschickt. Alle zehn am Code bestätigt;
+nur Punkt 3 ist wirklich Windows-spezifisch, der Rest trifft jeden außer Caspar_D (WAVs, Whisper, gewachsenes node_modules).
+Caspar_D: „Du reparierst nach deinen Empfehlungen“ (selbst bauen; MP3 messen mit Vermerk; Whisper mit Zeitgrenze).
+
+1. **Pakete:** neu `bin/pakete.js` (fehlende() prüft jede Abhängigkeit aus package.json; nachholen() holt nur das Fehlende
+   in der Lock-Fassung, ohne Installationsskript, wo keines nötig ist; brauche(name) für Programme). Benutzt von
+   einrichten.js (Bestandsaufnahme + Nachprüfung nach npm install), aktualisieren.js (auch bei unverändertem Lock),
+   karte.js (holt umap-js selbst). Probe: umap-js entfernt → nur umap-js geholt, package.json/Lock unverändert.
+2. `lyrik.js` ohne whisper.ndjson: Exit 0, „übersprungen“.
+3. `whisper.js` Windows: whisper-cli.exe, `where`, Suchorte `werkzeug/whisper/` (auch `Release\`), Modelle dort;
+   Meldung nennt werkzeug/whisper/.
+4. DTW-Vorgabe aus dem Modellnamen (large.v3, large.v3.turbo, medium …; unbekannt → ohne DTW, `zeitverfahren: segmente`);
+   ggml-large-v3-turbo.bin wird gefunden. Bei Caspar_D unverändert: large-v3 → large.v3.
+5. Whisper im Morgenlauf höchstens `WHISPER_MINUTEN_JE_MORGEN` = 30 min (`--bis-minuten`); Schätzung gedeckelt
+   (obergrenzeMs), ein gedeckelter Lauf lernt keine Dauer je Einheit.
+6. MORGENSCHRITTE.json: Name „Medien laden … Tiefenkarten rechnen und Gesichter suchen“ angeglichen, ein Satz zu Tiefe
+   und Gesichtern ergänzt (Caspar_Ds Redaktion – bitte gegenlesen).
+7./8. **Messen aus dem MP3** (Entscheidung 26.08. „kein MP3“ auf Caspar_Ds Wort revidiert, Begründung im Kommentar bei
+   analyseTonDatei-Aufruf): analyseTonDatei fällt auf audio.mp3 zurück; Vermerk `sa.herkunft.mp3` über den Messungen;
+   Karten Spitze, PLR, PSR, Technisch sauber, Vollausschläge, obere Grenze grau mit Tooltip `sa.mp3.grau`; in der
+   Vorschlagstabelle dieselben Zeilen grau „aus dem MP3 nicht verlässlich“, keine Spitzen-Strecken, kein Spitzenband.
+   Die Ablage trägt endlich die echte `quelle` (Browser über tonUrl, vorrechnen.js über die Datei – vorher stand immer
+   „audio.wav“, auch bei MP3 und eigen.wav). Neu `bin/ablage-quelle.js`: eine MP3-Ablage gilt als veraltet, sobald
+   audio.wav oder eigen.wav daliegt – Server (/api/analyse) und vorrechnen.js zählen sie dann nicht als fertig.
+   Sandkasten-Probe: MP3-Messung, Stempel audio.mp3, nach Hinzulegen der WAV veraltet → aus der Liste.
+9. morgens.js: Verweis auf docs/NAECHSTER_CHAT.md (nicht im Paket) raus, deutscher Satz mit Ausweg.
+10. morgens.js prüft suno.com vor dem ersten Schritt und sagt den Weg.
+
+Neue Texte (sa.herkunft.mp3, sa.mp3.grau, sa.urteil.mp3, neues sa.ohne_messung) russisch von Claude – **für Henry
+zur Durchsicht vormerken**.
+
+**Wiedervorlage:** die vermuteten Windows-11-Fallen (Start aus dem ZIP, OneDrive-Ordner, überwachter Ordnerzugriff,
+Pfadlänge, Smart App Control und ffmpeg, Apostroph im Benutzernamen) sind NICHT gebaut – Lutz hat sie nicht gemeldet.

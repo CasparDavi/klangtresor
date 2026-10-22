@@ -62,6 +62,10 @@
 .sunoanalyzer.keine-messung #sa-karten,
 .sunoanalyzer.keine-messung #sa-befunde,
 .sunoanalyzer.keine-messung .section{display:none}
+/* Aus dem MP3 gemessen (23.10.2026): die Karten, die das MP3 verfaelscht, grau - der Grund steht im
+   Tooltip und im Vermerk darueber (web/index.html, analyzerHerkunft). */
+.sunoanalyzer.aus-mp3 .card:has(#v-tp),.sunoanalyzer.aus-mp3 .card:has(#v-plr),.sunoanalyzer.aus-mp3 .card:has(#v-psr),
+.sunoanalyzer.aus-mp3 .card:has(#v-check),.sunoanalyzer.aus-mp3 .card:has(#v-clip),.sunoanalyzer.aus-mp3 .card:has(#v-grenz){opacity:.38;filter:grayscale(1)}
 
 /* Die Karten füllen die Zeilen selbst auf, statt in Vierergruppen zu
    stehen: EIN Raster, in das alle 28 Karten fließen. Möglich wird das
@@ -1316,6 +1320,9 @@
     /* Welcher Song gerade gerechnet wird - song() setzt es, damit der
        Mitschnitt weiss, wozu er gehoert. */
     var _laufendeId = null;
+    /* ... und aus welcher Datei (audio.wav, eigen.wav, audio.mp3) - fuer das Feld `quelle` im Kopf der
+       Ablage. Ohne das stand dort immer „audio.wav", auch bei der eigenen WAV (23.10.2026). */
+    var _laufendeQuelle = null;
 
     var audioCtx=null, songDuration=0;
 
@@ -2408,10 +2415,15 @@
         +'<span class="kopf" style="text-align:right">'+T('sa.kopf.dieser')+'</span>'
         +'<span class="kopf"></span>';
       var zeilenV=[];
-      var v=function(gr, soll, ist, stufe, urteil){
-        zeilenV.push('<span class="gr">'+gr+'</span><span class="soll">'+soll+'</span>'
-          +'<span class="ist">'+ist+'</span>'
-          +'<span class="urteil" style="color:'+AMPEL[stufe]+'">'+urteil+'</span>'); };
+      /* AUS DEM MP3 GEMESSEN (23.10.2026): Spitze, Vollausschlaege und Hoehengrenze verfaelscht das MP3 -
+         seine Kodierung schneidet die Hoehen und das Dekodieren verschiebt die Spitzen. Diese Zeilen
+         stehen dann grau mit Grund, statt mit roter Ampel einen Fehler zu behaupten (Hausregel 4). */
+      var ausMp3=/\.mp3$/i.test(_laufendeQuelle||'');
+      var v=function(gr, soll, ist, stufe, urteil, mp3fraglich){
+        var grau=ausMp3&&mp3fraglich;
+        zeilenV.push('<span class="gr"'+(grau?' style="opacity:.45"':'')+'>'+gr+'</span><span class="soll"'+(grau?' style="opacity:.45"':'')+'>'+soll+'</span>'
+          +'<span class="ist"'+(grau?' style="opacity:.45"':'')+'>'+ist+'</span>'
+          +'<span class="urteil" style="color:'+(grau?'#8b8b90':AMPEL[stufe])+'">'+(grau?T('sa.urteil.mp3'):urteil)+'</span>'); };
 
       /* Was die Plattform tut, steht einmal oben - nicht in jeder
          Zeile. Es ist ihre Eigenschaft, nicht die des Parameters. */
@@ -2429,7 +2441,7 @@
 
       v(T('sa.gr.spitze'), '≤ '+ziel.tp.toFixed(1)+' dBTP',
         msg.truePeak.toFixed(1), msg.truePeak>ziel.tp?2:0,
-        msg.truePeak>ziel.tp? T('sa.urteil.darueber', { n:Math.abs(luft).toFixed(1) }) : T('sa.urteil.luft', { n:luft.toFixed(1) }));
+        msg.truePeak>ziel.tp? T('sa.urteil.darueber', { n:Math.abs(luft).toFixed(1) }) : T('sa.urteil.luft', { n:luft.toFixed(1) }), true);
 
       /* Die Normalisierung der Dienste ist STATISCH: ein Verstaerkungswert
          je Song, aus der integrierten Lautheit. Die Schwankung ist
@@ -2450,25 +2462,25 @@
          alte, strenge Urteil weiter, statt faelschlich zu entwarnen. */
       if(msg.clip>0 && msg.clipLauf===0)
         v(T('sa.gr.voll'), T('sa.voll.keine'), T('sa.voll.einzeln', { n:loc(msg.clip) }), 1,
-          T('sa.urteil.einzeln'));
+          T('sa.urteil.einzeln'), true);
       else if(msg.clip>0)
         v(T('sa.gr.voll'), T('sa.voll.keine'), loc(msg.clip), 2,
-          msg.clipLauf>0 ? T('sa.urteil.laeufe', { n:msg.clipLauf }) : T('sa.urteil.uebersteuert'));
-      else v(T('sa.gr.voll'), T('sa.voll.keine'),'0',0,'');
+          msg.clipLauf>0 ? T('sa.urteil.laeufe', { n:msg.clipLauf }) : T('sa.urteil.uebersteuert'), true);
+      else v(T('sa.gr.voll'), T('sa.voll.keine'),'0',0,'', true);
 
       v(T('sa.gr.phase'), T('sa.phase.positiv'), T('sa.phase.negativ', { n:msg.negPhase.toFixed(0) }), msg.negPhase>5?1:0,
         msg.negPhase>5?T('sa.urteil.loescht'):'');
 
       /* Neue Kante, wenn gerechnet; alte Ablagen liefern nur grenzHz. */
       var obereK=isFinite(msg.kanteHz)?msg.kanteHz:msg.grenzHz;
-      if(isFinite(obereK)) v(T('sa.gr.grenze'),'—', (obereK/1000).toFixed(1)+' kHz', 0, '');
+      if(isFinite(obereK)) v(T('sa.gr.grenze'),'—', (obereK/1000).toFixed(1)+' kHz', 0, '', true);
       document.getElementById('sa-vergleich').innerHTML=
         tabelleMehrspaltig('bf-vergleich', KOPF, zeilenV, 3);
 
       /* ---- Strecken je Plattform ----------------------------------- */
       var bahnen=[];
 
-      if(msg.spitzeVerlauf&&msg.spitzeVerlauf.length){
+      if(!ausMp3&&msg.spitzeVerlauf&&msg.spitzeVerlauf.length){   /* aus dem MP3: keine Spitzen-Strecken, s. o. */
         var idx=[], sv=msg.spitzeVerlauf, sch=msg.spitzeSchritt||0.1;
         for(var i=0;i<sv.length;i++) if(sv[i]>ziel.tp) idx.push(i);
         /* Kein Mindestmass mehr: Auch ein einzelner Ausreisser wird
@@ -5160,6 +5172,8 @@
       var r=await fetch('/analyse/'+id+'.bin');
       if(!r.ok) return false;
       var kopf=ablageEntpacken(await r.arrayBuffer());
+      /* Abgespielt gilt die Quelle der Ablage, nicht die Datei, die gerade bereitlaege. */
+      if(kopf && kopf.quelle) _laufendeQuelle=kopf.quelle;
       if(!kopf) return false;
 
       /* Die beiden Spektrogramme kommen als Bild und werden als fertiger
@@ -5414,7 +5428,7 @@
          hängen sollte - abgespielt hatte auf diesem Weg nie jemand. */
       songDuration=buf.duration;
       currentSR=buf.sampleRate;
-      _aufnahme={ id:_laufendeId, nachrichten:[], fertig:false,
+      _aufnahme={ id:_laufendeId, nachrichten:[], fertig:false, quelle:_laufendeQuelle,
                   sr:buf.sampleRate, dauer:buf.duration };
       /* Und dieselbe Lücke ein zweites Mal: Die Abtastwerte für die
          Wellenform setzte ebenfalls nur der Suno-Weg. Auf dem Dateiweg
@@ -6350,6 +6364,7 @@
     function spitzenBandZeichnen(ctx,W,H,vs,ve){
       var m=window._normwerte;
       if(!m||!m.spitzeVerlauf||!m.spitzeVerlauf.length) return false;
+      if(/\.mp3$/i.test(_laufendeQuelle||'')) return false;   /* aus dem MP3: Spitzen nicht verlaesslich (23.10.2026) */
       var sp=m.spitzeVerlauf, cl=m.clipVerlauf, n=sp.length, sicht=(ve-vs)||1;
       var gab=false;
       for(var i=0;i<n;i++){
@@ -7559,6 +7574,7 @@
       song(d){
         _katalogDaten = d;
         _laufendeId = d.id || null;
+        _laufendeQuelle = String(d.tonUrl || '').split('?')[0].split('/').pop() || null;
         spektrumTexteSetzen();
         /* ERST IN DIE ABLAGE SCHAUEN. Liegt der Song dort, wird der
            Mitschnitt abgespielt - 0,4 s statt 16,9. Fehlt er oder ist

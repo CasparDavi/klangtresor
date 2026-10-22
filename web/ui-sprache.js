@@ -1090,7 +1090,10 @@
     ['treffer.lyrics', 'Treffer im Liedtext', 'Hit in the lyrics'],
 
     ['sa.vorschlag', 'Datenbasierte Vorschläge zur Verbesserung', 'Data-based suggestions for improvement'],
-    ['sa.ohne_messung', 'Keine Messung: für diesen Titel liegt keine WAV vor, und aus dem MP3 oder dem Video wird nicht gemessen. Lade die WAV bei Suno (Titelseite, drei Punkte) herunter; beim nächsten „Bestand aktualisieren“ wird sie aus dem Download-Ordner übernommen.', 'No measurement: this title has no WAV, and MP3 and video are not measured. Download the WAV from Suno (title page, three dots); the next “Update the library” picks it up from the Downloads folder.'],
+    ['sa.ohne_messung', 'Keine Messung: für diesen Titel liegt noch keine Tondatei vor. Beim nächsten „Bestand aktualisieren“ wird sie geholt oder aus dem Download-Ordner übernommen.', 'No measurement: this title has no audio file yet. The next “Update the library” fetches it or picks it up from the Downloads folder.'],
+    ['sa.herkunft.mp3', 'gemessen am MP3 — Lautheit, Aufbau, Tonart und Stereo stimmen; Spitze, Vollausschläge und Höhen nicht (grau). Mit der WAV wird neu gemessen: bei Suno über die drei Punkte herunterladen, „Bestand aktualisieren“ übernimmt sie.', 'measured on the MP3 — loudness, structure, key and stereo hold; peak, full-scale hits and highs do not (grey). With the WAV it is measured again: download it at Suno via the three dots, “Update the library” picks it up.'],
+    ['sa.urteil.mp3', 'aus dem MP3 nicht verlässlich', 'not reliable from the MP3'],
+    ['sa.mp3.grau', 'Aus dem MP3 nicht verlässlich: seine Kodierung schneidet die Höhen ab und verschiebt Spitzen. Mit der WAV wird neu gemessen.', 'Not reliable from the MP3: its encoding cuts the highs and shifts peaks. With the WAV it is measured again.'],
     ['sa.herkunft.eigen', 'gemessen an der eigenen Fassung', 'measured on the song’s own cut'],
     ['sa.rechnen', 'Messung läuft … die WAV wird gelesen und gerechnet.', 'Measuring … the WAV is being read and computed.'],
     ['sa.plattformab', 'plattformabhängig', 'platform-dependent'],

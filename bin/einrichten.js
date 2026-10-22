@@ -1386,7 +1386,9 @@ open -a Terminal ${JSON.stringify(starter)}
     else if (process.platform === 'win32') zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'fehlt, wird geholt (rund 100 MB)', 'laeuft');
     else zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'fehlt — der Paketverwalter holt es, ein Befehl', 'wink');
 
-    const paketeDa = fs.existsSync(path.join(WURZEL, 'node_modules', 'onnxruntime-node'));
+    /* ALLE Pakete aus package.json, nicht nur onnxruntime-node (Lutz, 23.10.2026: umap-js fehlte, und
+       die Einrichtung hielt die Pakete fuer vollstaendig) - bin/pakete.js. */
+    const paketeDa = require('./pakete.js').fehlende().length === 0;
     zeile('pakete', 'Pakete: Programmbausteine des Servers', paketeDa ? 'sind da' : 'fehlen, werden geholt (19 Pakete, rund 240 MB)', paketeDa ? 'fertig' : 'laeuft');
 
     /* Die Zahl der Modelle kommt aus bin/modelle-holen.js selbst (07.10.2026): hier stand fest
@@ -1583,6 +1585,19 @@ open -a Terminal ${JSON.stringify(starter)}
       gut('Pakete sind da.'); zeile('pakete', 'Pakete', '19 Pakete geholt');
     } else { wiederkommen(); schluss(1); }
   } else { gut('Pakete sind da.'); zeile('pakete', 'Pakete', '19 Pakete geholt'); }
+  /* NACHSEHEN STATT GLAUBEN: npm kann mit Erfolg enden und trotzdem ein Paket nicht hinlegen (Lutz,
+     23.10.2026, umap-js). Was dann fehlt, holt bin/pakete.js einzeln nach - ohne fremde
+     Installationsskripte, an denen ein volles npm install scheitert und alles zurueckrollt. */
+  { const pk = require('./pakete.js');
+    if (pk.fehlende().length) {
+      const rest = pk.nachholen((t) => matt(t.trim()));
+      if (rest.length) {
+        wink('Diese Pakete fehlen noch: ' + rest.join(', ') + '.');
+        matt('Ohne sie fehlen einzelne Funktionen (etwa Klangraum oder Klanganalyse). Ausweg: die Einrichtung');
+        matt('noch einmal starten oder später aktualisieren-* doppelklicken — beide holen das Fehlende nach.');
+        zeile('pakete', 'Pakete', 'es fehlen noch: ' + rest.join(', '), 'wink');
+      } else zeile('pakete', 'Pakete', '19 Pakete geholt, fehlende nachgeholt');
+    } }
 
   /* ================================================================ */
   schritt('KI-Modelle', `KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — ${require('./modelle-holen.js').DATEIEN.length} Dateien, rund 1,2 GB`,

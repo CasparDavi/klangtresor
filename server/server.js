@@ -397,7 +397,10 @@ function analyseListe() {
     teile.get(n.id).add(n.endung);
   }
   const hat = (s, art) => s.has(art + '.webp') || s.has(art + '.png');
-  return [...teile].filter(([, s]) => s.has('bin') && hat(s,'spektro') && hat(s,'stereo'))
+  /* Eine Messung aus dem MP3 gilt nur, bis die WAV da ist (bin/ablage-quelle.js, 23.10.2026) - dann
+     nicht als fertig melden, damit der Browser aus der WAV neu rechnet und die Ablage ersetzt. */
+  const { veraltet } = require('../bin/ablage-quelle.js');
+  return [...teile].filter(([id, s]) => s.has('bin') && hat(s,'spektro') && hat(s,'stereo') && !veraltet(ANALYSE, SONGS, id))
                    .map(([id]) => id);
 }
 
@@ -490,6 +493,8 @@ const MORGEN_TEXTE = (() => {
    ist die Grundlage fuer alles andere. Alle anderen werden bei einem
    Abbruch rot, und der Lauf geht weiter (Caspar_D, 08.09.2026:
    "pflicht-Schritte brechen ab, andere werden rot"). */
+/* Wie lange Whisper je Morgenlauf rechnen darf, in Minuten - siehe den Schritt whisper-zeitmarken. */
+const WHISPER_MINUTEN_JE_MORGEN = 30;
 const MORGEN_SCHRITTE = [
   /* ZUERST DIE VERBINDUNGEN. Caspar_D, 29.08.2026: "Es darf nicht
      passieren, dass unbemerkt Links sterben und still Daten deswegen
@@ -544,7 +549,12 @@ const MORGEN_SCHRITTE = [
      auch Fehler macht und Whisper die zuverlaessigere Zeitzuordnung
      macht." Instrumentals und die Fokus-Wanderung schliesst whisper.js
      selbst aus; --alle ueberspringt, was in whisper.ndjson schon steht. */
-  { id: 'whisper-zeitmarken', schluessel: 'whisper', kaffee: true, name: 'Mitlaufender Text: Wort-Zeitmarken mit Whisper für neue Titel', befehl: ['bin/whisper.js', '--still', '--alle'],
+  /* HOECHSTENS WHISPER_MINUTEN_JE_MORGEN je Lauf (Lutz, 23.10.2026: rund 900 offene Titel auf einer CPU
+     blockierten den Morgen tagelang). whisper.js faengt danach keinen neuen Titel mehr an; der Rest folgt
+     am naechsten Morgen. obergrenzeMs deckelt die Schaetzung im Morgenfenster mit derselben Grenze. */
+  { id: 'whisper-zeitmarken', schluessel: 'whisper', kaffee: true, name: 'Mitlaufender Text: Wort-Zeitmarken mit Whisper für neue Titel',
+    befehl: ['bin/whisper.js', '--still', '--alle', '--bis-minuten', String(WHISPER_MINUTEN_JE_MORGEN)],
+    obergrenzeMs: (WHISPER_MINUTEN_JE_MORGEN + 10) * 60000,
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
       const fertig = new Set();
@@ -743,7 +753,8 @@ function dauerMerken(id, ms, einheiten) {
 function dauerSchaetzen(d, s, einheiten) {
   if (!d[s.id]) return null;
   if (!s.einheiten) return d[s.id];
-  return d[s.id] * Math.max(1, einheiten !== undefined ? einheiten : 1);
+  const v = d[s.id] * Math.max(1, einheiten !== undefined ? einheiten : 1);
+  return s.obergrenzeMs ? Math.min(v, s.obergrenzeMs) : v;
 }
 /* Anteil 0..1 und erwartete Restzeit in ms, oder null, wenn nichts
    laeuft. Ein laufender Schritt darf nie ueber 95 % seines eigenen
@@ -1275,7 +1286,10 @@ function morgenLosschicken(schritte, art, alle) {
     kind.stdout.on('data', sammeln(true));
     kind.stderr.on('data', sammeln(false));
     kind.on('close', (c) => {
-      dauerMerken(s.id, Date.now() - morgen.schrittSeit, morgen.einheiten[i]);
+      /* Ein Schritt, der an seiner Obergrenze abbrach, hat nicht alle Einheiten gerechnet - seine
+         Dauer je Einheit waere zu klein und wird nicht gelernt. */
+      { const ms = Date.now() - morgen.schrittSeit;
+        if (!(s.obergrenzeMs && ms >= (s.obergrenzeMs - 10 * 60000) * 0.95)) dauerMerken(s.id, ms, morgen.einheiten[i]); }
       if (c !== 0) {
         abschliessen('fehler', c, ab.kurz || `Abbruch mit Code ${c}`);
         /* Pflicht bricht den Lauf ab wie bisher; alles andere wird rot
