@@ -9399,3 +9399,19 @@ liefert sie mit dem nächsten Release aus.
 - Einrichtungsseite und Server-Meldungen sind nicht übersetzt (weder EN noch RU).
 - Ändert jemand einen deutschen/englischen Satz, bleibt der russische alt – kein Wächter. Neue Schlüssel ohne RU zeigen Englisch.
 - Henrys Rückmeldungen einarbeiten, sobald sie kommen.
+
+## 108. 22.10.2026: 1.0.90 – Henrys Russisch, Umschalter DE | EN* | RU*
+
+Henry hat nicht die KI-Fassung aus 1.0.88 geprüft, sondern die leere Tabelle `ui-sprache-en-ru.xlsx` (20.10.) selbst
+vollständig übersetzt und die Blattzeilen 1–1501 und 2500–3650 ein zweites Mal Zeile für Zeile korrigiert (94 + 194,
+mit Begründung). Ihre Spalte Russian ersetzt `web/ui-sprache-ru.js` vollständig (2 648 von 3 867 Sätzen anders als die
+KI-Fassung). Prüfung: keine leeren Zellen, alle Platzhalter, Tags gleich; zehn Plural-Sätze mit nur zwei Formen sind
+zahlunabhängig formuliert („людей: {z}“) und laufen über die Zwei-Formen-Regel.
+
+Umschalter (Caspar_D, 22.10.): **DE | EN* | RU***, Tooltip in der Sprache des Knopfs: „Translation partly AI-generated and
+still being revised“ / „Перевод частично создан с помощью ИИ и ещё дорабатывается“. Protokolle unter
+`docs/ru/henry-2026-10-22/`. Die Durchsichtsseite (`~/Downloads/KlangTresor-Russisch-Durchsicht.html`) zeigt noch die
+KI-Fassung – nicht mehr weitergeben; Henry arbeitet mit der Tabelle.
+
+**Wiedervorlage:** Henrys zweiter Durchgang für Zeilen 1502–2499 und 3651–3868 steht aus. Neue/geänderte Schlüssel seit
+1.0.88 haben kein Russisch (Rückfall Englisch) – für Henry eine neue Tabelle mit genau diesen Zeilen erzeugen.

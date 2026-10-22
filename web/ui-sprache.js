@@ -1,7 +1,7 @@
 /* KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE */
-/* Sprache der Oberfläche. DE, EN und RU-ai, als Textkürzel, keine Flaggen.
+/* Sprache der Oberfläche. DE, EN* und RU*, als Textkürzel, keine Flaggen (Stern: Übersetzung in Teilen KI-erzeugt, in Überarbeitung).
    Nicht aus dem Browser erraten: wer nichts gewählt hat, sieht Deutsch.
-   Russisch (21.10.2026) ist eine reine KI-Übersetzung aus dem Englischen; sie steht
+   Russisch stammt von Henry (Discord, 22.10.2026, zum Teil zweimal geprüft); es steht
    in web/ui-sprache-ru.js (window.UI_RU, Schlüssel → Satz), das VOR dieser Datei lädt.
    Fehlendes Russisch fällt auf Englisch zurück, fehlendes Englisch auf Deutsch, nie auf den Rohschlüssel.
    Plural: „1 Titel|{n} Titel“ — links Einzahl, rechts Mehrzahl (auch 0).

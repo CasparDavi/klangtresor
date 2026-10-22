@@ -1,0 +1,1184 @@
+Проверка русской локализации KlangTresor — строки 2500–3650
+Дата: 22 октября 2026 г.
+
+Номера — физические строки листа Strings, как в Excel.
+Проверено строк: 1151 (2500–3650 включительно).
+Изменено строк в диапазоне: 193.
+Дополнительно согласована связанная подсказка в строке 2494: в ней повторяются названия режимов и регуляторов камеры.
+Все изменения внесены в столбец C. Для каждой правки ниже приведены оригинал, прежний перевод, новый перевод и причина.
+Сохранены ранее внесённые правки, структура книги, английский оригинал, идентификаторы строк и технические примечания.
+
+Основные исправления: действия по клику; поворот и наклон источников света; диапазоны глубины и маски эффектов; появление частиц; время перемещения и остановки камеры; режимы резкости и переходы видео.
+Технические трактовки камеры, модуляции и глубины сверены с исходным кодом KlangTresor.
+
+Проверка целостности: совпадают подстановки с учётом повторений, последовательность HTML-тегов, число разделителей |, переносы строк и крайние пробелы. Начало со строчной буквы сохранено там, где оригинал начинается со строчной.
+
+Список правок
+
+Строка 2494 · ec.effekt.kenburns.besch
+EN: A camera move with brackets: the picture <b>stands</b> whole, the camera <b>travels</b> to the first target point and <b>zooms in</b> as it goes, it <b>holds</b> there, moves on — and at the end back to the full picture. Eased in, eased out, steady in the middle. The sequence begins and ends on the same full picture, and because it repeats within the clip length, the seam closes by itself — where in the cycle the clip starts depends on the title’s one (the first beat of a bar).<br><b>The target points are the controls</b> — they are set on the stage: a click on an empty spot sets a new one (five at most), dragging moves it, the mouse wheel over a marker sets its <i>tightness</i> — down to 0.25, and what that costs in enlargement is shown in the line below the list —, a double-click removes it; <b>Add point</b> below the list sets one without having to aim. While dragging, a fine frame shows how far this marker can go — its centre must sit so that its crop stays entirely inside the picture. The number on the marker is the order, and the order is the whole choreography.<br><b>Focus on arrival</b> is set per point in the list: <i>Sharp</i> — never a change in focus; <i>Blurred</i> — the move to this point smears and is sharp again the moment it arrives; <i>Hunt</i> — it smears, and at the target the focus hunts for the point, overshoots and settles; <i>Depth plane</i> — nothing changes during the move, and on arrival the point’s depth plane stays sharp while everything else grows softer the further it lies from it in depth; it builds up over the hold and dissolves again towards its end. The first three are <b>motion</b> blur: they need no depth map and work on videos as well as on pictures. The fourth is true <b>depth</b> of field — if the map is missing, it falls back to “Blurred”, and the line below the list says so. How much it smears, the software works out from the camera’s speed. Change the setting and it is <b>demonstrated</b> straight away: the picture stands still, and only the focus plays the move and the arrival a few times over. While this card is open, the stage shows the whole picture and the move is paused — otherwise you could not place a point on the subject of a wandering picture. Collapse the card and it runs again.<br><b>The software works out the timing:</b> “Tempo” says over how many <b>bars</b> a move runs. With n points there are n+1 moves, n equally long holds at the points and one hold on the full picture, which gets the rest. How long that really is in THIS clip is shown in seconds below the list of points. The move starts on a one.<br><b>Pasting brings two points along</b>, suggested by the picture — where something stands out and the brightness changes most. After that they are yours; nothing is searched for any more.<br><b>Parallax:</b> with a depth map, what is near moves faster than what is far — the zoom becomes a <b>real camera move</b>. That is exactly what Ken Burns could not do with a print on his rostrum table. It is set to zero by default; without a depth map the line stays silent and says why.
+Было: Движение камеры с общим планом в начале и конце: сначала всё изображение <b>неподвижно</b>, камера <b>движется</b> к первой цели и <b>приближает</b> её, затем <b>задерживается</b>, идёт дальше и в конце возвращается к полному виду. Плавный разгон и торможение, постоянная скорость в середине. Начало и конец совпадают; повторение в пределах клипа автоматически замыкает стык. Место начала цикла зависит от сильной доли трека, первой доли такта.<br><b>Управление целевыми точками</b> — прямо на сцене: щелчок по пустому месту добавляет точку (до пяти), перетаскивание перемещает, колесо над маркером задаёт <i>размер охвата</i> вплоть до 0.25. Цена такого увеличения указана под списком. Двойной щелчок удаляет; <b>Добавить точку</b> под списком позволяет обойтись без прицеливания. При перетаскивании тонкая рамка показывает допустимые пределы: центр должен оставлять весь вырез внутри изображения. Номер маркера задаёт порядок, а порядок — всю хореографию.<br><b>Фокус при прибытии</b> задаётся для каждой точки: <i>Резко</i> — фокус неизменен; <i>Размыто</i> — движение размыто, по прибытии сразу резко; <i>Поиск</i> — размытие в движении, затем поиск фокуса с промахом и фиксацией; <i>Плоскость глубины</i> — при движении ничего не меняется, по прибытии глубина точки остаётся резкой, остальное размывается тем сильнее, чем дальше от неё по глубине. Эффект нарастает при удержании и исчезает к его концу. Первые три — размытие <b>движения</b>: карта глубины не нужна, работают и с видео. Четвёртый — настоящая <b>глубина</b> резкости. Без карты используется «Размыто», о чём сообщает строка под списком. Сила размытия рассчитывается по скорости камеры. Смена настройки сразу <b>демонстрируется</b>: изображение неподвижно, фокус несколько раз проигрывает движение и прибытие. Пока карточка открыта, сцена показывает весь кадр, движение приостановлено — иначе точку нельзя точно поставить на движущийся объект. Сверните карточку, чтобы продолжить.<br><b>Время рассчитывает программа:</b> «Темп» задаёт длительность движения в <b>долях</b>. Для n точек есть n+1 перемещений, n одинаковых задержек в точках и одна задержка на полном кадре, получающая остаток. Реальная длительность в ЭТОМ клипе указана в секундах под списком. Движение начинается с первой доли.<br><b>При вставке добавляются две точки</b>, предложенные по изображению: где объект выделяется и сильнее меняется яркость. Дальше ими управляете вы, новый поиск не выполняется.<br><b>Параллакс:</b> с картой глубины ближнее движется быстрее дальнего, зум становится <b>настоящим движением камеры</b>. Именно этого Ken Burns не мог сделать с отпечатком на своём съёмочном столе. По умолчанию ноль; без карты глубины строка неактивна и объясняет причину.
+Стало: Движение камеры с общим планом в начале и конце: сначала всё изображение <b>неподвижно</b>, камера <b>движется</b> к первой цели и <b>приближает</b> её, затем <b>задерживается</b>, идёт дальше и в конце возвращается к полному виду. Плавный разгон и торможение, постоянная скорость в середине. Начало и конец совпадают; повторение в пределах клипа автоматически замыкает стык. Место начала цикла зависит от сильной доли трека, первой доли такта.<br><b>Управление целевыми точками</b> — прямо на сцене: клик по пустому месту добавляет точку (до пяти), перетаскивание перемещает, колесо над маркером задаёт <i>размер охвата</i> вплоть до 0.25. Цена такого увеличения указана под списком. Двойной клик удаляет; <b>Добавить точку</b> под списком позволяет обойтись без прицеливания. При перетаскивании тонкая рамка показывает допустимые пределы: центр должен оставлять весь вырез внутри изображения. Номер маркера задаёт порядок, а порядок — всю хореографию.<br><b>Фокус в целевой точке</b> задаётся для каждой точки: <i>Без размытия</i> — фокус неизменен; <i>С размытием</i> — движение размыто, по прибытии сразу резко; <i>Поиск фокуса</i> — размытие в движении, затем поиск фокуса с промахом и фиксацией; <i>Плоскость резкости</i> — при движении ничего не меняется, по прибытии глубина точки остаётся резкой, остальное размывается тем сильнее, чем дальше от неё по глубине. Эффект нарастает при удержании и исчезает к его концу. Первые три — размытие <b>движения</b>: карта глубины не нужна, работают и с видео. Четвёртый — настоящая <b>глубина</b> резкости. Без карты используется «С размытием», о чём сообщает строка под списком. Сила размытия рассчитывается по скорости камеры. Смена настройки сразу <b>демонстрируется</b>: изображение неподвижно, фокус несколько раз проигрывает движение и прибытие. Пока карточка открыта, сцена показывает весь кадр, движение приостановлено — иначе точку нельзя точно поставить на движущийся объект. Сверните карточку, чтобы продолжить.<br><b>Время рассчитывает программа:</b> «Время перемещения» задаёт длительность движения в <b>долях</b>. Для n точек есть n+1 перемещений, n одинаковых пауз в точках и одна пауза на полном кадре, получающая остаток. Реальная длительность в ЭТОМ клипе указана в секундах под списком. Движение начинается с первой доли.<br><b>При вставке добавляются две точки</b>, предложенные по изображению: где объект выделяется и сильнее меняется яркость. Дальше ими управляете вы, новый поиск не выполняется.<br><b>Параллакс:</b> с картой глубины ближнее движется быстрее дальнего, зум становится <b>настоящим движением камеры</b>. Именно этого Ken Burns не мог сделать с отпечатком на своём съёмочном столе. По умолчанию ноль; без карты глубины строка неактивна и объясняет причину.
+Причина: Связанная подсказка вне диапазона: согласованы клики, названия четырёх режимов фокуса и регулятор времени; без этой правки инструкция называла бы отсутствующие пункты интерфейса.
+
+Строка 2501 · ec.effekt.licht.besch
+EN: A spotlight: a patch of light with a plateau and an edge, as a circle, an ellipse with falloff or a cone from outside; a gobo as a pattern in the beam; moved like a moving head. Add it several times, each with its own colour and blend. As Colour dodge the light only brightens what is already there. For beams visible in the room, put a Film haze in the chain — it catches the light, wherever in the chain it sits.
+Было: Прожектор: пятно с ровной серединой и краем — круг, эллипс со спадом или конус снаружи. Гобо задаёт узор в луче, движение — как у вращающейся головы. Можно добавить несколько, каждый со своим цветом и наложением. В режиме «Осветление основы» свет осветляет лишь существующее. Для видимых объёмных лучей добавьте в цепь Кинодымку: она ловит свет независимо от своего положения в цепи.
+Стало: Прожектор: пятно света с равномерно ярким центром и спадом яркости по краям — круг, эллипс или конус из-за пределов кадра. Гобо задаёт узор в луче; движение — как у сценического прожектора с поворотной головой. Можно добавить несколько таких эффектов, каждый со своим цветом и режимом наложения. В режиме «Осветление основы» свет осветляет только имеющиеся детали изображения. Чтобы лучи были видны в пространстве, добавьте в цепочку эффект «Кинодымка»: она рассеивает свет независимо от своего положения в цепочке.
+Причина: Разъяснены равномерная яркость, поворотная голова и назначение дымки; несколько экземпляров эффекта не смешиваются с выбором цветов.
+
+Строка 2503 · ec.effekt.laser.besch
+EN: Three types: <b>Grating</b> (a beam splitter turns one beam into many at once), <b>Scanner</b> (one beam, swept fast by a galvo mirror — what you see is afterglow) and <b>Dots</b> (a diffraction grating scatters hundreds of dots as a grid onto the surface; Tilt lays it flat like a dance floor or stands it up like a wall). Beams shoot from a point outside the picture, each with a bright core and a soft fringe; the fan sweeps (Tempo = seconds per sweep). Add it several times in different colours. As Colour dodge the light only brightens what is already there. For beams visible in the room, put a Film haze in the chain — it catches the light, wherever in the chain it sits.
+Было: Три типа: <b>Решётка</b> — разделитель превращает один луч в несколько; <b>Сканер</b> — один луч быстро отклоняется гальванометром, виден его световой след; <b>Точки</b> — дифракционная решётка рассыпает сотни точек сеткой по поверхности. Наклон кладёт сетку как танцпол или ставит как стену. Лучи выходят из точки за кадром, с яркой сердцевиной и мягким краем. Веер качается; темп — секунды на проход. Можно добавить несколько разных цветов. В режиме «Осветление основы» свет осветляет только существующее. Для видимых объёмных лучей добавьте Кинодымку: она ловит свет в любом месте цепи.
+Стало: Три типа: <b>Решётка</b> — светоделитель превращает один луч в несколько одновременно; <b>Сканер</b> — один луч быстро отклоняется зеркалом, и виден его световой след; <b>Точки</b> — дифракционная решётка проецирует сотни точек сеткой на поверхность. Параметр «Наклон» располагает сетку горизонтально, как пол танцпола, или вертикально, как стену. Лучи выходят из точки за кадром, у каждого яркая сердцевина и мягкий край. Веер качается; «Длительность цикла» задаёт время одного прохода в секундах. Можно добавить несколько таких эффектов с разными цветами. В режиме «Осветление основы» свет осветляет только имеющиеся детали изображения. Чтобы лучи были видны в пространстве, добавьте эффект «Кинодымка»: она рассеивает свет в любом месте цепочки.
+Причина: Луч отклоняется зеркалом, а не измерительным прибором; уточнены управление наклоном, время прохода и добавление экземпляров эффекта.
+
+Строка 2504 · ec.effekt.streifen.besch
+EN: Bright or dark bands run across the picture — hum bars, tracking lines. Two at different tempos: a broken signal.
+Было: Светлые или тёмные полосы бегут по изображению — сетевые наводки и сбои трекинга. Две с разным темпом создают испорченный сигнал.
+Стало: Светлые или тёмные полосы бегут по изображению, имитируя сетевые наводки и сбои трекинга. Добавьте два таких эффекта с разной скоростью, чтобы получить эффект сбоя сигнала.
+Причина: Уточнено, что нужно добавить два экземпляра эффекта, а не две отдельные полосы.
+
+Строка 2505 · ec.effekt.rauschen.besch
+EN: Snow grain and white as well as black dropout streaks. If you like, only on the beat: then as a burst on every beat.
+Было: Снежное зерно, белые и чёрные полосы пропадания сигнала. Можно включать только в долю — коротким выбросом на каждом ударе.
+Стало: Телевизионный «снег», белые и чёрные полосы выпадения сигнала. Можно привязать к ритму: тогда помехи появляются коротким всплеском на каждой доле.
+Причина: Убраны кальки «снежное зерно» и «выброс в долю»; понятнее описана привязка помех к ритму.
+
+Строка 2508 · ec.effekt.rgb.besch
+EN: Red, green and blue briefly jump apart — chromatic aberration / RGB shift. Best on the beat.
+Было: Красный, зелёный и синий ненадолго расходятся: хроматическая аберрация / сдвиг RGB. Лучше в ритм.
+Стало: Красный, зелёный и синий каналы ненадолго смещаются относительно друг друга: хроматическая аберрация / сдвиг RGB. Лучше всего смотрится в ритм.
+Причина: Уточнено, что смещаются цветовые каналы изображения, а не сами цвета.
+
+Строка 2509 · ec.effekt.strobe.besch
+EN: High-frequency flicker of the whole picture. Powerful — take care. Flash, darken or both; the drive sets the wave (frequency, beat, pattern), and its depth is the depth of the flicker. Without a drive (“steady”) nothing flickers.
+Было: Частое мерцание всего кадра. Сильный эффект — осторожнее. Вспышки, затемнение или оба; модуляция задаёт волну (частота, ритм, рисунок), её глубина — силу мерцания. Без модуляции («постоянно») мерцания нет.
+Стало: Частое мерцание всего кадра. Сильный эффект — осторожнее. Вспышки, затемнение или оба эффекта вместе; модуляция задаёт форму колебаний (частота, ритм, рисунок), а её глубина — силу мерцания. Без модуляции («постоянно») мерцания нет.
+Причина: Исправлено «или оба» без существительного; разъяснён смысл волны и глубины модуляции.
+
+Строка 2510 · ec.effekt.sicherung.besch
+EN: The opposite of the strobe: short, irregular dips in brightness, as if a fuse were twitching — with a tremor in the dip. Free (how often per ten seconds) or on the beat: then exactly on beats, but only on a random share of them. Also works as: light flickering under water, through clouds, behind leaves.
+Было: Противоположность стробоскопа: короткие нерегулярные провалы яркости с дрожью, как при плохом контакте. Свободно — частота за десять секунд; в ритм — точно на долях, но лишь на случайной части из них. Подходит и для света под водой, сквозь облака или листву.
+Стало: Противоположность стробоскопа: короткие нерегулярные провалы яркости с дрожью, как при плохом контакте. Без привязки к ритму задаётся число срабатываний за десять секунд. В ритм — точно на долях, но лишь на случайно выбранной части из них. Подходит и для света под водой, сквозь облака или листву.
+Причина: Вместо неясного «свободно — частота за десять секунд» названы режим и измеряемая величина.
+
+Строка 2511 · ec.effekt.streiflicht.besch
+EN: <b>It only works together with a light, and only when there is a depth map.</b> Then it lights the picture as if it were a relief: where the map bulges towards the light, the edge flashes; where it falls away, shadow settles. The direction comes from the light itself — a laser from the side rakes, a spotlight from the front models. Light angle says where it stands: at 0 in the picture plane — grazing, long shadows, hard edges; to the right it comes forward until it is frontal and models flatly; to the left it moves <b>behind</b> the picture surface, and then only the silhouette remains — backlight. Edge is the sharpness of the flash, Relief how strongly the map tilts the surface. Also works as: footlights, backlight, rim light.
+Было: <b>Работает только со светом и картой глубины.</b> Изображение освещается как рельеф: где поверхность обращена к свету, край вспыхивает, где отворачивается — ложится тень. Направление задаёт источник: боковой лазер скользит, фронтальный прожектор моделирует объём. Угол света: 0 — в плоскости изображения, длинные тени и резкие края; вправо — источник впереди, освещение фронтальнее; влево — <b>за</b> поверхностью, остаётся силуэт и контровой свет. Край — резкость блика, рельеф — сила наклона поверхности по карте. Подходит для рампы, контрового и краевого света.
+Стало: <b>Работает только вместе с источником света и при наличии карты глубины.</b> Изображение освещается как рельеф: на участках, обращённых к свету, края вспыхивают, а на отвёрнутых появляется тень. Направление задаёт источник: боковой лазер даёт скользящий свет, фронтальный прожектор выявляет объём. «Угол света» задаёт положение источника: при 0 он находится в плоскости изображения — свет скользящий, тени длинные, края резкие. При смещении ползунка вправо источник выходит вперёд, освещение становится фронтальным и сглаживает рельеф. Влево — источник уходит <b>за</b> поверхность изображения, остаётся силуэт и контровой свет. «Край» — резкость блика, «Рельеф» — насколько сильно карта наклоняет поверхность. Подходит для подсветки снизу, контрового и контурного света.
+Причина: Понятнее описаны положение источника и влияние угла; уточнены типы сценического освещения.
+
+Строка 2512 · ec.effekt.filmnebel.besch
+EN: <b>It only works together with a light.</b> If there is no spotlight, laser, light beam, fire, flames, caustics or strobe in the chain, white film haze stays invisible — all you then see of it is that the distance loses contrast (aerial perspective). That is not a fault but the reason every stage has a haze machine running: haze is a medium, not a colour. It dims what lies behind it and glows with the light that hits it — where in the chain it sits makes no difference. The colour is the fluid: white is water haze and cannot darken; dark is smoke and honestly swallows light. Heaviness says where it lies — from a haze filling the whole room to a flat carpet with a clear top edge. Wisps, how uneven it is. Beam focus, how sharply the beams stand in it: 0 a soft halo round every light, 1 drawn beams and laser cones. Draught, where it drifts — swirling and rising follow from that. Strength is the density. If there is a depth map, it dims by distance, and the figure stands in front of the haze by itself. Also works as: mist, smoke, clouds, stage haze, deep-sea murk.
+Было: <b>Работает только вместе со светом.</b> Без прожектора, лазера, лучей, огня, пламени, каустики или стробоскопа в цепи белая дымка невидима: лишь даль теряет контраст (воздушная перспектива). Это не ошибка: дымка — среда, а не цвет, поэтому на сценах используют дым-машины. Она затемняет задний план и светится от попадающего света в любом месте цепи. Цвет — состав: белый водяной туман не затемняет; тёмный дым поглощает свет. Тяжесть задаёт положение от заполнения всей комнаты до низкого слоя с чётким верхом. Клубы — неравномерность. Фокус лучей: 0 — мягкий ореол, 1 — чёткие лучи и лазерные конусы. Сквозняк задаёт дрейф, из него следуют завихрения и подъём. Сила — плотность. С картой глубины затемнение зависит от расстояния, фигура сама остаётся перед дымкой. Подходит для тумана, дыма, облаков, сценической дымки, подводной мути.
+Стало: <b>Работает только вместе с источником света.</b> Без прожектора, лазера, световых лучей, огня, пламени, каустики или стробоскопа в цепочке белая дымка невидима: лишь дальний план теряет контраст (воздушная перспектива). Это не ошибка: дымка — среда, а не цвет, поэтому на сценах используют дым-машины. Она ослабляет изображение за собой и светится от попадающего на неё света; её место в цепочке эффектов не имеет значения. Цвет задаёт тип среды: белый — водяная дымка без затемнения, тёмный — дым, поглощающий свет. «Тяжесть» задаёт распределение дымки по высоте: от заполнения всего пространства до низкого слоя с чёткой верхней границей. «Клубы» — её неоднородность. «Фокус лучей» — насколько чётко в дымке видны лучи: 0 — мягкий ореол вокруг каждого источника, 1 — чёткие лучи и лазерные конусы. «Сквозняк» задаёт направление дрейфа, от которого зависят завихрения и подъём. Сила эффекта — плотность дымки. При наличии карты глубины ослабление зависит от расстояния, а фигура автоматически оказывается перед дымкой. Подходит для тумана, дыма, облаков, сценической дымки и подводной мути.
+Причина: Разъяснены регуляторы дымки и взаимодействие со светом; «цвет — состав», «чёткий верх» и «сила — плотность» заменены понятными пояснениями.
+
+Строка 2513 · ec.effekt.partikel.besch
+EN: Particles drift through the picture. The source on the right says where they arise, the flight where they go: lift is lighter or heavier than air, pressure shoots them out and runs down like air resistance. Count, size, tempo, wind and colour are free. The colour source says WHERE the colours come from: the cover’s accent pair, its measured main tones, a fixed colourful set, a single colour (black snow) or an own pair. What makes the chosen kind special is shown below the selection field.
+Было: Частицы плывут через изображение. Источник справа задаёт место появления, полёт — направление. Подъёмная сила означает легче или тяжелее воздуха; напор выбрасывает частицы и слабеет как при сопротивлении воздуха. Количество, размер, темп, ветер и цвет свободны. Источник цвета задаёт, ОТКУДА берутся цвета: пара акцентов обложки, её основные тона, фиксированный набор, один цвет (чёрный снег) или своя пара. Особенности вида описаны под списком.
+Стало: Частицы плывут через изображение. Источник справа задаёт место появления, параметры полёта — движение: подъёмная сила определяет, поднимаются частицы или опускаются, а напор выбрасывает их и постепенно ослабевает, имитируя сопротивление воздуха. Количество, размер, темп, ветер и цвет можно настроить. Источник цвета задаёт, ОТКУДА берутся цвета: два акцентных цвета обложки, её основные тона, готовый набор цветов, один цвет (например, чёрный снег) или своя пара. Особенности выбранного вида описаны под списком.
+Причина: Понятнее описаны подъёмная сила и напор; исправлено «пара акцентов» и «параметры свободны».
+
+Строка 2515 · ec.effekt.titel.besch
+EN: <b>A text over the picture</b> — the song title, a name, a line. It stays the whole time and is therefore loop-proof by itself — or it gets an <b>entrance</b>: only in the whole title does it come in over one beat, stays, and leaves one beat before the first sung line; in the ten-second clip it simply stands. At the end of the chain it sits at the lens: it does not zoom along, lies over everything, even over a motion artwork; if a scene effect comes after it, it lies underneath. A title that is too long wraps or gives way in size so that it fits the picture. Outline and shadow make it readable over a moving picture; the blend is free. The <b>texture</b> lays a fixed light over the colour — metal, stone, paper or hatching; ramp, grain and light direction are built in, the colour stays yours. A click on the stage sets the position.
+Было: <b>Текст поверх изображения</b>: название песни, имя, строка. Постоянный текст сам по себе подходит для цикла. Либо задайте <b>появление</b>: в полном треке он входит за одну долю, остаётся и исчезает за долю до первой спетой строки; в десятисекундном клипе просто стоит. В конце цепи он у объектива: не масштабируется, лежит поверх всего, даже анимированной обложки. Если после него сценический эффект, текст под ним. Длинное название переносится или уменьшается до размеров кадра. Обводка и тень сохраняют читаемость на движущемся фоне; наложение свободное. <b>Текстура</b> добавляет к цвету постоянное освещение: металл, камень, бумага или штриховка. Градиент, зерно и направление света встроены, цвет выбираете вы. Щелчок по сцене задаёт положение.
+Стало: <b>Текст поверх изображения</b>: название песни, имя, строка. Постоянный текст подходит для бесшовного зацикливания. Либо задайте <b>появление</b>: в полном треке текст появляется за одну долю, остаётся на экране и исчезает за долю до первой спетой строки; в десятисекундном клипе отображается постоянно. В конце цепочки эффектов текст накладывается поверх всего, даже анимированной обложки, и не масштабируется вместе с кадром. Если после него идёт эффект сцены, текст оказывается под ним. Слишком длинный текст переносится на строки или уменьшается, чтобы поместиться в кадре. Обводка и тень сохраняют читаемость на движущемся фоне; режим наложения можно выбрать. <b>Текстура</b> добавляет к цвету постоянный рисунок освещения: металл, камень, бумагу или штриховку. Градиент, зерно и направление света заданы текстурой, а цвет выбираете вы. Клик по сцене задаёт положение текста.
+Причина: Убрана непонятная метафора «у объектива», разъяснены порядок слоёв и перенос текста; щелчок заменён на клик.
+
+Строка 2516 · ec.effekt.karaoke.besch
+EN: <b>The sung line over the picture</b> — from the title’s cleaned-up lyrics, with the line before and after, like the band on the stage. Whoever is not singing is not on: in pauses the line moves quietly upwards and the next one waits ready as the upcoming one. It belongs in the <b>whole title</b>: there the song time runs through and the sound plays along. In the ten-second clip and in the loop view it is left out. At the end of the chain it sits at the lens: it does not zoom along, lies over everything, even over a motion artwork; if a scene effect comes after it, it lies underneath.
+Было: <b>Спетая строка поверх изображения</b> — из очищенного текста песни, с предыдущей и следующей строками, как полоса на сцене. Когда пения нет, строка не активна: в паузах она спокойно уходит вверх, следующая ждёт своей очереди. Предназначено для <b>полного трека</b>, где время песни идёт непрерывно со звуком. В десятисекундном клипе и циклическом просмотре пропускается. В конце цепи находится у объектива: не масштабируется, лежит поверх всего, даже анимированной обложки. Если после него сценический эффект, текст под ним.
+Стало: <b>Текущая строка песни поверх изображения</b> — из очищенного текста, с предыдущей и следующей строками, как в режиме «Сцена». В паузах строка плавно уходит вверх, а следующая ждёт начала пения. Предназначено для <b>полного трека</b>, где время песни идёт непрерывно вместе со звуком. В десятисекундном клипе и циклическом просмотре караоке не показывается. В конце цепочки эффектов текст накладывается поверх всего, даже анимированной обложки, и не масштабируется вместе с кадром. Если после него идёт эффект сцены, текст оказывается под ним.
+Причина: «Спетая строка» уточнена как текущая; разъяснено поведение караоке и порядок слоёв вместо метафоры «у объектива».
+
+Строка 2519 · ec.effekt.feuer.besch
+EN: Flames above a baseline — wide and yellow at the bottom, narrow and red at the top; each tongue flickers and rises on its own. Base, centre and width are free; wind pulls the tongues sideways, the glow sits at the base; flares higher on the beat. “Halo” is the soft light reaching beyond the flames — it brightens the picture and at the same time lights up haze and smoke drifting above.
+Было: Пламя над базовой линией: широкое жёлтое внизу, узкое красное вверху. Каждый язык мерцает и поднимается отдельно. Основание, центр и ширина свободны; ветер отклоняет языки, жар у основания. В долю вспыхивает выше. «Ореол» — мягкий свет за пределами пламени: осветляет изображение и дымку с дымом над ним.
+Стало: Пламя над базовой линией: широкое и жёлтое внизу, узкое и красное вверху. Каждый язык мерцает и поднимается отдельно. Положение основания, центра и ширина настраиваются; ветер отклоняет языки вбок, свечение сосредоточено у основания. На долях пламя вспыхивает выше. «Ореол» — мягкий свет за пределами пламени: он осветляет изображение, а также дымку и дым над ним.
+Причина: Glow означает свечение, а не физический жар; уточнены настраиваемые параметры и привязка вспышек к долям.
+
+Строка 2523 · ec.effekt.flammen.besch
+EN: Fire from fractal noise (WebGL): real licking tongues, yellow at the bottom, red at the top. Base, centre, width are free; wind lays the tongues sideways; flares higher on the beat.
+Было: Огонь из фрактального шума (WebGL): языки пламени, жёлтые внизу, красные вверху. Основание, центр и ширина свободны; ветер отклоняет языки, в долю они выше.
+Стало: Огонь из фрактального шума (WebGL): языки пламени, жёлтые внизу и красные вверху. Положение основания, центра и ширина настраиваются; ветер отклоняет языки вбок. На долях пламя вспыхивает выше.
+Причина: Исправлены обрывки «основание, центр, ширина свободны» и «в долю они выше».
+
+Строка 2524 · ec.effekt.lichtRaum.besch
+EN: A <b>lamp with a place in the room</b>, not a painted shape. It stands somewhere in the diorama and shines somewhere — both points have a <b>depth</b>. What you see is calculated: if it faces head-on, the patch is round; if it stands at an angle, it turns into an ellipse by itself, exactly as slanted as the lamp stands. That is why there is no longer a type to choose.<br><b>With a depth map</b> it only lights what lies <b>behind</b> it — if it stands behind a figure, the figure stays dark and a silhouette appears. Without a map it lights flatly, and the line says so.<br><b>Beam angle</b> is the cone, <b>Hotspot</b> the bright core within it, <b>Edge</b> how hard the rim falls off. As Colour dodge the light only brightens what is already there. For beams visible in the room, put a Film haze in the chain — it catches the light, wherever in the chain it sits.
+Было: <b>Светильник в пространстве</b>, а не нарисованная фигура. Он стоит в диораме и светит в цель; у обеих точек есть <b>глубина</b>. Пятно рассчитывается: прямо — круг, под углом — эллипс с соответствующим наклоном. Поэтому выбора типа больше нет.<br><b>С картой глубины</b> освещает только то, что <b>за ним</b>. Если стоит за фигурой, она остаётся тёмной силуэтом. Без карты свет плоский, строка сообщает об этом.<br><b>Угол луча</b> — конус, <b>Ядро</b> — яркая середина, <b>Край</b> — резкость спада. В режиме «Осветление основы» свет осветляет только существующее. Для объёмных лучей добавьте Кинодымку: она ловит свет в любом месте цепи.
+Стало: <b>Источник света с заданным положением в пространстве</b>, а не нарисованная фигура. В диораме задаются положение источника и точка, на которую он направлен; у обеих точек есть <b>глубина</b>. Световое пятно рассчитывается: при фронтальном освещении оно круглое, при боковом становится эллипсом с соответствующим наклоном. Поэтому тип пятна выбирать не нужно.<br><b>С картой глубины</b> источник освещает только то, что находится <b>за ним</b>. Если он расположен за фигурой, она остаётся тёмной и видна силуэтом. Без карты освещается условная плоскость, о чём появляется подсказка.<br><b>Угол луча</b> задаёт раскрытие конуса, <b>Ядро</b> — яркую центральную область, <b>Край</b> — резкость границы светового пятна. В режиме «Осветление основы» свет осветляет только имеющиеся детали изображения. Чтобы лучи были видны в пространстве, добавьте эффект «Кинодымка»: она рассеивает свет в любом месте цепочки.
+Причина: Согласованы источник и цель как две точки; разъяснены форма пятна, угловое раскрытие и поведение без карты глубины.
+
+Строка 2525 · ec.effekt.laserRaum.besch
+EN: <b>Parallel light with a place in the room.</b> As with the Spotlight with depth, source and target stand somewhere in the diorama, both with a <b>depth</b>. Unlike a shaft of light, a laser does <b>not</b> widen: its diameter stays the same over the whole distance.<br>Five types: <b>Fan</b> — a beam splitter turns one beam into several at once, all parallel. <b>Scanner</b> — one beam, swept fast by a mirror; what you see is its afterglow. <b>Matrix dots</b> — a diffraction grating scatters a grid of dots onto whatever is there. <b>Cone</b> — the beams sit on a <i>hollow</i> shell that rotates: the laser tunnel over the dance floor that you stand right inside. <b>Lissajous</b> — the same mirror as the scanner, but on both axes and at different speeds; this produces a closed loop.<br><b>Roll</b> turns the fan plane about the beam axis, <b>Blanking</b> switches individual beams off in time — the blanking of a laser show.<br><b>The beam table</b> — the horizontal plane of beams above the heads — needs no type of its own: it is a fan with Roll at 90°. As Colour dodge the light only brightens what is already there. For beams visible in the room, put a Film haze in the chain — it catches the light, wherever in the chain it sits.
+Было: <b>Параллельный свет с положением в пространстве.</b> Как у Прожектора с глубиной, источник и цель стоят в диораме, у обеих есть <b>глубина</b>. Лазер <b>не</b> расширяется, в отличие от светового луча: диаметр постоянен по всей длине.<br>Пять типов. <b>Веер</b> — разделитель создаёт несколько параллельных лучей. <b>Сканер</b> — один луч быстро отклоняется зеркалом, видно послесвечение. <b>Матрица точек</b> — дифракционная решётка проецирует сетку на поверхность. <b>Конус</b> — лучи на <i>полой</i> вращающейся оболочке: лазерный туннель над танцполом, внутри которого можно стоять. <b>Лиссажу</b> — зеркало сканера движется по двум осям с разной скоростью, создавая замкнутую петлю.<br><b>Крен</b> вращает плоскость веера вокруг оси, <b>Гашение</b> ритмично выключает отдельные лучи, как на лазерном шоу.<br><b>Световой стол</b>, горизонтальная плоскость над головами, — просто веер с креном 90°, отдельный тип не нужен. В режиме «Осветление основы» свет осветляет только существующее. Для объёмных лучей добавьте Кинодымку: она ловит свет в любом месте цепи.
+Стало: <b>Параллельный свет с заданным положением в пространстве.</b> Как у «Прожектора с глубиной», в диораме задаются источник и цель; у обеих точек есть <b>глубина</b>. В отличие от расходящегося светового пучка, лазер <b>не</b> расширяется: диаметр каждого луча постоянен по всей длине.<br>Пять типов. <b>Веер</b> — светоделитель создаёт несколько параллельных лучей. <b>Сканер</b> — один луч быстро отклоняется зеркалом, и виден его световой след. <b>Матрица точек</b> — дифракционная решётка проецирует сетку на поверхность. <b>Конус</b> — лучи на <i>полой</i> вращающейся оболочке: лазерный туннель над танцполом, внутри которого можно стоять. <b>Лиссажу</b> — зеркало сканера движется по двум осям с разной скоростью, создавая замкнутую петлю.<br><b>Крен</b> вращает плоскость веера вокруг оси луча, <b>Гашение</b> кратковременно выключает отдельные лучи, как на лазерном шоу.<br><b>Лазерная плоскость</b> — горизонтальный слой лучей над головами — не требует отдельного типа: это веер с креном 90°. В режиме «Осветление основы» свет осветляет только имеющиеся детали изображения. Чтобы лучи были видны в пространстве, добавьте эффект «Кинодымка»: она рассеивает свет в любом месте цепочки.
+Причина: Устранены ошибка согласования и неоднозначный «световой стол»; лазер сопоставлен с расходящимся пучком, а не со светом вообще.
+
+Строка 2526 · ec.effekt.strahlenRaum.besch
+EN: <b>Light from a source in the room that fans out.</b> Source and target stand somewhere in the diorama, both with a <b>depth</b> — and unlike a laser, a shaft of light widens on its way, because it falls from an opening.<br>Three types: <b>Shaft</b> — a broad band of light, sun through a window. <b>Fan</b> — several lanes side by side, sun through leaves or blinds. <b>Sphere source</b> — all beams come from <i>one</i> point and go in all directions, each in its own colour: a mirror ball or a cluster of coloured spotlights.<br><b>Roll</b> turns the fan plane about the beam axis. <b>With a depth map</b>, whatever stands nearer than the source is hidden. As Colour dodge the light only brightens what is already there. For beams visible in the room, put a Film haze in the chain — it catches the light, wherever in the chain it sits.
+Было: <b>Расходящийся свет из источника в пространстве.</b> Источник и цель находятся в диораме, у обеих есть <b>глубина</b>. В отличие от лазера, луч расширяется: свет идёт из отверстия.<br>Три типа. <b>Поток</b> — широкая полоса, солнце из окна. <b>Веер</b> — несколько полос рядом, солнце сквозь листья или жалюзи. <b>Сферический источник</b> — лучи из <i>одной</i> точки во все стороны, каждый своего цвета: зеркальный шар или группа цветных прожекторов.<br><b>Крен</b> вращает плоскость веера вокруг оси. <b>С картой глубины</b> всё ближе источника перекрывает свет. В режиме «Осветление основы» свет осветляет только существующее. Для объёмных лучей добавьте Кинодымку: она ловит свет в любом месте цепи.
+Стало: <b>Расходящийся свет из источника в пространстве.</b> В диораме задаются источник и цель; у обеих точек есть <b>глубина</b>. В отличие от лазера, световой пучок расширяется по мере удаления от отверстия, из которого выходит свет.<br>Три типа. <b>Поток</b> — широкая полоса света, как солнце из окна. <b>Веер</b> — несколько полос рядом, как солнце сквозь листья или жалюзи. <b>Сферический источник</b> — лучи из <i>одной</i> точки во все стороны, каждый своего цвета: зеркальный шар или группа цветных прожекторов.<br><b>Крен</b> вращает плоскость веера вокруг оси луча. <b>С картой глубины</b> объекты, расположенные перед источником, перекрывают свет. В режиме «Осветление основы» свет осветляет только имеющиеся детали изображения. Чтобы лучи были видны в пространстве, добавьте эффект «Кинодымка»: она рассеивает свет в любом месте цепочки.
+Причина: Исправлено согласование двух точек; понятнее описаны расширение пучка и перекрытие света объектами.
+
+Строка 2528 · ec.effekt.spiegel.besch
+EN: Below a horizon line the picture is reflected, slightly rippled, fading downwards — lake, puddle, wet tarmac.
+Было: Ниже горизонта изображение отражается с лёгкой рябью и затуханием вниз: озеро, лужа, мокрый асфальт.
+Стало: Ниже линии горизонта появляется отражение изображения: оно слегка рябит и постепенно исчезает к нижнему краю. Озеро, лужа, мокрый асфальт.
+Причина: Уточнено, что затухание вниз — пространственное ослабление отражения, а не его движение.
+
+Строка 2529 · ec.effekt.risse.besch
+EN: Branching cracks from one or more impacts, with a highlight edge and a shadow edge. Growth static, over time, or branch by branch on the beat. Also works as: ice, veins, lightning branches, drought cracks.
+Было: Ветвящиеся трещины от одного или нескольких ударов, со светлым и теневым краями. Постоянные, растущие во времени или по ветке в долю. Подходит для льда, вен, ветвей молнии, высохшей земли.
+Стало: Ветвящиеся трещины от одного или нескольких ударов, со светлым и теневым краями. Они показаны сразу, растут постепенно или добавляют новую ветвь с каждой долей. Подходит для имитации льда, прожилок, разветвлённых молний и растрескавшейся земли.
+Причина: Разъяснены варианты роста вместо неясного «по ветке в долю».
+
+Строка 2534 · ec.effekt.bloecke.besch
+EN: Rectangular blocks of the picture jump out of place — the digital sibling of the analogue disturbances. Free or on the beat, with colour offset inside the blocks.
+Было: Прямоугольные блоки изображения смещаются — цифровой аналог аналоговых помех. Свободно или в ритм, с цветовым сдвигом внутри блоков.
+Стало: Прямоугольные блоки изображения смещаются — цифровой вариант аналоговых помех. Без привязки к ритму или на долях, с цветовым сдвигом внутри блоков.
+Причина: Устранены тавтология «цифровой аналог аналоговых» и непонятное «свободно».
+
+Строка 2535 · ec.effekt.farbton.besch
+EN: On the beat the hue briefly turns away and comes back. Angle = how far (negative = the other direction).
+Было: В долю цветовой тон ненадолго поворачивается и возвращается. Угол — величина поворота, отрицательный — другое направление.
+Стало: На долях цветовой тон ненадолго сдвигается и возвращается к исходному. Угол задаёт величину сдвига; отрицательные значения меняют направление.
+Причина: Понятнее описано изменение цветового тона, без буквального вращения цвета.
+
+Строка 2536 · ec.effekt.kippen.besch
+EN: The picture tilts by a few degrees on the beat and rights itself again — a physical jolt. Slightly zoomed in, so that no corners are exposed.
+Было: В долю изображение наклоняется на несколько градусов и выпрямляется, как от толчка. Немного увеличено, чтобы углы не оголялись.
+Стало: На долях изображение наклоняется на несколько градусов и выпрямляется, как от толчка. Кадр немного увеличен, чтобы при наклоне по углам не появлялись пустые участки.
+Причина: Разъяснено назначение увеличения вместо «углы не оголялись».
+
+Строка 2537 · ec.regler.kbSchlaege
+EN: Tempo (beats)
+Было: Темп (доли)
+Стало: Время перемещения (доли)
+Причина: Это число долей на одно перемещение камеры, а не темп музыки; подтверждено регулятором kbSchlaege и пояснениями 3263–3264.
+
+Строка 2543 · ec.regler.tempo
+EN: Tempo (s)
+Было: Темп (с)
+Стало: Длительность цикла (с)
+Причина: Секунды на цикл не являются темпом в обычном понимании; единица и смысл регулятора названы прямо.
+
+Строка 2570 · ec.regler.ausfall
+EN: Dropout streaks
+Было: Полосы пропадания
+Стало: Полосы выпадения сигнала
+Причина: Видеотермин dropout уточнён: пропадает сигнал, а не сами полосы.
+
+Строка 2612 · ec.regler.band.2
+EN: Band
+Было: Полоса
+Стало: Подложка
+Причина: Band в караоке — фоновая подложка под текстом; это не строка текста и не частотная полоса.
+
+Строка 2638 · ec.regler.lrOz
+EN: Lamp depth
+Было: Глубина светильника
+Стало: Глубина источника света
+Причина: Согласовано с соседними подписями «Источник света X» и «Источник света Y».
+
+Строка 2690 · ec.schalter.sprung
+EN: jump to one position per beat
+Было: переход к одной позиции на долю
+Стало: перескакивать на новую позицию на каждой доле
+Причина: Устранена неестественная формулировка «переход к одной позиции на долю».
+
+Строка 2711 · ec.wahl.bauart.scanner
+EN: Scanner — one beam, swept fast
+Было: Сканер — один быстрый луч
+Стало: Сканер — один быстро движущийся луч
+Причина: Уточнено сканирование лучом: «быстрый луч» можно понять как скорость распространения света.
+
+Строка 2724 · ec.wahl.modus.beides
+EN: both
+Было: оба
+Стало: вспышка и затемнение
+Причина: Оба режима названы явно вместо неоднозначного «оба».
+
+Строка 2758 · ec.wahl.ausrichtung.links
+EN: left
+Было: слева
+Стало: по левому краю
+Причина: Стандартная подпись выравнивания текста; положение блока задаётся отдельно.
+
+Строка 2759 · ec.wahl.ausrichtung.rechts
+EN: right
+Было: справа
+Стало: по правому краю
+Причина: Стандартная подпись выравнивания текста; положение блока задаётся отдельно.
+
+Строка 2771 · ec.wahl.schwenkArt.pan
+EN: Pan — turns about the vertical
+Было: Панорама — вокруг вертикали
+Стало: Поворот — вокруг вертикальной оси
+Причина: Pan здесь — поворот источника света, а не панорамное изображение.
+
+Строка 2772 · ec.wahl.schwenkArt.tilt
+EN: Tilt — turns about the horizontal
+Было: Наклон — вокруг горизонтали
+Стало: Наклон — вокруг горизонтальной оси
+Причина: Явно названа ось вращения, согласовано с режимом поворота.
+
+Строка 2773 · ec.wahl.schwenkArt.kreis
+EN: Circle — both at once
+Было: Круг — обе оси сразу
+Стало: Круг — одновременно по обеим осям
+Причина: Уточнено одновременное движение по двум осям.
+
+Строка 2774 · ec.wahl.schwenkArt.acht
+EN: Figure of eight — tilt twice as fast
+Было: Восьмёрка — наклон вдвое быстрее
+Стало: Восьмёрка — наклон вдвое быстрее поворота
+Причина: Указано, с каким движением сравнивается скорость наклона.
+
+Строка 2788 · ec.partikel.einfarbig
+EN: Single colour paints with the first colour only; colour variation scatters it in brightness.
+Было: В режиме «Один цвет» используется только первый цвет; разнообразие меняет его яркость.
+Стало: В режиме «Один цвет» используется только первый цвет. Параметр «Разнообразие цветов» в этом режиме меняет яркость частиц.
+Причина: Приведено точное название регулятора и объяснено его действие при одном цвете.
+
+Строка 2791 · ec.titel.text_leer
+EN: Empty means: the song’s title.
+Было: Пустое поле — название песни.
+Стало: Если оставить поле пустым, будет показано название песни.
+Причина: Явно объяснена подстановка названия песни в пустое поле.
+
+Строка 2792 · ec.titel.groesse
+EN: Share of the short side of the picture. A title that is too wide wraps or shrinks.
+Было: Доля короткой стороны изображения. Слишком широкое название переносится или уменьшается.
+Стало: Размер текста задаётся как доля короткой стороны изображения. Слишком длинный текст переносится на строки или уменьшается.
+Причина: Уточнено, что доля относится к размеру текста, а не его положению или ширине блока.
+
+Строка 2793 · ec.titel.farbe_grau
+EN: The colour comes from the cover — for your own, set it to “own colour”.
+Было: Цвет берётся с обложки. Для своего выберите «свой цвет».
+Стало: Цвет берётся с обложки. Чтобы задать его вручную, выберите «свой цвет».
+Причина: Устранено неясное «для своего».
+
+Строка 2798 · ec.titel.ortx
+EN: Position of the text box: 0 left, 1 right. A click on the stage sets both.
+Было: Положение текстового блока: 0 — слева, 1 — справа. Щелчок по сцене задаёт обе координаты.
+Стало: Положение текстового блока: 0 — слева, 1 — справа. Клик по сцене задаёт обе координаты.
+Причина: Действие мышью приведено к согласованному термину «клик».
+
+Строка 2802 · ec.karaoke.band
+EN: The less band, the more outline and shadow the text gets, so that it stays legible over the picture.
+Было: Чем слабее полоса, тем сильнее обводка и тень текста, чтобы он оставался читаемым на изображении.
+Стало: Чем менее заметна подложка, тем сильнее обводка и тень: текст остаётся читаемым на любом фоне.
+Причина: Устранена калька «меньше полосы», название согласовано с регулятором «Подложка».
+
+Строка 2805 · ec.karaoke.orty_rand
+EN: Bottom edge at the picture’s edge, as on the stage.
+Было: Нижний край у края изображения, как на сцене.
+Стало: Нижний край текстового блока у нижнего края изображения, как в режиме «Сцена».
+Причина: Указано, какой именно край какого объекта привязывается к низу кадра.
+
+Строка 2806 · ec.karaoke.orty_frei
+EN: Bottom edge of the text; free in the picture, the band fades in at the top and out at the bottom.
+Было: Нижний край текста распологается свободно в кадре; полоса плавно появляется сверху и исчезает снизу.
+Стало: Положение нижнего края текста можно свободно выбрать в кадре. Подложка плавно становится прозрачной у верхнего и нижнего краёв.
+Причина: Исправлена опечатка; пространственное ослабление подложки не описывается как анимация появления и исчезновения.
+
+Строка 2807 · ec.karaoke.orty_klick
+EN: A click on the stage sets the height.
+Было: Щелчок по сцене задаёт высоту.
+Стало: Клик по сцене задаёт положение текста по вертикали.
+Причина: Height здесь — вертикальное положение, а не размер шрифта; использован согласованный термин «клик».
+
+Строка 2808 · ec.karaoke.vorlauf
+EN: The line appears when it is sung — as on the stage. Lead-in shows it earlier.
+Было: Строка появляется, когда её поют, как на сцене. Опережение показывает её раньше.
+Стало: Строка появляется, когда её поют, как в режиме «Сцена». «Опережение» позволяет показать строку раньше.
+Причина: Понятнее выражена связь появления строки с пением и регулятором «Опережение».
+
+Строка 2809 · ec.feuer.woelbung
+EN: The base line as the lower arc of a bowl: 0 straight, 1 as deep as it is wide. Base stays the lowest point.
+Было: Основание как нижняя дуга чаши: 0 — прямо, 1 — глубина равна ширине. Основание остаётся нижней точкой.
+Стало: Линия основания изгибается дугой, как дно чаши: 0 — прямая, 1 — глубина дуги равна её ширине. «Основание» всегда задаёт самую нижнюю точку.
+Причина: Уточнено, что изгибается линия основания пламени и какая величина сравнивается с шириной.
+
+Строка 2818 · ec.laser.wander_tempo
+EN: How many seconds one round of the wandering path takes. Only acts when “Source wanders” is on.
+Было: Секунд на полный обход траектории. Действует только при «Источник движется».
+Стало: Секунд на один полный круг. Действует только при включённом режиме «Источник движется».
+Причина: Устранено неполное согласование «при Источник движется»; пояснена длительность цикла.
+
+Строка 2821 · ec.laser.auffaechernd_aus
+EN: The beams run parallel side by side, as if behind a beam splitter. Switched on, they fan out and the span becomes an angle.
+Было: Лучи параллельны, как после разделителя. При включении расходятся веером, размах становится углом.
+Стало: В выключенном состоянии лучи идут параллельно, как после светоделителя. При включении расходятся веером, а «Размах» задаёт угловой размах веера.
+Причина: Разведены параллельные лучи и веер; ясно, что регулятор задаёт угол, а не расстояние.
+
+Строка 2830 · ec.laser.umlauf.spiegel
+EN: How often per second the mirror swings back and forth. Not to be confused with the sweep further down — that tilts the whole lamp, this only deflects the beam.
+Было: Количество колебаний зеркала в секунду. Не путайте с качанием ниже: оно поворачивает весь светильник, это — только отклоняет луч.
+Стало: Число колебаний зеркала в секунду. Не путайте с проходом ниже: там поворачивается весь источник света, здесь зеркало только отклоняет луч.
+Причина: Источник света согласован с подписями координат; уточнено различие частоты сканирования и движения всего прибора.
+
+Строка 2832 · ec.laser.nachgluehen_sprung
+EN: With “Jump on each beat”, a share of the beat rather than of the gliding trace: at 0.5 the previous position is gone after half a beat.
+Было: При «Скачке на каждой доле» — доля длительности доли, а не скользящего следа. При 0.5 прежняя позиция исчезает через полдоли.
+Стало: В режиме «Скачок на каждой доле» длина светового следа задаётся в частях доли. При 0,5 след прежнего положения исчезает через полдоли; это уже не непрерывный след плавного движения.
+Причина: Устранена тавтология «доля длительности доли»; объяснено, что именно исчезает за полдоли.
+
+Строка 2833 · ec.laser.nachgluehen
+EN: A scanning mirror moves the beam faster than the eye can follow — what you see is its trace.
+Было: Зеркало сканера двигает луч быстрее, чем следит глаз: видно его след.
+Стало: Сканирующее зеркало перемещает луч быстрее, чем глаз успевает за ним следить: виден его световой след.
+Причина: Исправлено «видно его след»; объяснено, почему виден след, а не только текущее положение луча.
+
+Строка 2834 · ec.laser.sprung
+EN: Taken over from the old laser: instead of sweeping smoothly, the mirror holds one of “Positions” random positions per beat — needs the drive “on the beat”, otherwise it stays on one position.
+Было: Из старого лазера: вместо плавного прохода зеркало удерживает на каждую долю одну случайную позицию из числа «Позиции». Нужна модуляция «в ритм», иначе останется одна позиция.
+Стало: Как в прежнем эффекте «Лазер»: вместо плавного прохода зеркало выбирает случайную позицию и удерживает её в течение доли. Число позиций задаётся параметром «Позиции». Нужна модуляция «в ритм», иначе положение не меняется.
+Причина: Устранена формулировка «одну случайную позицию из числа Позиции»; указана необходимая настройка модуляции.
+
+Строка 2837 · ec.laser.flimmer
+EN: Taken over from the old laser: a laser does not shimmer in waves, it blanks hard — at 1 it is dark for just under half the time. At 0 (default) no effect.
+Было: Из старого лазера: лазер не мерцает волной, а резко гаснет. При 1 темно чуть меньше половины времени. При 0 (по умолчанию) эффекта нет.
+Стало: Как в прежнем эффекте «Лазер»: лучи не мерцают плавно, а резко выключаются. При 1 они погашены чуть меньше половины времени. При 0 (по умолчанию) гашения нет.
+Причина: Уточнено, что выключаются лучи, а не весь кадр; явно описано значение 0.
+
+Строка 2839 · ec.laser.rollweite
+EN: How far the fan plane turns back and forth. The “Roll” slider further up sets the centre it swings around.
+Было: Размах поворота плоскости веера туда-обратно. Ползунок «Крен» выше задаёт центр колебания.
+Стало: Угловой размах колебаний плоскости веера. Ползунок «Крен» выше задаёт центральный угол, относительно которого колеблется веер.
+Причина: Размах колебаний отделён от центрального угла, который задаётся другим регулятором.
+
+Строка 2846 · ec.strahlen.ringe
+EN: How many rings of beams the sphere has — one is a ring, several fill the space.
+Было: Число колец лучей сферы: одно — кольцо, несколько заполняют пространство.
+Стало: Число колец: одно образует плоское кольцо, несколько заполняют объём.
+Причина: Пояснена разница плоского и объёмного рисунка вместо тавтологии «одно — кольцо».
+
+Строка 2856 · ec.zone.keine_koerper
+EN: This effect has no individual bodies — it lies over the whole picture. Its zone can only be cut out: here, where it stays already is the cut.
+Было: У эффекта нет отдельных тел, он покрывает весь кадр. Его зону можно лишь вырезать: здесь область пребывания уже является вырезом.
+Стало: Эффект покрывает весь кадр и не состоит из отдельных частиц. Его область действия ограничивается маской: здесь «Область размещения» сразу задаёт, где будет виден эффект.
+Причина: По исходному коду для сплошного эффекта применяется маска; «область пребывания является вырезом» не объясняла поведение.
+
+Строка 2858 · ec.raum.eigene_bahn
+EN: This kind computes its path entirely by itself — size, speed and haze do not depend on distance here. It is still hidden by its own distance.
+Было: Этот вид сам рассчитывает весь путь: размер, скорость и дымка здесь не зависят от расстояния. Перекрытие по расстоянию всё равно действует.
+Стало: Для частиц этого вида размер, скорость и ослабление дымкой не зависят от глубины: их движение рассчитывается отдельно. Перекрытие объектами по-прежнему учитывает глубину каждой частицы.
+Причина: Вместо неясного «размер и скорость плоские» разведены движение и видимость за объектами.
+
+Строка 2861 · ec.zone.aufenthalt.kanone
+EN: The cannon fires from its muzzle; whatever flies into the forbidden zone is not drawn there.
+Было: Пушка стреляет из дула; залетевшее в запретную зону там не рисуется.
+Стало: Пушка выбрасывает частицы из дула. В запретной зоне летящие частицы не отображаются.
+Причина: Убрана неестественная конструкция «залетевшее не рисуется»; сохранено отличие движения от отображения.
+
+Строка 2862 · ec.zone.aufenthalt.teilchen
+EN: The particles are never born in the forbidden zone and are not drawn there either.
+Было: Частицы не рождаются в запретной зоне и не рисуются там.
+Стало: Частицы не появляются и не отображаются в запретной зоне.
+Причина: Согласован термин появления частиц, устранено буквальное «не рождаются и не рисуются».
+
+Строка 2866 · ec.zone.ausgeschnitten
+EN: The zone is cut out of the result — this effect has no individual bodies that could be sent elsewhere.
+Было: Зона вырезается из результата: отдельных тел, которые можно направить в другое место, у эффекта нет.
+Стало: У этого эффекта нет отдельных частиц, которые можно направить в другое место. Область его действия ограничивается маской.
+Причина: Объяснено маскирование сплошного эффекта без впечатления, что из исходного изображения вырезают фрагмент.
+
+Строка 2869 · ec.zone.schnitt
+EN:  The cut removes {anteil} of the picture completely.
+Было:  Вырез полностью убирает {anteil} изображения.
+Стало:  Маска полностью скрывает эффект на {anteil} изображения.
+Причина: Скрывается слой эффекта, а не исходное изображение; это подтверждено кодом зон для сплошных эффектов.
+
+Строка 2870 · ec.zone.saum
+EN:  This kind paints a soft fringe beyond its body; a trace of it can reach into the forbidden zone.
+Было: Этот вид рисует мягкий ореол за телом; его след может заходить в запретную зону.
+Стало: У частиц этого вида за пределами основного контура есть мягкий ореол. Он может частично заходить в запретную зону.
+Причина: «За телом» можно ошибочно понять как положение по глубине; речь об ореоле за пределами контура.
+
+Строка 2875 · ec.raum.flach
+EN: Size and speed stay flat: all particles equally large and equally fast, wherever they are. Each is still hidden by its own distance — that always applies.
+Было: Размер и скорость плоские: все частицы одинакового размера и скорости независимо от положения. Перекрытие каждой по своему расстоянию действует всегда.
+Стало: Размер и скорость не зависят от глубины: на ближнем и дальнем плане частицы выглядят и движутся одинаково. Перекрытие объектами всё равно рассчитывается по глубине каждой частицы.
+Причина: Устранена непонятная характеристика «плоские» и сохранено различие между масштабированием и перекрытием.
+
+Строка 2876 · ec.raum.wo_quelle
+EN: The distance comes from the free range at the source you set.
+Было: Расстояние берётся из свободного диапазона у заданного источника.
+Стало: Глубина определяется доступным диапазоном в заданной точке источника.
+Причина: Free range здесь — доступный диапазон глубины, а не свободная область изображения.
+
+Строка 2877 · ec.raum.wo_boden
+EN: The distance comes from the free range above the ground surface: near at the bottom edge, far further up — and that is also where the particle is painted.
+Было: Расстояние берётся из свободного диапазона над поверхностью земли: ближе у нижнего края, дальше выше. Там же рисуется частица.
+Стало: Глубина выбирается из доступного диапазона над опорной поверхностью: внизу кадра ближе, выше — дальше. Там же отображается частица.
+Причина: Уточнены пространственная величина и положение частицы; согласовано с описанием карты в строке 3527.
+
+Строка 2878 · ec.raum.wo_rand_oben
+EN: The distance comes from the free range at the top edge of the picture, in its own column — that is where this kind enters, not at its current position.
+Было: Расстояние берётся из свободного диапазона у верхнего края в своём столбце: вид входит оттуда, а не из текущего положения.
+Стало: Глубина определяется доступным диапазоном у верхнего края кадра в колонке частицы. Именно там частица входит в кадр; её текущее положение для этого расчёта не используется.
+Причина: Уточнены диапазон глубины и отличие точки входа от текущего положения частицы.
+
+Строка 2879 · ec.raum.wo_rand_unten
+EN: The distance comes from the free range at the bottom edge of the picture, in its own column — that is where this kind enters, not at its current position.
+Было: Расстояние берётся из свободного диапазона у нижнего края в своём столбце: вид входит оттуда, а не из текущего положения.
+Стало: Глубина определяется доступным диапазоном у нижнего края кадра в колонке частицы. Именно там частица входит в кадр; её текущее положение для этого расчёта не используется.
+Причина: Согласовано с парной подсказкой верхнего края и с термином доступного диапазона глубины.
+
+Строка 2880 · ec.raum.wo_da
+EN: The distance comes from the free range at its own position — this kind is always already there.
+Было: Расстояние берётся из свободного диапазона в собственной позиции: этот вид уже находится на месте.
+Стало: Частицы появляются прямо внутри кадра, а не входят в него из-за края. Глубина выбирается из доступного диапазона в точке появления.
+Причина: «В собственной позиции» не объясняло отличие этого режима от источников за краями кадра.
+
+Строка 2883 · ec.raum.spanne
+EN:  On this map the free range at the birthplaces of this origin runs from {a} to {b}: so no particle becomes smaller than {g1}× or slower than {t1}×, none larger than {g2}× or faster than {t2}×
+Было:  На этой карте свободный диапазон в местах рождения для этого источника: от {a} до {b}. Ни одна частица не меньше {g1}× и не медленнее {t1}×, не больше {g2}× и не быстрее {t2}×
+Стало:  На этой карте доступный диапазон глубины в точках появления частиц этого источника: от {a} до {b}. Масштаб частиц — от {g1}× до {g2}×, скорость — от {t1}× до {t2}×
+Причина: Устранено неестественное сравнение величин через «мельче/быстрее» с множителями; явно названы глубина, масштаб и скорость.
+
+Строка 2886 · ec.partikel.antrieb_grau
+EN: This kind flies on evenly — only the confetti cannon (its bursts) and the glitter (its flashes) follow the drive.
+Было: Этот вид летит равномерно. Только пушка конфетти (залпы) и блёстки (вспышки) следуют модуляции.
+Стало: Частицы движутся постоянно, а не в ритм. Модуляция управляет только залпами пушки и вспышками блёсток.
+Причина: Вместо неопределённого «вид летает» названы частицы и границы действия модуляции.
+
+Строка 2887 · ec.partikel.boeen_links
+EN:  Gusts on the beat are on the left and follow the beat grid directly.
+Было:  Порывы в ритм находятся слева и следуют напрямую ритмической сетке.
+Стало:  Переключатель «порывы в ритм» находится слева и использует ритмическую сетку напрямую.
+Причина: «Порывы находятся слева» можно понять как направление ветра; на самом деле слева расположен переключатель.
+
+Строка 2888 · ec.partikel.boeen_schnuppe
+EN: A shooting star does not fall through the air, it follows its path — a nudge on the beat does not take hold of it. The Wind slider still tilts it.
+Было: Падающая звезда не падает сквозь воздух, а следует траектории. Толчок в ритм на неё не действует, но ползунок Ветра наклоняет её.
+Стало: Падающая звезда движется по заданной траектории — порывы в ритм на неё не влияют. «Ветер» меняет наклон траектории.
+Причина: Ясно различены порывы в ритм и постоянный наклон траектории регулятором «Ветер».
+
+Строка 2894 · ec.partikel.art.konfetti
+EN: Paper flakes: they tumble as they fall and spin. The fixed colourful set brings six colours — the colour source also switches to one or two colours.
+Было: Бумажные хлопья кувыркаются и вращаются при падении. Фиксированный набор даёт шесть цветов; источник цвета позволяет один или два.
+Стало: Кусочки бумаги кувыркаются и вращаются при падении. Готовый разноцветный набор содержит шесть цветов; в настройке «Источник цвета» можно также выбрать один цвет или свою пару.
+Причина: Исправлена неполная конструкция «источник цвета позволяет один или два»; сохранено описание конфетти и набора цветов.
+
+Строка 2898 · ec.partikel.art.glitzer
+EN: Short flashes instead of flying bodies; they sit on the same drive as the cannon’s bursts.
+Было: Короткие вспышки вместо летящих тел. Следуют той же модуляции, что и залпы пушки.
+Стало: Короткие вспышки вместо летящих частиц. Ими управляет та же модуляция, что и залпами пушки.
+Причина: Согласован термин частиц и понятнее объяснено общее управление вспышками и залпами.
+
+Строка 2900 · ec.partikel.art.sternschnuppen
+EN: An event, not a drizzle: one flies per clip length, two from amount 200.
+Было: Событие, а не поток: одна за длительность клипа, с количества 200 — две.
+Стало: Событие, а не непрерывный поток: за время клипа пролетает одна звезда, а при значении «Количество» от 200 — две.
+Причина: Устранено «одна за длительность»; порог 200 привязан к конкретному регулятору.
+
+Строка 2910 · ec.partikel.schnuppen_eine
+EN: Shooting stars are an event, not a drizzle: ONE flies per clip length. From amount 200 a second one joins, no more — more would be rain.
+Было: Падающие звёзды — событие, а не поток: ОДНА за длительность клипа. С количества 200 добавляется вторая, не больше: иначе был бы дождь.
+Стало: Падающие звёзды появляются поодиночке, а не непрерывным потоком: ОДНА за время клипа. При значении «Количество» от 200 появляется вторая — больше двух не бывает.
+Причина: Порог настройки и предел описаны прямо, без неестественного «с количества 200».
+
+Строка 2911 · ec.partikel.schnuppen_zwei
+EN: Shooting stars are an event, not a drizzle: TWO fly per clip length. From amount 200 a second one joins, no more — more would be rain.
+Было: Падающие звёзды — событие, а не поток: ДВЕ за длительность клипа. С количества 200 добавляется вторая, не больше: иначе был бы дождь.
+Стало: ДВЕ звезды за время клипа — это предел. Вторая появляется при значении «Количество» от 200.
+Причина: Устранено впечатление, что к двум звёздам добавляется ещё одна; явно указан предел.
+
+Строка 2913 · ec.partikel.schwarm_menge
+EN: The amount is the size of the flock. Each bird avoids its neighbours, so the flock grows larger instead of more crowded — until it fills the picture, then it gets denser.
+Было: Количество — размер стаи. Птицы избегают соседей, поэтому стая расширяется, а не уплотняется. Заполнив кадр, становится плотнее.
+Стало: Количество задаёт число птиц в стае. Они держат дистанцию, поэтому с увеличением числа птиц стая занимает больше места, а не становится плотнее. Когда она заполняет кадр, плотность начинает расти.
+Причина: Явно названо действие регулятора и объяснено, почему сначала растёт площадь стаи, а затем плотность.
+
+Строка 2966 · ec.gruppe.entwuerfe_webgl
+EN: Drafts (WebGL)
+Было: Черновые (WebGL)
+Стало: Экспериментальные (WebGL)
+Причина: Draft обозначает незавершённые эффекты, а не сохранённые пользователем черновики.
+
+Строка 2967 · ec.gruppe.entwuerfe_leinwand
+EN: Drafts (canvas)
+Было: Черновые (холст)
+Стало: Экспериментальные (Canvas)
+Причина: Согласована группа экспериментальных эффектов; Canvas оставлен названием технологии, как WebGL.
+
+Строка 2993 · ec.zone.effektscheibe
+EN: Effect pane
+Было: Панель эффектов
+Стало: Стекло перед объективом
+Причина: Pane здесь — поверхность стекла перед камерой, а не панель интерфейса; подтверждено соседним описанием 2995.
+
+Строка 2997 · ec.wahl.tiefeVerdeckung.zone
+EN: as in the old recipe: zone cut out softly
+Было: как в старом рецепте: мягкий вырез зоны
+Стало: как в прежнем рецепте: мягкая маска зоны
+Причина: Soft cut описывает маску эффекта, а не монтажную склейку или удаление исходного изображения.
+
+Строка 3000 · ec.stufe.kamera.titel
+EN: Camera — this is the crop itself: move, zoom, tilt, sharpness.
+Было: Камера — сам кадр: движение, зум, наклон, резкость.
+Стало: Камера — управление кадрированием: перемещение, масштаб, наклон, резкость.
+Причина: Уточнено назначение группы; «камера — сам вырез» не является понятным описанием интерфейса.
+
+Строка 3013 · ec.raum.bewegung.schwenk
+EN: Pan
+Было: Панорама
+Стало: Поворот
+Причина: Pan здесь — поворот источника света; согласовано с пояснением оси в строке 2771.
+
+Строка 3014 · ec.raum.bewegung.fahrt
+EN: Move (moving head)
+Было: Движение головы
+Стало: Движение прожектора
+Причина: Head — поворотная голова сценического прибора; буквальное «движение головы» без контекста непонятно.
+
+Строка 3018 · ec.raum.form.kegel
+EN: Cone from outside
+Было: Конус снаружи
+Стало: Конус из-за края кадра
+Причина: Указано, снаружи чего расположен источник конуса; исключена двусмысленность «конус снаружи».
+
+Строка 3036 · ec.lm.muster.rechteck
+EN: Square
+Было: Прямоугольник
+Стало: Прямоугольная волна
+Причина: Square в списке форм модуляции обозначает форму сигнала, а не геометрический прямоугольник.
+
+Строка 3039 · ec.lm.muster.sequenz
+EN: Sequence — painted steps per cycle
+Было: Последовательность — рисуемые ступени цикла
+Стало: Последовательность — ручная настройка шагов цикла
+Причина: Вместо непонятных «рисуемых ступеней» описан шаговый редактор модуляции.
+
+Строка 3045 · ec.stufe.hinweis
+EN: Painting doesn’t go from top to bottom but by steps: first the scene, then the camera, finally the film. Here that means: {namen}. Moving a card between two steps therefore doesn’t change the picture — within its step it does.
+Было: Отрисовка идёт не сверху вниз, а по ступеням: сцена, камера, плёнка. Здесь это {namen}. Перемещение карточки между ступенями не меняет картину, внутри своей ступени — меняет.
+Стало: Порядок отрисовки фиксирован: сначала сцена, затем камера, в конце плёнка. Здесь порядок такой: {namen}. Перестановка карточек разных этапов не влияет на результат; важен порядок эффектов внутри одного этапа.
+Причина: Уточнено, какие перестановки влияют на результат: тип этапа задаётся эффектом и не меняется перетаскиванием карточки.
+
+Строка 3070 · ec.teilchen.auffaechern
+EN: Fan-out
+Было: Раскрытие веером
+Стало: Угол разлёта
+Причина: Регулятор задаёт угол распространения частиц; согласовано с уже уточнёнными описаниями источников.
+
+Строка 3087 · ec.teilchen.schnuppe.still
+EN: This kind ignores pressure, direction, fan-out and length — the shooting star follows its own straight path.
+Было: Вид игнорирует напор, направление, раскрытие и длину: звезда следует своей прямой траектории.
+Стало: Для падающих звёзд настройки «Напор», «Направление», «Угол разлёта» и «Длина» не действуют: звезда движется по собственной прямой траектории.
+Причина: Вместо неопределённого «вид игнорирует» назван вид частиц; приведены согласованные названия регуляторов.
+
+Строка 3088 · ec.teilchen.schar.still
+EN: This kind ignores pressure, direction, fan-out, length and fade-out — the flock follows its own rules.
+Было: Вид игнорирует напор, направление, раскрытие, длину и затухание: у стаи свои правила.
+Стало: Для стаи настройки «Напор», «Направление», «Угол разлёта», «Длина» и «Затухание» не действуют: её движение подчиняется собственным правилам.
+Причина: Согласовано с парным ограничением для падающих звёзд и с названием угла разлёта.
+
+Строка 3089 · ec.teilchen.kanone.salven
+EN: The bursts follow the drive on the right: fixed frequency or beat grid. Without a drive it fires calmly every 1.6 s.
+Было: Залпы следуют модуляции справа: фиксированной частоте или ритмической сетке. Без модуляции — спокойно каждые 1.6 с.
+Стало: Частоту залпов задаёт модуляция справа — по частоте или по ритмической сетке. Без модуляции пушка стреляет раз в 1,6 секунды.
+Причина: Речь о частоте залпов, а не скорости частиц; убрано неопределённое «спокойно».
+
+Строка 3094 · ec.raum.ursprung.belang
+EN: Origin: only matters with Ellipse, Cone, Pan or Gobo.
+Было: Начальная точка важна только для Эллипса, Конуса, Панорамы или Гобо.
+Стало: Начальная точка учитывается для форм «Эллипс» и «Конус», режима «Поворот» или при использовании гобо.
+Причина: Согласовано новое название Pan; уточнено, что перечислены формы и режимы, а не отдельные источники.
+
+Строка 3098 · ec.raum.tempo
+EN: Tempo (s)
+Было: Темп (с)
+Стало: Длительность цикла (с)
+Причина: Согласовано с тем же параметром времени цикла в строке 2543.
+
+Строка 3113 · ec.lm.ohne_takt
+EN: {name} (no beat)
+Было: {name} (нет ритма)
+Стало: {name} (нет ритмической сетки)
+Причина: Отсутствуют данные о долях, а не ритм в самой музыке.
+
+Строка 3115 · ec.lm.kein_raster.verwaist
+EN:  The drive therefore keeps running at the fixed frequency; pattern and depth still apply.
+Было:  Поэтому модуляция работает на фиксированной частоте; рисунок и глубина сохраняются.
+Стало:  Поэтому модуляция работает на фиксированной частоте; настройки рисунка и глубины продолжают действовать.
+Причина: Apply означает, что настройки действуют, а не сохраняются на диск.
+
+Строка 3116 · ec.lm.kein_raster.kerze
+EN:  Frequency with the pattern “Flicker” gives you a candle, with no beat at all.
+Было:  Частота с рисунком «Мерцание» даёт свечу без привязки к ритму.
+Стало:  Режим «Частота» с рисунком «Мерцание» имитирует свечу без привязки к ритму.
+Причина: Названия настроек отделены от результата: эффект имитирует мерцание свечи.
+
+Строка 3118 · ec.lm.vorschau.titel
+EN: The curve over two cycles; the line is now
+Было: Кривая за два цикла; линия — сейчас
+Стало: Кривая за два цикла; линия показывает текущий момент.
+Причина: Устранён обрывок «линия — сейчас».
+
+Строка 3130 · ec.lm.schritte
+EN: Steps
+Было: Ступени
+Стало: Шаги
+Причина: Общепринятый термин для шаговой последовательности; согласовано с её описанием.
+
+Строка 3136 · ec.lm.sequenz.ziehen
+EN: Drag in the preview: the height is the light strength per step.
+Было: Рисуйте перетаскиванием на предпросмотре: высота — сила света на ступени.
+Стало: Перетаскиванием в области предпросмотра задайте уровень каждого шага: чем выше столбец, тем сильнее свет.
+Причина: Уточнены действие мышью и связь высоты столбца с уровнем сигнала; убрана калька «на ступени».
+
+Строка 3147 · ec.karte.staerke.titel
+EN: Strength is the opacity: how strongly the finished result of the effect is mixed into the picture. All other sliders shape the effect.
+Было: Сила — непрозрачность: доля готового результата эффекта в изображении. Остальные ползунки формируют сам эффект.
+Стало: Регулятор «Сила» задаёт непрозрачность эффекта — его вклад в итоговое изображение. Остальные ползунки настраивают сам эффект.
+Причина: Непрозрачность объяснена через действие регулятора, без конструкции «доля готового результата».
+
+Строка 3149 · ec.kb.fokus.scharf
+EN: Point {n}: Sharp — the move there doesn’t smear, and nothing changes at the target.
+Было: Точка {n}: Резко — движение без размытия, в цели ничего не меняется.
+Стало: Точка {n}: Без размытия — движение к точке и остановка в ней не меняют резкость.
+Причина: «Резко» можно понять как резкое движение; согласовано понятное название режима резкости.
+
+Строка 3151 · ec.kb.fokus.suche
+EN: Hunt
+Было: Поиск
+Стало: Поиск фокуса
+Причина: Речь об имитации фокусировки, а не поиске объектов или текста.
+
+Строка 3152 · ec.kb.fokus.unscharf
+EN: Blurred
+Было: Размыто
+Стало: С размытием
+Причина: Согласовано с парным режимом «Без размытия» и его подсказками.
+
+Строка 3153 · ec.kb.fokus.kein_halt
+EN:  In this clip there’s no hold left in which to hunt — the demonstration shows exactly that.
+Было:  В клипе нет задержки для поиска фокуса. Демонстрация показывает именно это.
+Стало:  В этом клипе не осталось времени на остановку камеры, во время которой происходит поиск фокуса. Демонстрация показывает именно это.
+Причина: Hold — остановка камеры в точке, а не задержка воспроизведения.
+
+Строка 3154 · ec.kb.grenze
+EN: Five target points is the limit — double-clicking a mark releases it and makes room.
+Было: Не более пяти целевых точек. Двойной щелчок по маркеру удалит его и освободит место.
+Стало: Не более пяти целевых точек. Двойной клик по маркеру удалит точку и освободит место.
+Причина: Согласован термин «двойной клик»; удаляется целевая точка, а не только её маркер.
+
+Строка 3155 · ec.kb.punkt_gesetzt
+EN: Target point {n} set — drag it on the stage, the mouse wheel sets its tightness, a double-click releases it.
+Было: Точка {n} задана. Перетащите её на сцене; колесо меняет охват, двойной щелчок удаляет.
+Стало: Целевая точка {n} задана. Перетаскивайте её на сцене; колёсико мыши над маркером меняет охват, двойной клик удаляет точку.
+Причина: Уточнено, где работает колёсико и что удаляется; действие названо двойным кликом.
+
+Строка 3172 · ec.schleife.prinzip.keiner
+EN: the whole video across the whole clip; at the end of the clip it jumps back to the start
+Было: всё видео за весь клип; в конце скачок к началу
+Стало: видео целиком проигрывается за время клипа; в конце воспроизведение скачком возвращается к началу
+Причина: Устранено неясное «всё видео за весь клип».
+
+Строка 3173 · ec.schleife.prinzip.ruecklauf
+EN: forwards through the video, in the transition quickly back to the start – under 8 % blur
+Было: вперёд по видео, в переходе быстро назад с размытием 8 %
+Стало: видео идёт вперёд, а во время перехода быстро перематывается к началу с размытием 8 %
+Причина: Указана цель перемотки, а не только направление назад.
+
+Строка 3174 · ec.schleife.prinzip.pendel
+EN: back and forth over a section at real speed, soft at the turning points – it needs no transition
+Было: вперёд-назад по фрагменту с реальной скоростью и мягкими разворотами; переход не нужен
+Стало: вперёд-назад по фрагменту с исходной скоростью воспроизведения и плавными разворотами; переход не нужен
+Причина: Real speed здесь — исходная скорость видео, а не противопоставление реального и расчётного времени.
+
+Строка 3176 · ec.schleife.prinzip.unschaerfe
+EN: in the middle of the transition, hidden by blur, the end is swapped for the start
+Было: в середине перехода конец меняется на начало под размытием
+Стало: в середине перехода размытие скрывает склейку конца видео с началом
+Причина: Названа монтажная операция вместо неопределённой замены.
+
+Строка 3178 · ec.schleife.prinzip.kreuzzoom
+EN: a zoom with blur hides the swap in the middle
+Было: зум с размытием скрывает замену в середине
+Стало: в середине перехода зум с размытием скрывает склейку конца видео с началом
+Причина: Уточнено, что заменяется: конец видео его началом.
+
+Строка 3180 · ec.schleife.prinzip.schwarz
+EN: darken to black, swap there, brighten again
+Было: затемнение до чёрного, замена, осветление
+Стало: затемнение до чёрного, переход от конца видео к началу, выход из чёрного
+Причина: Уточнён смысл замены; выход из чёрного не путается с отдельным режимом наложения «Осветление».
+
+Строка 3181 · ec.schleife.prinzip.weiss
+EN: brighten to white, swap there, back again
+Было: осветление до белого, замена, возврат
+Стало: осветление до белого, переход от конца видео к началу, возвращение к обычному изображению
+Причина: Уточнён смысл замены и возврата.
+
+Строка 3183 · ec.schleife.prinzip.pixel
+EN: the picture breaks into blocks, the swap happens inside – for graphics
+Было: кадр распадается на блоки, замена внутри; для графики
+Стало: кадр распадается на блоки, которые скрывают переход от конца видео к началу; для графики
+Причина: Уточнено, что означает «замена внутри».
+
+Строка 3201 · ec.kb.lupe.fach
+EN: {f}-fold
+Было: кратность: {f}
+Стало: в {f} раза
+Причина: Это фрагмент предложения о степени увеличения; по коду сюда приходит дробный множитель с одним десятичным знаком.
+
+Строка 3203 · ec.kb.lupe.satz
+EN: The output is {W} × {H} pixels, the source {bw} × {bh} — up to tightness {eins} nothing is enlarged. Enlarged: {teile}.
+Было: Выход {W} × {H} пикс., источник {bw} × {bh}. До охвата {eins} увеличения нет. Увеличены: {teile}.
+Стало: Размер видео — {W} × {H} пикс., исходного изображения — {bw} × {bh}. При охвате {eins} и выше увеличения нет. С увеличением: {teile}.
+Причина: Уточнено направление порога: по формуле масштаба увеличение начинается при охвате ниже порогового.
+
+Строка 3206 · ec.kb.neu.titel
+EN: Sets a point at a still free spot — the same as a click on the free area of the stage
+Было: Поставить точку в свободном месте, как щелчком по свободной области сцены
+Стало: Добавить точку в свободном месте, как при клике по свободной области сцены
+Причина: Согласовано с названием кнопки «Добавить точку» и термином «клик».
+
+Строка 3209 · ec.kb.liste.leer
+EN: No target point — a click on the free area of the stage sets one, and so does the button below.
+Было: Точек нет. Щёлкните по свободной области сцены или нажмите кнопку ниже.
+Стало: Целевых точек нет. Клик по свободной области сцены или кнопка ниже добавит точку.
+Причина: Устранено «щёлкните», явно назван добавляемый объект.
+
+Строка 3211 · ec.kb.liste.fokus
+EN: Focus on arrival
+Было: Фокус при прибытии
+Стало: Фокус в целевой точке
+Причина: Настройка действует при достижении точки камерой; «прибытие» без объекта звучит как транспортный интерфейс.
+
+Строка 3214 · ec.kb.ps.ohneplan_1
+EN: {n} target point: {z} moves, plus {n} hold at the point and one on the full picture. 
+Было: целевых точек: {n}, перемещений: {z}, задержек в точке: {n}, плюс одна на полном кадре. 
+Стало: целевых точек: {n}, перемещений: {z}, пауз в точке: {n}, плюс одна на полном кадре. 
+Причина: Hold — пауза камеры в точке; термин согласован с пояснениями её движения.
+
+Строка 3215 · ec.kb.ps.ohneplan_n
+EN: {n} target points: {z} moves, plus {n} holds at the points and one on the full picture. 
+Было: целевых точек: {n}, перемещений: {z}, задержек в точках: {n}, плюс одна на полном кадре. 
+Стало: целевых точек: {n}, перемещений: {z}, пауз в точках: {n}, плюс одна на полном кадре. 
+Причина: Hold — пауза камеры в точке; термин согласован с пояснениями её движения.
+
+Строка 3218 · ec.kb.ps.halt_1
+EN: The camera holds still at the point for {h} s — all equally long — and on the full picture for {ha} s. 
+Было: В точке камера стоит {h} с, все задержки равны; на полном кадре — {ha} с. 
+Стало: В точке камера останавливается на {h} с; все такие паузы одинаковой длины. На полном кадре пауза длится {ha} с. 
+Причина: Остановка камеры и её длительность названы прямо; устранено впечатление задержки воспроизведения.
+
+Строка 3219 · ec.kb.ps.halt_n
+EN: The camera holds still at each point for {h} s — all equally long — and on the full picture for {ha} s. 
+Было: В каждой точке камера стоит {h} с, все задержки равны; на полном кадре — {ha} с. 
+Стало: В каждой точке камера останавливается на {h} с; все такие паузы одинаковой длины. На полном кадре пауза длится {ha} с. 
+Причина: Согласовано с парной формой для одной целевой точки.
+
+Строка 3220 · ec.kb.ps.nur_beruehrt
+EN: Not even one whole beat is left for the points — they are only touched; only the full picture holds still, {ha} s. 
+Было: Для точек не осталось даже целой доли, камера лишь касается их. Задержка только на полном кадре: {ha} с. 
+Стало: На остановки в точках не осталось даже одной целой доли — камера проходит через них без пауз. Остановка есть только на полном кадре: {ha} с. 
+Причина: «Камера касается точек» заменено описанием реального поведения без пауз.
+
+Строка 3221 · ec.kb.ps.kein_halt
+EN: The moves fill the whole clip — there is no hold left, not even on the full picture. 
+Было: Перемещения заполняют весь клип. Задержек нет даже на полном кадре. 
+Стало: Перемещения занимают весь клип — времени на остановки не осталось даже на полном кадре. 
+Причина: Задержки согласованы как остановки камеры.
+
+Строка 3223 · ec.kb.ps.passt_0
+EN: At this tempo not a single point fits into this clip length
+Было: При этом темпе в клип не помещается ни одной точки
+Стало: При таком времени перемещения в клип не помещается ни одной точки
+Причина: Согласовано с регулятором длительности перемещения в долях, а не темпом музыки.
+
+Строка 3224 · ec.kb.ps.tempo_platz
+EN:  — a smaller tempo makes room.
+Было:  — меньшее значение темпа освободит место.
+Стало:  — уменьшение времени перемещения освободит место.
+Причина: Понятно, какой параметр уменьшить; сохраняется фрагмент составной подсказки.
+
+Строка 3226 · ec.kb.ps.passt_1
+EN: At this tempo {n} point fits into this clip length
+Было: При этом темпе допустимое число точек для клипа: {n}
+Стало: При таком времени перемещения допустимое число точек для клипа: {n}
+Причина: Согласовано с регулятором «Время перемещения (доли)».
+
+Строка 3227 · ec.kb.ps.passt_n
+EN: At this tempo {n} points fit into this clip length
+Было: При этом темпе допустимое число точек для клипа: {n}
+Стало: При таком времени перемещения допустимое число точек для клипа: {n}
+Причина: Согласовано с регулятором «Время перемещения (доли)».
+
+Строка 3228 · ec.kb.ps.uebrige
+EN:  — the others still come along, but the moves become shorter than a beat
+Было:  — остальные тоже включены, но перемещения станут короче доли
+Стало:  — остальные точки тоже используются, но перемещения между ними станут короче доли
+Причина: Уточнено, что «остальные» — целевые точки, а не эффекты.
+
+Строка 3229 · ec.kb.ps.tempo_platz_semi
+EN: ; a smaller tempo makes room.
+Было: ; меньшее значение темпа освободит место.
+Стало: ; уменьшение времени перемещения освободит место.
+Причина: Согласовано с другим вариантом того же фрагмента и названием регулятора.
+
+Строка 3230 · ec.kb.ps.fuenf
+EN:  Five is the limit: another click on the stage sets no further point; only a double-click on a mark makes room.
+Было:  Пять — предел. Щелчок по сцене больше не добавляет точку; двойной щелчок по маркеру освободит место.
+Стало:  Пять точек — предел. Клик по сцене больше не добавляет точку; двойной клик по маркеру удалит её и освободит место.
+Причина: Терминология кликов согласована; объяснено, за счёт чего освобождается место.
+
+Строка 3231 · ec.kb.ps.anschlag_1
+EN: One point is at the limit: a mark can only move as far from the centre as its crop stays inside the picture — at tightness {z} that is {p} % of the picture edge. To go further out, make it tighter with the mouse wheel.
+Было: Одна точка у предела: маркер удаляется от центра лишь пока вырез внутри изображения. При охвате {z} это {p} % края. Для движения дальше сузьте охват колесом мыши.
+Стало: Одна точка достигла предела: маркер можно отодвинуть от центра лишь настолько, чтобы область кадрирования целиком оставалась внутри изображения. При охвате {z} предел — {p} % длины стороны изображения. Чтобы отодвинуть точку дальше, уменьшите охват колёсиком мыши.
+Причина: Вместо «вырез внутри» объяснена граница движения; процент относится к длине стороны, а не к краю как объекту.
+
+Строка 3232 · ec.kb.ps.anschlag_n
+EN: {n} points are at the limit: a mark can only move as far from the centre as its crop stays inside the picture — at tightness {z} that is {p} % of the picture edge. To go further out, make it tighter with the mouse wheel.
+Было: точек у предела: {n}. Маркер удаляется от центра лишь пока вырез внутри изображения. При охвате {z} это {p} % края. Для движения дальше сузьте охват колесом мыши.
+Стало: точек у предела: {n}. Маркер можно отодвинуть от центра лишь настолько, чтобы область кадрирования целиком оставалась внутри изображения. При охвате {z} предел — {p} % длины стороны изображения. Чтобы отодвинуть точку дальше, уменьшите охват колёсиком мыши.
+Причина: Согласовано с парной подсказкой о пределе перемещения и действием колёсика.
+
+Строка 3237 · ec.kb.ps.mmal
+EN: {m} times
+Было: повторов — {m}
+Стало: {m} раза
+Причина: По исходному коду эта ветка используется только для трёх повторений: один и два обрабатываются отдельно, максимум — три. Фрагмент теперь естественно соединяется с длительностью остановки; разделители множественных форм не добавлялись.
+
+Строка 3239 · ec.kb.ps.su_ohnehalt
+EN:  The move to {liste} blurs — but in this clip there is NO hunting: no hold is left at the points, and the focus pull lives in the hold. “Hunt” acts here exactly like “Blurred”. One point fewer{tempo} creates the hold. In the preview without a clip, each station holds still for one bar — there it visibly hunts, in the clip it does not.
+Было:  Движение к целям ({liste}) размыто, но поиска фокуса в клипе НЕТ: в точках не осталось задержки, а поиск происходит во время неё. «Поиск» действует как «Размыто». На одну точку меньше{tempo} — и задержка появится. В предпросмотре без клипа каждая остановка длится такт: там поиск виден, в клипе нет.
+Стало:  Движение к целям ({liste}) размыто, но поиска фокуса в этом клипе НЕТ: в точках не осталось времени на остановку, а поиск происходит во время неё. «Поиск фокуса» действует как «С размытием». Уберите одну точку{tempo}, чтобы освободить время для остановки. В предпросмотре без клипа камера останавливается в каждой точке на один такт: там поиск виден, а в клипе нет.
+Причина: Согласованы режимы фокуса и смысл остановки; совет учитывает подстановку дополнительного действия {tempo}.
+
+Строка 3240 · ec.kb.ps.oder_tempo
+EN:  or a smaller tempo
+Было:  или меньшее значение темпа
+Стало:  или уменьшите время перемещения
+Причина: Фрагмент грамматически соединяется с советом «Уберите одну точку» и ссылается на правильный регулятор.
+
+Строка 3241 · ec.kb.ps.su
+EN:  The move to {liste} blurs, and at the target the focus hunts for the point: it overshoots and settles, {wie}, smaller each time.
+Было:  Движение к целям ({liste}) размыто. В цели фокус ищет точку, проходит мимо и возвращается: {wie}. С каждым повтором промах меньше.
+Стало:  Движение к целям ({liste}) размыто. В целевой точке фокус проходит нужное положение и возвращается: {wie}. С каждым повтором отклонение меньше, пока резкость не установится.
+Причина: Убрано пространственно неясное «фокус ищет точку»; объяснена имитация поиска фокуса.
+
+Строка 3242 · ec.kb.ps.su_wie
+EN: {mal} in the {h} s of the hold
+Было: {mal} за {h} с задержки
+Стало: {mal} за время остановки ({h} с)
+Причина: Hold — остановка камеры; сохранён подставляемый фрагмент числа повторений.
+
+Строка 3243 · ec.kb.ps.su_dreimal
+EN: three times within the hold
+Было: трижды за задержку
+Стало: трижды за время остановки
+Причина: Согласовано с парным фрагментом о длительности остановки.
+
+Строка 3244 · ec.kb.ps.ti
+EN:  At {liste} the depth plane of the point stays sharp on arrival, and the rest grows softer the further away it lies in depth — the closer surroundings of the target point, 20 % of the total depth, keep their sharpness.
+Было:  По прибытии в целевые точки ({liste}) плоскость глубины каждой точки остаётся резкой. Остальное размывается по мере удаления по глубине; ближайшие 20 % общей глубины остаются резкими.
+Стало:  По прибытии в целевые точки ({liste}) резкость сохраняется в плоскости каждой точки. Чем дальше от неё по глубине находится участок изображения, тем сильнее он размывается. Зона резкости вокруг целевой глубины занимает 20 % общего диапазона глубины.
+Причина: Исправлена смысловая ошибка: резкими остаются 20 % диапазона вокруг целевой глубины, а не ближайшие к камере 20 %.
+
+Строка 3245 · ec.kb.ps.ti_ohnehalt
+EN:  In this clip NONE of this is visible: no hold is left at the points, and the depth plane lives in the hold. One point fewer{tempo} creates it. In the preview without a clip, each station holds still for one bar — there it is visible, in the clip it is not.
+Было:  В клипе это НЕ видно: в точках нет задержки, а эффект плоскости глубины действует во время неё. На одну точку меньше{tempo} — и задержка появится. В предпросмотре без клипа каждая остановка длится такт: там эффект виден, в клипе нет.
+Стало:  В этом клипе эффект НЕ виден: в точках не осталось времени на остановку, а режим «Плоскость резкости» действует во время неё. Уберите одну точку{tempo}, чтобы освободить время для остановки. В предпросмотре без клипа камера останавливается в каждой точке на один такт: там эффект виден, а в клипе нет.
+Причина: Согласованы название режима, остановки камеры и составной совет с {tempo}.
+
+Строка 3246 · ec.kb.ps.ti_kommt
+EN:  It comes and goes: it builds up over the hold{dauer} and dissolves again towards its end, so the next move starts clean. During the move itself it changes nothing, and on the full picture at the start and the end everything is sharp.
+Было:  Эффект появляется и исчезает: нарастает за задержку{dauer} и растворяется к её концу, чтобы следующее движение началось чисто. Само движение не меняет; полный кадр в начале и конце резкий.
+Стало:  Эффект плавно нарастает во время остановки{dauer} и исчезает к её концу, чтобы следующее перемещение началось без размытия. Во время движения эффект не применяется; полный кадр в начале и конце остаётся резким.
+Причина: Устранены «нарастает за задержку», «началось чисто» и «само движение не меняет»; сохранена композиция с длительностью.
+
+Строка 3247 · ec.kb.ps.ti_dauer
+EN:  — in the {h} s of this hold
+Было:  — за {h} с этой задержки
+Стало:  ({h} с)
+Причина: Короткий фрагмент длительности грамматически вставляется после слова «остановки» в строке 3246.
+
+Строка 3248 · ec.kb.ps.ti_weich
+EN:  How soft the rest becomes is calculated by the software — there is no control for it.
+Было:  Мягкость остального рассчитывает программа, регулятора нет.
+Стало:  Силу размытия остальных участков рассчитывает программа — отдельного регулятора нет.
+Причина: Размываются участки изображения; «мягкость остального» не называет ни величину, ни объект.
+
+Строка 3249 · ec.kb.ps.ti_ohnekarte
+EN:  “Depth plane” is among them: this picture has no depth map for it, so the move blurs instead and is sharp again the moment it arrives. The setting stays saved and takes effect as soon as a map is there.
+Было:  Среди них «Плоскость глубины», но у изображения нет карты. Поэтому движение размыто, по прибытии резко. Настройка сохраняется и начнёт действовать с появлением карты.
+Стало:  Среди них есть режим «Плоскость резкости», но у изображения нет карты глубины. Поэтому вместо этого размывается движение, а при достижении точки резкость сразу восстанавливается. Настройка сохраняется и начнёт действовать, когда появится карта.
+Причина: Согласовано название режима; «по прибытии резко» больше не воспринимается как резкое движение камеры.
+
+Строка 3250 · ec.kb.ps.schmiert
+EN:  How much it blurs is calculated by the software from the speed of the camera — when it stands still, it is sharp; there is no control for it. The way back to the full picture is always sharp. A look at the selection box demonstrates it on the still stage.
+Было:  Сила размытия рассчитывается по скорости камеры. В покое резко, регулятора нет. Возврат к полному кадру всегда резкий. Выбор в списке демонстрирует эффект на неподвижной сцене.
+Стало:  Силу размытия программа рассчитывает по скорости камеры; отдельного регулятора нет. При остановке изображение резкое, а возвращение к полному кадру всегда проходит без размытия. Выбор режима в списке демонстрирует его на неподвижной сцене.
+Причина: Устранена двусмысленность «возврат резкий»: речь о резкости изображения, а не скачке камеры.
+
+Строка 3251 · ec.kb.ps.bedienung
+EN:  They are set on the stage: a click on the free area sets one, dragging moves it, the mouse wheel over a mark sets its tightness, a double-click releases it; while dragging, a fine frame shows how far this mark can go. The button below the list sets one at a still free spot.
+Было:  Точки задаются на сцене: щелчок по свободной области добавляет, перетаскивание двигает, колесо над маркером меняет охват, двойной щелчок удаляет. Тонкая рамка при перетаскивании показывает пределы. Кнопка под списком ставит точку в свободном месте.
+Стало:  Точки задаются на сцене: клик по свободной области добавляет точку, перетаскивание перемещает её, колёсико мыши над маркером меняет охват, двойной клик удаляет точку. Тонкая рамка при перетаскивании показывает пределы перемещения. Кнопка под списком добавляет точку в свободном месте.
+Причина: Согласована терминология кликов и явно названы объекты всех действий.
+
+Строка 3252 · ec.kb.vs.vorlaeufig
+EN: The two points are PROVISIONAL guesses: the source has not been read yet. As soon as it is there, the picture itself suggests two points and replaces these.
+Было: Две точки — ПРЕДВАРИТЕЛЬНЫЕ догадки: источник ещё не прочитан. Когда он загрузится, изображение предложит две точки вместо них.
+Стало: Две точки выбраны ПРЕДВАРИТЕЛЬНО: источник ещё не загружен. После загрузки программа проанализирует изображение и заменит их двумя предложенными точками.
+Причина: Изображение само не предлагает точки; описана временная настройка до анализа источника.
+
+Строка 3256 · ec.kb.vs.geraten
+EN: The two points from pasting are GUESSED, not found: {warum}. They sit on the third points, as far apart as the tightness allows.
+Было: Две точки при вставке УГАДАНЫ, а не найдены: {warum}. Они на третях кадра, максимально далеко при заданном охвате.
+Стало: Две точки при вставке выбраны ПРИБЛИЗИТЕЛЬНО, а не найдены анализом изображения: {warum}. Они расположены по правилу третей, максимально далеко друг от друга при заданном охвате.
+Причина: Устранены «точки угаданы» и неясное «на третях»; названо правило композиции.
+
+Строка 3257 · ec.kb.tempo.kein_raster
+EN: This title has no beat grid — substitute {s} s per beat
+Было: У трека нет ритмической сетки. Замена: {s} с на долю
+Стало: У трека нет ритмической сетки — для расчёта принято {s} с на долю
+Причина: Fallback описан как допущение расчёта, а не операция замены чего-либо пользователем.
+
+Строка 3259 · ec.kb.tempo.zu_wenige
+EN: too few beats for a tempo — substitute {s} s per beat
+Было: слишком мало долей для темпа. Замена: {s} с на долю
+Стало: слишком мало долей для определения темпа — для расчёта принято {s} с на долю
+Причина: Уточнено, что не хватает данных для оценки темпа; сохранено начало со строчной буквы.
+
+Строка 3260 · ec.kb.tempo.keine_zaehlung
+EN: no bar count — substitute four beats per bar
+Было: нет счёта тактов. Замена: четыре доли на такт
+Стало: нет разметки тактов — для расчёта приняты четыре доли на такт
+Причина: Bar count здесь — данные о группировке долей в такты, а не общее число тактов.
+
+Строка 3265 · ec.kb.tempo.fahrt_1
+EN:  this camera move has {l} move — in the studio preview {r} s per round (one bar of hold at each station).
+Было:  перемещений камеры: {l}; в предпросмотре студии {r} с на круг, по такту задержки на каждой остановке.
+Стало:  перемещений камеры: {l}; в предпросмотре студии цикл длится {r} с, с остановкой на один такт в каждой точке.
+Причина: Согласованы понятия цикла и остановки камеры вместо задержки.
+
+Строка 3266 · ec.kb.tempo.fahrt_n
+EN:  this camera move has {l} moves — in the studio preview {r} s per round (one bar of hold at each station).
+Было:  перемещений камеры: {l}; в предпросмотре студии {r} с на круг, по такту задержки на каждой остановке.
+Стало:  перемещений камеры: {l}; в предпросмотре студии цикл длится {r} с, с остановкой на один такт в каждой точке.
+Причина: Согласованы понятия цикла и остановки камеры вместо задержки.
+
+Строка 3267 · ec.kb.tempo.clip
+EN:  In the clip the holds fill the rest of the clip length, and if the move does not fit, it runs over as many beats as fit.
+Было:  В клипе задержки заполняют остаток длительности. Если движение не помещается, оно идёт за доступное число долей.
+Стало:  В клипе оставшееся время отводится на остановки камеры. Если перемещение не помещается, его длительность сокращается до доступного числа долей.
+Причина: Разъяснено распределение времени и сокращение длительности, без неясного «идёт за доступное число долей».
+
+Строка 3268 · ec.dio.vorrat
+EN: Diorama {dw}×{dh} — the memory budget caps it; the source {bw}×{bh} would give more, and the move is softer on arrival than necessary
+Было: Диорама {dw}×{dh} ограничена памятью. Источник {bw}×{bh} позволяет больше, поэтому при прибытии изображение мягче, чем могло бы быть.
+Стало: Размер диорамы ограничен памятью: {dw}×{dh}, хотя исходное изображение {bw}×{bh} позволяет больше. Из-за этого в целевых точках изображение менее резкое, чем могло бы быть.
+Причина: Исправлена причинная связь: резкость ограничена памятью диорамы, а не большим размером исходника.
+
+Строка 3278 · ec.ablage.kopieren_titel
+EN: Remember the current state of the studio — source, preparation, effect chain and loop — to put it on another title. The clipboard has one slot and survives a reload.
+Было: Запомнить состояние студии: источник, подготовку, цепь эффектов и цикл, чтобы перенести на другой трек. В буфере одно место, он сохраняется после перезагрузки.
+Стало: Скопировать текущее состояние студии — источник, подготовку, цепь эффектов и цикл — для переноса на другой трек. В буфере хранится один рецепт; он сохраняется при перезагрузке страницы.
+Причина: Описано действие копирования и явно указано, что сохраняется один рецепт после перезагрузки страницы, а не компьютера.
+
+Строка 3297 · ec.ablage.leer_altes_rezept
+EN: nothing is set here now — the old recipe still lies with the title. “Delete” removes it; closing and reopening brings it back.
+Было: сейчас ничего не задано, но старый рецепт ещё хранится у трека. «Удалить» уберёт его; закрытие и открытие вернёт.
+Стало: сейчас здесь ничего не задано, но прежний рецепт ещё сохранён у трека. Если закрыть студию и открыть снова, он загрузится. Чтобы удалить его, нажмите «Удалить».
+Причина: Устранена двусмысленность, будто удалённый рецепт возвращается после открытия студии.
+
+Строка 3310 · ec.vorb.raumtiefe_satz
+EN: The depth of the space determined by AI only tells the <i>order</i> of the objects from front to back. Distances cannot be measured. That is why the depth has to be given in picture widths — a portrait is about 0.2 picture widths deep, a landscape 3 or more. It mostly depends on the picture.
+Было: Глубина, определённая ИИ, задаёт лишь <i>порядок</i> объектов от ближних к дальним, не измеримые расстояния. Поэтому её нужно задавать в ширинах изображения: портрет — примерно 0.2, пейзаж — 3 и больше. Это прежде всего зависит от самого изображения.
+Стало: Карта глубины, полученная ИИ, задаёт лишь <i>порядок</i> объектов от ближних к дальним, а не реальные расстояния между ними. Поэтому глубину нужно задать в ширинах изображения: для портрета — примерно 0,2, для пейзажа — 3 и больше. Значение зависит прежде всего от самого изображения.
+Причина: Исправлено «не измеримые расстояния»; различены относительная карта глубины и задаваемый масштаб пространства.
+
+Строка 3312 · ec.vorb.zonen_satz
+EN: In the depth map obtained by AI from the cover, zones for effects can be set with the depth histogram at the right edge of the picture — as on a stage set. You simply move the preselected boundaries, set new ones with a <b>single click</b> or remove them with a <b>double-click</b>. For better orientation, turn the relief with the mouse; a double-click straightens it again.
+Было: В карте глубины, полученной ИИ из обложки, можно задать зоны эффектов по гистограмме у правого края кадра, как на сценических декорациях. Перемещайте предложенные границы, добавляйте <b>одним щелчком</b>, удаляйте <b>двойным</b>. Для ориентации поверните рельеф мышью; двойной щелчок выпрямит его.
+Стало: На карте глубины, полученной ИИ из обложки, можно задать зоны действия эффектов с помощью гистограммы у правого края изображения — как планы театральной декорации. Перемещайте предложенные границы, добавляйте новые <b>одним кликом</b> и удаляйте <b>двойным кликом</b>. Для удобства поверните рельеф мышью; двойной клик вернёт исходный вид.
+Причина: Согласованы клики; «выпрямить рельеф» заменено возвратом вида, чтобы не подразумевать изменение самой карты.
+
+Строка 3317 · ec.vorb.eine_zone
+EN: At the moment <b>a single zone</b> is set: the depth values of this picture form only one cluster, so there is no valley at which two planes could be separated. You can still set a boundary by hand.
+Было: Сейчас <b>одна зона</b>: значения глубины образуют один кластер, без впадины для разделения двух планов. Границу всё равно можно задать вручную.
+Стало: Сейчас задана <b>одна зона</b>: значения глубины образуют один кластер, а на гистограмме нет провала, по которому можно разделить два плана. Границу всё равно можно добавить вручную.
+Причина: Уточнено, что провал относится к гистограмме, а не к рельефу или отверстию в карте.
+
+Строка 3327 · ec.kb.fokuswahl.scharf
+EN: Sharp
+Было: Резко
+Стало: Без размытия
+Причина: Sharp обозначает отсутствие размытия, а не резкость или скорость движения; согласовано с подсказками.
+
+Строка 3328 · ec.kb.fokuswahl.unscharf
+EN: Blurred
+Было: Размыто
+Стало: С размытием
+Причина: Согласовано с тем же режимом в строке 3152.
+
+Строка 3329 · ec.kb.fokuswahl.suche
+EN: Hunt
+Было: Поиск
+Стало: Поиск фокуса
+Причина: Согласовано с названием и описанием имитации фокусировки.
+
+Строка 3330 · ec.kb.fokuswahl.tiefe
+EN: Depth plane
+Было: Плоскость глубины
+Стало: Плоскость резкости
+Причина: Режим сохраняет резкость на выбранной глубине; буквальная «плоскость глубины» не объясняет его назначение.
+
+Строка 3342 · ec.rezept.zone_weichheit
+EN: its softness
+Было: его мягкость
+Стало: мягкость границы
+Причина: Изолированное «его» не объясняет, какой объект настраивается; фрагмент относится к границе зоны.
+
+Строка 3350 · ec.rezept.zielpunkt_enger_eins
+EN: one target point moves tighter than under the old recipe version: tightness could not go below 0.50 back then, now down to 0.25 — its centre shifts with it
+Было: у одной точки охват теснее, чем в старом рецепте: раньше минимум 0.50, теперь 0.25. Её центр смещается вместе с ним.
+Стало: у одной целевой точки охват меньше, чем допускала прежняя версия рецепта: раньше минимум был 0,50, теперь — 0,25. Центр точки смещается соответственно
+Причина: Устранено неестественное «охват теснее»; уточнено изменение ограничения старого формата рецепта.
+
+Строка 3351 · ec.rezept.zielpunkt_enger_n
+EN: {n} target points move tighter than under the old recipe version: tightness could not go below 0.50 back then, now down to 0.25 — their centres shift with it
+Было: точек с охватом теснее, чем в старом рецепте: {n}. Раньше минимум 0.50, теперь 0.25. Их центры смещаются вместе с ним.
+Стало: целевых точек с охватом меньше, чем допускала прежняя версия рецепта: {n}. Раньше минимум был 0,50, теперь — 0,25. Центры точек смещаются соответственно
+Причина: Согласовано с парным сообщением об изменении минимального охвата.
+
+Строка 3389 · ec.voll.letztes_paket
+EN: The last package did not arrive — cancelled, nothing is left behind
+Было: Последний пакет не получен. Отменено, остатков нет.
+Стало: Последний пакет не получен. Экспорт отменён, незавершённое видео удалено.
+Причина: Вместо неестественного «остатков нет» явно указан результат отмены экспорта.
+
+Строка 3391 · ec.voll.haus_baute_nicht
+EN: The app could not build the file — cancelled, nothing is left behind
+Было: Приложение не смогло собрать файл. Отменено, остатков нет.
+Стало: Не удалось создать файл. Экспорт отменён, незавершённое видео удалено.
+Причина: Сообщение о сбое и очистке незавершённого видео сформулировано привычным языком интерфейса.
+
+Строка 3396 · ec.voll.pendel
+EN: back and forth at real speed
+Было: вперёд-назад с реальной скоростью
+Стало: вперёд-назад с исходной скоростью воспроизведения
+Причина: Согласовано с описанием маятникового перехода: речь о скорости 1×.
+
+Строка 3414 · ec.voll.studio_steht
+EN: the studio stands still for that long
+Было: студия будет зафиксирована на это время
+Стало: изображение в студии будет неподвижным всё это время
+Причина: Stands still относится к изображению в студии; «студия зафиксирована» не объясняет, что увидит пользователь.
+
+Строка 3456 · ec.stufe.loop
+EN: Effect clip as a loop
+Было: Клип с эффектами по кругу
+Стало: Зацикливание клипа с эффектами
+Причина: Понятное название этапа вместо кальки «клип по кругу».
+
+Строка 3463 · ec.stufe.loop.erklaer1
+EN: Suno plays the video to the song in an endless loop and allows at most 10 seconds. So that the pulses stay in time across the whole song, the clip is built in sync with whole beats. The software picks the length so that the clip stays in sync with the music for as long as possible.
+Было: Suno проигрывает видео к песне по кругу, максимум 10 секунд. Чтобы пульсации сохраняли ритм всей песни, клип строится по целым долям. Программа подбирает длительность с наиболее долгой синхронизацией.
+Стало: Suno воспроизводит видео к песне по кругу и допускает не более 10 секунд. Чтобы пульсации сохраняли ритм на протяжении песни, длительность клипа составляет целое число долей. Программа подбирает её так, чтобы клип как можно дольше оставался в ритме с музыкой.
+Причина: Уточнены целое число долей и смысл подбора длительности вместо «наиболее долгой синхронизации».
+
+Строка 3466 · ec.studio.spielen_titel
+EN: Start the title in the player — then the real song drives the pulse
+Было: Запустить трек в плеере: пульсацией будет управлять настоящая песня
+Стало: Запустить трек в плеере — тогда пульсации будут следовать его ритму
+Причина: Устранено неестественное «пульсацией будет управлять настоящая песня».
+
+Строка 3483 · ec.loop.mehr_titel
+EN: more beats – longer clip (at most 10 s), the video runs more calmly
+Было: больше долей — длиннее клип (до 10 с), спокойнее видео
+Стало: больше долей — длиннее клип (до 10 с), медленнее воспроизведение видео
+Причина: Calmer здесь — снижение скорости видео, а не оценка настроения или интенсивности.
+
+Строка 3487 · ec.loop.kuerzer_titel
+EN: shorter – in half beats; the clip keeps its length, the video gets the time
+Было: короче, по полдоли. Длительность клипа неизменна, время достаётся видео.
+Стало: короче, с шагом в полдоли. Длительность клипа не меняется: освободившееся время занимает видео.
+Причина: Объяснены шаг изменения перехода и перераспределение времени без «время достаётся видео».
+
+Строка 3494 · ec.loop.xachse_name
+EN: looped clip
+Было: клип по кругу
+Стало: зацикленный клип
+Причина: Стандартное обозначение повторяющегося клипа вместо «клип по кругу».
+
+Строка 3497 · ec.fuss.sichern_titel
+EN: Store source, preparation, effect chain and loop with the title - tile and stage then paint it live, in time with the song
+Было: Сохранить источник, подготовку, цепь и цикл у трека. Плитка и сцена будут рисовать их в реальном времени в ритм песни.
+Стало: Сохранить для трека источник, подготовку, цепь эффектов и цикл. Плитка и сцена будут показывать результат в реальном времени, в ритм песни.
+Причина: Неестественное «плитка и сцена рисуют их» заменено понятным описанием результата сохранения.
+
+Строка 3511 · ec.voll.abbrechen_titel
+EN: Cancel the run — the half-built video is deleted in the app, nothing is left behind
+Было: Отменить задачу. Незавершённое видео удаляется в приложении без остатков.
+Стало: Отменить экспорт. Незавершённое видео будет удалено из приложения.
+Причина: Согласовано с сообщениями об отмене; устранено «удаляется без остатков».
+
+Строка 3526 · ec.tiefe.boden_trennt_nicht
+EN: This depth map separates nothing (range {s} of 255) — it has no ground surface from which anything could rise.
+Было: Карта глубины ничего не разделяет (диапазон {s} из 255). На ней нет поверхности земли для подъёма частиц.
+Стало: Карта глубины не разделяет планы (диапазон {s} из 255). На ней нет опорной поверхности, от которой могли бы подниматься частицы.
+Причина: «Ничего не разделяет» уточнено по контексту глубины; поверхность согласована с соседним сообщением 3527.
+
+Строка 3528 · ec.tiefe.boden_keiner
+EN: On this map no point gets farther away towards the top — it has no ground-like surface.
+Было: На карте ни одна точка не удаляется кверху: поверхности, похожей на землю, нет.
+Стало: На этой карте ни в одной точке поверхность не уходит вдаль по направлению к верхнему краю — опорной поверхности не найдено.
+Причина: Геометрия глубины объяснена без неясного «точка удаляется кверху» и буквальной земли.
+
+Строка 3536 · ec.titel.hochformat
+EN: Portrait format: Reels, TikTok and Shorts lay controls over roughly the bottom fifth of the picture — up to Position Y 0.78 the text stays clear.
+Было: Вертикальный формат: Reels, TikTok и Shorts перекрывают элементами управления примерно нижнюю пятую часть. До Позиции Y 0.78 текст остаётся свободным.
+Стало: Вертикальный формат: элементы управления Reels, TikTok и Shorts занимают примерно нижнюю пятую часть изображения. При значении «Позиция Y» до 0,78 текст остаётся выше этой области.
+Причина: Уточнено, от чего текст должен оставаться свободным; подпись регулятора отделена от числового значения.
+
+Строка 3537 · ec.titel.im_karaoke_band
+EN: The title sits in the karaoke band — moving Position Y up (about 0.12) puts it above.
+Было: Заголовок попадает в полосу караоке. Сдвиньте Позицию Y вверх (примерно 0.12), чтобы разместить над ней.
+Стало: Заголовок попадает на подложку караоке. Измените «Позиция Y», чтобы поднять заголовок над ней (ориентир — 0,12).
+Причина: Согласовано название подложки и явно указано, что вверх перемещают заголовок, а не сам регулятор.
+
+Строка 3582 · ton.satz.geraet
+EN: A folder from this device is not remembered; the daily sync does not look there by itself.
+Было: Папка на этом устройстве не запоминается. Ежедневная синхронизация не будет искать в ней сама.
+Стало: Эта папка выбрана на текущем устройстве и не сохраняется для последующих обновлений. Ежедневная синхронизация не будет автоматически искать в ней файлы.
+Причина: «Папка не запоминается» заменено объяснением практического последствия и отличия текущего устройства от сервера.
+
+Строка 3595 · kette.weg
+EN: Every track runs through the same chain. It begins at the two playback decks and the six instrument stems, which all flow into one sum — and it ends at the speakers:
+Было: Все треки проходят одну цепь. Она начинается с двух дек воспроизведения и шести инструментальных стемов, сходящихся в общую сумму, и заканчивается динамиками:
+Стало: Все треки проходят одну звуковую цепь. Она начинается с двух дек воспроизведения и шести инструментальных стемов, которые сводятся в общий сигнал, и заканчивается динамиками:
+Причина: Устранено неестественное «стемы сходятся в общую сумму»; аудиотермин суммирования объяснён как общий сигнал.
+
+Строка 3615 · kette.studio_p2
+EN: This makes the picture the counterpart of the Sound Studio: every control there changes the gap between the two curves here. Pull a filter up, and the coloured fringe above the line grows at its frequency — you see at once whether it hits what it should.
+Было: График дополняет Звуковую студию: каждый её регулятор меняет разницу кривых здесь. Поднимите фильтр — цветной край над линией вырастет на его частоте. Сразу видно, попадает ли настройка в цель.
+Стало: График дополняет Звуковую студию: каждый её регулятор меняет разницу между двумя кривыми. Поднимите фильтр — цветная область над линией увеличится на его частоте. Сразу видно, затрагивает ли настройка нужный диапазон.
+Причина: Явно названы кривые и частотный диапазон; «попадает в цель» больше не смешивается с целевыми точками камеры.
+
+Строка 3619 · kette.laut_h
+EN: Where the volume sits
+Было: Где находится громкость
+Стало: Где расположен регулятор громкости
+Причина: В схеме расположена точка регулирования, а не сама громкость как величина.
+
+Строка 3625 · kette.fuss
+EN: Both taps are dead ends: they listen without changing anything. The display does not change the sound.
+Было: Обе точки измерения — тупиковые отводы: слушают, ничего не меняя. Отображение не меняет звук.
+Стало: Обе точки измерения только считывают сигнал, не изменяя его. Отображение не влияет на звук.
+Причина: «Тупиковые отводы» — ненужная калька для пользователя; сохранён смысл отсутствия влияния измерения на звук.
+
+Примечания к исходному контексту
+В строке 2494 английский текст говорит о bars, но регулятор, подписи и расчёт в коде используют beats. Русское «в долях» сохранено.
+Проверялось значение строк в таблице и исходном коде. Визуальная посадка текстов в работающем приложении не проверялась.

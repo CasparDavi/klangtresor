@@ -4148,8 +4148,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
     </label>
     <span class="sprachewahl" role="group" data-i18n-aria="sprache.wahl">
       <button type="button" data-sprache="de" onclick="spracheSetzen('de')">DE</button>
-      <button type="button" data-sprache="en" onclick="spracheSetzen('en')">EN</button>
-      <button type="button" data-sprache="ru" onclick="spracheSetzen('ru')" title="Русский — машинный перевод (AI)">RU-ai</button>
+      <!-- Stern und Tooltip in der Sprache des Knopfs: die Übersetzung ist in Teilen KI-erzeugt und noch in Überarbeitung (Caspar_D, 22.10.2026) -->
+      <button type="button" data-sprache="en" onclick="spracheSetzen('en')" title="Translation partly AI-generated and still being revised">EN*</button>
+      <button type="button" data-sprache="ru" onclick="spracheSetzen('ru')" title="Перевод частично создан с помощью ИИ и ещё дорабатывается">RU*</button>
     </span>
   </div>
 
@@ -4584,8 +4585,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=1"></script>
-<script src="/ui-sprache.js?v=12"></script>
+<script src="/ui-sprache-ru.js?v=2"></script>
+<script src="/ui-sprache.js?v=13"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.88"></script>
 <script>
