@@ -30,6 +30,7 @@ const fs   = require('node:fs');
 const path = require('node:path');
 const { execFile, execFileSync } = require('node:child_process');
 const K    = require('./katalog.js');
+const { T } = require('./sprache.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
@@ -258,7 +259,7 @@ function standLesen() { try { return JSON.parse(fs.readFileSync(STAND_DATEI, 'ut
 
 (async () => {
   const katalog = K.lesen();
-  if (!katalog) { console.error('Kein Katalog - erst bin/aufbereiten.js.'); process.exit(1); }
+  if (!katalog) { console.error(T('Kein Katalog - erst bin/aufbereiten.js.')); process.exit(1); }
 
   const songs = Object.values(katalog.songs);
   const stand = standLesen();
@@ -278,9 +279,9 @@ function standLesen() { try { return JSON.parse(fs.readFileSync(STAND_DATEI, 'ut
     offen.push({ id: s.id, titel: s.titel, quelle, ziel: kachelFehlt ? ziel : null, titelbild: PROBE ? null : titelbild, titelbildOffen });
   }
 
-  console.log(`${songs.length} Songs, ${offen.filter(a => a.ziel).length} Kacheln zu rechnen, `
-            + `${offen.filter(a => a.titelbildOffen).length} Titelbilder zu pruefen${PROBE ? ' (nur Probe, nichts wird geschrieben)' : ''}\n`);
-  if (!offen.length) { console.log('Nichts zu tun.'); return; }
+  console.log(T('{songs} Songs, {kacheln} Kacheln zu rechnen, ', { songs: songs.length, kacheln: offen.filter(a => a.ziel).length })
+            + T('{n} Titelbilder zu pruefen', { n: offen.filter(a => a.titelbildOffen).length }) + (PROBE ? ' ' + T('(nur Probe, nichts wird geschrieben)') : '') + '\n');
+  if (!offen.length) { console.log(T('Nichts zu tun.')); return; }
 
   let fertig = 0, misslungen = 0, bytes = 0, titelbilder = 0, raender = 0;
   const start = Date.now();
@@ -298,13 +299,13 @@ function standLesen() { try { return JSON.parse(fs.readFileSync(STAND_DATEI, 'ut
       }
       if (a.titelbildOffen) {
         if (e.schnitt) raender++;
-        if (PROBE) { if (e.schnitt) console.log(`  Rand: ${a.titel}  (${e.schnitt})`); }
+        if (PROBE) { if (e.schnitt) console.log('  ' + T('Rand: {titel}', { titel: a.titel }) + `  (${e.schnitt})`); }
         else { titelbildStand[a.id] = !!(e.beschnitten && fs.existsSync(a.titelbild)); if (titelbildStand[a.id]) titelbilder++; }
       }
     });
     process.stdout.write(`\r  ${Math.min(i + PARALLEL, offen.length)}/${offen.length}`);
   }
-  if (PROBE) { console.log(`\n\nProbe: ${offen.length} geprueft, ${raender} mit Rand - nichts geschrieben.`); return; }
+  if (PROBE) { console.log('\n\n' + T('Probe: {n} geprueft, {raender} mit Rand - nichts geschrieben.', { n: offen.length, raender })); return; }
 
   /* STEMPEL FUER DEN BROWSER. Kacheln sind abgeleitete Dateien und
      aendern sich, wenn dieses Skript laeuft - der Browser darf das nicht
@@ -322,14 +323,14 @@ function standLesen() { try { return JSON.parse(fs.readFileSync(STAND_DATEI, 'ut
         titelbild: titelbildStand,
         wozu: 'Haengt als ?k= an jeder Kachel- und Titelbild-Adresse. Aendert sich, sobald Kacheln oder Titelbilder neu gerechnet wurden - so holt der Browser sie, ohne dass jemand seinen Vorrat leeren muss. titelbild: je Titel, ob ein beschnittenes titelbild.jpg neben cover.jpg liegt.' }, null, 1));
   } catch (e) {}
-  if (titelbilder) console.log(`\n\nTitelbilder ohne Rand: ${titelbilder} neu (gesamt ${Object.values(titelbildStand).filter(Boolean).length})`);
+  if (titelbilder) console.log('\n\n' + T('Titelbilder ohne Rand: {n} neu (gesamt {gesamt})', { n: titelbilder, gesamt: Object.values(titelbildStand).filter(Boolean).length }));
 
   const dauer = Math.round((Date.now() - start) / 1000);
-  console.log(`\n\nfertig:     ${fertig}`);
-  if (misslungen) console.log(`misslungen: ${misslungen}`);
-  console.log(`Größe:      ${(bytes/1048576).toFixed(1)} MB `
-            + `(Schnitt ${Math.round(bytes/Math.max(fertig,1)/1024)} KB)`);
-  console.log(`Dauer:      ${dauer} s`);
+  console.log('\n\n' + T('fertig:').padEnd(12) + fertig);
+  if (misslungen) console.log(T('misslungen:').padEnd(12) + misslungen);
+  console.log(T('Größe:').padEnd(12) + `${(bytes/1048576).toFixed(1)} MB `
+            + T('(Schnitt {kb} KB)', { kb: Math.round(bytes/Math.max(fertig,1)/1024) }));
+  console.log(T('Dauer:').padEnd(12) + dauer + ' s');
   /* NUR SAGEN, WAS AUF DIESER PLATTE GILT. Bis zum 13.09.2026 stand hier
      unbedingt "Auf dieser exFAT-Platte belegt jede Kachel einen ganzen
      1-MB-Block" - auf jeder Platte, auch auf NTFS in einer Windows-VM.
@@ -340,8 +341,8 @@ function standLesen() { try { return JSON.parse(fs.readFileSync(STAND_DATEI, 'ut
     const bsize = fs.statfsSync(SONGS).bsize || 0;
     if (bsize >= 65536 && fertig) {
       const belegt = fertig * bsize / 1048576;
-      console.log(`\nHinweis: Auf dieser Platte ist ein Block ${(bsize/1024).toFixed(0)} KB groß - jede Kachel`);
-      console.log(`belegt einen ganzen, also rund ${belegt.toFixed(0)} MB statt ${(bytes/1048576).toFixed(0)} MB.`);
+      console.log('\n' + T('Hinweis: Auf dieser Platte ist ein Block {kb} KB groß - jede Kachel', { kb: (bsize/1024).toFixed(0) }));
+      console.log(T('belegt einen ganzen, also rund {belegt} MB statt {echt} MB.', { belegt: belegt.toFixed(0), echt: (bytes/1048576).toFixed(0) }));
     }
   } catch (e) {}
 })();

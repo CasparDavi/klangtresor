@@ -112,9 +112,9 @@ function juengsteErnte(){
     || ausKonfig;
 
   if (!handle && !ausRoh){
-    console.error('Kein Handle. Entweder beim Aufruf mitgeben:  node bin/sammeln.js <dein-handle>');
-    console.error('oder im KlangTresor oben rechts den Alias eintragen (er wird geprüft und gemerkt).');
-    console.error('(Der Handle steht auf deiner Profilseite hinter dem @.)');
+    console.error(T('Kein Handle. Entweder beim Aufruf mitgeben:  node bin/sammeln.js <dein-handle>'));
+    console.error(T('oder im KlangTresor oben rechts den Alias eintragen (er wird geprüft und gemerkt).'));
+    console.error(T('(Der Handle steht auf deiner Profilseite hinter dem @.)'));
     process.exit(1);
   }
 
@@ -127,8 +127,8 @@ function juengsteErnte(){
 
   if (ausRoh){
     const f = juengsteErnte();
-    if (!f){ console.error('Keine Ernte gefunden - ohne --aus-roh laufen lassen.'); process.exit(1); }
-    let j; try { j = JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { console.error('Ernte unlesbar: ' + f); process.exit(1); }
+    if (!f){ console.error(T('Keine Ernte gefunden - ohne --aus-roh laufen lassen.')); process.exit(1); }
+    let j; try { j = JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { console.error(T('Ernte unlesbar: {datei}', { datei: f })); process.exit(1); }
     /* Die Ernte des Lesezeichens traegt ihren Zeitpunkt als erzeugtAm
        (browser/morgens.js); geholtAm und abgerufenAm sind die Namen der
        Node-Wege. Bis zum 08.09.2026 fehlte erzeugtAm hier - die Zeile
@@ -138,23 +138,23 @@ function juengsteErnte(){
     /* Zerrissene Zeichen in der Ernte an Ort und Stelle heilen - aus den anderen Kopien desselben
        Clips in derselben Ernte (Playlists, private Liste). bin/ersatzzeichen.js, 24.09.2026. */
     { const b = E.heilen(j);
-      for (const z of b.geheilt) console.log('  Suno lieferte ein Zeichen kaputt, aus der Playlist-Kopie geheilt: ' + z);
-      for (const z of b.offen)   console.log('  Suno lieferte ein Zeichen kaputt, keine saubere Kopie: ' + z); }
+      for (const z of b.geheilt) console.log('  ' + T('Suno lieferte ein Zeichen kaputt, aus der Playlist-Kopie geheilt: {z}', { z }));
+      for (const z of b.offen)   console.log('  ' + T('Suno lieferte ein Zeichen kaputt, keine saubere Kopie: {z}', { z })); }
     for (const c of (j.alle || j.clips || j.songs || [])) if (c && c.id) songs.set(c.id, c);
-    console.log('Verwerte deine Lesezeichen-Ernte statt Suno neu zu fragen.');
-    console.log(`  ${path.basename(f)}${ernteVom ? '  (geholt ' + ernteVom.slice(0,16).replace('T',' ') + ')' : ''}`);
-    console.log(`  ${songs.size} öffentliche Songs. (Die privaten stecken in der privat-Ernte`);
-    console.log('   daneben und fließen beim Übernehmen mit ein.)\n');
+    console.log(T('Verwerte deine Lesezeichen-Ernte statt Suno neu zu fragen.'));
+    console.log(`  ${path.basename(f)}${ernteVom ? '  ' + T('(geholt {wann})', { wann: ernteVom.slice(0,16).replace('T',' ') }) : ''}`);
+    console.log('  ' + T('{n} öffentliche Songs. (Die privaten stecken in der privat-Ernte', { n: songs.size }));
+    console.log('   ' + T('daneben und fließen beim Übernehmen mit ein.)') + '\n');
   }
   else {
-  console.log(`Sammle Songs von @${handle} — ohne Anmeldung, direkt über die API.\n`);
+  console.log(T('Sammle Songs von @{handle} — ohne Anmeldung, direkt über die API.', { handle }) + '\n');
 
   for (let seite = 1; seite <= 60; seite++){
     const a = await holen(basis + '&page=' + seite);
     if (a.fehler){
       if (seite === 1){
-        console.error(`Fehler ${a.fehler}: ${a.körper || ''}`);
-        console.error('Gibt es das Profil? Ist es öffentlich?');
+        console.error(T('Fehler {fehler}: {text}', { fehler: a.fehler, text: a.körper || '' }));
+        console.error(T('Gibt es das Profil? Ist es öffentlich?'));
         process.exit(1);
       }
       break;
@@ -185,8 +185,8 @@ function juengsteErnte(){
        Gezeigt wird die Zahl jetzt nur noch, wenn sie etwas sagt: wenn
        Suno wirklich Doppelte schickt. Gebraucht wird sie weiter - sie
        ist die Abbruchbedingung der Schleife. */
-    console.log(`  Seite ${String(seite).padStart(2)}: ${String(clips.length).padStart(3)} Songs`
-              + (doppelt ? `, ${doppelt} doppelt` : '')
+    console.log('  ' + T('Seite {seite}: {n} Songs', { seite: String(seite).padStart(2), n: String(clips.length).padStart(3) })
+              + (doppelt ? ', ' + T('{n} doppelt', { n: doppelt }) : '')
               + `  —  ${songs.size}${gesamt ? '/' + gesamt : ''}`);
     /* Der Balken zaehlt Seiten, die Zeile darunter Titel. Die Gesamtzahl
        nennt Suno selbst, sobald die erste Seite da ist. */
@@ -205,7 +205,7 @@ function juengsteErnte(){
   }                                          // Ende Frisch-Zweig
 
   const liste = [...songs.values()];
-  if (!liste.length){ console.error('\nNichts gefunden.'); process.exit(1); }
+  if (!liste.length){ console.error('\n' + T('Nichts gefunden.')); process.exit(1); }
 
   fs.mkdirSync(ROH, { recursive: true });
   const stempel = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
@@ -310,25 +310,26 @@ function juengsteErnte(){
     if (dp || dl || dk) nurZaehler.push({ c, a, dp, dl, dk });
   }
 
-  console.log(`\n${liste.length} Songs${gesamt ? ' von ' + gesamt : ''} ${ausRoh ? 'aus der Ernte übernommen' : 'gesammelt'}.`);
+  console.log('\n' + (ausRoh ? (gesamt ? T('{n} Songs von {gesamt} aus der Ernte übernommen.', { n: liste.length, gesamt }) : T('{n} Songs aus der Ernte übernommen.', { n: liste.length }))
+    : (gesamt ? T('{n} Songs von {gesamt} gesammelt.', { n: liste.length, gesamt }) : T('{n} Songs gesammelt.', { n: liste.length }))));
   if (!ausRoh) console.log(`  ${path.relative(WURZEL, ziel)}  (${(fs.statSync(ziel).size/1048576).toFixed(1)} MB)`);
 
   melden.ausLauf();
   melden.kachel(T('Titel'), String(liste.length));
   melden.kachel(T('davon neu'), String(neuIds.length));
   melden.kachel(T('Liedtexte'), String(liste.filter((c) => (c.metadata && c.metadata.prompt || '').trim()).length));
-  console.log('\n--- Vergleich mit dem Katalog ---');
-  console.log(`  bereits bekannt:  ${liste.length - neuIds.length}`);
-  console.log(`  NEU:              ${neuIds.length}`);
-  console.log(`  inhaltlich anders:${String(geaendert.length).padStart(3)}`);
-  console.log(`  nur Zähler:       ${nurZaehler.length}`);
+  console.log('\n--- ' + T('Vergleich mit dem Katalog') + ' ---');
+  console.log('  ' + T('bereits bekannt:').padEnd(18) + (liste.length - neuIds.length));
+  console.log('  ' + T('NEU:').padEnd(18) + neuIds.length);
+  console.log('  ' + T('inhaltlich anders:').padEnd(17) + String(geaendert.length).padStart(3));
+  console.log('  ' + T('nur Zähler:').padEnd(18) + nurZaehler.length);
 
   for (const s of neuIds.slice(0,15))
     console.log(`    + ${(s.created_at||'').slice(0,10)}  ${(s.title||'').slice(0,44)}`);
-  if (neuIds.length > 15) console.log(`    … und ${neuIds.length-15} weitere`);
+  if (neuIds.length > 15) console.log('    ' + T('… und {n} weitere', { n: neuIds.length-15 }));
   for (const g of geaendert.slice(0,15))
     console.log(`    ~ ${(g.c.title||'').slice(0,36)}  (${g.was.join(', ')})`);
-  if (kaputt.length) console.log(`  Ersatzzeichen (Suno zerreisst Zeichen, keine Aenderung): ${kaputt.length}`);
+  if (kaputt.length) console.log('  ' + T('Ersatzzeichen (Suno zerreisst Zeichen, keine Aenderung): {n}', { n: kaputt.length }));
   for (const g of kaputt.slice(0,15))
     console.log(`    � ${(g.c.title||'').slice(0,36)}  ${g.was.join(', ')}`);
 
@@ -346,12 +347,12 @@ function juengsteErnte(){
   const zahl = n => (n > 0 ? '+' : '') + n;
   for (const z of sortiert.slice(0,15)){
     const teile = [];
-    if (z.dp) teile.push(`${zahl(z.dp)} Plays`);
-    if (z.dl) teile.push(`${zahl(z.dl)} Likes`);
-    if (z.dk) teile.push(`${zahl(z.dk)} Kommentare`);
+    if (z.dp) teile.push(T('{n} Plays', { n: zahl(z.dp) }));
+    if (z.dl) teile.push(T('{n} Likes', { n: zahl(z.dl) }));
+    if (z.dk) teile.push(T('{n} Kommentare', { n: zahl(z.dk) }));
     console.log(`    · ${(z.c.title||'').slice(0,36).padEnd(36)}  ${teile.join(', ')}`);
   }
-  if (sortiert.length > 15) console.log(`    … und ${sortiert.length-15} weitere`);
+  if (sortiert.length > 15) console.log('    ' + T('… und {n} weitere', { n: sortiert.length-15 }));
 
   /* ------------------------------------------------------------------
      DEN VERGLEICH ALS DATEN, NICHT NUR ALS TEXT.
@@ -387,9 +388,9 @@ function juengsteErnte(){
      die Datei nie ein Skript, keine Route, keine Oberfläche; der
      Morgenlauf hält neue IDs im Speicher (morgen.neueIds, /api/morgen/neue).
      Die Zahl der neuen Songs steht oben in letzter-vergleich.json. */
-  console.log(neuIds.length ? `\n  ${neuIds.length} neue Songs.` : '\n  Keine neuen Songs.');
+  console.log(neuIds.length ? '\n  ' + T('{n} neue Songs.', { n: neuIds.length }) : '\n  ' + T('Keine neuen Songs.'));
   console.log('');
-  console.log('\nWeiter mit:  node bin/wiederherstellen.js');
+  console.log('\n' + T('Weiter mit:  node bin/wiederherstellen.js'));
   if (gesamt && liste.length < gesamt)
-    console.log(`\nHinweis: ${gesamt - liste.length} Songs fehlen — nochmal laufen lassen.`);
+    console.log('\n' + T('Hinweis: {n} Songs fehlen — nochmal laufen lassen.', { n: gesamt - liste.length }));
 })();

@@ -32,11 +32,11 @@ const NUR_PRUEFEN = process.argv.includes('--pruefen');
 // Die Rohdatenarten und was ohne sie fehlt. "pflicht" heißt: ohne
 // diese Datei lässt sich das Archiv nicht sinnvoll aufbauen.
 const ARTEN = [
-  { zweck: 'profil',      pflicht: true,  was: 'die veröffentlichten Songs' },
-  { zweck: 'privat',      pflicht: false, was: 'die unveröffentlichten Songs aus Playlists' },
-  { zweck: 'playlists',   pflicht: false, was: 'Playlists und ihre Einträge' },
-  { zweck: 'timing',      pflicht: false, was: 'Wort-Zeitmarken für die Bühne' },
-  { zweck: 'profilinfo',  pflicht: false, was: 'Autorenangaben und Suno-Statistik' },
+  { zweck: 'profil',      pflicht: true,  was: T('die veröffentlichten Songs') },
+  { zweck: 'privat',      pflicht: false, was: T('die unveröffentlichten Songs aus Playlists') },
+  { zweck: 'playlists',   pflicht: false, was: T('Playlists und ihre Einträge') },
+  { zweck: 'timing',      pflicht: false, was: T('Wort-Zeitmarken für die Bühne') },
+  { zweck: 'profilinfo',  pflicht: false, was: T('Autorenangaben und Suno-Statistik') },
 ];
 
 function rohdateien(zweck){
@@ -48,7 +48,7 @@ function rohdateien(zweck){
 
 // --- Bestandsaufnahme -------------------------------------------
 
-console.log('Rohdaten in library/roh/:\n');
+console.log(T('Rohdaten in library/roh/:') + '\n');
 
 let fehltPflicht = false;
 let bytes = 0;
@@ -58,11 +58,11 @@ for (const a of ARTEN){
   bytes += gr;
   const marke = d.length ? '✓' : (a.pflicht ? '✗' : '–');
   if (!d.length && a.pflicht) fehltPflicht = true;
-  console.log(`  ${marke} ${(a.zweck + '-*').padEnd(13)} ${String(d.length).padStart(2)} Datei(en)`
+  console.log(`  ${marke} ${(a.zweck + '-*').padEnd(13)} ${T('{n} Datei(en)', { n: String(d.length).padStart(2) })}`
             + `${gr ? ', ' + (gr/1048576).toFixed(1) + ' MB' : ''}`
-            + `${d.length ? '' : '   -> fehlt: ' + a.was}`);
+            + `${d.length ? '' : '   -> ' + T('fehlt: {was}', { was: a.was })}`);
 }
-console.log(`\n  zusammen ${(bytes/1048576).toFixed(1)} MB\n`);
+console.log('\n  ' + T('zusammen {mb} MB', { mb: (bytes/1048576).toFixed(1) }) + '\n');
 
 /* Verarbeitete Rohdateien werden von bin/aufbereiten.js GELOESCHT -
    ein leerer roh-Ordner ist also NORMAL. Der Katalog traegt alles
@@ -76,14 +76,14 @@ console.log(`\n  zusammen ${(bytes/1048576).toFixed(1)} MB\n`);
    also fast nichts. Unersetzlich ist library/katalog.json.gz. */
 const K = require('./katalog.js');
 if (fehltPflicht && !K.lesen()){
-  console.error('Weder Rohdaten noch Katalog. Erst im Browser sammeln:');
-  console.error('  Lesezeichen auf suno.com (siehe docs/archiv/UEBERGABE.md)');
+  console.error(T('Weder Rohdaten noch Katalog. Erst im Browser sammeln:'));
+  console.error('  ' + T('Lesezeichen auf suno.com (siehe docs/archiv/UEBERGABE.md)'));
   process.exit(1);
 }
-if (fehltPflicht) console.log('Keine neuen Rohdaten — der Katalog ist die Quelle.\n');
+if (fehltPflicht) console.log(T('Keine neuen Rohdaten — der Katalog ist die Quelle.') + '\n');
 
 if (NUR_PRUEFEN){
-  console.log('Nur geprüft, nichts geändert. Ohne --pruefen läuft der Aufbau.');
+  console.log(T('Nur geprüft, nichts geändert. Ohne --pruefen läuft der Aufbau.'));
   process.exit(0);
 }
 
@@ -137,16 +137,16 @@ for (let i = 0; i < SCHRITTE.length; i++){
   const e = spawnSync(process.execPath, [path.join(__dirname, datei), ...args],
                       { stdio: 'inherit' });
   if (e.status !== 0){
-    console.error(`\nAbgebrochen bei ${datei} (Rückgabewert ${e.status}).`);
-    console.error('Die fertigen Schritte bleiben erhalten - einfach erneut starten,');
-    console.error('es wird nur nachgeholt, was fehlt.');
+    console.error('\n' + T('Abgebrochen bei {datei} (Rückgabewert {status}).', { datei, status: e.status }));
+    console.error(T('Die fertigen Schritte bleiben erhalten - einfach erneut starten,'));
+    console.error(T('es wird nur nachgeholt, was fehlt.'));
     process.exit(e.status || 1);
   }
 }
 
 const dauer = Math.round((Date.now() - start)/1000);
 console.log(`\n${'='.repeat(64)}`);
-console.log(`Fertig in ${Math.floor(dauer/60)} min ${dauer%60} s.`);
+console.log(T('Fertig in {min} min {sek} s.', { min: Math.floor(dauer/60), sek: dauer%60 }));
 
 /* EHRLICH SAGEN, WAS NICHT DABEI IST (24.08.2026).
    Bis hierher stand nur "Fertig" - und wer versehentlich in einem
@@ -167,16 +167,16 @@ try {
       if (fs2.existsSync(path.join(SONGS, d, 'audio.wav'))) wav++;
       if (fs2.existsSync(path.join(SONGS, d, 'stems')))     stems++;
     }
-    console.log(`\n  ${mp3} Songs als MP3, ${wav} als WAV, ${stems} mit Instrumentspuren.`);
+    console.log('\n  ' + T('{mp3} Songs als MP3, {wav} als WAV, {stems} mit Instrumentspuren.', { mp3, wav, stems }));
     const fehlt = [];
-    if (wav < mp3)   fehlt.push(`  WAV-Originale (${mp3 - wav} fehlen):        node bin/wav.js`);
-    if (stems < mp3) fehlt.push(`  Instrumentspuren (${mp3 - stems} fehlen):  node bin/stems.js   — rund 4 min je Song`);
+    if (wav < mp3)   fehlt.push('  ' + T('WAV-Originale ({n} fehlen):', { n: mp3 - wav }).padEnd(34) + 'node bin/wav.js');
+    if (stems < mp3) fehlt.push('  ' + T('Instrumentspuren ({n} fehlen):', { n: mp3 - stems }).padEnd(34) + 'node bin/stems.js   — ' + T('rund 4 min je Song'));
     if (fehlt.length) {
-      console.log('\n  NICHT dabei, weil kein Schritt hier sie holt:');
+      console.log('\n  ' + T('NICHT dabei, weil kein Schritt hier sie holt:'));
       for (const z of fehlt) console.log(z);
-      console.log('\n  Beides ist nachholbar und laeuft im Hintergrund weiter.');
+      console.log('\n  ' + T('Beides ist nachholbar und laeuft im Hintergrund weiter.'));
     }
   }
 } catch (e) {}
 
-console.log('\nAnhören:  node server/server.js');
+console.log('\n' + T('Anhören:  node server/server.js'));

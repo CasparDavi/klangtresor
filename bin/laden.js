@@ -200,7 +200,7 @@ async function ladeDatei(url, ziel) {
       return fertig('geladen');
 
     } catch (e) {
-      const grund = still ? `${STILLSTAND / 1000} s ohne Daten` : e.message;
+      const grund = still ? T('{s} s ohne Daten', { s: STILLSTAND / 1000 }) : e.message;
       if (versuch === VERSUCHE) {
         console.log(`      ✗ ${path.basename(ziel)}: ${grund}`);
         return fertig('fehler');
@@ -218,7 +218,7 @@ async function ladeDatei(url, ziel) {
 (async () => {
   const katalog = K.lesen();
   if (!katalog) {
-    console.error('Kein Katalog gefunden - erst "node bin/aufbereiten.js" laufen lassen.');
+    console.error(T('Kein Katalog gefunden - erst "node bin/aufbereiten.js" laufen lassen.'));
     process.exit(1);
   }
 
@@ -228,10 +228,10 @@ async function ladeDatei(url, ziel) {
   if (NUR_OEFF)  liste = liste.filter(s => s.veroeffentlicht);
   if (TESTZAHL)  liste = liste.slice(0, TESTZAHL);
 
-  console.log(`${liste.length} Songs zu prüfen`);
-  console.log(NUR_OEFF ? '(nur veröffentlichte)' : '(alle)');
-  console.log('Ein Zeichen je Datei (Cover, MP3, Artwork):  G = geladen,  V = war schon da,  · = nichts zu holen,  ? = zu pruefen, du entscheidest,  ! = Fehler');
-  if (MIT_LYRICVIDEO) console.log("(mit Sunos Lyric-Videos)");
+  console.log(T('{n} Songs zu prüfen', { n: liste.length }));
+  console.log(NUR_OEFF ? T('(nur veröffentlichte)') : T('(alle)'));
+  console.log(T('Ein Zeichen je Datei (Cover, MP3, Artwork):  G = geladen,  V = war schon da,  · = nichts zu holen,  ? = zu pruefen, du entscheidest,  ! = Fehler'));
+  if (MIT_LYRICVIDEO) console.log(T('(mit Sunos Lyric-Videos)'));
   console.log('');
 
   const zaehler = { geladen: 0, vorhanden: 0, fehlt: 0, fehler: 0, eigen: 0, verdacht: 0 };
@@ -323,8 +323,8 @@ async function ladeDatei(url, ziel) {
     bytes += fs.statSync(ziel).size;
     console.log(`${wort}: library/${name}.${endung}`);
   };
-  await profilBild(katalog.profil && katalog.profil.avatar_image_url, 'avatar', '\nProfilbild');
-  await profilBild(katalog.profil && katalog.profil.cover_photo_url, 'profilbild', 'Profil-Titelbild');
+  await profilBild(katalog.profil && katalog.profil.avatar_image_url, 'avatar', '\n' + T('Profilbild'));
+  await profilBild(katalog.profil && katalog.profil.cover_photo_url, 'profilbild', T('Profil-Titelbild'));
 
   // --- Playlist-Cover ---------------------------------------------
   // Caspar_Ds eigene Playlists sollen auch dann noch aussehen wie seine,
@@ -334,7 +334,7 @@ async function ladeDatei(url, ziel) {
   const playlists = Object.values(katalog.playlists || {});
   if (playlists.length) {
     fs.mkdirSync(PLAYLISTBILDER, { recursive: true });
-    console.log(`\n${playlists.length} Playlist-Cover`);
+    console.log('\n' + T('{n} Playlist-Cover', { n: playlists.length }));
     for (const p of playlists) {
       if (!p.bildUrl) { zaehler.fehlt++; continue; }
       const ziel = path.join(PLAYLISTBILDER, p.id + '.jpg');
@@ -350,25 +350,24 @@ async function ladeDatei(url, ziel) {
     // endet. Ohne den Filter zählt man doppelt.
     const echte = fs.readdirSync(PLAYLISTBILDER)
       .filter(f => f.endsWith('.jpg') && !f.startsWith('._'));
-    console.log(`  ${echte.length} Cover vorhanden`);
+    console.log('  ' + T('{n} Cover vorhanden', { n: echte.length }));
   }
 
   const dauer = Math.round((Date.now() - start) / 1000);
-  console.log('\n--- fertig ---');
-  console.log(`neu geladen:   ${zaehler.geladen}  (${mb(bytes)})`);
-  console.log(`schon da:      ${zaehler.vorhanden}`);
+  console.log('\n--- ' + T('fertig') + ' ---');
+  console.log(T('neu geladen:').padEnd(15) + `${zaehler.geladen}  (${mb(bytes)})`);
+  console.log(T('schon da:').padEnd(15) + zaehler.vorhanden);
   if (zaehler.eigen) {
-    console.log(`schon geklaert: ${zaehler.eigen} — bekannte eigene Clips, gar nicht erst geholt`);
+    console.log(T('schon geklaert:') + ` ${zaehler.eigen} — ` + T('bekannte eigene Clips, gar nicht erst geholt'));
   }
   if (zaehler.verdacht) {
-    console.log(`\nzu pruefen:    ${zaehler.verdacht} — diese Titel haben jetzt ein Video-Artwork, und fuer`);
-    console.log(`               genau sie steht bei uns ein Export im Buch:`);
+    console.log('\n' + T('zu pruefen:').padEnd(15) + `${zaehler.verdacht} — ` + T('diese Titel haben jetzt ein Video-Artwork, und fuer genau sie steht bei uns ein Export im Buch:'));
     for (const t of verdaechtige.slice(0, 12)) console.log('                 · ' + t.slice(0, 60));
-    if (verdaechtige.length > 12) console.log(`                 … und ${verdaechtige.length - 12} weitere`);
-    console.log('\n               Ansehen und entscheiden:  node bin/effektclip-buch.js pruefen');
+    if (verdaechtige.length > 12) console.log('                 ' + T('… und {n} weitere', { n: verdaechtige.length - 12 }));
+    console.log('\n               ' + T('Ansehen und entscheiden:  node bin/effektclip-buch.js pruefen'));
   }
-  console.log(`nicht vorhanden:${zaehler.fehlt}   (z.B. Songs ohne Video)`);
-  console.log(`Fehler:        ${zaehler.fehler}`);
-  console.log(`Dauer:         ${Math.floor(dauer/60)} min ${dauer%60} s`);
-  if (zaehler.fehler) console.log('\nBei Fehlern einfach nochmal starten - es wird fortgesetzt.');
+  console.log(T('nicht vorhanden:').padEnd(15) + `${zaehler.fehlt}   ` + T('(z.B. Songs ohne Video)'));
+  console.log(T('Fehler:').padEnd(15) + zaehler.fehler);
+  console.log(T('Dauer:').padEnd(15) + T('{min} min {sek} s', { min: Math.floor(dauer/60), sek: dauer%60 }));
+  if (zaehler.fehler) console.log('\n' + T('Bei Fehlern einfach nochmal starten - es wird fortgesetzt.'));
 })();

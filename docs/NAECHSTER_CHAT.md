@@ -9481,3 +9481,22 @@ docs/BACKLOG.md, docs/EINRICHTUNG-TEXTE.md, docs/suno-*.txt (Caspar_D: kein Verw
 **Offen:** Konsolenausgabe der Kinder (z. B. modelle-holen.js „hole …“) ist deutsch – nur die Meldungen an die Seite
 sind übersetzt. README/START-HIER EN+RU folgen (1.0.93). Einige Links in README/START-HIER zeigen auf jetzt
 ausgenommene docs/-Dateien – beim Umbau der Hilfen bereinigen.
+
+## 111. 23.10.2026: 1.0.93 – Hilfen dreisprachig, Konsolenzeilen der Teilschritte, Henrys Teil 2
+
+- **README:** `README.md` ist jetzt ENGLISCH (GitHub-Startseite, Regel „Publikation: Englisch voreingestellt mit
+  Sprachweiche“), `README.de.md` das bisherige Deutsch, `README.ru.md` Russisch. **START:** `START-HIER.md` (DE),
+  `START-HERE.md` (EN), `START-RU.md` (RU); Weiche oben in jeder Datei. `docs/ru/USTANOVKA.md` ist nur noch ein Wegweiser
+  auf START-RU.md (die Einrichtung spricht selbst Russisch). Übersetzt von Sonnet-Agenten aus dem Deutschen, Bildschirm-
+  texte aus den echten EN/RU-Texten der App. Russisch geprüft: „вы“, „клик“, keine „сердечки“.
+- Deutsche Hilfen bereinigt: 19 angezeigte Pfade verschobener docs korrigiert; Links auf nicht ausgelieferte Dateien
+  (docs/archiv, docs/BACKLOG.md …) zeigen auf GitHub. KI-Modelle „16 Dateien, rund 1,2 GB“, Platz „rund 1,6 GB“.
+- **Konsolenzeilen** der Einrichtungs-Kinder (modelle-holen, sammeln, aufbereiten, uebernehmen, wiederherstellen, laden,
+  kacheln, farben, tiefenkarten, gesichter, avatare) über T(); `bin/texte/kinder.json` jetzt 330 Schlüssel. Diese
+  Skripte laufen auch im Morgenlauf (Sprache dann aus dem System). **Probe:** aufbereiten.js alt/neu-de/neu-en in drei
+  Sandkästen mit derselben Bestandskopie – Kataloge bis auf `erstelltAm` identisch, deutsche Ausgabe bis auf Zahlen gleich;
+  die übrigen Skripte im Sandkasten ohne Fehler angelaufen.
+- `docs/ru/PRAVILA.md` endlich eingecheckt (lag seit 22.10. ungetrackt in Caspar_Ds Checkout).
+- **Henry Teil 2:** `~/Downloads/klangtresor-ru-teil2-2026-10-23.xlsx` (827 Zeilen: 4 Oberflächentexte zur MP3-Messung +
+  alle Texte aus bin/texte/*.json, Schlüssel = deutscher Satz) und Begleittext `KlangTresor-Henry-Teil2.txt`.
+  Rückläufer: Spalte Russian → bin/texte/*.json bzw. web/ui-sprache-ru.js.

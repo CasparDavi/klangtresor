@@ -217,8 +217,8 @@ async function perFetch(url, mindestens) {
           /* Nur im Terminal fortschreiben - in eine Datei umgeleitet
              wuerde jedes \r zu einer weiteren Zeile Muell. */
           if (process.stdout.isTTY) {
-            const wieweit = ganz ? ` von ${mb(ganz)} (${Math.round(n / ganz * 100)} %)` : '';
-            process.stdout.write(`\r  hole       ${NAME_JETZT} … ${mb(n)}${wieweit}   `);
+            const wieweit = ganz ? ' ' + T('von {ganz} ({prozent} %)', { ganz: mb(ganz), prozent: Math.round(n / ganz * 100) }) : '';
+            process.stdout.write(`\r  ${T('hole').padEnd(11)}${NAME_JETZT} … ${mb(n)}${wieweit}   `);
           }
           /* Die Seite bekommt die Zahlen immer: diese Datei und die
              Summe ueber alle. GEHOLT_VORHER ist, was vor dieser Datei
@@ -270,22 +270,22 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN }; return; }
 
 (async () => {
   const unbekannt = NUR ? NUR.filter(n => !DATEIEN.some(([d]) => d === n)) : [];
-  if (unbekannt.length) { console.error(`  Unbekanntes Modell: ${unbekannt.join(', ')}`); process.exit(2); }
+  if (unbekannt.length) { console.error('  ' + T('Unbekanntes Modell: {liste}', { liste: unbekannt.join(', ') })); process.exit(2); }
   fs.mkdirSync(ZIEL, { recursive: true });
   let geholt = 0; const offen = [];
   SOLL_GESAMT = LISTE.reduce((s, [, , m]) => s + m, 0);
   for (const [name, url, mindestens, zipEintrag] of LISTE) {
     NUMMER_JETZT++;
     const f = path.join(ZIEL, name);
-    if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  vorhanden  ${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
+    if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  ${T('vorhanden').padEnd(11)}${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
     melden.lauf({ was: T('{name} wird geladen', { name }), n: NUMMER_JETZT, von: LISTE.length,
       nEinheit: T('Datei'), quelle: T('von huggingface.co'), bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });
     NAME_JETZT = name;
-    process.stdout.write(`  hole       ${name} … `);
+    process.stdout.write(`  ${T('hole').padEnd(11)}${name} … `);
     const a = await perFetch(url, mindestens);
     /* Die Fortschrittszeile hat sich selbst ueberschrieben; erst
        loeschen, sonst klebt das Ergebnis hinter halben Prozentzahlen. */
-    if (process.stdout.isTTY) process.stdout.write(`\r${' '.repeat(78)}\r  hole       ${name} … `);
+    if (process.stdout.isTTY) process.stdout.write(`\r${' '.repeat(78)}\r  ${T('hole').padEnd(11)}${name} … `);
     /* Aus einem Zip: das Paket landet erst neben dem Ziel, dann wird der eine Eintrag ausgepackt */
     const auspacken = (zip) => { try { const d = ausZip(zip, zipEintrag); if (d.length < mindestens) return 'zu klein ausgepackt';
       fs.writeFileSync(f + '.teil', d); fs.renameSync(f + '.teil', f); return null; } catch (e) { return e.message; } };
@@ -299,18 +299,18 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN }; return; }
     const b = perCurl(url, zf, mindestens);
     if (b.n && zipEintrag) { b.fehler = auspacken(fs.readFileSync(zf)); try { fs.rmSync(zf); } catch (e) {} if (b.fehler) b.n = 0; }
     if (b.n) { geholt++; GEHOLT_VORHER += b.n; console.log(mb(b.n)); continue; }
-    console.log(`FEHLER (${b.fehler})`); offen.push([name, url]); process.exitCode = 1;
+    console.log(`${T('FEHLER')} (${b.fehler})`); offen.push([name, url]); process.exitCode = 1;
   }
   /* Die Schlusszeile zaehlt immer alle - auch nach --nur ist das der
      Stand, den die Einrichtungsseite zeigen soll. */
   const { da, von } = bestand();
   melden.ausLauf();
   melden.zeile('modelle', T('KI-Modelle'), T('{da} von {von} sind da', { da, von }), da === von ? 'fertig' : 'wink');
-  console.log(`  Modelle: ${geholt} geholt${NUR ? ` (angefragt: ${LISTE.length})` : ''}, ${da} von ${von} vorhanden → library/modelle/`);
+  console.log('  ' + T('Modelle: {geholt} geholt', { geholt }) + (NUR ? ' ' + T('(angefragt: {n})', { n: LISTE.length }) : '') + ', ' + T('{da} von {von} vorhanden', { da, von }) + ' → library/modelle/');
   if (offen.length) {
-    console.log(`\n  ${offen.length} Datei(en) kamen nicht an. Von Hand: im Browser öffnen, "Speichern unter" nach\n    ${ZIEL}\n  mit genau diesem Dateinamen:`);
+    console.log('\n  ' + T('{n} Datei(en) kamen nicht an. Von Hand: im Browser öffnen, "Speichern unter" nach', { n: offen.length }) + `\n    ${ZIEL}\n  ` + T('mit genau diesem Dateinamen:'));
     for (const [n, u] of offen) { const z = (DATEIEN.find(d => d[0] === n) || [])[3];
-      console.log(`    ${n}\n      ${u}` + (z ? `\n      (ein Zip: daraus ${z} auspacken und als ${n} ablegen)` : '')); }
-    console.log('  Danach node bin/modelle-holen.js noch einmal - Vorhandenes wird übersprungen.\n  Hinter einem Proxy: HTTPS_PROXY=http://proxy:port setzen (curl liest das), oder die Dateien von Hand holen.');
+      console.log(`    ${n}\n      ${u}` + (z ? '\n      ' + T('(ein Zip: daraus {z} auspacken und als {n} ablegen)', { z, n }) : '')); }
+    console.log('  ' + T('Danach node bin/modelle-holen.js noch einmal - Vorhandenes wird übersprungen.') + '\n  ' + T('Hinter einem Proxy: HTTPS_PROXY=http://proxy:port setzen (curl liest das), oder die Dateien von Hand holen.'));
   }
-})().catch(e => { console.error('  Modelle holen brach ab:', e.message, e.cause ? '/ ' + (e.cause.code || e.cause.message) : ''); process.exit(1); });
+})().catch(e => { console.error('  ' + T('Modelle holen brach ab:'), e.message, e.cause ? '/ ' + (e.cause.code || e.cause.message) : ''); process.exit(1); });

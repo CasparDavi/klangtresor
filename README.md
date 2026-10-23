@@ -1,133 +1,137 @@
 # KlangTresor #
 
-*Ein Tresor für die eigene Musik — was drin liegt, gehört dir, und den
-Schlüssel hast nur du.*
+[Deutsch](README.de.md) · **English** · [Русский](README.ru.md)
 
-**Ein lokales Archiv der eigenen [Suno](https://suno.com)-Songs** — mit
-Lyrics, Prompts, Artworks, Playlists und Metadaten. Dazu eine Website,
-die im Heimnetz läuft und auf iPhone und iPad im Safari funktioniert.
+*A vault for your own music — what lies inside is yours, and only you
+hold the key.*
 
-Dahinter steckt ein Werkzeugkasten, der aus den eigenen Stücken liest,
-was sich messen lässt: Lautheit nach EBU R128, Tonart aus dem Bass,
-Stimmlage, Instrumentspuren, ein Tonstudio mit Equalizer und
-Kompressor, eine Sternenkarte des eigenen Klangraums.
+**A local archive of your own [Suno](https://suno.com) songs** — with
+lyrics, prompts, artworks, playlists and metadata. Plus a website that
+runs on your home network and works in Safari on iPhone and iPad.
 
-**Läuft mit Node-Bordmitteln.** Keine Datenbank, keine Anmeldung außer
-der eigenen im Browser, eine einzige npm-Abhängigkeit (und die nur für
-die Musikstil-Erkennung).
+Behind it sits a toolbox that reads from your own tracks what can be
+measured: loudness according to EBU R128, key from the bass, vocal
+range, instrument tracks, a sound studio with equaliser and
+compressor, a star map of your own sound space.
 
----
-
-> **Die Dokumente liegen nach Modulen sortiert** — die Karte dazu steht in
-> [docs/LIESMICH.md](docs/LIESMICH.md).
-
-## Was das hier *nicht* ist
-
-Damit keine Missverständnisse entstehen:
-
-- **Kein Suno-Client und keine API-Umgehung.** Was ohne Anmeldung
-  öffentlich abrufbar ist, wird öffentlich abgerufen. Alles Weitere —
-  private Songs, Wort-Zeitmarken, Playlists — holt ein Lesezeichen im
-  eigenen, bei Suno angemeldeten Browsertab. Der Zugang bleibt dort,
-  wo er hingehört: bei suno.com.
-- **Kein Weg an Sunos Bedingungen vorbei.** Das Archiv sichert die
-  eigenen Werke, nicht fremde.
-- **Kein Dienst.** Es läuft auf dem eigenen Rechner, im eigenen Netz,
-  ohne Konto und ohne Server im Internet.
-- **Keine fertige Anwendung.** Gebaut für ein Archiv und daran
-  gewachsen. Wer es benutzen will, sollte mit einer Kommandozeile
-  umgehen können.
+**Runs on Node's built-in tools.** No database, no sign-in except your
+own in the browser, a single npm dependency (and that only for music
+style detection).
 
 ---
 
-## Rechte und Mitarbeit
+> **The documents are sorted by module** — the map to them is in
+> [docs/LIESMICH.md](docs/LIESMICH.md) (German).
 
-Der Code steht unter der **MIT-Lizenz** — siehe [LICENSE](LICENSE). Das
-heißt: Nimm ihn, ändere ihn, gib ihn weiter, baue etwas Eigenes daraus.
-Die einzige Bedingung ist, daß der Urhebervermerk mitreist.
+## What this is *not*
 
-**Caspar_D behält das letzte Wort** darüber, was in dieses Projekt
-einfließt. Das ist keine Lizenzbedingung, sondern schlicht die Folge
-davon, wem das Repositorium gehört: Vorschläge sind willkommen,
-zusammengeführt wird, was er zusammenführt. Wer es anders haben will,
-darf jederzeit forken — dafür ist die Lizenz da.
+To avoid any misunderstanding:
 
-Nicht unter dieser Lizenz stehen die fremden Bausteine und die
-KI-Modelle. Was von wem stammt und was dabei zu beachten ist, steht in
-[web/fremd/LIZENZEN.md](web/fremd/LIZENZEN.md). Eine Einschränkung
-lohnt hervorgehoben zu werden: Die Modelle zur Musikstil-Erkennung
-stehen unter CC BY-NC-ND und dürfen nicht kommerziell benutzt werden.
-
-Die Songs, Texte und Artworks in einem damit gebauten Archiv gehören
-ihren Urhebern und sind nicht Teil dieses Repositoriums.
-
-## Wie das hier entstanden ist
-
-Große Teile dieses Codes sind im Dialog mit einem KI-Sprachmodell
-geschrieben worden. Entwurf, Auswahl, Prüfung und alle
-Gestaltungsentscheidungen stammen von Caspar_D — nachzulesen in
-[docs/HAUSREGELN.md](docs/haus/HAUSREGELN.md), wo jede Regel mit ihrem Anlaß
-steht, und in der Versionsgeschichte.
-
-Das steht hier, weil es zutrifft und weil die Dokumente ohnehin davon
-erzählen. Wer wissen will, wie so etwas zustande kommt, findet in
-[docs/HISTORY.md](docs/haus/HISTORY.md) auch die Irrwege.
+- **Not a Suno client and no workaround for the API.** What is publicly
+  available without signing in is fetched publicly. Everything else —
+  private songs, word timestamps, playlists — is fetched by a bookmarklet
+  in your own browser tab, where you are signed in to Suno. Access stays
+  where it belongs: at suno.com.
+- **No way around Suno's terms.** The archive secures your own works,
+  not other people's.
+- **Not a service.** It runs on your own computer, on your own network,
+  without an account and without a server on the internet.
+- **Not a finished application.** It was built for one archive and grew
+  with it. Anyone who wants to use it should be comfortable with a
+  command line.
 
 ---
 
-## Was es kann
+## Rights and contributing
 
-**Archiv**
-- Alle eigenen Songs lokal — MP3 und WAV, Artwork, Video-Artworks
-- Playlists samt Reihenfolge; fremde Songs darin laufen vom CDN
-- Auch Unveröffentlichtes, sofern es in einer eigenen Playlist steht
-- Kommentare und Reaktionen mit den Menschen dahinter
+The code is released under the **MIT licence** — see [LICENSE](LICENSE). That
+means: take it, change it, pass it on, build something of your own from
+it. The only condition is that the copyright notice travels with it.
 
-**Hören**
-- Karaoke-Bühne mit wortgenau mitlaufendem Text und Vollbild
-- Farbpaletten aus jedem Cover — die Oberfläche färbt sich nach dem
-  laufenden Song, ohne je eine Farbe zu erfinden
-- Sieben eigene Visualisierungen, dazu Butterchurn mit 333
-  MilkDrop-Presets
+**Caspar_D has the final say** over what flows into this project. That is
+not a licence condition, but simply the consequence of whom the
+repository belongs to: suggestions are welcome, and what gets merged is
+what he merges. Anyone who wants it differently is welcome to fork at any
+time — that is what the licence is for.
 
-**Messen**
-- Lautheit nach EBU R128 mit beiden Toren, True Peak, Dynamikumfang
-- Tonart aus dem Baß auf der Eins, Tongeschlecht aus der gezählten
-  Terz — und wo keine Terz vorkommt, steht nur der Grundton
-- Stimmlage per YIN auf der getrennten Gesangsspur
-- Trennung in sechs Instrumentspuren, lokal und ohne Python
-- Wort-Zeitmarken und Transkript aus whisper.cpp
+Not covered by this licence are the third-party components and the AI
+models. What comes from whom and what to watch out for is listed in
+[web/fremd/LIZENZEN.md](web/fremd/LIZENZEN.md). One restriction is worth
+highlighting: the models for music style detection are licensed under
+CC BY-NC-ND and must not be used commercially.
 
-**Werkzeuge**
-- Tonstudio mit Equalizer, Kompressor, Raum und Störfrequenz-Kerbe
-- **Räume**: die eigene Sammlung als Sternenkarte, mit Flugbahnen — in
-  zwei Sichten. Der **Klang-Raum** ordnet nach dem Ton, der
-  **Geschichten-Raum** nach dem, wovon die Lieder handeln (aus den
-  Texten, mehrsprachig — deutsche und englische landen im selben Raum,
-  ohne Übersetzung). Seine Gruppen heißen nach den **Ortsbegriffen**:
-  den Wörtern des eigenen Bestands, die dort wohnen, wo die Gruppe
-  liegt — eine Gruppe ohne klaren Ort sagt das ehrlich
-- Autorenseite: die eigenen Zahlen im Verhältnis zur Nachbarschaft —
-  wer hier kommentiert, geliked oder gefolgt hat, mit öffentlichen
-  Profilzahlen und Hirschfaktor. Samt Erklärung, warum in dieser
-  Rechnung fast jeder im unteren Drittel steht
+The songs, lyrics and artworks in an archive built with it belong to
+their creators and are not part of this repository.
+
+## How this came about
+
+Large parts of this code were written in dialogue with an AI language
+model. Design, selection, review and all design decisions come from
+Caspar_D — see
+[docs/haus/HAUSREGELN.md](docs/haus/HAUSREGELN.md), where every rule is
+listed with its occasion, and the version history.
+
+This is stated here because it is true and because the documents talk
+about it anyway. Anyone who wants to know how something like this comes
+about will also find the detours in
+[docs/haus/HISTORY.md](docs/haus/HISTORY.md).
 
 ---
 
-## Einrichten
+## What it can do
 
-Voraussetzung: [Node.js](https://nodejs.org) und
-[ffmpeg](https://ffmpeg.org) (`brew install ffmpeg` auf dem Mac,
-`apt install ffmpeg` unter Linux).
+**Archive**
+- All your own songs locally — MP3 and WAV, artwork, video artworks
+- Playlists with their order; other people's songs in them play from the CDN
+- Unpublished songs too, as long as they are in one of your own playlists
+- Comments and reactions, with the people behind them
+
+**Listening**
+- Karaoke stage with lyrics that follow word by word, and full screen
+- Colour palettes from every cover — the interface takes its colours from
+  the song that is playing, without ever inventing a colour
+- Seven visualisations of its own, plus Butterchurn with 333
+  MilkDrop presets
+
+**Measuring**
+- Loudness according to EBU R128 with both gates, true peak, loudness range
+- Key from the bass on the downbeat, mode from the counted third — and
+  where no third occurs, only the root note is shown
+- Vocal range via YIN on the separated vocal track
+- Separation into six instrument tracks, local and without Python
+- Word timestamps and transcript from whisper.cpp
+
+**Tools**
+- Sound studio with equaliser, compressor, room and a notch for
+  interfering frequencies
+- **Spaces**: your own collection as a star map, with flight paths — in
+  two views. The **Sound Space** arranges by sound, the **Story Space**
+  by what the songs are about (from the lyrics, multilingual — German and
+  English ones end up in the same space, without translation). Its groups
+  are named after the **place words**: the words of your own collection
+  that live where the group lies — a group without a clear place says so
+  honestly
+- Author page: your own numbers in relation to the neighbourhood — who
+  here has commented, liked or followed, with public profile figures and
+  h-index. Including an explanation of why almost everyone lands in the
+  lower third in this calculation
+
+---
+
+## Setting up
+
+Requirements: [Node.js](https://nodejs.org) and
+[ffmpeg](https://ffmpeg.org) (`brew install ffmpeg` on the Mac,
+`apt install ffmpeg` on Linux).
 
 ```bash
 node bin/sammelskript.js
 ```
 
-Das Skript nennt die Adresse, die in Chrome zu öffnen ist. Dort:
-Rechtsklick → *Untersuchen* → *Console*, den Inhalt der erzeugten
-Datei `browser/02-sammeln-aktuell.js` einfügen, Enter. Am Ende liegt
-`suno-archiv-metadaten.json` im Download-Ordner.
+The script names the address to open in Chrome. There: right-click →
+*Inspect* → *Console*, paste the contents of the generated file
+`browser/02-sammeln-aktuell.js`, press Enter. In the end,
+`suno-archiv-metadaten.json` is in your Downloads folder.
 
 ```bash
 mv ~/Downloads/suno-archiv-metadaten.json \
@@ -136,296 +140,295 @@ node bin/wiederherstellen.js
 node server/server.js
 ```
 
-`wiederherstellen.js` baut alles Weitere: Katalog, Medien, Kacheln,
-Farbpaletten. Der Server nennt die Adressen für Heimnetz und iPhone.
+`wiederherstellen.js` builds everything else: catalogue, media, tiles,
+colour palettes. The server names the addresses for the home network and
+iPhone.
 
-**Der eigene Handle wird nirgends eingetragen.** Das Sammelskript liest
-ihn aus der Adresse der Profilseite, auf der es läuft, und sortiert
-fremde Songs danach aus.
+**Your own handle is entered nowhere.** The collection script reads it
+from the address of the profile page it runs on, and sorts out other
+people's songs accordingly.
 
-### Unter Windows
+### On Windows
 
-Doppelklick auf **`einrichten-windows.cmd`** — der Rest läuft von
-selbst: prüfen, was fehlt, Node.js und Pakete holen, Modelle holen, nach
-dem Suno-Alias fragen, Songs sammeln, starten. Die Einrichtung öffnet
-sich als Seite im Browser; geht keiner auf, läuft sie im Fenster als Text.
+Double-click **`einrichten-windows.cmd`** — the rest runs by itself:
+check what is missing, fetch Node.js and packages, fetch models, ask for
+your Suno alias, collect songs, start. The setup opens as a page in the
+browser; if none opens, it runs in the window as text.
 
-Die `.cmd` ruft `bin\anlasser.ps1` — die `.ps1` nicht selbst anklicken.
-Windows lehnt sie auf vielen Rechnern ab, und das Fenster schließt sich,
-bevor man die Meldung lesen kann — man hält das Programm dann für kaputt.
-Die `.cmd` umgeht beides; sie hält das Fenster offen und erlaubt das
-Skript nur für diesen einen Aufruf, ohne an den Systemeinstellungen etwas
-zu ändern.
+The `.cmd` calls `bin\anlasser.ps1` — do not click the `.ps1` itself.
+On many computers Windows refuses it, and the window closes before you
+can read the message — you then take the program for broken. The `.cmd`
+avoids both; it keeps the window open and allows the script only for this
+one call, without changing anything in the system settings.
 
-Fehlt ffmpeg, sagt das Skript, wie man es nachholt — mit `winget` in
-einer Zeile, und für Rechner ohne `winget` Schritt für Schritt von Hand.
+If ffmpeg is missing, the script tells you how to get it — with `winget`
+in one line, and for computers without `winget` step by step by hand.
 
-### Unter WSL
+### On WSL
 
-Läuft der Server in der Linux-Umgebung, muß auch der Browser dort
-laufen — ein unter Windows gestarteter Chrome erreicht ihn nicht. Alles
-andere funktioniert, nur das Lesezeichen findet den Server nicht.
-
----
-
-## Der laufende Betrieb
-
-Der rote Knopf oben rechts holt, was neu ist: erst zeigen, dann
-übernehmen. Er braucht keine Anmeldung.
-
-Für das, was nur mit Anmeldung sichtbar ist — Wort-Zeitmarken, private
-Songs, Playlists, wer reagiert hat — gibt es das **Lesezeichen**. Es
-läuft im eigenen Suno-Tab, sichert sofort und schickt die Ernte in
-Paketen an den Server. Ein Zugangsschlüssel landet dabei nie auf der
-Platte.
-
-Die Zahlen der Nachbarschaft holen zwei Läufe, anzustoßen aus dem Panel
-*Nachbarschaft* auf der Autorenseite oder von Hand:
-
-```
-node bin/community-profile.js    Profilzahlen der Leute, die hier vorkommen
-node bin/community-hirsch.js     deren Hirschfaktoren (dauert deutlich länger)
-```
-
-Beide holen nur, was noch fehlt; ein zweiter Lauf kostet also nichts.
-Sie lesen öffentlich und ohne Anmeldung — und halten sich dabei an die
-Umgangsform aus [docs/HAUSREGELN.md](docs/haus/HAUSREGELN.md): eine Anfrage
-zur Zeit, 1,5 s Pause, ehrlicher User-Agent, und bei einer Bremse des
-Dienstes sofort Schluß.
+If the server runs in the Linux environment, the browser must run there
+too — a Chrome started under Windows cannot reach it. Everything else
+works, only the bookmarklet does not find the server.
 
 ---
 
-## Update einspielen
+## Day-to-day operation
 
-Der rote Knopf holt Songdaten, nicht den Code. Neue Versionen des Programms
-liegen auf [GitHub](https://github.com/CasparDavi/klangtresor). Ob dort eine
-neue liegt, sieht KlangTresor von selbst nach: beim Öffnen der Seite und,
-solange sie offen ist, alle 12 Stunden (nach einem Fehlschlag nach 2
-Stunden) fragt die Seite den eigenen Server — und jedes Mal, wenn das Fenster
-„KlangTresor“ (Klick auf den Namen oben) aufgeht. Der Server fragt GitHub und
-hält die Antwort eine halbe Stunde vor. Liegt dort eine höhere Nummer, steht
-links neben dem roten Knopf eine Glocke; ein Klick öffnet das Fenster mit dem
-Hinweis: welche Version bereitliegt, in welchem Ordner KlangTresor läuft und
-welches Skript das Update einspielt. **Ordner zeigen** öffnet diesen Ordner im
-Dateifenster (nur am Rechner, auf dem KlangTresor läuft, nicht im Container). Die eingefrorene
-Kopie auf dem Stick fragt nie.
+The red button at the top right fetches what is new: first show, then
+apply. It needs no sign-in.
 
-Zum Einspielen im **Projektordner** (dort liegen `bin/` und `library/`,
-eine Ebene über `docker/`):
+For what is only visible when signed in — word timestamps, private songs,
+playlists, who has reacted — there is the **bookmarklet**. It runs in your
+own Suno tab, saves immediately and sends the harvest to the server in
+packets. An access key never lands on the disk in the process.
+
+The neighbourhood figures are fetched by two runs, to be started from the
+*Neighbourhood* panel on the author page or by hand:
+
+```
+node bin/community-profile.js    Profile figures of the people who appear here
+node bin/community-hirsch.js     their h-indexes (takes considerably longer)
+```
+
+Both fetch only what is still missing; a second run therefore costs
+nothing. They read publicly and without sign-in — and keep to the
+etiquette from [docs/haus/HAUSREGELN.md](docs/haus/HAUSREGELN.md): one
+request at a time, a 1.5 s pause, an honest user agent, and stopping
+immediately if the service puts on the brakes.
+
+---
+
+## Installing an update
+
+The red button fetches song data, not the code. New versions of the
+program are on [GitHub](https://github.com/CasparDavi/klangtresor).
+KlangTresor checks by itself whether a new one is there: when the page is
+opened and, as long as it stays open, every 12 hours (2 hours after a
+failure) the page asks your own server — and every time the
+"KlangTresor" window opens (click on the name at the top). The server asks
+GitHub and keeps the answer for half an hour. If a higher number is there,
+a bell appears to the left of the red button; a click opens the window
+with the notice: which version is available, in which folder KlangTresor
+is running and which script installs the update. **Show folder** opens
+that folder in the file window (only on the computer where KlangTresor
+runs, not in the container). The frozen copy on the stick never asks.
+
+To install, in the **project folder** (where `bin/` and `library/` are,
+one level above `docker/`):
 
 ```bash
 ./aktualisieren-linux.sh          # Mac: aktualisieren-macos.command
                                   # Windows: aktualisieren-windows.cmd
 ```
 
-Aus einem Unterordner: `npm run aktualisieren` (npm findet `package.json`
-darüber). Nur nachsehen, nichts schreiben:
+From a subfolder: `npm run aktualisieren` (npm finds the `package.json`
+above). To only look, without writing anything:
 
 ```bash
 npm run aktualisieren -- --nur-stand
 ```
 
-- **Git-Klon:** `git pull --rebase origin main` (bricht ab bei Schmutz
-  oder anderem Zweig als `main`). Hineinkopierte Dateien aus dem
-  Update-Paket halten den Zug nicht auf. Ist die Geschichte mit der auf
-  GitHub nicht verwandt (ein Klon aus der MySuno-Zeit), kommt das
-  Release-Zip; ungesicherte Änderungen liegen vorher im `git stash`.
-- **Zip-Installation:** holt `KlangTresor.zip` der jüngsten Release und
-  legt die Programmdaten darüber.
-- **Docker:** danach `compose up --build`. `library/` ist Volume und
-  bleibt. CUDA-Overlay nur, wenn der laufende Container `KLANG_CUDA`
-  schon hat.
-- **Ohne Docker:** bei geändertem `package-lock.json` ein `npm ci`, dann
-  Server über `starten-*` neu starten.
+- **Git clone:** `git pull --rebase origin main` (aborts on a dirty
+  working tree or a branch other than `main`). Files copied in from the
+  update package do not hold up the pull. If the history is unrelated to
+  the one on GitHub (a clone from the MySuno days), the release zip is
+  used instead; uncommitted changes are put in `git stash` beforehand.
+- **Zip installation:** fetches `KlangTresor.zip` of the latest release
+  and lays the program files over the existing ones.
+- **Docker:** then `compose up --build`. `library/` is a volume and
+  stays. CUDA overlay only if the running container already has
+  `KLANG_CUDA`.
+- **Without Docker:** if `package-lock.json` has changed, run `npm ci`,
+  then restart the server via `starten-*`.
 
-`library/`, `werkzeug/` und `.git/` bleiben unangetastet.
+`library/`, `werkzeug/` and `.git/` are left untouched.
 
 ---
 
-## Ältere Versionen ohne Update-Skript
+## Older versions without an update script
 
-Bis Version 1.0.72 – und aus der Zeit, als das Programm *MySuno* hieß –
-liegt im Ordner noch kein Update-Skript. Dafür hängt an jeder Release das
-Update-Paket, immer in der jüngsten Version:
+Up to version 1.0.72 — and from the time when the program was called
+*MySuno* — the folder does not yet contain an update script. For that,
+every release has the update package attached, always in the latest
+version:
 
 ```
 https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Update.zip
 ```
 
-Kopiere `aktualisieren.js` und das Skript für dein System in deinen
-KlangTresor- bzw. MySuno-Ordner (dort, wo `library/` liegt) und doppelklicke
-das Skript:
+Copy `aktualisieren.js` and the script for your system into your
+KlangTresor or MySuno folder (where `library/` is) and double-click the
+script:
 
-| System | kopieren | starten |
+| System | copy | start |
 |---|---|---|
-| Windows | `aktualisieren.js`, `aktualisieren-windows.cmd` | Doppelklick auf `aktualisieren-windows.cmd` |
-| macOS | `aktualisieren.js`, `aktualisieren-macos.command` | `aktualisieren-macos.command` doppelklicken |
+| Windows | `aktualisieren.js`, `aktualisieren-windows.cmd` | double-click `aktualisieren-windows.cmd` |
+| macOS | `aktualisieren.js`, `aktualisieren-macos.command` | double-click `aktualisieren-macos.command` |
 | Linux | `aktualisieren.js`, `aktualisieren-linux.sh` | `./aktualisieren-linux.sh` |
 
-Das Paket ist flach, ohne Unterordner: der Finder ersetzt beim Kopieren
-einen vorhandenen Ordner `bin/`, statt ihn zusammenzuführen. Das Update
-läuft dann wie gewohnt – `library/` bleibt –, danach liegen alle
-`aktualisieren-*` im Ordner, und die Kopie `aktualisieren.js` räumt sich
-selbst weg. Ab Version 1.0.73 ist das Paket nicht nötig.
+The package is flat, without subfolders: when copying, the Finder replaces
+an existing `bin/` folder instead of merging it. The update then runs as
+usual — `library/` stays —, after which all `aktualisieren-*` files are in
+the folder, and the copy `aktualisieren.js` removes itself. From version
+1.0.73 on, the package is not needed.
 
-Beim ersten Start meckert das System, das Paket ist nicht signiert:
-Windows sagt „Der Herausgeber konnte nicht verifiziert werden“ –
-**Ausführen**. macOS sagt „nicht verifizierter Entwickler“ – beim ersten
-Mal Rechtsklick → **Öffnen**; ab macOS 15 gibt es das dort nicht mehr,
-dann Systemeinstellungen → Datenschutz & Sicherheit → **Dennoch öffnen**.
-Linux: fehlt das Ausführungsrecht, `chmod +x aktualisieren-linux.sh`.
+On the first start the system complains that the package is not signed:
+Windows says "The publisher could not be verified" — **Run**. macOS says
+"unverified developer" — the first time, right-click → **Open**; from
+macOS 15 on that is no longer offered there, then System Settings →
+Privacy & Security → **Open Anyway**. Linux: if the execute permission is
+missing, `chmod +x aktualisieren-linux.sh`.
 
-Wer KlangTresor nur im Container betreibt, ohne Node auf dem Rechner,
-braucht das Paket nicht: den Inhalt des neuen `KlangTresor.zip` in den
-Ordner kopieren (Dateien ersetzen, nie den ganzen Ordner – `library/`
-liegt darin) und `einrichten-docker-*` noch einmal. Läuft dort noch der
-Container `mysuno` aus der MySuno-Zeit, vorher `docker stop mysuno`.
-
----
-
-## Wer schon eine Installation hat
-
-Das Programm hieß bis zum 24.08.2026 *MySuno*. Das Update spielt man ein
-wie unter [Ältere Versionen ohne Update-Skript](#ältere-versionen-ohne-update-skript)
-beschrieben, es geht nichts verloren:
-
-- **Einstellungen bleiben.** Equalizer, Lautstärke, Darstellungsart,
-  Kartenansicht — alle 52 Speicherschlüssel im Browser heißen weiter wie
-  vorher. Sie umzubenennen hätte bei jedem Nutzer alles zurückgesetzt,
-  und nach außen kennzeichnen sie nichts.
-- **Das Archiv bleibt.** `library/` wird nicht angefaßt, das Ablageformat
-  ist unverändert, kein Serverendpunkt ist weggefallen.
-- **Das Verzeichnis darf heißen, wie es heißt.** Alle Skripte arbeiten
-  relativ zu sich selbst; niemand muß etwas umbenennen.
-
-Zwei Dinge ändern sich sichtbar:
-
-**Die Analysen werden einmal neu gerechnet.** Seit dem Ausbau des alten
-Tonartverfahrens tragen die Ablagen einen Meßweg-Stempel. Wer noch
-Analysen von davor hat, bekommt sie beim nächsten Öffnen neu — einmalig,
-danach ist Ruhe.
-
-**Fünf Darstellungsarten sind fort.** `audioMotion` stand unter AGPL und
-verträgt sich nicht mit der MIT-Lizenz dieses Projekts. Wer eine seiner
-Arten eingestellt hatte, wird beim nächsten Start auf **Spektrum**
-umgeschrieben — dieselben Frequenzbalken, nur radial statt auf einer
-Grundlinie.
-
-Nach dem Aktualisieren den Server einmal neu starten.
+Anyone who runs KlangTresor only in the container, without Node on the
+computer, does not need the package: copy the contents of the new
+`KlangTresor.zip` into the folder (replace files, never the whole folder —
+`library/` is inside it) and run `einrichten-docker-*` once more. If the
+container `mysuno` from the MySuno days is still running there, first run
+`docker stop mysuno`.
 
 ---
 
-## Was gesichert werden muß
+## If you already have an installation
 
-**`library/katalog.json.gz`** — rund 47 MB. Dort steckt alles, was
-nicht aus einer Datei zurückkommt: Lyrics, Wort-Zeitmarken, Kommentare
-mit ihren Antworten, der Zählerverlauf über Monate, die Playlists.
+The program was called *MySuno* until 24 Aug 2026. You install the update
+as described under
+[Older versions without an update script](#older-versions-without-an-update-script);
+nothing is lost:
 
-Dazu `library/roh/`, falls dort gerade etwas liegt.
+- **Settings stay.** Equaliser, volume, display mode, map view — all 52
+  storage keys in the browser keep their names. Renaming them would have
+  reset everything for every user, and outwardly they mark nothing.
+- **The archive stays.** `library/` is not touched, the storage format is
+  unchanged, no server endpoint has been dropped.
+- **The directory may keep its name.** All scripts work relative to
+  themselves; nobody has to rename anything.
 
-> **Achtung, diese Anweisung stand hier lange falsch.** Sie nannte
-> `library/roh/` als das einzig Unersetzliche. Das stimmte einmal —
-> heute räumt `aufbereiten.js` die verarbeiteten Rohdaten weg, sobald
-> ihr Inhalt im Katalog steht (so gewollt: „wozu das mitführen und
-> Speicherplatz vergeuden"). Der Ordner ist im gesunden Betrieb also
-> fast leer, und wer nur ihn sichert, sichert nichts.
+Two things change visibly:
 
-Alles Übrige — Medien, Artworks, Kacheln, Paletten, Analysen — baut
-`node bin/wiederherstellen.js` neu auf, ohne jede Anmeldung.
+**The analyses are recalculated once.** Since the old key-detection method
+was removed, the stores carry a measurement-path stamp. Anyone who still
+has analyses from before gets them recalculated on next opening — once,
+and then it is quiet again.
 
-**Zwei Dinge holt es aber nicht zurück:** die WAV-Originale
-(`node bin/wav.js` — **seit dem 03.09.2026 außer Betrieb**, der Weg über
-`cdn1.suno.ai` ist zu, siehe `docs/AUDIO-BEZUG.md`) und die
-Instrumentspuren (`node bin/stems.js`, rund vier Minuten je Song). Wer
-die behalten will, sichert `library/songs/` gleich mit — das sind dann
-allerdings zig Gigabyte.
+**Five display modes are gone.** `audioMotion` was under the AGPL and does
+not go with this project's MIT licence. Anyone who had one of its modes
+selected is rewritten to **Spectrum** at the next start — the same
+frequency bars, only radial instead of on a baseline.
+
+After updating, restart the server once.
 
 ---
 
-## Verzeichnis
+## What must be backed up
+
+**`library/katalog.json.gz`** — around 47 MB. It holds everything that
+does not come back from a file: lyrics, word timestamps, comments with
+their replies, the counter history over months, the playlists.
+
+Plus `library/roh/`, if something happens to be in it.
+
+> **Attention, this instruction was wrong here for a long time.** It named
+> `library/roh/` as the only irreplaceable thing. That was true once —
+> today `aufbereiten.js` clears away the processed raw data as soon as its
+> content is in the catalogue (intended: "why carry that along and waste
+> storage space"). In healthy operation the folder is therefore almost
+> empty, and anyone who backs up only it backs up nothing.
+
+Everything else — media, artworks, tiles, palettes, analyses — is rebuilt
+by `node bin/wiederherstellen.js`, without any sign-in.
+
+**It does not bring back two things, though:** the WAV originals
+(`node bin/wav.js` — **out of service since 3 Sep 2026**, the route via
+`cdn1.suno.ai` is closed, see `docs/suno/AUDIO-BEZUG.md`) and the
+instrument tracks (`node bin/stems.js`, around four minutes per song).
+Anyone who wants to keep those should back up `library/songs/` as well —
+though that then amounts to dozens of gigabytes.
+
+---
+
+## Directory
 
 ```
-einrichten-windows.cmd         Einrichten unter Windows (Doppelklick)
-einrichten-macos.command       Einrichten auf dem Mac (Doppelklick)
-einrichten-linux.sh            Einrichten unter Linux
-einrichten-docker-*            dasselbe, ohne Installation - alles im Container
-aktualisieren-*                Update auf die neue Version von GitHub (Git oder Zip)
-starten-windows.cmd / -macos.command / -linux.sh   nur starten, nicht einrichten
-docker/    Dockerfile, docker-compose.yml, Einstiegsskript des Containers
-bin/       Sammeln, Aufbereiten, Messen, Farben, Wiederherstellen
-  einrichten.js  die Einrichtung in zehn Schritten; melden.js liefert ihr die Zahlen
-browser/   Skripte für die Suno-Konsole und das Lesezeichen
-server/    Website fürs Heimnetz, Port 8788
-web/       die gesamte Oberfläche in einer Datei
-  einrichtung/  die Seite der Einrichtung (Balken, Haken, Ergebniszahlen)
+einrichten-windows.cmd         set up on Windows (double-click)
+einrichten-macos.command       set up on the Mac (double-click)
+einrichten-linux.sh            set up on Linux
+einrichten-docker-*            the same, without installation - everything in the container
+aktualisieren-*                update to the new version from GitHub (Git or zip)
+starten-windows.cmd / -macos.command / -linux.sh   only start, do not set up
+docker/    Dockerfile, docker-compose.yml, entry script of the container
+bin/       collecting, processing, measuring, colours, restoring
+  einrichten.js  the setup in ten steps; melden.js supplies it with the figures
+browser/   scripts for the Suno console and the bookmarklet
+server/    website for the home network, port 8788
+web/       the whole interface in one file
+  einrichtung/  the setup page (bar, ticks, result figures)
   fremd/   Analyzer, Butterchurn
-library/   Katalog, Rohdaten, Medien — nicht im Repo
-docs/      Fachdokumente
+library/   catalogue, raw data, media — not in the repo
+docs/      specialist documents
 ```
 
 ---
 
-## Dokumentation
+## Documentation
 
 | | |
 |---|---|
-| [docs/UEBERGABE.md](docs/archiv/UEBERGABE.md) | Einstieg, Abläufe, Fallstricke |
-| [docs/HAUSREGELN.md](docs/haus/HAUSREGELN.md) | Die Gestaltungsregeln, jede mit ihrem Anlaß |
-| [docs/NORMEN.md](docs/analyse/NORMEN.md) | Lautheitsnormen, Tore, Zielpegel |
-| [docs/VISUALIZER.md](docs/analyse/VISUALIZER.md) | Bühne, Analyse, Darstellungsregeln |
-| [docs/FARBHANDLING.md](docs/analyse/FARBHANDLING.md) | Farbextraktion, Farbräume, jede Regel mit Meßwert |
-| [docs/TONSTUDIO.md](docs/ton/TONSTUDIO.md) | Equalizer, Kompressor, Raum |
-| [docs/EINMESSEN.md](docs/ton/EINMESSEN.md) | Einmessen am Hörplatz: Signale, Ablauf, Auswertung, Befunde |
-| [docs/WHISPER.md](docs/suno/WHISPER.md) | Wort-Zeitmarken aus dem Hören |
-| [docs/SUNO-API.md](docs/suno/WEGE.md) | Die Wege der Web-API — was wir nutzen, was lohnt, was das Konto verändert |
-| [docs/VERGLEICH-HUB.md](docs/forschung/VERGLEICH-HUB.md) | Funktionsvergleich mit einem verwandten Werkzeug — haben wir das, besser, oder verworfen? |
-| [docs/ZUSAMMENARBEIT.md](docs/haus/ZUSAMMENARBEIT.md) | Zu zweit am Repo: fremde Commits prüfen, bevor gezogen wird |
-| [docs/BACKLOG.md](docs/BACKLOG.md) | Was offen ist — und was verworfen wurde, mit Begründung |
-| [docs/HISTORY.md](docs/haus/HISTORY.md) | Chronologie einschließlich aller Irrwege |
+| [docs/archiv/UEBERGABE.md](https://github.com/CasparDavi/klangtresor/blob/main/docs/archiv/UEBERGABE.md) | Entry point, procedures, pitfalls |
+| [docs/haus/HAUSREGELN.md](docs/haus/HAUSREGELN.md) | The design rules, each with its occasion |
+| [docs/analyse/NORMEN.md](docs/analyse/NORMEN.md) | Loudness standards, gates, target levels |
+| [docs/analyse/VISUALIZER.md](docs/analyse/VISUALIZER.md) | Stage, analysis, display rules |
+| [docs/analyse/FARBHANDLING.md](docs/analyse/FARBHANDLING.md) | Colour extraction, colour spaces, every rule with a measured value |
+| [docs/ton/TONSTUDIO.md](docs/ton/TONSTUDIO.md) | Equaliser, compressor, room |
+| [docs/ton/EINMESSEN.md](docs/ton/EINMESSEN.md) | Calibrating at the listening position: signals, procedure, evaluation, findings |
+| [docs/suno/WHISPER.md](docs/suno/WHISPER.md) | Word timestamps from listening |
+| [docs/suno/WEGE.md](docs/suno/WEGE.md) | The routes of the web API — what we use, what is worthwhile, what changes the account |
+| [docs/forschung/VERGLEICH-HUB.md](docs/forschung/VERGLEICH-HUB.md) | Feature comparison with a related tool — do we have it, better, or did we discard it? |
+| [docs/haus/ZUSAMMENARBEIT.md](docs/haus/ZUSAMMENARBEIT.md) | Two people on the repo: checking other people's commits before pulling |
+| [docs/BACKLOG.md](https://github.com/CasparDavi/klangtresor/blob/main/docs/BACKLOG.md) | What is open — and what was discarded, with reasons |
+| [docs/haus/HISTORY.md](docs/haus/HISTORY.md) | Chronology including all the detours |
 
-Die Fachdokumente sind am Archiv ihres Autors
-([@caspar_d](https://suno.com/@caspar_d)) entstanden und nennen dessen
-Meßwerte und Beispiele. Sie beschreiben trotzdem das Programm, nicht
-die Sammlung — die Zahlen sind Belege für die getroffenen
-Entscheidungen.
+The specialist documents came about with the archive of their author
+([@caspar_d](https://suno.com/@caspar_d)) and quote his measured values
+and examples. They nevertheless describe the program, not the
+collection — the figures are evidence for the decisions taken.
 
-Wer wissen will, warum etwas so gebaut ist und nicht anders, findet die
-Antwort meist als Kommentar an Ort und Stelle im Quelltext. Das ist
-Absicht: Begründungen wandern nicht in eine Datei, die niemand
-aufschlägt.
+Anyone who wants to know why something is built this way and not another
+will usually find the answer as a comment on the spot in the source code.
+That is intentional: reasons do not migrate into a file nobody opens.
 
 ---
 
-## Grenzen
+## Limits
 
-- **Entwickelt auf macOS** mit Chrome und Safari; unter Linux und WSL
-  von Testern gelaufen.
-- Die Sammelskripte hängen an Sunos Schnittstellen. Ändert Suno etwas,
-  hilft `browser/01-erkundung.js` beim Nachziehen.
-- Auf exFAT-Platten belegt jede kleine Datei einen vollen 1-MB-Block —
-  deshalb liegt aller Kleinkram in Sammeldateien.
-- Die Stem-Trennung braucht ein Modell von 246 MB
-  (`npm run modelle`) und rechnet in etwa doppelter Echtzeit.
+- **Developed on macOS** with Chrome and Safari; run by testers on Linux
+  and WSL.
+- The collection scripts depend on Suno's interfaces. If Suno changes
+  something, `browser/01-erkundung.js` helps to follow suit.
+- On exFAT drives every small file occupies a full 1 MB block — that is
+  why all the small stuff lives in collection files.
+- Stem separation needs a model of 246 MB
+  (`npm run modelle`) and computes in roughly twice real time.
 
 ---
 
-## Zum Namen
+## About the name
 
-Das Projekt hieß bis zum 24.08.2026 *MySuno*. Der Name ist gefallen,
-weil **SUNO** seit dem 06.01.2026 eingetragene Marke von Suno Inc. ist
-([US-Reg. 8096778](https://tsdr.uspto.gov/statusview/sn98407583)) — und
-zwar ausdrücklich für *„downloadable software to enable users to edit
-and playback of audio content"*, also für genau diese Art Programm. Die
-internationale Registrierung IR 1930809 vom 22.05.2026 benennt auch
-Deutschland und die EU.
+The project was called *MySuno* until 24 Aug 2026. The name was dropped
+because **SUNO** has been a registered trademark of Suno Inc. since 6 Jan
+2026
+([US Reg. 8096778](https://tsdr.uspto.gov/statusview/sn98407583)) — and
+expressly for *"downloadable software to enable users to edit
+and playback of audio content"*, that is, for exactly this kind of
+program. International registration IR 1930809 of 22 May 2026 also
+designates Germany and the EU.
 
-Eine fremde Marke im **Namen** eines Projekts ist heikel; sie in der
-**Beschreibung** zu nennen, ist es nicht — deshalb steht oben weiterhin,
-wofür das hier gut ist. Wo in Zitaten und in `docs/HISTORY.md` noch der
-alte Name steht, bleibt er stehen: Was einmal gesagt wurde, schreibt man
-nicht nachträglich um.
+A third-party trademark in the **name** of a project is delicate; naming
+it in the **description** is not — that is why the top still says what
+this is good for. Where the old name still appears in quotations and in
+`docs/haus/HISTORY.md`, it stays: what was once said is not rewritten
+afterwards.
 
-Auch die Speicherschlüssel im Browser (`mysuno-…`), die CSS-Klasse
-`.sunoanalyzer` und `window.SunoAnalyzer` tragen weiter den alten Namen.
-Sie umzubenennen würde bei jedem Nutzer die gespeicherten Einstellungen
-wegwerfen, und nach außen kennzeichnen sie nichts.
+The storage keys in the browser (`mysuno-…`), the CSS class
+`.sunoanalyzer` and `window.SunoAnalyzer` also still carry the old name.
+Renaming them would throw away the saved settings of every user, and
+outwardly they mark nothing.

@@ -16,6 +16,9 @@
 const fs   = require('node:fs');
 const path = require('node:path');
 const K    = require('./katalog.js');
+const { T, sprache } = require('./sprache.js');
+const kopf = (s) => '  ' + s.padEnd(16);          /* Beschriftung der Berichtszeilen, in jeder Sprache gleich breit */
+const FORT = ' '.repeat(18);                     /* Fortsetzungszeilen darunter */
 
 const WURZEL = path.join(__dirname, '..');
 const ROH    = path.join(WURZEL, 'library', 'roh');
@@ -104,8 +107,8 @@ const liesRoh = (d) => {
        zweiter Umbenennversuch waeren nur Laerm. */
     if (!unlesbar.has(d)){
       unlesbar.add(d);
-      console.log(`  ${path.basename(d)} ist unlesbar (${e.name}: ${e.message.slice(0, 70)}) `
-                + `— uebersprungen, wird nach dem Lauf in .unlesbar umbenannt`);
+      console.log('  ' + T('{datei} ist unlesbar ({fehler}) — uebersprungen, wird nach dem Lauf in .unlesbar umbenannt',
+                { datei: path.basename(d), fehler: `${e.name}: ${e.message.slice(0, 70)}` }));
     }
     return null;
   }
@@ -209,15 +212,15 @@ const privatDatei = neuesteRohdatei('privat');
    vergeuden"). Der Ordner roh/verarbeitet/ entsteht nirgends mehr;
    unersetzlich ist library/katalog.json.gz, und nur den sichert man. */
 if (!feedDatei && !profilDatei && !K.lesen()) {
-  console.error('Keine Rohdaten in library/roh/ und noch kein Katalog.');
-  console.error('Erst im Browser sammeln (siehe README).');
+  console.error(T('Keine Rohdaten in library/roh/ und noch kein Katalog.'));
+  console.error(T('Erst im Browser sammeln (siehe README).'));
   process.exit(1);
 }
 
-console.log('Lese Rohdaten:');
-if (profilDatei) console.log('  Profil:        ', path.basename(profilDatei));
-if (feedDatei)   console.log('  Arbeitsbereich:', path.basename(feedDatei));
-if (privatDatei) console.log('  Unveröffentl.: ', path.basename(privatDatei));
+console.log(T('Lese Rohdaten:'));
+if (profilDatei) console.log(kopf(T('Profil:')) + path.basename(profilDatei));
+if (feedDatei)   console.log(kopf(T('Arbeitsbereich:')) + path.basename(feedDatei));
+if (privatDatei) console.log(kopf(T('Unveröffentl.:')) + path.basename(privatDatei));
 
 /* ALLE Profil-Ernten liefern Zaehlerstaende fuer den Verlauf - nicht
    nur die neueste. Wer dreimal erntet und einmal uebernimmt, verlor
@@ -281,7 +284,7 @@ const ausAlben = (() => {
   }
   return aus;
 })();
-if (ausAlben.length) console.log(`  Albumeintraege als Titelquelle: ${ausAlben.length} Clips`);
+if (ausAlben.length) console.log('  ' + T('Albumeintraege als Titelquelle: {n} Clips', { n: ausAlben.length }));
 
 // Der eigene handle steht in den Rohdaten. Beim Aufblättern der
 // Profilseite rutschen gelegentlich fremde Songs mit hinein -
@@ -315,7 +318,7 @@ for (const c of [...ausProfil, ...ausFeed, ...ausPrivat, ...ausAlben]) {
   if (eigener && c.handle && kleinHandle(c.handle) !== eigener) { fremde++; continue; }
   if (!eingang.has(c.id)) eingang.set(c.id, c);
 }
-if (fremde) console.log(`  ${fremde} fremde Songs aussortiert (nicht von ${eigener})`);
+if (fremde) console.log('  ' + T('{n} fremde Songs aussortiert (nicht von {eigener})', { n: fremde, eigener }));
 
 const profilIds = new Set([...eingang.keys()].filter(id =>
   ausProfil.some(c => c.id === id)));
@@ -324,7 +327,7 @@ const profilIds = new Set([...eingang.keys()].filter(id =>
 const alt      = K.lesen();
 const altSongs = (alt && alt.songs) || {};
 
-console.log(`\n${eingang.size} Songs in den Rohdaten, ${Object.keys(altSongs).length} bereits im Katalog.\n`);
+console.log('\n' + T('{n} Songs in den Rohdaten, {im} bereits im Katalog.', { n: eingang.size, im: Object.keys(altSongs).length }) + '\n');
 
 /* Was das Lesezeichen bei Suno ueber den Freischaltstand erfahren hat.
    Das Feld `is_download_unlocked` kommt in den Rohdaten der Ernte gar
@@ -335,7 +338,7 @@ let freischaltStand = {};
 try {
   freischaltStand = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'freischaltstand.json'), 'utf8'));
   const n = Object.values(freischaltStand).filter(Boolean).length;
-  if (n) console.log(`${n} Titel sind laut Lesezeichen bei Suno freigeschaltet.`);
+  if (n) console.log(T('{n} Titel sind laut Lesezeichen bei Suno freigeschaltet.', { n }));
 } catch (e) {}
 
 const songs = { ...altSongs };
@@ -433,8 +436,8 @@ for (const roh of eingang.values()) {
     if (s.freigeschaltet === true && w === false) continue;
     if (s.freigeschaltet !== w) { s.freigeschaltet = w; gesetzt++; }
   }
-  if (gesetzt) console.log(`Freischaltstand übernommen: ${gesetzt} Titel.`);
-  if (ersatzMeldungen.length) { console.log(`Ersatzzeichen (Suno zerreisst Zeichen): ${ersatzMeldungen.length} Eingriff(e)`); for (const z of ersatzMeldungen) console.log('  ' + z); }
+  if (gesetzt) console.log(T('Freischaltstand übernommen: {n} Titel.', { n: gesetzt }));
+  if (ersatzMeldungen.length) { console.log(T('Ersatzzeichen (Suno zerreisst Zeichen): {n} Eingriff(e)', { n: ersatzMeldungen.length })); for (const z of ersatzMeldungen) console.log('  ' + z); }
 }
 
 const liste = Object.values(songs)
@@ -654,8 +657,8 @@ for (const timingDatei of alleRohdateien('timing')) {
   /* Zwei Sorten in derselben Dateiart: Wort-Zeitmarken (Karaoke) und
      Sunos Analyse (Schlaege, Abschnitte, Huellkurve). Die Pakete vom
      Lesezeichen tragen nur letztere - '0 Songs' waere irrefuehrend. */
-  console.log(`  Zeitmarken:     ${path.basename(timingDatei)} (${mit} Karaoke, ${mitSuno} Suno-Analyse`
-            + (mitV3 || mitV2nach ? `, ${mitV3} v3-Spuren, ${mitV2nach} v2 nachgeladen` : '') + ')');
+  console.log(kopf(T('Zeitmarken:')) + `${path.basename(timingDatei)} (` + T('{n} Karaoke', { n: mit }) + ', ' + T('{n} Suno-Analyse', { n: mitSuno })
+            + (mitV3 || mitV2nach ? ', ' + T('{n} v3-Spuren', { n: mitV3 }) + ', ' + T('{n} v2 nachgeladen', { n: mitV2nach }) : '') + ')');
 }
 
 /* Der Holstand ins Protokoll (siehe die Erklaerung oben). Eine Zeile
@@ -664,27 +667,26 @@ for (const timingDatei of alleRohdateien('timing')) {
 if (holJeAdresse.size) {
   const songZahl = new Set();
   for (const f of holJeAdresse.values()) for (const id of f.songs) songZahl.add(id);
-  console.log(`  Holstand:       was Suno geantwortet hat — ${holErnten} Ernte(n)`
-            + (songZahl.size ? `, ${songZahl.size} Song(s)` : '')
-            + (holErntenOhne ? `; ${holErntenOhne} Ernte(n) ohne Holstand` : ''));
+  console.log(kopf(T('Holstand:')) + T('was Suno geantwortet hat — {n} Ernte(n)', { n: holErnten })
+            + (songZahl.size ? ', ' + T('{n} Song(s)', { n: songZahl.size }) : '')
+            + (holErntenOhne ? '; ' + T('{n} Ernte(n) ohne Holstand', { n: holErntenOhne }) : ''));
   const breite = Math.max(...[...holJeAdresse.keys()].map(a => a.length));
   for (const adresse of [...holJeAdresse.keys()].sort()) {
     const f = holJeAdresse.get(adresse);
     const teile = [];
-    if (f.fertig)  teile.push(`${f.fertig} geantwortet`);
-    if (f.rechnet) teile.push(`${f.rechnet} rechnet Suno noch`);
-    if (f.leer)    teile.push(`${f.leer} leer geantwortet`);
-    for (const [s, n] of [...f.fehler.entries()].sort()) teile.push(`${n} Fehler ${s}`);
-    for (const [s, n] of [...f.unklar.entries()].sort()) teile.push(`${n}× unbekannter Vermerk "${s}"`);
-    console.log(`                  ${adresse.padEnd(breite)}  ${teile.join(', ')}`);
+    if (f.fertig)  teile.push(T('{n} geantwortet', { n: f.fertig }));
+    if (f.rechnet) teile.push(T('{n} rechnet Suno noch', { n: f.rechnet }));
+    if (f.leer)    teile.push(T('{n} leer geantwortet', { n: f.leer }));
+    for (const [s, n] of [...f.fehler.entries()].sort()) teile.push(T('{n} Fehler {code}', { n, code: s }));
+    for (const [s, n] of [...f.unklar.entries()].sort()) teile.push(T('{n}× unbekannter Vermerk "{vermerk}"', { n, vermerk: s }));
+    console.log(`${FORT}${adresse.padEnd(breite)}  ${teile.join(', ')}`);
   }
 } else if (holErntenOhne) {
   /* Kein Vorwurf, nur eine Auskunft: Aus so einer Ernte laesst sich
      nicht sagen, ob eine Adresse noch rechnet oder gar nicht mehr
      antwortet. Das Lesezeichen im Browser ist dann aelter als der
      16.09.2026 und muss neu gesetzt werden. */
-  console.log(`  Holstand:       ${holErntenOhne} Ernte(n) sagen nicht, was Suno geantwortet hat `
-            + `(Feld holstand fehlt — Lesezeichen im Browser älter als der 16.09.2026, bitte neu setzen)`);
+  console.log(kopf(T('Holstand:')) + T('{n} Ernte(n) sagen nicht, was Suno geantwortet hat (Feld holstand fehlt — Lesezeichen im Browser älter als der 16.09.2026, bitte neu setzen)', { n: holErntenOhne }));
 }
 
 // --- Whisper ---------------------------------------------------
@@ -743,7 +745,7 @@ if (holJeAdresse.size) {
         s.lyrics = e.text; s.lyricsQuelle = 'whisper'; mitText++;
       }
     }
-    console.log(`  Whisper:        ${jeSong.size} Songs gerechnet — ${mitWorten} davon füllen fehlende Zeitmarken im Katalog, ${mitText} fehlende Texte, ${instrumental} instrumental; der Rest ist zweite Spur für die Bühne`);
+    console.log(kopf(T('Whisper:')) + T('{n} Songs gerechnet — {worte} davon füllen fehlende Zeitmarken im Katalog, {text} fehlende Texte, {instrumental} instrumental; der Rest ist zweite Spur für die Bühne', { n: jeSong.size, worte: mitWorten, text: mitText, instrumental }));
   }
 }
 
@@ -818,8 +820,7 @@ const playlistDatei = playlistDateienGesehen.length
    ungelesen gelöscht: zwei Klicks hintereinander, der zweite halb, und
    die gute Ernte des ersten war weg, ohne je gelesen worden zu sein. */
 if (playlistDateienGesehen.length > 1)
-  console.log(`  Alben:          ${playlistDateienGesehen.length - 1} ältere Albumernte(n) übersprungen, `
-            + `bleiben für den nächsten Lauf liegen`);
+  console.log(kopf(T('Alben:')) + T('{n} ältere Albumernte(n) übersprungen, bleiben für den nächsten Lauf liegen', { n: playlistDateienGesehen.length - 1 }));
 const albenVorher   = (alt && alt.playlists) || {};
 let   playlists     = albenVorher;
 let   albenRohBehalten = false;      // unbrauchbare Rohdatei nicht löschen
@@ -841,11 +842,12 @@ const albenKandidatenVorher = (alt && alt.albenKandidaten && typeof alt.albenKan
                                && !Array.isArray(alt.albenKandidaten)) ? alt.albenKandidaten : {};
 let   albenKandidaten = { ...albenKandidatenVorher };
 const BESTAETIGUNG_MS = 2 * 60 * 60 * 1000;   // Caspar_D: "mindestens 2 h auseinander"
-const stundenText = (ms) => (ms / 3600000).toFixed(1).replace('.', ',') + ' h';
+const stundenText = (ms) => (ms / 3600000).toFixed(1).replace('.', sprache() === 'en' ? '.' : ',') + ' ' + T('h');
+const zustandText = (z) => z === 'fehlt' ? T('fehlt') : z === 'kleiner' ? T('kleiner') : String(z);
 const seitText = (iso) => {
   const t = Date.parse(iso);
   return Number.isFinite(t)
-    ? new Date(t).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+    ? new Date(t).toLocaleString(sprache() === 'ru' ? 'ru-RU' : sprache() === 'en' ? 'en-GB' : 'de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
     : String(iso);
 };
 /* Die Id-Menge eines Albums: nur brauchbare Einträge (mit songId),
@@ -877,10 +879,10 @@ if (!playlistDatei) {
      und die Meldung, die das Schweigen brechen soll, sagte damit nie
      etwas. Der Zeitpunkt der letzten ALBUMERNTE steht in albenStand;
      fehlt er, ist die Ernte älter als dieses Feld (08.09.2026). */
-  const stand = albenStand ? 'letzte Albumernte vom ' + String(albenStand).slice(0, 10)
-                           : 'Zeitpunkt der letzten Albumernte unbekannt';
-  console.log(`  Alben:          keine Rohdatei — Stand unverändert, ${stand} `
-            + `(${Object.keys(albenVorher).length} Alben, ${albenSumme(albenVorher)} Einträge)`);
+  const stand = albenStand ? T('letzte Albumernte vom {datum}', { datum: String(albenStand).slice(0, 10) })
+                           : T('Zeitpunkt der letzten Albumernte unbekannt');
+  console.log(kopf(T('Alben:')) + T('keine Rohdatei — Stand unverändert, {stand}', { stand }) + ' '
+            + T('({alben} Alben, {eintraege} Einträge)', { alben: Object.keys(albenVorher).length, eintraege: albenSumme(albenVorher) }));
 }
 
 if (playlistDatei) {
@@ -973,10 +975,9 @@ if (playlistDatei) {
                 && !Object.values(frisch).some(p => albenBrauchbar(p));
 
   if (ueberholt) {
-    console.log(`  Alben:          ${path.basename(playlistDatei)} ist vom `
-              + `${String(pRoh.abgerufenAm).slice(0, 16).replace('T', ' ')}, der Katalog hat schon den Stand vom `
-              + `${String(albenStand).slice(0, 16).replace('T', ' ')} — überholt, nicht übernommen `
-              + `(${Object.keys(albenVorher).length} Alben, ${albenSumme(albenVorher)} Einträge bleiben)`);
+    console.log(kopf(T('Alben:')) + T('{datei} ist vom {neu}, der Katalog hat schon den Stand vom {alt} — überholt, nicht übernommen ({alben} Alben, {eintraege} Einträge bleiben)',
+                { datei: path.basename(playlistDatei), neu: String(pRoh.abgerufenAm).slice(0, 16).replace('T', ' '),
+                  alt: String(albenStand).slice(0, 16).replace('T', ' '), alben: Object.keys(albenVorher).length, eintraege: albenSumme(albenVorher) }));
     playlists = albenVorher;
   } else if (!Object.keys(frisch).length || nurLeere) {
     /* Kein einziges Album, oder lauter Alben ohne einen einzigen
@@ -985,12 +986,10 @@ if (playlistDatei) {
        löschen. Also: Stand behalten, laut sagen, und die Rohdatei NICHT
        wegräumen - sonst wäre nach genau einem Lauf weder der Katalog-
        stand noch die einzige Kopie der Albumdaten da. */
-    console.log(`  Alben:          ${path.basename(playlistDatei)} enthält `
-              + `${Object.keys(frisch).length} Alben und ${albenSumme(frisch)} Einträge `
-              + `(davon ${Object.values(frisch).reduce((n, p) => n + albenBrauchbar(p), 0)} brauchbar) — `
-              + `NICHT übernommen, Stand unverändert `
-              + `(${Object.keys(albenVorher).length} Alben, ${albenSumme(albenVorher)} Einträge). `
-              + `Die Rohdatei wird nach dem Lauf in .abgelehnt umbenannt.`);
+    console.log(kopf(T('Alben:')) + T('{datei} enthält {alben} Alben und {eintraege} Einträge (davon {brauchbar} brauchbar) — NICHT übernommen, Stand unverändert ({vorAlben} Alben, {vorEintraege} Einträge). Die Rohdatei wird nach dem Lauf in .abgelehnt umbenannt.',
+                { datei: path.basename(playlistDatei), alben: Object.keys(frisch).length, eintraege: albenSumme(frisch),
+                  brauchbar: Object.values(frisch).reduce((n, p) => n + albenBrauchbar(p), 0),
+                  vorAlben: Object.keys(albenVorher).length, vorEintraege: albenSumme(albenVorher) }));
     albenRohBehalten = true;
     playlists = albenVorher;
   } else {
@@ -1009,8 +1008,7 @@ if (playlistDatei) {
       ? String(pRoh.abgerufenAm) : null;
     const darfWegnehmen = vollstaendig && abgerufen != null;
     if (vollstaendig && abgerufen == null)
-      console.log(`  Alben:          ${path.basename(playlistDatei)} nennt kein brauchbares abgerufenAm — `
-                + `zählt für Löschungen wie eine unvollständige Ernte`);
+      console.log(kopf(T('Alben:')) + T('{datei} nennt kein brauchbares abgerufenAm — zählt für Löschungen wie eine unvollständige Ernte', { datei: path.basename(playlistDatei) }));
     /* Wie lange der Kandidat schon steht, gemessen an den Rohdaten-Uhren;
        null, wenn sein `seit` unlesbar ist (dann wird er neu gesetzt). */
     const alterMs = (k) => {
@@ -1047,20 +1045,20 @@ if (playlistDatei) {
         const k = albenKandidaten[id];
         const alter = k && k.zustand === 'kleiner' && gleicheMenge(k.eintraege, menge) ? alterMs(k) : null;
         if (alter != null && alter >= BESTAETIGUNG_MS) {
-          verkleinert.push(`${a.name}: bestätigt nach ${stundenText(alter)} — übernommen `
-                         + `(${albenBrauchbar(a)}→${albenBrauchbar(p)} Einträge)`);
+          verkleinert.push(T('{name}: bestätigt nach {zeit} — übernommen ({von}→{nach} Einträge)',
+                         { name: a.name, zeit: stundenText(alter), von: albenBrauchbar(a), nach: albenBrauchbar(p) }));
           delete albenKandidaten[id];
           playlists[id] = p;
           continue;
         }
         if (alter != null) {
-          kandidatWartet.push(`${a.name} (kleiner, ${albenBrauchbar(a)}→${albenBrauchbar(p)}, `
-                            + `noch ${stundenText(BESTAETIGUNG_MS - alter)})`);
+          kandidatWartet.push(T('{name} (kleiner, {von}→{nach}, noch {zeit})',
+                            { name: a.name, von: albenBrauchbar(a), nach: albenBrauchbar(p), zeit: stundenText(BESTAETIGUNG_MS - alter) }));
         } else {
           /* Kein Kandidat, ein anderer Zustand oder eine andere Id-Menge
              (ein dritter Stand): Uhr von vorn. */
-          kandidatNeu.push(`${a.name} (kleiner, ${albenBrauchbar(a)}→${albenBrauchbar(p)}`
-                         + `${k ? ', Kandidat neu gesetzt' : ''})`);
+          kandidatNeu.push(k ? T('{name} (kleiner, {von}→{nach}, Kandidat neu gesetzt)', { name: a.name, von: albenBrauchbar(a), nach: albenBrauchbar(p) })
+                             : T('{name} (kleiner, {von}→{nach})', { name: a.name, von: albenBrauchbar(a), nach: albenBrauchbar(p) }));
           albenKandidaten[id] = { zustand: 'kleiner', seit: abgerufen, eintraege: menge };
         }
         continue;                                   // alter Stand bleibt
@@ -1069,7 +1067,7 @@ if (playlistDatei) {
          brauchen keine Bestätigung). Stand dazu ein Kandidat, war der
          ein Wackler. */
       if (albenKandidaten[id]) {
-        kandidatVerworfen.push(`${a.name} (war ${albenKandidaten[id].zustand}, ist wieder da)`);
+        kandidatVerworfen.push(T('{name} (war {zustand}, ist wieder da)', { name: a.name, zustand: zustandText(albenKandidaten[id].zustand) }));
         delete albenKandidaten[id];
       }
       playlists[id] = p;
@@ -1085,13 +1083,13 @@ if (playlistDatei) {
       const k = albenKandidaten[id];
       const alter = k && k.zustand === 'fehlt' ? alterMs(k) : null;
       if (alter != null && alter >= BESTAETIGUNG_MS) {
-        entfallen.push(`${name}: bei Suno nicht mehr vorhanden, bestätigt nach ${stundenText(alter)} — entfernt`);
+        entfallen.push(T('{name}: bei Suno nicht mehr vorhanden, bestätigt nach {zeit} — entfernt', { name, zeit: stundenText(alter) }));
         delete albenKandidaten[id];
         delete playlists[id];
       } else if (alter != null) {
-        kandidatWartet.push(`${name} (fehlt, noch ${stundenText(BESTAETIGUNG_MS - alter)})`);
+        kandidatWartet.push(T('{name} (fehlt, noch {zeit})', { name, zeit: stundenText(BESTAETIGUNG_MS - alter) }));
       } else {
-        kandidatNeu.push(`${name} (fehlt${k ? ', Kandidat neu gesetzt' : ''})`);
+        kandidatNeu.push(k ? T('{name} (fehlt, Kandidat neu gesetzt)', { name }) : T('{name} (fehlt)', { name }));
         albenKandidaten[id] = { zustand: 'fehlt', seit: abgerufen };
       }
     }
@@ -1105,29 +1103,29 @@ if (playlistDatei) {
 
     const fremdEintraege = Object.values(playlists)
       .reduce((n, p) => n + (p.eintraege || []).filter(e => !e.eigen).length, 0);
-    console.log(`  Alben:          ${path.basename(playlistDatei)} `
-              + `(${Object.keys(playlists).length} Stück, ${albenSumme(playlists)} Einträge, `
-              + `davon ${fremdEintraege} fremd)`);
+    console.log(kopf(T('Alben:')) + path.basename(playlistDatei) + ' '
+              + '(' + T('{n} Stück', { n: Object.keys(playlists).length }) + ', ' + T('{n} Einträge', { n: albenSumme(playlists) }) + ', '
+              + T('davon {n} fremd', { n: fremdEintraege }) + ')');
     if (neueAlben.length)
-      console.log(`                  neu: ${neueAlben.join(', ')}`);
+      console.log(FORT + T('neu: {liste}', { liste: neueAlben.join(', ') }));
     if (verkleinert.length)
-      console.log(`                  bei Suno kleiner geworden: ${verkleinert.join('; ')}`);
+      console.log(FORT + T('bei Suno kleiner geworden: {liste}', { liste: verkleinert.join('; ') }));
     if (geschrumpft.length)
-      console.log(`                  RIEGEL — kam kleiner herein als im Katalog, Ernte unvollständig, alter Stand behalten: `
+      console.log(FORT + T('RIEGEL — kam kleiner herein als im Katalog, Ernte unvollständig, alter Stand behalten: ')
                 + geschrumpft.join('; '));
     if (behaltenWeilFehlend.length)
-      console.log(`                  in dieser Ernte nicht enthalten, Ernte unvollständig, alter Stand behalten: `
+      console.log(FORT + T('in dieser Ernte nicht enthalten, Ernte unvollständig, alter Stand behalten: ')
                 + behaltenWeilFehlend.join(', '));
     if (entfallen.length)
-      console.log(`                  ${entfallen.join('; ')}`);
+      console.log(`${FORT}${entfallen.join('; ')}`);
     if (kandidatNeu.length)
-      console.log(`                  Löschkandidat vermerkt, alter Stand bleibt bis zur Bestätigung (zweite vollständige Ernte, mindestens 2 h später): `
+      console.log(FORT + T('Löschkandidat vermerkt, alter Stand bleibt bis zur Bestätigung (zweite vollständige Ernte, mindestens 2 h später): ')
                 + kandidatNeu.join('; '));
     if (kandidatWartet.length)
-      console.log(`                  Löschkandidat bestätigt sich, aber zu früh — alter Stand bleibt: `
+      console.log(FORT + T('Löschkandidat bestätigt sich, aber zu früh — alter Stand bleibt: ')
                 + kandidatWartet.join('; '));
     if (kandidatVerworfen.length)
-      console.log(`                  Kandidat verworfen, war ein Wackler: ${kandidatVerworfen.join('; ')}`);
+      console.log(FORT + T('Kandidat verworfen, war ein Wackler: {liste}', { liste: kandidatVerworfen.join('; ') }));
     /* Kopfzahl gegen Geliefertes: Suno liefert bei Caspar_D sechs
        Eintraege dauerhaft nicht aus (kein Sammelfehler). Bisher wurde
        anzahlLautSuno abgelegt und nirgends geprueft - eine verlorene
@@ -1136,7 +1134,7 @@ if (playlistDatei) {
       .filter(p => p.anzahlLautSuno != null && albenEintragZahl(p) < p.anzahlLautSuno)
       .map(p => `${p.name} ${albenEintragZahl(p)}/${p.anzahlLautSuno}`);
     if (luecken.length)
-      console.log(`                  weniger Einträge als Suno im Kopf nennt: ${luecken.join(', ')}`);
+      console.log(FORT + T('weniger Einträge als Suno im Kopf nennt: {liste}', { liste: luecken.join(', ') }));
   }
 }
 
@@ -1153,7 +1151,7 @@ for (const s of Object.values(songs)) {
   if (fs.existsSync(f)) { s.wav = fs.statSync(f).size; mitWav++; wavBytes += s.wav; }
   else delete s.wav;
 }
-if (mitWav) console.log(`  WAV-Originale:  ${mitWav} Songs `
+if (mitWav) console.log(kopf(T('WAV-Originale:')) + T('{n} Songs', { n: mitWav }) + ' '
   + `(${(wavBytes/1073741824).toFixed(1)} GB)`);
 
 // Angaben zur Person - Autorenname, Profiltext, Suno-Zahlen.
@@ -1182,8 +1180,8 @@ for (const q of [ausInfo, ausErnte].filter(Boolean)
   const neu = {}; for (const [k, v] of Object.entries(q)) if (v !== undefined) neu[k] = v;
   profil = { ...(profil || {}), ...neu };
 }
-if (profilInfoDatei) console.log('  Profilangaben: ', path.basename(profilInfoDatei));
-if (ausErnte) console.log('  Profil aus der Ernte:', ausErnte.abgerufenAm || 'ohne Zeit');
+if (profilInfoDatei) console.log(kopf(T('Profilangaben:')) + path.basename(profilInfoDatei));
+if (ausErnte) console.log('  ' + T('Profil aus der Ernte:'), ausErnte.abgerufenAm || T('ohne Zeit'));
 
 /* Welche Dateien dieser Lauf GELESEN hat - genau die werden weiter
    unten geloescht, und erst nach erfolgreichem Schreiben des Katalogs.
@@ -1234,10 +1232,11 @@ for (const id of Object.keys(albenKandidaten))
   if (!playlists[id]) delete albenKandidaten[id];
 {
   const wartend = Object.entries(albenKandidaten)
-    .map(([id, k]) => `${playlists[id].name} (${k.zustand} seit ${seitText(k.seit)})`);
+    .map(([id, k]) => T('{name} ({zustand} seit {wann})', { name: playlists[id].name, zustand: zustandText(k.zustand), wann: seitText(k.seit) }));
   if (wartend.length)
-    console.log(`  Alben:          ${wartend.length} Löschkandidat${wartend.length === 1 ? '' : 'en'} `
-              + `warte${wartend.length === 1 ? 't' : 'n'} auf Bestätigung: ${wartend.join(', ')}`);
+    console.log(kopf(T('Alben:')) + (wartend.length === 1
+      ? T('{n} Löschkandidat wartet auf Bestätigung: {liste}', { n: wartend.length, liste: wartend.join(', ') })
+      : T('{n} Löschkandidaten warten auf Bestätigung: {liste}', { n: wartend.length, liste: wartend.join(', ') })));
 }
 
 const bericht = K.schreiben({
@@ -1281,28 +1280,26 @@ if (fs.existsSync(ALT_INDEX)) { fs.unlinkSync(ALT_INDEX); entfernt++; }
 
 const summe = (f) => liste.reduce((s, x) => s + (f(x) || 0), 0);
 
-console.log(`neu angelegt:  ${neu}`);
-console.log(`aktualisiert:  ${aktualisiert}`);
-console.log(`\nKatalog: ${bericht.datei}`);
-console.log(`  ${(bericht.bytes/1024).toFixed(0)} KB gepackt `
-          + `(aus ${(bericht.ungepackt/1048576).toFixed(1)} MB, `
-          + `Faktor ${(bericht.ungepackt/bericht.bytes).toFixed(1)})`);
-console.log(`  Songs:          ${liste.length}`);
-console.log(`  veröffentlicht: ${liste.filter(s => s.veroeffentlicht).length}`);
-console.log(`  privat:         ${liste.filter(s => !s.oeffentlich).length}`);
-console.log(`  Alben:          ${Object.keys(playlists).length}`
-          + ` mit ${albenSumme(playlists)} Einträgen`
-          + ` (${Object.values(playlists).filter(p => !p.oeffentlich).length} privat)`);
-console.log(`  mit Lyrics:     ${liste.filter(s => s.lyrics && s.lyrics.trim()).length}`);
-console.log(`  mit Video:      ${liste.filter(s => s.videoUrl).length}`);
-console.log(`  Remixes:        ${liste.filter(s => s.istRemix).length}`);
-console.log(`  Spielzeit:      ${(summe(s => s.dauer)/3600).toFixed(1)} Stunden`);
-console.log(`  Zeitraum:       ${liste[liste.length-1]?.erstellt?.slice(0,10)}`
-          + ` bis ${liste[0]?.erstellt?.slice(0,10)}`);
+console.log(T('neu angelegt:').padEnd(15) + neu);
+console.log(T('aktualisiert:').padEnd(15) + aktualisiert);
+console.log('\n' + T('Katalog: {datei}', { datei: bericht.datei }));
+console.log('  ' + T('{kb} KB gepackt (aus {mb} MB, Faktor {faktor})',
+          { kb: (bericht.bytes/1024).toFixed(0), mb: (bericht.ungepackt/1048576).toFixed(1), faktor: (bericht.ungepackt/bericht.bytes).toFixed(1) }));
+console.log(kopf(T('Songs:')) + liste.length);
+console.log(kopf(T('veröffentlicht:')) + liste.filter(s => s.veroeffentlicht).length);
+console.log(kopf(T('privat:')) + liste.filter(s => !s.oeffentlich).length);
+console.log(kopf(T('Alben:')) + Object.keys(playlists).length
+          + ' ' + T('mit {n} Einträgen', { n: albenSumme(playlists) })
+          + ` (${Object.values(playlists).filter(p => !p.oeffentlich).length} ${T('privat')})`);
+console.log(kopf(T('mit Lyrics:')) + liste.filter(s => s.lyrics && s.lyrics.trim()).length);
+console.log(kopf(T('mit Video:')) + liste.filter(s => s.videoUrl).length);
+console.log(kopf(T('Remixes:')) + liste.filter(s => s.istRemix).length);
+console.log(kopf(T('Spielzeit:')) + T('{h} Stunden', { h: (summe(s => s.dauer)/3600).toFixed(1) }));
+console.log(kopf(T('Zeitraum:')) + T('{von} bis {bis}', { von: liste[liste.length-1]?.erstellt?.slice(0,10), bis: liste[0]?.erstellt?.slice(0,10) }));
 
 if (entfernt) {
-  console.log(`\nAufgeräumt: ${entfernt} alte Einzeldateien entfernt`);
-  if (BLOCK >= 65536) console.log(`  (belegten auf dieser Platte mit ${(BLOCK/1024).toFixed(0)}-KB-Blöcken rund ${(freigeworden/1073741824).toFixed(2)} GB)`);
+  console.log('\n' + T('Aufgeräumt: {n} alte Einzeldateien entfernt', { n: entfernt }));
+  if (BLOCK >= 65536) console.log('  ' + T('(belegten auf dieser Platte mit {kb}-KB-Blöcken rund {gb} GB)', { kb: (BLOCK/1024).toFixed(0), gb: (freigeworden/1073741824).toFixed(2) }));
 }
 
 // --- Verarbeitete Rohdateien loeschen ---------------------------
@@ -1324,7 +1321,7 @@ if (verarbeitet.length) {
     try { bytes += fs.statSync(f).size; fs.unlinkSync(f); geloescht++; }
     catch (e) { /* schon weg - egal */ }
   }
-  console.log(`\nAufgeräumt: ${geloescht} verarbeitete Rohdateien gelöscht (${(bytes/1048576).toFixed(0)} MB — alles steckt im Katalog)`);
+  console.log('\n' + T('Aufgeräumt: {n} verarbeitete Rohdateien gelöscht ({mb} MB — alles steckt im Katalog)', { n: geloescht, mb: (bytes/1048576).toFixed(0) }));
 }
 /* Und was liegenbleibt, damit niemand raten muss: die ungelesenen
    aelteren Ernten aus der Aufnahme und alles, was WAEHREND des Laufs
@@ -1334,13 +1331,11 @@ if (verarbeitet.length) {
   let jetzt = [];
   try { jetzt = fs.readdirSync(ROH).filter(f => f.endsWith('.json') && !f.startsWith('._')); } catch (e) {}
   const dazu = jetzt.filter(f => !ROH_AUFNAHME.includes(f)).sort();
-  const nennen = (t) => t.length <= 4 ? t.join(', ') : t.slice(0, 4).join(', ') + `, … (${t.length - 4} weitere)`;
+  const nennen = (t) => t.length <= 4 ? t.join(', ') : t.slice(0, 4).join(', ') + ', … ' + T('({n} weitere)', { n: t.length - 4 });
   if (liegenGeblieben.length)
-    console.log(`  ${liegenGeblieben.length} Rohdatei(en) hat dieser Lauf nicht gelesen und liegen lassen `
-              + `(der nächste nimmt sie sich vor): ${nennen(liegenGeblieben)}`);
+    console.log('  ' + T('{n} Rohdatei(en) hat dieser Lauf nicht gelesen und liegen lassen (der nächste nimmt sie sich vor): {liste}', { n: liegenGeblieben.length, liste: nennen(liegenGeblieben) }));
   if (dazu.length)
-    console.log(`  ${dazu.length} Rohdatei(en) kamen WÄHREND des Laufs an und bleiben unangetastet `
-              + `(der nächste Lauf verarbeitet sie): ${nennen(dazu)}`);
+    console.log('  ' + T('{n} Rohdatei(en) kamen WÄHREND des Laufs an und bleiben unangetastet (der nächste Lauf verarbeitet sie): {liste}', { n: dazu.length, liste: nennen(dazu) }));
 
   /* DAMIT DER NACHZUEGLER NICHT UNSICHTBAR WARTET (16.09.2026).
      /api/morgen/unverarbeitet im Server ueberspringt jede Rohdatei, die
@@ -1363,7 +1358,7 @@ if (verarbeitet.length) {
     fs.writeFileSync(path.join(WURZEL, 'library', 'nachzuegler.json'),
       JSON.stringify({ lauf: new Date().toISOString(), dateien: dazu }, null, 2));
   } catch (e) {
-    console.log(`  Nachzügler-Vermerk konnte nicht geschrieben werden: ${e.message}`);
+    console.log('  ' + T('Nachzügler-Vermerk konnte nicht geschrieben werden: {meldung}', { meldung: e.message }));
   }
 }
 /* Die abgelehnte playlists-Rohdatei (siehe oben) bekommt die Endung
@@ -1371,14 +1366,14 @@ if (verarbeitet.length) {
    Zaehler im Server sehen sie noch - beide fragen nach .json. */
 if (albenAbgelehnt) {
   try { fs.renameSync(albenAbgelehnt, albenAbgelehnt + '.abgelehnt');
-        console.log(`  ${path.basename(albenAbgelehnt)} → .abgelehnt (unbrauchbar, aber aufgehoben)`); }
-  catch (e) { console.log(`  ${path.basename(albenAbgelehnt)} konnte nicht umbenannt werden: ${e.message}`); }
+        console.log('  ' + T('{datei} → .abgelehnt (unbrauchbar, aber aufgehoben)', { datei: path.basename(albenAbgelehnt) })); }
+  catch (e) { console.log('  ' + T('{datei} konnte nicht umbenannt werden: {meldung}', { datei: path.basename(albenAbgelehnt), meldung: e.message })); }
 }
 /* Dasselbe fuer die unlesbaren (siehe liesRoh oben): Inhalt bleibt
    erhalten, der naechste Lauf stolpert nicht mehr darueber, und
    /api/morgen/unverarbeitet zaehlt sie nicht mehr als wartend. */
 for (const f of unlesbar) {
   try { fs.renameSync(f, f + '.unlesbar');
-        console.log(`  ${path.basename(f)} → .unlesbar (krummes JSON, aber aufgehoben)`); }
-  catch (e) { console.log(`  ${path.basename(f)} konnte nicht umbenannt werden: ${e.message}`); }
+        console.log('  ' + T('{datei} → .unlesbar (krummes JSON, aber aufgehoben)', { datei: path.basename(f) })); }
+  catch (e) { console.log('  ' + T('{datei} konnte nicht umbenannt werden: {meldung}', { datei: path.basename(f), meldung: e.message })); }
 }

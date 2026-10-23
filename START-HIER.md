@@ -1,8 +1,8 @@
 # KlangTresor — für dein eigenes Suno-Archiv
 
-> **Namenswechsel:** Das Projekt hieß bis zum 24.08.2026 *MySuno*. Es heißt jetzt **KlangTresor** — „Suno" ist seit dem 06.01.2026 eingetragene Marke von Suno Inc., ausdrücklich für Software zum Abspielen und Bearbeiten von Audioinhalten. Wo in Zitaten und in der Chronik noch der alte Name steht, bleibt er stehen.
+**Deutsch** · [English](START-HERE.md) · [Русский](START-RU.md)
 
-> **По-русски:** установка шаг за шагом — [docs/ru/USTANOVKA.md](docs/ru/USTANOVKA.md). В программе переключатель **RU\*** (перевод частично создан с помощью ИИ и ещё дорабатывается).
+> **Namenswechsel:** Das Projekt hieß bis zum 24.08.2026 *MySuno*. Es heißt jetzt **KlangTresor** — „Suno" ist seit dem 06.01.2026 eingetragene Marke von Suno Inc., ausdrücklich für Software zum Abspielen und Bearbeiten von Audioinhalten. Wo in Zitaten und in der Chronik noch der alte Name steht, bleibt er stehen.
 
 Das hier ist ein lokales Archiv deiner auf Suno veröffentlichten Songs.
 Es lädt deine Musik, Artworks, Lyrics und Playlists auf deinen Rechner
@@ -165,12 +165,12 @@ auf einer anderen Platte, wählst du den Ordner selbst über „Woanders".
 
 **Dann zehn Schritte, und jeder sagt, was er tut:**
 
-1. Ordner prüfen — Schreibrecht, keine Verwalterrechte, Platz (rund 1 GB).
+1. Ordner prüfen — Schreibrecht, keine Verwalterrechte, Platz (rund 1,6 GB).
 2. Was ist schon da? Archiv, ffmpeg, Pakete, KI-Modelle, Port — mit Größen, was
    fehlt und geholt wird. Danach weiß man, worauf man wartet.
 3. ffmpeg — unter Windows geholt, auf Mac und Linux über den Paketverwalter.
 4. Die Programmbausteine des Servers (19 Pakete).
-5. Die KI-Modelle (11 Dateien, rund 560 MB).
+5. Die KI-Modelle (16 Dateien, rund 1,2 GB).
 6. Dein Suno-Name — die einzige Eingabe.
 7. Deine Songliste: Titel, Texte, Stile, Alben.
 8. Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet.
@@ -317,7 +317,7 @@ Wort-Zeitmarken kein Karaoke, ohne Text keine Lyrics.
 rechnet KlangTresor sie mit Whisper `large-v3` nach — über Nacht, neueste
 zuerst. Steht dann „Karaoke (Whisper)" am Knopf, sind die Marken
 gehört, nicht von Suno ausgerichtet. Wie du es auf deiner Maschine
-einrichtest (mit GPU deutlich schneller): `docs/WHISPER.md`.
+einrichtest (mit GPU deutlich schneller): `docs/suno/WHISPER.md`.
 
 ---
 
@@ -331,7 +331,7 @@ dir:
 > `cdn1.suno.ai/<id>.wav`, und dieser Weg ist zu — wie alle Audio-Direktlinks
 > bei Suno, auch für den Besitzer. Das Skript steht deshalb still. Ein **403**
 > heißt heute also sehr wohl „gesperrt". `bin/gesundheit.js` wacht darüber,
-> der Stand steht in `docs/AUDIO-BEZUG.md`. Der Abschnitt unten beschreibt den
+> der Stand steht in `docs/suno/AUDIO-BEZUG.md`. Der Abschnitt unten beschreibt den
 > Stand von August und bleibt als Bericht stehen.
 
 ```bash

@@ -155,7 +155,7 @@ function suchen(ordner, tiefe = 6) {
     }
   };
   gehe(ordner, tiefe);
-  if (gedeckelt) console.log(`  (${ordner}: über ${ORDNER_DECKEL} Ordner — hier wurde abgebrochen.)`);
+  if (gedeckelt) console.log('  ' + T('({ordner}: über {n} Ordner — hier wurde abgebrochen.)', { ordner, n: ORDNER_DECKEL }));
   return gefunden;
 }
 
@@ -175,12 +175,12 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   }
   if (!fehlen.length) return;
   console.log('');
-  console.log(`  ${fehlen.length} Lied${fehlen.length === 1 ? '' : 'er'} ohne vollständige Audiodatei:`);
+  console.log('  ' + (fehlen.length === 1 ? T('{n} Lied ohne vollständige Audiodatei:', { n: fehlen.length }) : T('{n} Lieder ohne vollständige Audiodatei:', { n: fehlen.length })));
   for (const t of fehlen.slice(0, 6)) console.log(`     ${t}`);
-  if (fehlen.length > 6) console.log(`     … und ${fehlen.length - 6} weitere`);
+  if (fehlen.length > 6) console.log('     ' + T('… und {n} weitere', { n: fehlen.length - 6 }));
   console.log('');
-  console.log('  Gesucht wurde in: ' + orte.join(', '));
-  console.log('  Landen Sunos Downloads woanders? Dann EINMAL sagen, es wird gemerkt:');
+  console.log('  ' + T('Gesucht wurde in: {orte}', { orte: orte.join(', ') }));
+  console.log('  ' + T('Landen Sunos Downloads woanders? Dann EINMAL sagen, es wird gemerkt:'));
   console.log('     node bin/uebernehmen.js --ordner /pfad/zum/ordner --tun');
   console.log('');
 }
@@ -202,7 +202,7 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   if (konf.downloadOrdner && !gemerkt.includes(konf.downloadOrdner)) gemerkt.push(konf.downloadOrdner);
   if (EXTRA) {
     const p = path.resolve(EXTRA);
-    if (!gemerkt.includes(p)) { gemerkt.push(p); console.log(`  Ordner gemerkt: ${p}`); }
+    if (!gemerkt.includes(p)) { gemerkt.push(p); console.log('  ' + T('Ordner gemerkt: {ordner}', { ordner: p })); }
   }
   if (JSON.stringify(gemerkt) !== JSON.stringify(konf.sunoOrdner || [])) konfigMerken({ sunoOrdner: gemerkt });
   for (const g of gemerkt) if (!orte.includes(g)) orte.push(g);
@@ -216,7 +216,7 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   }
 
   if (!dateien.length) {
-    console.log(`  Keine Audiodateien in ${orte.join(', ')}.`);
+    console.log('  ' + T('Keine Audiodateien in {orte}.', { orte: orte.join(', ') }));
     fragenWennEtwasFehlt(bekannt, orte);
     return;
   }
@@ -257,11 +257,11 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   }
   fertig.push(...jeZiel.values());
   gesehenSchreiben(gesehen);
-  if (uebersprungen) console.log(`  ${dateien.length} Dateien in ${orte.length} Ordnern — ${gelesen} neu gelesen, ${uebersprungen} unverändert seit dem letzten Mal.`);
+  if (uebersprungen) console.log('  ' + T('{dateien} Dateien in {ordner} Ordnern — {gelesen} neu gelesen, {unveraendert} unverändert seit dem letzten Mal.', { dateien: dateien.length, ordner: orte.length, gelesen, unveraendert: uebersprungen }));
 
   /* Erst zeigen, dann handeln. */
   if (fertig.length) {
-    console.log(`\n  ${TUN ? 'Übernehme' : 'Zu übernehmen'} — ${fertig.length} Datei${fertig.length === 1 ? '' : 'en'}:\n`);
+    console.log('\n  ' + (TUN ? T('Übernehme') : T('Zu übernehmen')) + ' — ' + (fertig.length === 1 ? T('{n} Datei', { n: fertig.length }) : T('{n} Dateien', { n: fertig.length })) + ':\n');
     for (const f of fertig)
       console.log(`    ${path.basename(f.ziel).padEnd(10)} ${gross(f.bytes).padStart(8)}   ${f.titel}`);
   }
@@ -269,35 +269,33 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   melden.kachel(T('übernommen'), String(fertig.length));
   melden.kachel(T('schon im Archiv'), String(schonDa.length));
   melden.kachel(T('nicht von Suno'), String(ohneSig.length + fremd.length));
-  if (schonDa.length)  console.log(`\n  Schon im Archiv (${schonDa.length}) — mit --ersetzen überschreiben.`);
-  if (doppelt.length) console.log(`\n  Doppelt gefunden (${doppelt.length}) — je Lied wird nur die größte Fassung genommen.`);
-  if (falschesFormat.length) console.log(`  Übergangen, Format wird nicht geführt (${falschesFormat.length}): `
+  if (schonDa.length)  console.log('\n  ' + T('Schon im Archiv ({n}) — mit --ersetzen überschreiben.', { n: schonDa.length }));
+  if (doppelt.length) console.log('\n  ' + T('Doppelt gefunden ({n}) — je Lied wird nur die größte Fassung genommen.', { n: doppelt.length }));
+  if (falschesFormat.length) console.log('  ' + T('Übergangen, Format wird nicht geführt ({n}): ', { n: falschesFormat.length })
     + falschesFormat.map(([d]) => path.extname(d)).filter((v, i, a) => a.indexOf(v) === i).join(', '));
   if (fremd.length) {
-    console.log(`\n  Nicht im Katalog (${fremd.length}) — Dateien zu Titeln, die der Katalog noch nicht kennt.`);
+    console.log('\n  ' + T('Nicht im Katalog ({n}) — Dateien zu Titeln, die der Katalog noch nicht kennt.', { n: fremd.length }));
     /* Meist sind das die UNVEROEFFENTLICHTEN: die stehen nicht auf der
        oeffentlichen Profilseite und kommen erst mit dem Lesezeichen in den
        Katalog. Der Ordner ist gemerkt - am Morgen danach holt dieser
        Lauf die Dateien von selbst nach. Caspar_D, 13.09.2026: "problem
        wird dann sein, dass ich die soundfiles nur fuer schon vorhandene
        metadaten reinziehen kann" - ja, und genau so loest es sich. */
-    console.log('  Vermutlich deine unveröffentlichten Titel. Nach dem ersten Lauf des');
-    console.log('  Lesezeichens kennt der Katalog sie — und am Morgen danach kommen');
-    console.log('  diese Dateien von selbst, der Ordner ist gemerkt.');
+    console.log('  ' + T('Vermutlich deine unveröffentlichten Titel. Nach dem ersten Lauf des Lesezeichens kennt der Katalog sie — und am Morgen danach kommen diese Dateien von selbst, der Ordner ist gemerkt.'));
     for (const [d, id] of fremd.slice(0, 8)) console.log(`    ${id.slice(0, 8)}  ${path.basename(d)}`);
   }
   if (ohneSig.length) {
-    console.log(`\n  Ohne Suno-Signatur, deshalb nicht angefasst (${ohneSig.length}):`);
+    console.log('\n  ' + T('Ohne Suno-Signatur, deshalb nicht angefasst ({n}):', { n: ohneSig.length }));
     for (const d of ohneSig.slice(0, 8)) console.log(`    ${path.basename(d)}`);
   }
 
   if (!fertig.length) {
-    console.log('\n  Nichts zu übernehmen.');
+    console.log('\n  ' + T('Nichts zu übernehmen.'));
     fragenWennEtwasFehlt(bekannt, orte);
     return;
   }
   if (!TUN) {
-    console.log(`\n  Trockenlauf. Mit --tun wirklich kopieren.\n`);
+    console.log('\n  ' + T('Trockenlauf. Mit --tun wirklich kopieren.') + '\n');
     return;
   }
 
@@ -310,15 +308,15 @@ function fragenWennEtwasFehlt(bekannt, orte) {
          halb geschriebener Kopiervorgang kein Hirngespinst. */
       const okGroesse = fs.statSync(f.ziel).size === f.bytes;
       const okSig     = signatur(f.ziel) === f.id;
-      if (!okGroesse || !okSig) { console.log(`    FEHLER bei ${f.titel} — Kopie stimmt nicht, gelöscht.`); fs.unlinkSync(f.ziel); continue; }
+      if (!okGroesse || !okSig) { console.log('    ' + T('FEHLER bei {titel} — Kopie stimmt nicht, gelöscht.', { titel: f.titel })); fs.unlinkSync(f.ziel); continue; }
       kopiert++; bytes += f.bytes;
       if (RAEUMEN) {
         const eimer = path.join(os.homedir(), '.Trash', path.basename(f.quelle));
         try { fs.renameSync(f.quelle, eimer); } catch (e) { /* anderes Dateisystem: liegen lassen */ }
       }
-    } catch (e) { console.log(`    FEHLER bei ${f.titel}: ${e.message}`); }
+    } catch (e) { console.log('    ' + T('FEHLER bei {titel}: {meldung}', { titel: f.titel, meldung: e.message })); }
   }
-  console.log(`\n  ${kopiert} Datei${kopiert === 1 ? '' : 'en'} übernommen (${gross(bytes)}).`);
-  if (RAEUMEN) console.log('  Die Originale liegen im Papierkorb.');
-  console.log('  Danach sinnvoll: node bin/vorrechnen.js (Wellenform, Analyse).\n');
+  console.log('\n  ' + (kopiert === 1 ? T('{n} Datei übernommen ({groesse}).', { n: kopiert, groesse: gross(bytes) }) : T('{n} Dateien übernommen ({groesse}).', { n: kopiert, groesse: gross(bytes) })));
+  if (RAEUMEN) console.log('  ' + T('Die Originale liegen im Papierkorb.'));
+  console.log('  ' + T('Danach sinnvoll: node bin/vorrechnen.js (Wellenform, Analyse).') + '\n');
 })();

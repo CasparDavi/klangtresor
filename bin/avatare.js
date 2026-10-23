@@ -76,16 +76,16 @@ async function holen(url) {
 }
 
 (async () => {
-  if (!sperren()) { console.log('Avatare — läuft schon (anderer Lauf), nichts zu tun.\n'); return; }
+  if (!sperren()) { console.log(T('Avatare — läuft schon (anderer Lauf), nichts zu tun.') + '\n'); return; }
   process.on('exit', entsperren);
   let leute = null;
   try { leute = (await (await fetch(`http://127.0.0.1:${PORT}/api/community`)).json()).leute; } catch (e) {}
-  if (!Array.isArray(leute)) { console.log(`Avatare — der Server antwortet nicht auf Port ${PORT}; nichts geholt.\n`); return; }
+  if (!Array.isArray(leute)) { console.log(T('Avatare — der Server antwortet nicht auf Port {port}; nichts geholt.', { port: PORT }) + '\n'); return; }
   const adressen = [...new Set(leute.map(l => l && l.avatar).filter(u => typeof u === 'string' && /^https?:\/\//.test(u)))];
   const buch = buchLesen(), jetzt = Date.now();
   let offen = adressen.filter(u => { const e = buch.bilder[u]; return !(e && fs.existsSync(path.join(ORDNER, e.datei))) && !wartet(buch.fehlt[u], jetzt); });
   if (TEST) offen = offen.slice(0, TEST);
-  console.log(`Avatare — ${offen.length} von ${adressen.length} zu holen\n`);
+  console.log(T('Avatare — {n} von {gesamt} zu holen', { n: offen.length, gesamt: adressen.length }) + '\n');
   fs.mkdirSync(ORDNER, { recursive: true });
   let n = 0, geholt = 0, daneben = 0;
   const eins = async (url) => {
@@ -97,7 +97,7 @@ async function holen(url) {
     } else {
       const alt = buch.fehlt[url]; buch.fehlt[url] = { grund: r.grund, am: new Date().toISOString(), versuche: ((alt && alt.versuche) || 0) + 1 }; daneben++;
     }
-    if (n % 50 === 0) { buchSchreiben(buch); console.log(`  [${n}/${offen.length}] ${geholt} geholt${daneben ? `, ${daneben} nicht` : ''}`); }
+    if (n % 50 === 0) { buchSchreiben(buch); console.log(`  [${n}/${offen.length}] ` + T('{n} geholt', { n: geholt }) + (daneben ? ', ' + T('{n} nicht', { n: daneben }) : '')); }
     melden.lauf({ was: T('Avatare werden geholt'), n, von: offen.length, nEinheit: T('Avatar') });
   };
   /* vier zugleich - rücksichtsvoll gegen Sunos Bildserver (bei 4500 Leuten einige Minuten) */
@@ -105,6 +105,6 @@ async function holen(url) {
   await Promise.all(Array.from({ length: 4 }, async () => { while (schlange.length) await eins(schlange.shift()); }));
   buchSchreiben(buch);
   melden.ausLauf();
-  console.log(`\n  ${geholt} Avatare geholt${daneben ? `, ${daneben} nicht zu bekommen (neuer Versuch später)` : ''} — ${Object.keys(buch.bilder).length} liegen bereit.`);
-  console.log(`  Buch: ${path.relative(WURZEL, BUCH)}\n`);
-})().catch((e) => { console.error('  FEHLER:', e.message); process.exit(1); });
+  console.log('\n  ' + T('{n} Avatare geholt', { n: geholt }) + (daneben ? ', ' + T('{n} nicht zu bekommen (neuer Versuch später)', { n: daneben }) : '') + ' — ' + T('{n} liegen bereit.', { n: Object.keys(buch.bilder).length }));
+  console.log('  ' + T('Buch:') + ` ${path.relative(WURZEL, BUCH)}\n`);
+})().catch((e) => { console.error('  ' + T('FEHLER:'), e.message); process.exit(1); });

@@ -33,6 +33,7 @@ const fs   = require('node:fs');
 const path = require('node:path');
 const { execFile } = require('node:child_process');
 const K    = require('./katalog.js');
+const { T } = require('./sprache.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
@@ -415,7 +416,7 @@ function palette(puffer){
 
 (async () => {
   const katalog = K.lesen();
-  if (!katalog){ console.error('Kein Katalog - erst bin/aufbereiten.js.'); process.exit(1); }
+  if (!katalog){ console.error(T('Kein Katalog - erst bin/aufbereiten.js.')); process.exit(1); }
 
   const songs = Object.values(katalog.songs);
   const offen = songs.filter(s => {
@@ -423,8 +424,8 @@ function palette(puffer){
     return fs.existsSync(path.join(SONGS, s.id, 'cover.jpg'));
   });
 
-  console.log(`${songs.length} Songs, ${offen.length} Paletten zu rechnen\n`);
-  if (!offen.length){ console.log('Nichts zu tun.'); return; }
+  console.log(T('{songs} Songs, {n} Paletten zu rechnen', { songs: songs.length, n: offen.length }) + '\n');
+  if (!offen.length){ console.log(T('Nichts zu tun.')); return; }
 
   let fertig=0, misslungen=0, schwach=0, farblos=0;
   const tonZahl = {};
@@ -447,12 +448,12 @@ function palette(puffer){
 
   K.schreiben(katalog);
 
-  console.log(`\n\nfertig:     ${fertig}`);
-  if (misslungen) console.log(`misslungen: ${misslungen}`);
-  console.log(`Dauer:      ${Math.round((Date.now()-start)/1000)} s\n`);
-  console.log('Gefundene Farbtöne je Cover:');
+  console.log('\n\n' + T('fertig:').padEnd(12) + fertig);
+  if (misslungen) console.log(T('misslungen:').padEnd(12) + misslungen);
+  console.log(T('Dauer:').padEnd(12) + Math.round((Date.now()-start)/1000) + ' s\n');
+  console.log(T('Gefundene Farbtöne je Cover:'));
   Object.keys(tonZahl).sort().forEach(n =>
-    console.log(`  ${n} ${n==='1'?'Ton ':'Töne'}: ${String(tonZahl[n]).padStart(3)} Cover`));
-  console.log(`\nohne jede Farbe: ${farblos}`);
-  console.log(`Kontrast unter Zielwert: ${schwach}`);
+    console.log('  ' + (n==='1' ? T('{n} Ton : {c} Cover', { n, c: String(tonZahl[n]).padStart(3) }) : T('{n} Töne: {c} Cover', { n, c: String(tonZahl[n]).padStart(3) }))));
+  console.log('\n' + T('ohne jede Farbe: {n}', { n: farblos }));
+  console.log(T('Kontrast unter Zielwert: {n}', { n: schwach }));
 })();

@@ -208,10 +208,8 @@ const buchLesen = () => {
   if (!fs.existsSync(BUCH)) return { ausweis: AUSWEIS, karten: {} };
   try { return JSON.parse(fs.readFileSync(BUCH, 'utf8')); }
   catch (e) {
-    console.error(`\n  ${BUCH} ist da, aber nicht lesbar: ${e.message}`);
-    console.error('  Der Lauf bricht ab, statt das Buch zu ersetzen — darin steht die Herkunft jeder');
-    console.error('  gerechneten Karte. Lege die Datei beiseite und starte neu, dann wird sie neu');
-    console.error('  aufgebaut; oder stelle sie aus einer Sicherung her.');
+    console.error('\n  ' + T('{buch} ist da, aber nicht lesbar: {meldung}', { buch: BUCH, meldung: e.message }));
+    console.error('  ' + T('Der Lauf bricht ab, statt das Buch zu ersetzen — darin steht die Herkunft jeder gerechneten Karte. Lege die Datei beiseite und starte neu, dann wird sie neu aufgebaut; oder stelle sie aus einer Sicherung her.'));
     process.exit(2);
   }
 };
@@ -241,14 +239,13 @@ const buchSchreiben = () => {
   else {
     try { jetzt = JSON.parse(fs.readFileSync(BUCH, 'utf8')); }
     catch (e) {
-      console.error(`\n  ${BUCH} liess sich vor dem Schreiben nicht lesen: ${e.message}`);
-      console.error('  Es wurde NICHTS geschrieben. Die gerechneten Karten liegen auf der Platte,');
-      console.error('  ihre Herkunft fehlt im Buch — ein spaeterer Lauf traegt sie nach.');
+      console.error('\n  ' + T('{buch} liess sich vor dem Schreiben nicht lesen: {meldung}', { buch: BUCH, meldung: e.message }));
+      console.error('  ' + T('Es wurde NICHTS geschrieben. Die gerechneten Karten liegen auf der Platte, ihre Herkunft fehlt im Buch — ein spaeterer Lauf traegt sie nach.'));
       process.exit(2);
     }
   }
   if (!jetzt || typeof jetzt !== 'object' || Array.isArray(jetzt)) {
-    console.error(`\n  ${BUCH} hat nicht die Gestalt eines Buchs. Es wurde nichts geschrieben.`);
+    console.error('\n  ' + T('{buch} hat nicht die Gestalt eines Buchs. Es wurde nichts geschrieben.', { buch: BUCH }));
     process.exit(2);
   }
   if (!jetzt.karten || typeof jetzt.karten !== 'object' || Array.isArray(jetzt.karten)) jetzt.karten = {};
@@ -297,22 +294,22 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
        Morgenlauf; ein fehlendes Modell ist dort kein Fehler, sondern ein Zustand -
        wer die Modelle uebersprungen hat, soll trotzdem Medien und Kacheln bekommen.
        Echte Fehler geben weiterhin 1 zurueck. */
-    console.log('  Das Tiefenmodell fehlt — Tiefenkarten werden übersprungen.');
-    console.log('  Einmal nachholen mit:  node bin/modelle-holen.js\n');
+    console.log('  ' + T('Das Tiefenmodell fehlt — Tiefenkarten werden übersprungen.'));
+    console.log('  ' + T('Einmal nachholen mit:  node bin/modelle-holen.js') + '\n');
     return;
   }
   const ort = require('onnxruntime-node');
   const t0 = Date.now();
   const sitzung = await ort.InferenceSession.create(MODELL);
-  console.log(`Tiefenkarten — Modell geladen in ${((Date.now() - t0) / 1000).toFixed(1)} s\n`);
+  console.log(T('Tiefenkarten — Modell geladen in {s} s', { s: ((Date.now() - t0) / 1000).toFixed(1) }) + '\n');
 
   const buch = buchLesen();
   /* Ein Modellwechsel macht jede alte Karte zu etwas anderem. */
   const gewechselt = MODELLIDENT(buch.ausweis) !== MODELLIDENT(AUSWEIS);
   if (gewechselt && Object.keys(buch.karten || {}).length) {
-    console.log('  Das Modell hat gewechselt — alle Karten werden neu gerechnet.');
-    console.log(`    vorher: ${buch.ausweis && buch.ausweis.modell} ${buch.ausweis && buch.ausweis.fassung}`);
-    console.log(`    jetzt:  ${AUSWEIS.modell} ${AUSWEIS.fassung}\n`);
+    console.log('  ' + T('Das Modell hat gewechselt — alle Karten werden neu gerechnet.'));
+    console.log('    ' + T('vorher:').padEnd(8) + ` ${buch.ausweis && buch.ausweis.modell} ${buch.ausweis && buch.ausweis.fassung}`);
+    console.log('    ' + T('jetzt:').padEnd(8) + ` ${AUSWEIS.modell} ${AUSWEIS.fassung}\n`);
     buch.karten = {};
     KARTEN_ERSETZEN = true;   /* sonst legt buchSchreiben die alten Eintraege gleich wieder auf */
   }
@@ -333,18 +330,18 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
   }).slice(0, TEST || undefined);
 
   const zaehl = (a) => alle.filter((b) => b.art === a).length;
-  console.log(`  ${alle.length} Bilder aus ${titel.length} Titeln, ${offen.length} zu rechnen — `
-    + `${zaehl('titelbild')} aus titelbild.jpg, ${zaehl('cover')} aus cover.jpg, ${zaehl('eigen')} aus eigenen Standbildern.\n`);
+  console.log('  ' + T('{bilder} Bilder aus {titel} Titeln, {offen} zu rechnen — ', { bilder: alle.length, titel: titel.length, offen: offen.length })
+    + T('{a} aus titelbild.jpg, {b} aus cover.jpg, {c} aus eigenen Standbildern.', { a: zaehl('titelbild'), b: zaehl('cover'), c: zaehl('eigen') }) + '\n');
   const waise = verwaiste(titel, alle, buch);
   if (waise.karten.length || waise.eintraege.length) {
-    console.log(`  ${waise.karten.length} Karte(n) ohne Bild und ${waise.eintraege.length} Bucheintrag/-eintraege ohne Bild:`);
-    for (const d of waise.karten.slice(0, 20)) console.log(`    liegt herum:  ${d}`);
-    if (waise.karten.length > 20) console.log(`    … und ${waise.karten.length - 20} weitere`);
-    for (const k of waise.eintraege.slice(0, 20)) console.log(`    steht im Buch: ${k}`);
-    if (waise.eintraege.length > 20) console.log(`    … und ${waise.eintraege.length - 20} weitere`);
-    console.log('  Ihr Bild ist weg. Hier wird nichts gelöscht — wegräumen von Hand, wenn es stimmt.\n');
+    console.log('  ' + T('{karten} Karte(n) ohne Bild und {eintraege} Bucheintrag/-eintraege ohne Bild:', { karten: waise.karten.length, eintraege: waise.eintraege.length }));
+    for (const d of waise.karten.slice(0, 20)) console.log('    ' + T('liegt herum:').padEnd(14) + d);
+    if (waise.karten.length > 20) console.log('    ' + T('… und {n} weitere', { n: waise.karten.length - 20 }));
+    for (const k of waise.eintraege.slice(0, 20)) console.log('    ' + T('steht im Buch:') + ' ' + k);
+    if (waise.eintraege.length > 20) console.log('    ' + T('… und {n} weitere', { n: waise.eintraege.length - 20 }));
+    console.log('  ' + T('Ihr Bild ist weg. Hier wird nichts gelöscht — wegräumen von Hand, wenn es stimmt.') + '\n');
   }
-  if (!offen.length) { console.log('  Nichts zu tun.\n'); return; }
+  if (!offen.length) { console.log('  ' + T('Nichts zu tun.') + '\n'); return; }
 
   let n = 0, fehler = 0;
   const zeiten = [];
@@ -352,10 +349,10 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
     n++;
     const marke = b.id.slice(0, 8) + (b.art === 'eigen' ? ' ' + path.basename(b.datei) : '');
     const bm = bildMasse(b.datei);
-    if (!bm) { console.log(`  [${n}/${offen.length}] ${marke}  Maße nicht lesbar`); fehler++; continue; }
+    if (!bm) { console.log(`  [${n}/${offen.length}] ${marke}  ` + T('Maße nicht lesbar')); fehler++; continue; }
     const [BW, BH] = eingabeMasse(bm[0], bm[1]);
     const roh = bildRoh(b.datei, BW, BH);
-    if (!roh) { console.log(`  [${n}/${offen.length}] ${marke}  Bild ließ sich nicht lesen`); fehler++; continue; }
+    if (!roh) { console.log(`  [${n}/${offen.length}] ${marke}  ` + T('Bild ließ sich nicht lesen')); fehler++; continue; }
 
     const punkte = BW * BH;
     const f = new Float32Array(3 * punkte);
@@ -378,11 +375,11 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
     const grau = Buffer.alloc(H * W);
     for (let i = 0; i < H * W; i++) grau[i] = Math.round((d[i] - min) / spanne * 255);
 
-    if (!grauSchreiben(grau, W, H, bm[0], bm[1], b.ziel)) { console.log(`  [${n}/${offen.length}] ${marke}  Schreiben ging nicht`); fehler++; continue; }
+    if (!grauSchreiben(grau, W, H, bm[0], bm[1], b.ziel)) { console.log(`  [${n}/${offen.length}] ${marke}  ` + T('Schreiben ging nicht')); fehler++; continue; }
     buch.karten[b.schluessel] = MEINE[b.schluessel] = { quelle: stempel(b.datei), art: b.art, gerechnet: new Date().toISOString() };
 
     const rest = zeiten.length ? Math.round((offen.length - n) * zeiten[zeiten.length - 1] / 1000) : 0;
-    console.log(`  [${n}/${offen.length}] ${marke}  ${bm[0]}x${bm[1]}  (gerechnet ${W}x${H})  aus ${path.basename(b.datei)} → ${path.basename(b.ziel)}`);
+    console.log(`  [${n}/${offen.length}] ${marke}  ${bm[0]}x${bm[1]}  ` + T('(gerechnet {w}x{h})', { w: W, h: H }) + `  ${T('aus')} ${path.basename(b.datei)} → ${path.basename(b.ziel)}`);
     melden.lauf({ was: T('Tiefenkarten werden gerechnet'), n, von: offen.length, nEinheit: T('Standbild'),
       jetzt: b.id.slice(0, 8), rest: rest > 3 ? (rest > 90 ? T('noch etwa {n} Minuten', { n: Math.round(rest / 60) }) : T('noch etwa {n} Sekunden', { n: rest })) : '' });
     if (n % 20 === 0) buchSchreiben();
@@ -391,6 +388,6 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
   buchSchreiben();
   melden.ausLauf();
   zeiten.sort((a, b) => a - b);
-  console.log(`\n  ${n - fehler} Karten gerechnet${fehler ? `, ${fehler} Fehler` : ''} — Median ${zeiten[zeiten.length >> 1]} ms je Bild.`);
-  console.log(`  Buch: ${path.relative(WURZEL, BUCH)}\n`);
-})().catch((e) => { console.error('  FEHLER:', e.message); process.exit(1); });
+  console.log('\n  ' + T('{n} Karten gerechnet', { n: n - fehler }) + (fehler ? ', ' + T('{n} Fehler', { n: fehler }) : '') + ' — ' + T('Median {ms} ms je Bild.', { ms: zeiten[zeiten.length >> 1] }));
+  console.log('  ' + T('Buch:') + ` ${path.relative(WURZEL, BUCH)}\n`);
+})().catch((e) => { console.error('  ' + T('FEHLER:'), e.message); process.exit(1); });

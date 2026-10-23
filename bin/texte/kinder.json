@@ -170,5 +170,1153 @@
  "Liedtexte": {
   "en": "Lyrics",
   "ru": "Тексты песен"
+ },
+ "hole": {
+  "en": "fetching",
+  "ru": "загрузка"
+ },
+ "vorhanden": {
+  "en": "present",
+  "ru": "есть"
+ },
+ "FEHLER": {
+  "en": "ERROR",
+  "ru": "ОШИБКА"
+ },
+ "von {ganz} ({prozent} %)": {
+  "en": "of {ganz} ({prozent} %)",
+  "ru": "из {ganz} ({prozent} %)"
+ },
+ "Unbekanntes Modell: {liste}": {
+  "en": "Unknown model: {liste}",
+  "ru": "Неизвестная модель: {liste}"
+ },
+ "Modelle: {geholt} geholt": {
+  "en": "Models: {geholt} downloaded",
+  "ru": "Моделей загружено: {geholt}"
+ },
+ "(angefragt: {n})": {
+  "en": "(requested: {n})",
+  "ru": "(запрошено: {n})"
+ },
+ "{da} von {von} vorhanden": {
+  "en": "{da} of {von} present",
+  "ru": "есть {da} из {von}"
+ },
+ "{n} Datei(en) kamen nicht an. Von Hand: im Browser öffnen, \"Speichern unter\" nach": {
+  "en": "{n} file(s) did not arrive. Do it by hand: open in the browser, \"Save as\" to",
+  "ru": "Не загрузилось файлов: {n}. Сделайте вручную: откройте в браузере и сохраните командой «Сохранить как» в"
+ },
+ "mit genau diesem Dateinamen:": {
+  "en": "using exactly this file name:",
+  "ru": "точно с таким именем файла:"
+ },
+ "(ein Zip: daraus {z} auspacken und als {n} ablegen)": {
+  "en": "(a zip: extract {z} from it and save it as {n})",
+  "ru": "(это zip: распакуйте из него {z} и сохраните как {n})"
+ },
+ "Danach node bin/modelle-holen.js noch einmal - Vorhandenes wird übersprungen.": {
+  "en": "Then run node bin/modelle-holen.js again - what is already there is skipped.",
+  "ru": "Затем запустите node bin/modelle-holen.js ещё раз — то, что уже есть, пропускается."
+ },
+ "Hinter einem Proxy: HTTPS_PROXY=http://proxy:port setzen (curl liest das), oder die Dateien von Hand holen.": {
+  "en": "Behind a proxy: set HTTPS_PROXY=http://proxy:port (curl reads it), or fetch the files by hand.",
+  "ru": "За прокси: задайте HTTPS_PROXY=http://proxy:port (его читает curl) или загрузите файлы вручную."
+ },
+ "Modelle holen brach ab:": {
+  "en": "Fetching the models stopped:",
+  "ru": "Загрузка моделей прервана:"
+ },
+ "Kein Handle. Entweder beim Aufruf mitgeben:  node bin/sammeln.js <dein-handle>": {
+  "en": "No handle. Either pass it when you start the program:  node bin/sammeln.js <your-handle>",
+  "ru": "Нет имени профиля (handle). Укажите его при запуске:  node bin/sammeln.js <ваш-handle>"
+ },
+ "oder im KlangTresor oben rechts den Alias eintragen (er wird geprüft und gemerkt).": {
+  "en": "or enter the alias at the top right of KlangTresor (it is checked and remembered).",
+  "ru": "или введите псевдоним вверху справа в KlangTresor (он проверяется и запоминается)."
+ },
+ "(Der Handle steht auf deiner Profilseite hinter dem @.)": {
+  "en": "(The handle is on your profile page, after the @.)",
+  "ru": "(Handle указан на странице вашего профиля после знака @.)"
+ },
+ "Keine Ernte gefunden - ohne --aus-roh laufen lassen.": {
+  "en": "No harvest found - run without --aus-roh.",
+  "ru": "Сохранённый сбор не найден — запустите без --aus-roh."
+ },
+ "Ernte unlesbar: {datei}": {
+  "en": "Harvest unreadable: {datei}",
+  "ru": "Сбор не читается: {datei}"
+ },
+ "Suno lieferte ein Zeichen kaputt, aus der Playlist-Kopie geheilt: {z}": {
+  "en": "Suno delivered a broken character, repaired from the playlist copy: {z}",
+  "ru": "Suno прислал повреждённый символ, исправлено по копии из плейлиста: {z}"
+ },
+ "Suno lieferte ein Zeichen kaputt, keine saubere Kopie: {z}": {
+  "en": "Suno delivered a broken character, no clean copy: {z}",
+  "ru": "Suno прислал повреждённый символ, чистой копии нет: {z}"
+ },
+ "Verwerte deine Lesezeichen-Ernte statt Suno neu zu fragen.": {
+  "en": "Using your bookmarklet harvest instead of asking Suno again.",
+  "ru": "Используется сбор из вашей закладки — Suno заново не опрашивается."
+ },
+ "(geholt {wann})": {
+  "en": "(fetched {wann})",
+  "ru": "(получено {wann})"
+ },
+ "{n} öffentliche Songs. (Die privaten stecken in der privat-Ernte": {
+  "en": "{n} public songs. (The private ones are in the private harvest",
+  "ru": "Публичных треков: {n}. (Приватные находятся в приватном сборе"
+ },
+ "daneben und fließen beim Übernehmen mit ein.)": {
+  "en": "next to it and are included when importing.)",
+  "ru": "рядом и учитываются при импорте.)"
+ },
+ "Sammle Songs von @{handle} — ohne Anmeldung, direkt über die API.": {
+  "en": "Collecting songs from @{handle} — without signing in, straight through the API.",
+  "ru": "Сбор треков профиля @{handle} — без входа, напрямую через API."
+ },
+ "Fehler {fehler}: {text}": {
+  "en": "Error {fehler}: {text}",
+  "ru": "Ошибка {fehler}: {text}"
+ },
+ "Gibt es das Profil? Ist es öffentlich?": {
+  "en": "Does the profile exist? Is it public?",
+  "ru": "Профиль существует? Он публичный?"
+ },
+ "Seite {seite}: {n} Songs": {
+  "en": "Page {seite}: {n} songs",
+  "ru": "Страница {seite}: треков — {n}"
+ },
+ "{n} doppelt": {
+  "en": "{n} duplicate",
+  "ru": "дублей: {n}"
+ },
+ "Nichts gefunden.": {
+  "en": "Nothing found.",
+  "ru": "Ничего не найдено."
+ },
+ "{n} Songs aus der Ernte übernommen.": {
+  "en": "{n} songs taken over from the harvest.",
+  "ru": "Треков взято из сбора: {n}."
+ },
+ "{n} Songs gesammelt.": {
+  "en": "{n} songs collected.",
+  "ru": "Треков собрано: {n}."
+ },
+ "Vergleich mit dem Katalog": {
+  "en": "Comparison with the catalogue",
+  "ru": "Сравнение с каталогом"
+ },
+ "bereits bekannt:": {
+  "en": "already known:",
+  "ru": "уже известно:"
+ },
+ "NEU:": {
+  "en": "NEW:",
+  "ru": "НОВЫЕ:"
+ },
+ "inhaltlich anders:": {
+  "en": "changed content:",
+  "ru": "изменилось:"
+ },
+ "nur Zähler:": {
+  "en": "counters only:",
+  "ru": "только счётчики:"
+ },
+ "… und {n} weitere": {
+  "en": "… and {n} more",
+  "ru": "… и ещё: {n}"
+ },
+ "Ersatzzeichen (Suno zerreisst Zeichen, keine Aenderung): {n}": {
+  "en": "Replacement characters (Suno breaks characters, no change): {n}",
+  "ru": "Символы-заменители (Suno портит символы, изменений нет): {n}"
+ },
+ "{n} Plays": {
+  "en": "{n} plays",
+  "ru": "прослушиваний: {n}"
+ },
+ "{n} Likes": {
+  "en": "{n} likes",
+  "ru": "лайков: {n}"
+ },
+ "{n} Kommentare": {
+  "en": "{n} comments",
+  "ru": "комментариев: {n}"
+ },
+ "{n} neue Songs.": {
+  "en": "{n} new songs.",
+  "ru": "Новых треков: {n}."
+ },
+ "Keine neuen Songs.": {
+  "en": "No new songs.",
+  "ru": "Новых треков нет."
+ },
+ "Weiter mit:  node bin/wiederherstellen.js": {
+  "en": "Next:  node bin/wiederherstellen.js",
+  "ru": "Дальше:  node bin/wiederherstellen.js"
+ },
+ "Hinweis: {n} Songs fehlen — nochmal laufen lassen.": {
+  "en": "Note: {n} songs are missing — run it again.",
+  "ru": "Внимание: не хватает треков: {n} — запустите ещё раз."
+ },
+ "{n} Songs von {gesamt} aus der Ernte übernommen.": {
+  "en": "{n} songs of {gesamt} taken over from the harvest.",
+  "ru": "Треков взято из сбора: {n} из {gesamt}."
+ },
+ "{n} Songs von {gesamt} gesammelt.": {
+  "en": "{n} songs of {gesamt} collected.",
+  "ru": "Треков собрано: {n} из {gesamt}."
+ },
+ "({ordner}: über {n} Ordner — hier wurde abgebrochen.)": {
+  "en": "({ordner}: more than {n} folders — stopped here.)",
+  "ru": "({ordner}: больше {n} папок — поиск здесь прекращён.)"
+ },
+ "{n} Lied ohne vollständige Audiodatei:": {
+  "en": "{n} song without a complete audio file:",
+  "ru": "Трек без полного аудиофайла: {n}"
+ },
+ "{n} Lieder ohne vollständige Audiodatei:": {
+  "en": "{n} songs without a complete audio file:",
+  "ru": "Треков без полного аудиофайла: {n}"
+ },
+ "Gesucht wurde in: {orte}": {
+  "en": "Searched in: {orte}",
+  "ru": "Поиск велся в: {orte}"
+ },
+ "Landen Sunos Downloads woanders? Dann EINMAL sagen, es wird gemerkt:": {
+  "en": "Do Suno's downloads land somewhere else? Say so ONCE and it is remembered:",
+  "ru": "Загрузки Suno попадают в другое место? Укажите это ОДИН раз — папка запомнится:"
+ },
+ "Ordner gemerkt: {ordner}": {
+  "en": "Folder remembered: {ordner}",
+  "ru": "Папка запомнена: {ordner}"
+ },
+ "Keine Audiodateien in {orte}.": {
+  "en": "No audio files in {orte}.",
+  "ru": "Аудиофайлов в {orte} нет."
+ },
+ "{dateien} Dateien in {ordner} Ordnern — {gelesen} neu gelesen, {unveraendert} unverändert seit dem letzten Mal.": {
+  "en": "{dateien} files in {ordner} folders — {gelesen} newly read, {unveraendert} unchanged since last time.",
+  "ru": "Файлов: {dateien} в папках: {ordner} — заново прочитано: {gelesen}, без изменений с прошлого раза: {unveraendert}."
+ },
+ "Übernehme": {
+  "en": "Importing",
+  "ru": "Импорт"
+ },
+ "Zu übernehmen": {
+  "en": "To import",
+  "ru": "К импорту"
+ },
+ "{n} Datei": {
+  "en": "{n} file",
+  "ru": "файлов: {n}"
+ },
+ "{n} Dateien": {
+  "en": "{n} files",
+  "ru": "файлов: {n}"
+ },
+ "Schon im Archiv ({n}) — mit --ersetzen überschreiben.": {
+  "en": "Already in the archive ({n}) — overwrite with --ersetzen.",
+  "ru": "Уже в архиве ({n}) — чтобы перезаписать, добавьте --ersetzen."
+ },
+ "Doppelt gefunden ({n}) — je Lied wird nur die größte Fassung genommen.": {
+  "en": "Found twice ({n}) — only the largest version of each song is used.",
+  "ru": "Найдены дубли ({n}) — для каждого трека берётся только самая большая версия."
+ },
+ "Übergangen, Format wird nicht geführt ({n}): ": {
+  "en": "Skipped, format is not supported ({n}): ",
+  "ru": "Пропущено, формат не поддерживается ({n}): "
+ },
+ "Nicht im Katalog ({n}) — Dateien zu Titeln, die der Katalog noch nicht kennt.": {
+  "en": "Not in the catalogue ({n}) — files for titles the catalogue does not know yet.",
+  "ru": "Нет в каталоге ({n}) — файлы треков, которых каталог ещё не знает."
+ },
+ "Vermutlich deine unveröffentlichten Titel. Nach dem ersten Lauf des Lesezeichens kennt der Katalog sie — und am Morgen danach kommen diese Dateien von selbst, der Ordner ist gemerkt.": {
+  "en": "Probably your unpublished titles. After the first run of the bookmarklet the catalogue knows them — and the morning after, these files are picked up automatically, the folder is remembered.",
+  "ru": "Скорее всего, это ваши неопубликованные треки. После первого запуска закладки каталог узнает их, а на следующее утро эти файлы будут подхвачены сами — папка запомнена."
+ },
+ "Ohne Suno-Signatur, deshalb nicht angefasst ({n}):": {
+  "en": "No Suno signature, so left untouched ({n}):",
+  "ru": "Без подписи Suno, поэтому не тронуты ({n}):"
+ },
+ "Nichts zu übernehmen.": {
+  "en": "Nothing to import.",
+  "ru": "Импортировать нечего."
+ },
+ "Trockenlauf. Mit --tun wirklich kopieren.": {
+  "en": "Dry run. Use --tun to really copy.",
+  "ru": "Пробный запуск. Чтобы действительно скопировать, добавьте --tun."
+ },
+ "FEHLER bei {titel} — Kopie stimmt nicht, gelöscht.": {
+  "en": "ERROR with {titel} — copy does not match, deleted.",
+  "ru": "ОШИБКА: {titel} — копия не совпадает, удалена."
+ },
+ "FEHLER bei {titel}: {meldung}": {
+  "en": "ERROR with {titel}: {meldung}",
+  "ru": "ОШИБКА: {titel}: {meldung}"
+ },
+ "{n} Datei übernommen ({groesse}).": {
+  "en": "{n} file imported ({groesse}).",
+  "ru": "Импортировано файлов: {n} ({groesse})."
+ },
+ "{n} Dateien übernommen ({groesse}).": {
+  "en": "{n} files imported ({groesse}).",
+  "ru": "Импортировано файлов: {n} ({groesse})."
+ },
+ "Die Originale liegen im Papierkorb.": {
+  "en": "The originals are in the Trash.",
+  "ru": "Оригиналы лежат в корзине."
+ },
+ "Danach sinnvoll: node bin/vorrechnen.js (Wellenform, Analyse).": {
+  "en": "Useful next: node bin/vorrechnen.js (waveform, analysis).",
+  "ru": "Дальше имеет смысл запустить: node bin/vorrechnen.js (волна, анализ)."
+ },
+ "die veröffentlichten Songs": {
+  "en": "the published songs",
+  "ru": "опубликованные треки"
+ },
+ "die unveröffentlichten Songs aus Playlists": {
+  "en": "the unpublished songs from playlists",
+  "ru": "неопубликованные треки из плейлистов"
+ },
+ "Playlists und ihre Einträge": {
+  "en": "playlists and their entries",
+  "ru": "плейлисты и их содержимое"
+ },
+ "Wort-Zeitmarken für die Bühne": {
+  "en": "word timestamps for the stage",
+  "ru": "метки времени слов для сцены"
+ },
+ "Autorenangaben und Suno-Statistik": {
+  "en": "author details and Suno statistics",
+  "ru": "данные об авторе и статистика Suno"
+ },
+ "Rohdaten in library/roh/:": {
+  "en": "Raw data in library/roh/:",
+  "ru": "Исходные данные в library/roh/:"
+ },
+ "{n} Datei(en)": {
+  "en": "{n} file(s)",
+  "ru": "файлов: {n}"
+ },
+ "fehlt: {was}": {
+  "en": "missing: {was}",
+  "ru": "нет: {was}"
+ },
+ "zusammen {mb} MB": {
+  "en": "{mb} MB in total",
+  "ru": "всего {mb} МБ"
+ },
+ "Weder Rohdaten noch Katalog. Erst im Browser sammeln:": {
+  "en": "Neither raw data nor a catalogue. Collect in the browser first:",
+  "ru": "Нет ни исходных данных, ни каталога. Сначала выполните сбор в браузере:"
+ },
+ "Lesezeichen auf suno.com (siehe docs/archiv/UEBERGABE.md)": {
+  "en": "Bookmarklet on suno.com (see docs/archiv/UEBERGABE.md)",
+  "ru": "Закладка на suno.com (см. docs/archiv/UEBERGABE.md)"
+ },
+ "Keine neuen Rohdaten — der Katalog ist die Quelle.": {
+  "en": "No new raw data — the catalogue is the source.",
+  "ru": "Новых исходных данных нет — источником служит каталог."
+ },
+ "Nur geprüft, nichts geändert. Ohne --pruefen läuft der Aufbau.": {
+  "en": "Checked only, nothing changed. Without --pruefen the build runs.",
+  "ru": "Только проверка, ничего не изменено. Без --pruefen запускается построение."
+ },
+ "Abgebrochen bei {datei} (Rückgabewert {status}).": {
+  "en": "Stopped at {datei} (exit code {status}).",
+  "ru": "Прервано на {datei} (код возврата {status})."
+ },
+ "Die fertigen Schritte bleiben erhalten - einfach erneut starten,": {
+  "en": "The finished steps are kept - just start again,",
+  "ru": "Выполненные шаги сохраняются — просто запустите снова,"
+ },
+ "es wird nur nachgeholt, was fehlt.": {
+  "en": "only what is missing will be done.",
+  "ru": "будет выполнено только недостающее."
+ },
+ "Fertig in {min} min {sek} s.": {
+  "en": "Done in {min} min {sek} s.",
+  "ru": "Готово за {min} мин {sek} с."
+ },
+ "{mp3} Songs als MP3, {wav} als WAV, {stems} mit Instrumentspuren.": {
+  "en": "{mp3} songs as MP3, {wav} as WAV, {stems} with instrument tracks.",
+  "ru": "Треков в MP3: {mp3}, в WAV: {wav}, с дорожками инструментов: {stems}."
+ },
+ "WAV-Originale ({n} fehlen):": {
+  "en": "WAV originals ({n} missing):",
+  "ru": "Оригиналы WAV (не хватает: {n}):"
+ },
+ "Instrumentspuren ({n} fehlen):": {
+  "en": "Instrument tracks ({n} missing):",
+  "ru": "Дорожки инструментов (не хватает: {n}):"
+ },
+ "rund 4 min je Song": {
+  "en": "about 4 min per song",
+  "ru": "примерно 4 мин на трек"
+ },
+ "NICHT dabei, weil kein Schritt hier sie holt:": {
+  "en": "NOT included, because no step here fetches them:",
+  "ru": "НЕ включено, потому что ни один из этих шагов их не загружает:"
+ },
+ "Beides ist nachholbar und laeuft im Hintergrund weiter.": {
+  "en": "Both can be caught up later and keep running in the background.",
+  "ru": "И то и другое можно догрузить позже; процесс продолжается в фоне."
+ },
+ "Anhören:  node server/server.js": {
+  "en": "Listen:  node server/server.js",
+  "ru": "Слушать:  node server/server.js"
+ },
+ "{s} s ohne Daten": {
+  "en": "{s} s without data",
+  "ru": "{s} с без данных"
+ },
+ "Profilbild": {
+  "en": "Profile picture",
+  "ru": "Фото профиля"
+ },
+ "Profil-Titelbild": {
+  "en": "Profile cover image",
+  "ru": "Обложка профиля"
+ },
+ "Kein Katalog gefunden - erst \"node bin/aufbereiten.js\" laufen lassen.": {
+  "en": "No catalogue found - run \"node bin/aufbereiten.js\" first.",
+  "ru": "Каталог не найден — сначала запустите «node bin/aufbereiten.js»."
+ },
+ "{n} Songs zu prüfen": {
+  "en": "{n} songs to check",
+  "ru": "Треков для проверки: {n}"
+ },
+ "(nur veröffentlichte)": {
+  "en": "(published only)",
+  "ru": "(только опубликованные)"
+ },
+ "(alle)": {
+  "en": "(all)",
+  "ru": "(все)"
+ },
+ "Ein Zeichen je Datei (Cover, MP3, Artwork):  G = geladen,  V = war schon da,  · = nichts zu holen,  ? = zu pruefen, du entscheidest,  ! = Fehler": {
+  "en": "One character per file (cover, MP3, artwork):  G = downloaded,  V = was already there,  · = nothing to fetch,  ? = to be checked, you decide,  ! = error",
+  "ru": "Один символ на файл (обложка, MP3, арт):  G = загружено,  V = уже было,  · = загружать нечего,  ? = нужна проверка, решаете вы,  ! = ошибка"
+ },
+ "(mit Sunos Lyric-Videos)": {
+  "en": "(with Suno's lyric videos)",
+  "ru": "(с лирик-видео Suno)"
+ },
+ "{n} Playlist-Cover": {
+  "en": "{n} playlist covers",
+  "ru": "Обложек плейлистов: {n}"
+ },
+ "{n} Cover vorhanden": {
+  "en": "{n} covers present",
+  "ru": "Обложек есть: {n}"
+ },
+ "neu geladen:": {
+  "en": "newly downloaded:",
+  "ru": "загружено заново:"
+ },
+ "schon da:": {
+  "en": "already there:",
+  "ru": "уже было:"
+ },
+ "schon geklaert:": {
+  "en": "already settled:",
+  "ru": "уже выяснено:"
+ },
+ "bekannte eigene Clips, gar nicht erst geholt": {
+  "en": "known own clips, not even fetched",
+  "ru": "известные собственные клипы, их даже не загружали"
+ },
+ "zu pruefen:": {
+  "en": "to check:",
+  "ru": "проверить:"
+ },
+ "diese Titel haben jetzt ein Video-Artwork, und fuer genau sie steht bei uns ein Export im Buch:": {
+  "en": "these titles now have a video artwork, and for exactly these we have an export in the book:",
+  "ru": "у этих треков теперь есть видеоарт, и именно для них в нашей книге записан экспорт:"
+ },
+ "Ansehen und entscheiden:  node bin/effektclip-buch.js pruefen": {
+  "en": "Look and decide:  node bin/effektclip-buch.js pruefen",
+  "ru": "Посмотреть и решить:  node bin/effektclip-buch.js pruefen"
+ },
+ "nicht vorhanden:": {
+  "en": "not available:",
+  "ru": "отсутствует:"
+ },
+ "(z.B. Songs ohne Video)": {
+  "en": "(e.g. songs without a video)",
+  "ru": "(например, треки без видео)"
+ },
+ "Fehler:": {
+  "en": "Errors:",
+  "ru": "Ошибки:"
+ },
+ "Dauer:": {
+  "en": "Duration:",
+  "ru": "Длительность:"
+ },
+ "{min} min {sek} s": {
+  "en": "{min} min {sek} s",
+  "ru": "{min} мин {sek} с"
+ },
+ "Bei Fehlern einfach nochmal starten - es wird fortgesetzt.": {
+  "en": "If there were errors, just start again - it will carry on.",
+  "ru": "При ошибках просто запустите снова — работа продолжится."
+ },
+ "Kein Katalog - erst bin/aufbereiten.js.": {
+  "en": "No catalogue - run bin/aufbereiten.js first.",
+  "ru": "Каталога нет — сначала запустите bin/aufbereiten.js."
+ },
+ "{songs} Songs, {kacheln} Kacheln zu rechnen, ": {
+  "en": "{songs} songs, {kacheln} tiles to calculate, ",
+  "ru": "Треков: {songs}, плиток к расчёту: {kacheln}, "
+ },
+ "{n} Titelbilder zu pruefen": {
+  "en": "{n} cover images to check",
+  "ru": "обложек к проверке: {n}"
+ },
+ "(nur Probe, nichts wird geschrieben)": {
+  "en": "(trial only, nothing is written)",
+  "ru": "(только проба, ничего не записывается)"
+ },
+ "Nichts zu tun.": {
+  "en": "Nothing to do.",
+  "ru": "Делать нечего."
+ },
+ "Rand: {titel}": {
+  "en": "Border: {titel}",
+  "ru": "Рамка: {titel}"
+ },
+ "Probe: {n} geprueft, {raender} mit Rand - nichts geschrieben.": {
+  "en": "Trial: {n} checked, {raender} with a border - nothing written.",
+  "ru": "Проба: проверено {n}, с рамкой: {raender} — ничего не записано."
+ },
+ "Titelbilder ohne Rand: {n} neu (gesamt {gesamt})": {
+  "en": "Cover images without a border: {n} new ({gesamt} in total)",
+  "ru": "Обложек без рамки: {n} новых (всего {gesamt})"
+ },
+ "fertig:": {
+  "en": "done:",
+  "ru": "готово:"
+ },
+ "misslungen:": {
+  "en": "failed:",
+  "ru": "не удалось:"
+ },
+ "Größe:": {
+  "en": "Size:",
+  "ru": "Размер:"
+ },
+ "(Schnitt {kb} KB)": {
+  "en": "(average {kb} KB)",
+  "ru": "(в среднем {kb} КБ)"
+ },
+ "Hinweis: Auf dieser Platte ist ein Block {kb} KB groß - jede Kachel": {
+  "en": "Note: on this disk a block is {kb} KB in size - each tile",
+  "ru": "Внимание: на этом диске размер блока — {kb} КБ, поэтому каждая плитка"
+ },
+ "belegt einen ganzen, also rund {belegt} MB statt {echt} MB.": {
+  "en": "takes up a whole one, so about {belegt} MB instead of {echt} MB.",
+  "ru": "занимает целый блок, то есть около {belegt} МБ вместо {echt} МБ."
+ },
+ "{songs} Songs, {n} Paletten zu rechnen": {
+  "en": "{songs} songs, {n} palettes to calculate",
+  "ru": "Треков: {songs}, палитр к расчёту: {n}"
+ },
+ "Gefundene Farbtöne je Cover:": {
+  "en": "Colour tones found per cover:",
+  "ru": "Найдено оттенков на обложку:"
+ },
+ "{n} Ton : {c} Cover": {
+  "en": "{n} tone : {c} covers",
+  "ru": "оттенков: {n} — обложек: {c}"
+ },
+ "{n} Töne: {c} Cover": {
+  "en": "{n} tones: {c} covers",
+  "ru": "оттенков: {n} — обложек: {c}"
+ },
+ "ohne jede Farbe: {n}": {
+  "en": "without any colour: {n}",
+  "ru": "совсем без цвета: {n}"
+ },
+ "Kontrast unter Zielwert: {n}": {
+  "en": "Contrast below target: {n}",
+  "ru": "Контраст ниже целевого: {n}"
+ },
+ "{buch} ist da, aber nicht lesbar: {meldung}": {
+  "en": "{buch} exists but cannot be read: {meldung}",
+  "ru": "{buch} существует, но не читается: {meldung}"
+ },
+ "Der Lauf bricht ab, statt das Buch zu ersetzen — darin steht die Herkunft jeder gerechneten Karte. Lege die Datei beiseite und starte neu, dann wird sie neu aufgebaut; oder stelle sie aus einer Sicherung her.": {
+  "en": "The run stops instead of replacing the book — it records where every calculated map came from. Put the file aside and start again, then it is rebuilt; or restore it from a backup.",
+  "ru": "Запуск прерван, чтобы не заменять книгу — в ней записано происхождение каждой рассчитанной карты. Отложите файл в сторону и запустите снова — он будет создан заново; либо восстановите его из резервной копии."
+ },
+ "{buch} liess sich vor dem Schreiben nicht lesen: {meldung}": {
+  "en": "{buch} could not be read before writing: {meldung}",
+  "ru": "{buch} не удалось прочитать перед записью: {meldung}"
+ },
+ "Es wurde NICHTS geschrieben. Die gerechneten Karten liegen auf der Platte, ihre Herkunft fehlt im Buch — ein spaeterer Lauf traegt sie nach.": {
+  "en": "NOTHING was written. The calculated maps are on the disk, their origin is missing from the book — a later run will add it.",
+  "ru": "НИЧЕГО не записано. Рассчитанные карты лежат на диске, но их происхождение в книге отсутствует — следующий запуск его дополнит."
+ },
+ "{buch} hat nicht die Gestalt eines Buchs. Es wurde nichts geschrieben.": {
+  "en": "{buch} does not have the shape of a book. Nothing was written.",
+  "ru": "{buch} не похож на книгу. Ничего не записано."
+ },
+ "Das Tiefenmodell fehlt — Tiefenkarten werden übersprungen.": {
+  "en": "The depth model is missing — depth maps are skipped.",
+  "ru": "Модель глубины отсутствует — карты глубины пропускаются."
+ },
+ "Einmal nachholen mit:  node bin/modelle-holen.js": {
+  "en": "Fetch it once with:  node bin/modelle-holen.js",
+  "ru": "Загрузить один раз можно командой:  node bin/modelle-holen.js"
+ },
+ "Tiefenkarten — Modell geladen in {s} s": {
+  "en": "Depth maps — model loaded in {s} s",
+  "ru": "Карты глубины — модель загружена за {s} с"
+ },
+ "Das Modell hat gewechselt — alle Karten werden neu gerechnet.": {
+  "en": "The model has changed — all maps are recalculated.",
+  "ru": "Модель сменилась — все карты будут рассчитаны заново."
+ },
+ "vorher:": {
+  "en": "before:",
+  "ru": "было:"
+ },
+ "jetzt:": {
+  "en": "now:",
+  "ru": "стало:"
+ },
+ "{bilder} Bilder aus {titel} Titeln, {offen} zu rechnen — ": {
+  "en": "{bilder} images from {titel} titles, {offen} to calculate — ",
+  "ru": "Изображений: {bilder} из {titel} треков, к расчёту: {offen} — "
+ },
+ "{a} aus titelbild.jpg, {b} aus cover.jpg, {c} aus eigenen Standbildern.": {
+  "en": "{a} from titelbild.jpg, {b} from cover.jpg, {c} from own stills.",
+  "ru": "{a} из titelbild.jpg, {b} из cover.jpg, {c} из собственных кадров."
+ },
+ "{karten} Karte(n) ohne Bild und {eintraege} Bucheintrag/-eintraege ohne Bild:": {
+  "en": "{karten} map(s) without an image and {eintraege} book entry/entries without an image:",
+  "ru": "Карт без изображения: {karten}, записей в книге без изображения: {eintraege}:"
+ },
+ "liegt herum:": {
+  "en": "lying around:",
+  "ru": "лежит без дела:"
+ },
+ "steht im Buch:": {
+  "en": "listed in the book:",
+  "ru": "записано в книге:"
+ },
+ "Ihr Bild ist weg. Hier wird nichts gelöscht — wegräumen von Hand, wenn es stimmt.": {
+  "en": "Their image is gone. Nothing is deleted here — clear them up by hand if that is right.",
+  "ru": "Их изображения больше нет. Здесь ничего не удаляется — уберите вручную, если это верно."
+ },
+ "Maße nicht lesbar": {
+  "en": "dimensions not readable",
+  "ru": "размеры не читаются"
+ },
+ "Bild ließ sich nicht lesen": {
+  "en": "image could not be read",
+  "ru": "изображение не удалось прочитать"
+ },
+ "Schreiben ging nicht": {
+  "en": "writing failed",
+  "ru": "запись не удалась"
+ },
+ "(gerechnet {w}x{h})": {
+  "en": "(calculated {w}x{h})",
+  "ru": "(рассчитано {w}x{h})"
+ },
+ "aus": {
+  "en": "from",
+  "ru": "из"
+ },
+ "{n} Karten gerechnet": {
+  "en": "{n} maps calculated",
+  "ru": "Карт рассчитано: {n}"
+ },
+ "{n} Fehler": {
+  "en": "{n} errors",
+  "ru": "ошибок: {n}"
+ },
+ "Median {ms} ms je Bild.": {
+  "en": "median {ms} ms per image.",
+  "ru": "медиана {ms} мс на изображение."
+ },
+ "Buch:": {
+  "en": "Book:",
+  "ru": "Книга:"
+ },
+ "FEHLER:": {
+  "en": "ERROR:",
+  "ru": "ОШИБКА:"
+ },
+ "Gesichter — läuft schon (anderer Lauf), nichts zu tun.": {
+  "en": "Faces — already running (another run), nothing to do.",
+  "ru": "Лица — уже выполняется (другой запуск), делать нечего."
+ },
+ "Gesichter — hole fehlende Modelle: {liste}": {
+  "en": "Faces — fetching missing models: {liste}",
+  "ru": "Лица — загрузка недостающих моделей: {liste}"
+ },
+ "Gesichter — das Modell fehlt: {modell}": {
+  "en": "Faces — the model is missing: {modell}",
+  "ru": "Лица — модель отсутствует: {modell}"
+ },
+ "Ohne Texterkenner (library/modelle/text_detection_en_ppocrv3_2023may.onnx fehlt - node bin/modelle-holen.js).": {
+  "en": "Without text recogniser (library/modelle/text_detection_en_ppocrv3_2023may.onnx is missing - node bin/modelle-holen.js).",
+  "ru": "Без распознавания текста (library/modelle/text_detection_en_ppocrv3_2023may.onnx отсутствует — node bin/modelle-holen.js)."
+ },
+ "Der Erkenner hat gewechselt — alle Bilder werden neu durchsucht.": {
+  "en": "The recogniser has changed — all images are searched again.",
+  "ru": "Распознаватель сменился — все изображения будут просмотрены заново."
+ },
+ "Gesichter — {n} von {gesamt} Bildern zu durchsuchen": {
+  "en": "Faces — {n} of {gesamt} images to search",
+  "ru": "Лица — к просмотру {n} из {gesamt} изображений"
+ },
+ "{datei} nicht lesbar": {
+  "en": "{datei} not readable",
+  "ru": "{datei} не читается"
+ },
+ "{n} Gesicht": {
+  "en": "{n} face",
+  "ru": "лиц: {n}"
+ },
+ "{n} Gesichter": {
+  "en": "{n} faces",
+  "ru": "лиц: {n}"
+ },
+ "{n} Bilder durchsucht": {
+  "en": "{n} images searched",
+  "ru": "просмотрено изображений: {n}"
+ },
+ "{n} nicht lesbar": {
+  "en": "{n} not readable",
+  "ru": "не читается: {n}"
+ },
+ "{n} mit Gesicht (ab {schwelle})": {
+  "en": "{n} with a face (from {schwelle})",
+  "ru": "с лицом: {n} (от {schwelle})"
+ },
+ "{ms} ms je Bild.": {
+  "en": "{ms} ms per image.",
+  "ru": "{ms} мс на изображение."
+ },
+ "Avatare — läuft schon (anderer Lauf), nichts zu tun.": {
+  "en": "Avatars — already running (another run), nothing to do.",
+  "ru": "Аватары — уже выполняется (другой запуск), делать нечего."
+ },
+ "Avatare — der Server antwortet nicht auf Port {port}; nichts geholt.": {
+  "en": "Avatars — the server does not answer on port {port}; nothing fetched.",
+  "ru": "Аватары — сервер не отвечает на порту {port}; ничего не загружено."
+ },
+ "Avatare — {n} von {gesamt} zu holen": {
+  "en": "Avatars — {n} of {gesamt} to fetch",
+  "ru": "Аватары — к загрузке {n} из {gesamt}"
+ },
+ "{n} geholt": {
+  "en": "{n} fetched",
+  "ru": "загружено: {n}"
+ },
+ "{n} nicht": {
+  "en": "{n} not",
+  "ru": "не удалось: {n}"
+ },
+ "{n} Avatare geholt": {
+  "en": "{n} avatars fetched",
+  "ru": "Аватаров загружено: {n}"
+ },
+ "{n} nicht zu bekommen (neuer Versuch später)": {
+  "en": "{n} could not be obtained (new attempt later)",
+  "ru": "не удалось получить: {n} (повторная попытка позже)"
+ },
+ "{n} liegen bereit.": {
+  "en": "{n} are ready.",
+  "ru": "готово к использованию: {n}."
+ },
+ "{datei} ist unlesbar ({fehler}) — uebersprungen, wird nach dem Lauf in .unlesbar umbenannt": {
+  "en": "{datei} is unreadable ({fehler}) — skipped, will be renamed to .unlesbar after the run",
+  "ru": "{datei} не читается ({fehler}) — пропущен, после запуска будет переименован в .unlesbar"
+ },
+ "Keine Rohdaten in library/roh/ und noch kein Katalog.": {
+  "en": "No raw data in library/roh/ and no catalogue yet.",
+  "ru": "В library/roh/ нет исходных данных, и каталога ещё нет."
+ },
+ "Erst im Browser sammeln (siehe README).": {
+  "en": "Collect in the browser first (see README).",
+  "ru": "Сначала выполните сбор в браузере (см. README)."
+ },
+ "Lese Rohdaten:": {
+  "en": "Reading raw data:",
+  "ru": "Чтение исходных данных:"
+ },
+ "Profil:": {
+  "en": "Profile:",
+  "ru": "Профиль:"
+ },
+ "Arbeitsbereich:": {
+  "en": "Workspace:",
+  "ru": "Рабочая область:"
+ },
+ "Unveröffentl.:": {
+  "en": "Unpublished:",
+  "ru": "Неопубл.:"
+ },
+ "Albumeintraege als Titelquelle: {n} Clips": {
+  "en": "Album entries as a source of titles: {n} clips",
+  "ru": "Записи альбомов как источник названий: клипов — {n}"
+ },
+ "{n} fremde Songs aussortiert (nicht von {eigener})": {
+  "en": "{n} songs by others sorted out (not by {eigener})",
+  "ru": "Чужих треков отсеяно: {n} (автор не {eigener})"
+ },
+ "{n} Songs in den Rohdaten, {im} bereits im Katalog.": {
+  "en": "{n} songs in the raw data, {im} already in the catalogue.",
+  "ru": "Треков в исходных данных: {n}, уже в каталоге: {im}."
+ },
+ "{n} Titel sind laut Lesezeichen bei Suno freigeschaltet.": {
+  "en": "{n} titles are unlocked at Suno according to the bookmarklet.",
+  "ru": "Согласно закладке, на Suno открыто треков: {n}."
+ },
+ "Freischaltstand übernommen: {n} Titel.": {
+  "en": "Unlock status taken over: {n} titles.",
+  "ru": "Состояние доступа перенесено: треков — {n}."
+ },
+ "Ersatzzeichen (Suno zerreisst Zeichen): {n} Eingriff(e)": {
+  "en": "Replacement characters (Suno breaks characters): {n} fix(es)",
+  "ru": "Символы-заменители (Suno портит символы): исправлений — {n}"
+ },
+ "Zeitmarken:": {
+  "en": "Timestamps:",
+  "ru": "Метки времени:"
+ },
+ "{n} Karaoke": {
+  "en": "{n} karaoke",
+  "ru": "караоке: {n}"
+ },
+ "{n} Suno-Analyse": {
+  "en": "{n} Suno analysis",
+  "ru": "анализ Suno: {n}"
+ },
+ "{n} v3-Spuren": {
+  "en": "{n} v3 tracks",
+  "ru": "дорожек v3: {n}"
+ },
+ "{n} v2 nachgeladen": {
+  "en": "{n} v2 fetched later",
+  "ru": "догружено v2: {n}"
+ },
+ "Holstand:": {
+  "en": "Fetch status:",
+  "ru": "Состояние загрузки:"
+ },
+ "was Suno geantwortet hat — {n} Ernte(n)": {
+  "en": "what Suno answered — {n} harvest(s)",
+  "ru": "что ответил Suno — сборов: {n}"
+ },
+ "{n} Song(s)": {
+  "en": "{n} song(s)",
+  "ru": "треков: {n}"
+ },
+ "{n} Ernte(n) ohne Holstand": {
+  "en": "{n} harvest(s) without fetch status",
+  "ru": "сборов без состояния загрузки: {n}"
+ },
+ "{n} geantwortet": {
+  "en": "{n} answered",
+  "ru": "ответило: {n}"
+ },
+ "{n} rechnet Suno noch": {
+  "en": "{n} still being calculated by Suno",
+  "ru": "Suno ещё считает: {n}"
+ },
+ "{n} leer geantwortet": {
+  "en": "{n} answered empty",
+  "ru": "ответило пусто: {n}"
+ },
+ "{n} Fehler {code}": {
+  "en": "{n} errors {code}",
+  "ru": "ошибок {code}: {n}"
+ },
+ "{n}× unbekannter Vermerk \"{vermerk}\"": {
+  "en": "{n}× unknown note \"{vermerk}\"",
+  "ru": "{n}× неизвестная пометка «{vermerk}»"
+ },
+ "{n} Ernte(n) sagen nicht, was Suno geantwortet hat (Feld holstand fehlt — Lesezeichen im Browser älter als der 16.09.2026, bitte neu setzen)": {
+  "en": "{n} harvest(s) do not say what Suno answered (field holstand is missing — the bookmarklet in your browser is older than 16.09.2026, please set it up again)",
+  "ru": "Сборов, где не указано, что ответил Suno: {n} (нет поля holstand — закладка в браузере старше 16.09.2026, создайте её заново)"
+ },
+ "Whisper:": {
+  "en": "Whisper:",
+  "ru": "Whisper:"
+ },
+ "{n} Songs gerechnet — {worte} davon füllen fehlende Zeitmarken im Katalog, {text} fehlende Texte, {instrumental} instrumental; der Rest ist zweite Spur für die Bühne": {
+  "en": "{n} songs calculated — {worte} of them fill missing timestamps in the catalogue, {text} missing lyrics, {instrumental} instrumental; the rest is a second track for the stage",
+  "ru": "Рассчитано треков: {n} — из них {worte} заполняют недостающие метки времени в каталоге, {text} — недостающие тексты, {instrumental} — инструментальные; остальные служат второй дорожкой для сцены"
+ },
+ "Alben:": {
+  "en": "Albums:",
+  "ru": "Альбомы:"
+ },
+ "{n} ältere Albumernte(n) übersprungen, bleiben für den nächsten Lauf liegen": {
+  "en": "{n} older album harvest(s) skipped, left for the next run",
+  "ru": "Пропущено более старых сборов альбомов: {n}, они ждут следующего запуска"
+ },
+ "letzte Albumernte vom {datum}": {
+  "en": "last album harvest from {datum}",
+  "ru": "последний сбор альбомов от {datum}"
+ },
+ "Zeitpunkt der letzten Albumernte unbekannt": {
+  "en": "time of the last album harvest unknown",
+  "ru": "время последнего сбора альбомов неизвестно"
+ },
+ "keine Rohdatei — Stand unverändert, {stand}": {
+  "en": "no raw file — state unchanged, {stand}",
+  "ru": "нет исходного файла — состояние не изменилось, {stand}"
+ },
+ "({alben} Alben, {eintraege} Einträge)": {
+  "en": "({alben} albums, {eintraege} entries)",
+  "ru": "(альбомов: {alben}, записей: {eintraege})"
+ },
+ "{datei} ist vom {neu}, der Katalog hat schon den Stand vom {alt} — überholt, nicht übernommen ({alben} Alben, {eintraege} Einträge bleiben)": {
+  "en": "{datei} is from {neu}, the catalogue already has the state from {alt} — outdated, not taken over ({alben} albums, {eintraege} entries stay)",
+  "ru": "{datei} от {neu}, а в каталоге уже состояние от {alt} — устарел, не принят (остаётся альбомов: {alben}, записей: {eintraege})"
+ },
+ "{datei} enthält {alben} Alben und {eintraege} Einträge (davon {brauchbar} brauchbar) — NICHT übernommen, Stand unverändert ({vorAlben} Alben, {vorEintraege} Einträge). Die Rohdatei wird nach dem Lauf in .abgelehnt umbenannt.": {
+  "en": "{datei} contains {alben} albums and {eintraege} entries ({brauchbar} of them usable) — NOT taken over, state unchanged ({vorAlben} albums, {vorEintraege} entries). The raw file will be renamed to .abgelehnt after the run.",
+  "ru": "{datei} содержит альбомов: {alben} и записей: {eintraege} (пригодных: {brauchbar}) — НЕ принят, состояние не изменилось (альбомов: {vorAlben}, записей: {vorEintraege}). После запуска исходный файл будет переименован в .abgelehnt."
+ },
+ "{datei} nennt kein brauchbares abgerufenAm — zählt für Löschungen wie eine unvollständige Ernte": {
+  "en": "{datei} gives no usable abgerufenAm — counts for deletions like an incomplete harvest",
+  "ru": "В {datei} нет пригодного значения abgerufenAm — для удалений считается как неполный сбор"
+ },
+ "{name}: bestätigt nach {zeit} — übernommen ({von}→{nach} Einträge)": {
+  "en": "{name}: confirmed after {zeit} — taken over ({von}→{nach} entries)",
+  "ru": "{name}: подтверждено через {zeit} — принято (записей: {von}→{nach})"
+ },
+ "{name} (kleiner, {von}→{nach}, noch {zeit})": {
+  "en": "{name} (smaller, {von}→{nach}, {zeit} to go)",
+  "ru": "{name} (меньше, {von}→{nach}, осталось {zeit})"
+ },
+ "{name} (kleiner, {von}→{nach}, Kandidat neu gesetzt)": {
+  "en": "{name} (smaller, {von}→{nach}, candidate set anew)",
+  "ru": "{name} (меньше, {von}→{nach}, кандидат назначен заново)"
+ },
+ "{name} (kleiner, {von}→{nach})": {
+  "en": "{name} (smaller, {von}→{nach})",
+  "ru": "{name} (меньше, {von}→{nach})"
+ },
+ "{name} (war {zustand}, ist wieder da)": {
+  "en": "{name} (was {zustand}, is back)",
+  "ru": "{name} (было: {zustand}, снова на месте)"
+ },
+ "{name}: bei Suno nicht mehr vorhanden, bestätigt nach {zeit} — entfernt": {
+  "en": "{name}: no longer at Suno, confirmed after {zeit} — removed",
+  "ru": "{name}: на Suno больше нет, подтверждено через {zeit} — удалено"
+ },
+ "{name} (fehlt, noch {zeit})": {
+  "en": "{name} (missing, {zeit} to go)",
+  "ru": "{name} (отсутствует, осталось {zeit})"
+ },
+ "{name} (fehlt, Kandidat neu gesetzt)": {
+  "en": "{name} (missing, candidate set anew)",
+  "ru": "{name} (отсутствует, кандидат назначен заново)"
+ },
+ "{name} (fehlt)": {
+  "en": "{name} (missing)",
+  "ru": "{name} (отсутствует)"
+ },
+ "{n} Stück": {
+  "en": "{n} in total",
+  "ru": "всего: {n}"
+ },
+ "{n} Einträge": {
+  "en": "{n} entries",
+  "ru": "записей: {n}"
+ },
+ "davon {n} fremd": {
+  "en": "{n} of them by others",
+  "ru": "из них чужих: {n}"
+ },
+ "neu: {liste}": {
+  "en": "new: {liste}",
+  "ru": "новые: {liste}"
+ },
+ "bei Suno kleiner geworden: {liste}": {
+  "en": "smaller at Suno: {liste}",
+  "ru": "на Suno стали меньше: {liste}"
+ },
+ "RIEGEL — kam kleiner herein als im Katalog, Ernte unvollständig, alter Stand behalten: ": {
+  "en": "SAFEGUARD — arrived smaller than in the catalogue, harvest incomplete, old state kept: ",
+  "ru": "ЗАЩИТА — пришло меньше, чем в каталоге, сбор неполный, прежнее состояние сохранено: "
+ },
+ "in dieser Ernte nicht enthalten, Ernte unvollständig, alter Stand behalten: ": {
+  "en": "not contained in this harvest, harvest incomplete, old state kept: ",
+  "ru": "в этом сборе отсутствуют, сбор неполный, прежнее состояние сохранено: "
+ },
+ "Löschkandidat vermerkt, alter Stand bleibt bis zur Bestätigung (zweite vollständige Ernte, mindestens 2 h später): ": {
+  "en": "Deletion candidate noted, old state stays until confirmed (second complete harvest, at least 2 h later): ",
+  "ru": "Кандидат на удаление отмечен, прежнее состояние сохраняется до подтверждения (второй полный сбор, не раньше чем через 2 ч): "
+ },
+ "Löschkandidat bestätigt sich, aber zu früh — alter Stand bleibt: ": {
+  "en": "Deletion candidate is confirmed, but too early — old state stays: ",
+  "ru": "Кандидат на удаление подтвердился, но слишком рано — прежнее состояние сохраняется: "
+ },
+ "Kandidat verworfen, war ein Wackler: {liste}": {
+  "en": "Candidate dropped, it was a glitch: {liste}",
+  "ru": "Кандидат отклонён, это был сбой: {liste}"
+ },
+ "weniger Einträge als Suno im Kopf nennt: {liste}": {
+  "en": "fewer entries than Suno states in the header: {liste}",
+  "ru": "записей меньше, чем указано в заголовке Suno: {liste}"
+ },
+ "WAV-Originale:": {
+  "en": "WAV originals:",
+  "ru": "Оригиналы WAV:"
+ },
+ "{n} Songs": {
+  "en": "{n} songs",
+  "ru": "треков: {n}"
+ },
+ "Profilangaben:": {
+  "en": "Profile details:",
+  "ru": "Данные профиля:"
+ },
+ "Profil aus der Ernte:": {
+  "en": "Profile from the harvest:",
+  "ru": "Профиль из сбора:"
+ },
+ "ohne Zeit": {
+  "en": "no time",
+  "ru": "без времени"
+ },
+ "{name} ({zustand} seit {wann})": {
+  "en": "{name} ({zustand} since {wann})",
+  "ru": "{name} ({zustand} с {wann})"
+ },
+ "{n} Löschkandidat wartet auf Bestätigung: {liste}": {
+  "en": "{n} deletion candidate is waiting for confirmation: {liste}",
+  "ru": "Кандидат на удаление ждёт подтверждения ({n}): {liste}"
+ },
+ "{n} Löschkandidaten warten auf Bestätigung: {liste}": {
+  "en": "{n} deletion candidates are waiting for confirmation: {liste}",
+  "ru": "Кандидатов на удаление ждут подтверждения ({n}): {liste}"
+ },
+ "neu angelegt:": {
+  "en": "newly created:",
+  "ru": "создано заново:"
+ },
+ "aktualisiert:": {
+  "en": "updated:",
+  "ru": "обновлено:"
+ },
+ "Katalog: {datei}": {
+  "en": "Catalogue: {datei}",
+  "ru": "Каталог: {datei}"
+ },
+ "{kb} KB gepackt (aus {mb} MB, Faktor {faktor})": {
+  "en": "{kb} KB packed (from {mb} MB, factor {faktor})",
+  "ru": "{kb} КБ в сжатом виде (из {mb} МБ, коэффициент {faktor})"
+ },
+ "Songs:": {
+  "en": "Songs:",
+  "ru": "Треки:"
+ },
+ "veröffentlicht:": {
+  "en": "published:",
+  "ru": "опубликовано:"
+ },
+ "privat:": {
+  "en": "private:",
+  "ru": "приватные:"
+ },
+ "privat": {
+  "en": "private",
+  "ru": "приватных"
+ },
+ "mit {n} Einträgen": {
+  "en": "with {n} entries",
+  "ru": "с записями: {n}"
+ },
+ "mit Lyrics:": {
+  "en": "with lyrics:",
+  "ru": "с текстами:"
+ },
+ "mit Video:": {
+  "en": "with video:",
+  "ru": "с видео:"
+ },
+ "Remixes:": {
+  "en": "Remixes:",
+  "ru": "Ремиксы:"
+ },
+ "Spielzeit:": {
+  "en": "Playing time:",
+  "ru": "Время звучания:"
+ },
+ "{h} Stunden": {
+  "en": "{h} hours",
+  "ru": "часов: {h}"
+ },
+ "Zeitraum:": {
+  "en": "Period:",
+  "ru": "Период:"
+ },
+ "{von} bis {bis}": {
+  "en": "{von} to {bis}",
+  "ru": "{von} — {bis}"
+ },
+ "Aufgeräumt: {n} alte Einzeldateien entfernt": {
+  "en": "Tidied up: {n} old individual files removed",
+  "ru": "Наведён порядок: удалено старых отдельных файлов — {n}"
+ },
+ "(belegten auf dieser Platte mit {kb}-KB-Blöcken rund {gb} GB)": {
+  "en": "(they took up about {gb} GB on this disk with {kb} KB blocks)",
+  "ru": "(на этом диске при размере блока {kb} КБ они занимали около {gb} ГБ)"
+ },
+ "Aufgeräumt: {n} verarbeitete Rohdateien gelöscht ({mb} MB — alles steckt im Katalog)": {
+  "en": "Tidied up: {n} processed raw files deleted ({mb} MB — everything is in the catalogue)",
+  "ru": "Наведён порядок: удалено обработанных исходных файлов — {n} ({mb} МБ — всё есть в каталоге)"
+ },
+ "({n} weitere)": {
+  "en": "({n} more)",
+  "ru": "(ещё {n})"
+ },
+ "{n} Rohdatei(en) hat dieser Lauf nicht gelesen und liegen lassen (der nächste nimmt sie sich vor): {liste}": {
+  "en": "{n} raw file(s) were not read by this run and left alone (the next one will take them on): {liste}",
+  "ru": "Исходных файлов, которые этот запуск не читал и оставил: {n} (их обработает следующий запуск): {liste}"
+ },
+ "{n} Rohdatei(en) kamen WÄHREND des Laufs an und bleiben unangetastet (der nächste Lauf verarbeitet sie): {liste}": {
+  "en": "{n} raw file(s) arrived DURING the run and are left untouched (the next run will process them): {liste}",
+  "ru": "Исходных файлов, пришедших ВО ВРЕМЯ запуска: {n}; они не тронуты (их обработает следующий запуск): {liste}"
+ },
+ "Nachzügler-Vermerk konnte nicht geschrieben werden: {meldung}": {
+  "en": "The latecomer note could not be written: {meldung}",
+  "ru": "Не удалось записать пометку о запоздавших файлах: {meldung}"
+ },
+ "{datei} → .abgelehnt (unbrauchbar, aber aufgehoben)": {
+  "en": "{datei} → .abgelehnt (unusable, but kept)",
+  "ru": "{datei} → .abgelehnt (непригоден, но сохранён)"
+ },
+ "{datei} konnte nicht umbenannt werden: {meldung}": {
+  "en": "{datei} could not be renamed: {meldung}",
+  "ru": "Не удалось переименовать {datei}: {meldung}"
+ },
+ "{datei} → .unlesbar (krummes JSON, aber aufgehoben)": {
+  "en": "{datei} → .unlesbar (broken JSON, but kept)",
+  "ru": "{datei} → .unlesbar (повреждённый JSON, но сохранён)"
+ },
+ "h": {
+  "en": "h",
+  "ru": "ч"
+ },
+ "fehlt": {
+  "en": "missing",
+  "ru": "отсутствует"
+ },
+ "kleiner": {
+  "en": "smaller",
+  "ru": "меньше"
  }
 }

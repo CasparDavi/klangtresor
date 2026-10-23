@@ -194,7 +194,7 @@ function buchSchreiben(buch) {
 }
 
 if (require.main === module) (async () => {
-  if (!sperren()) { console.log('Gesichter — läuft schon (anderer Lauf), nichts zu tun.\n'); return; }
+  if (!sperren()) { console.log(T('Gesichter — läuft schon (anderer Lauf), nichts zu tun.') + '\n'); return; }
   process.on('exit', entsperren);
   /* FEHLENDE MODELLE NACHHOLEN (07.10.2026). Tarja: in bestehenden
      Installationen und im Docker kamen die beiden neuen Modelle nie an -
@@ -203,23 +203,23 @@ if (require.main === module) (async () => {
      5 MB, also Sekunden; scheitert es, gilt die Meldung darunter. */
   const fehlen = [MODELL, TEXTMODELL].filter(f => !fs.existsSync(f)).map(f => path.basename(f));
   if (fehlen.length) {
-    console.log(`Gesichter — hole fehlende Modelle: ${fehlen.join(', ')}`);
+    console.log(T('Gesichter — hole fehlende Modelle: {liste}', { liste: fehlen.join(', ') }));
     spawnSync(process.execPath, [path.join(__dirname, 'modelle-holen.js'), '--nur', fehlen.join(',')], { stdio: 'inherit' });
   }
   AUSWEIS.schrift = fs.existsSync(TEXTMODELL) ? SCHRIFTAUSWEIS : null;
   if (!fs.existsSync(MODELL)) {
-    console.log(`Gesichter — das Modell fehlt: ${path.relative(WURZEL, MODELL)}`);
-    console.log('  Einmal nachholen mit:  node bin/modelle-holen.js\n');
+    console.log(T('Gesichter — das Modell fehlt: {modell}', { modell: path.relative(WURZEL, MODELL) }));
+    console.log('  ' + T('Einmal nachholen mit:  node bin/modelle-holen.js') + '\n');
     return;
   }
   const ort = require('onnxruntime-node');
   /* hoechstens vier Faeden - der Lauf ist klein, der Rechner soll nebenher frei bleiben */
   const sitzung = await ort.InferenceSession.create(MODELL, { intraOpNumThreads: 4, logSeverityLevel: 3 });
   const textSitzung = fs.existsSync(TEXTMODELL) ? await ort.InferenceSession.create(TEXTMODELL, { intraOpNumThreads: 4, logSeverityLevel: 3 }) : null;
-  if (!textSitzung) console.log('  Ohne Texterkenner (library/modelle/text_detection_en_ppocrv3_2023may.onnx fehlt - node bin/modelle-holen.js).');
+  if (!textSitzung) console.log('  ' + T('Ohne Texterkenner (library/modelle/text_detection_en_ppocrv3_2023may.onnx fehlt - node bin/modelle-holen.js).'));
   const buch = buchLesen();
   if (MODELLIDENT(buch.ausweis) !== MODELLIDENT(AUSWEIS) && Object.keys(buch.bilder).length) {
-    console.log('  Der Erkenner hat gewechselt — alle Bilder werden neu durchsucht.');
+    console.log('  ' + T('Der Erkenner hat gewechselt — alle Bilder werden neu durchsucht.'));
     buch.bilder = {};
   }
   buch.ausweis = AUSWEIS;
@@ -234,7 +234,7 @@ if (require.main === module) (async () => {
     return !e || e.quelle !== stempel(b.datei) || e.art !== b.art;
   });
   if (TEST) offen = offen.slice(0, TEST);
-  console.log(`Gesichter — ${offen.length} von ${alle.length} Bildern zu durchsuchen\n`);
+  console.log(T('Gesichter — {n} von {gesamt} Bildern zu durchsuchen', { n: offen.length, gesamt: alle.length }) + '\n');
 
   let n = 0, fehler = 0, mitGesicht = 0; const t0 = Date.now();
   for (const b of offen) {
@@ -244,13 +244,13 @@ if (require.main === module) (async () => {
     /* Unlesbar kommt auch ins Buch (ohne Gesichter): sonst bliebe das Bild fuer immer „offen", und die Seite
        zeichnete den Schaum nie. Wird die Datei ersetzt, aendert sich der Stempel, und es wird neu gesucht. */
     if (!g) { fehler++; buch.bilder[b.schluessel] = { quelle: stempel(b.datei), art: b.art, unlesbar: true, g: [], t: null, gerechnet: new Date().toISOString() };
-      console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${path.basename(b.datei)} nicht lesbar`); continue; }
+      console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${T('{datei} nicht lesbar', { datei: path.basename(b.datei) })}`); continue; }
     /* Schrift nur auf Covern - bei Avataren steht der Name im Kopf der Zelle, nicht auf dem Bild */
     const t = textSitzung && b.art !== 'avatar' ? await schriftSuchen(ort, textSitzung, b.datei, m[0], m[1]) : null;
     buch.bilder[b.schluessel] = { quelle: stempel(b.datei), art: b.art, w: m[0], h: m[1], g, t, gerechnet: new Date().toISOString() };
     if (g.some(x => x[4] >= SCHWELLE)) mitGesicht++;
     if (n % 25 === 0 || n === offen.length) {
-      console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${g.length} Gesicht${g.length === 1 ? '' : 'er'}`);
+      console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${g.length === 1 ? T('{n} Gesicht', { n: g.length }) : T('{n} Gesichter', { n: g.length })}`);
       buchSchreiben(buch);
     }
     melden.lauf({ was: T('Gesichter werden gesucht'), n, von: offen.length, nEinheit: T('Standbild'), jetzt: b.id.slice(0, 8) });
@@ -258,6 +258,6 @@ if (require.main === module) (async () => {
   if (offen.length) buchSchreiben(buch);
   melden.ausLauf();
   const ms = offen.length ? Math.round((Date.now() - t0) / offen.length) : 0;
-  console.log(`\n  ${n - fehler} Bilder durchsucht${fehler ? `, ${fehler} nicht lesbar` : ''}, ${mitGesicht} mit Gesicht (ab ${String(SCHWELLE).replace(".", ",")}) — ${ms} ms je Bild.`);
-  console.log(`  Buch: ${path.relative(WURZEL, BUCH)}\n`);
-})().catch((e) => { console.error('  FEHLER:', e.message); entsperren(); process.exit(1); });
+  console.log('\n  ' + T('{n} Bilder durchsucht', { n: n - fehler }) + (fehler ? ', ' + T('{n} nicht lesbar', { n: fehler }) : '') + ', ' + T('{n} mit Gesicht (ab {schwelle})', { n: mitGesicht, schwelle: String(SCHWELLE).replace('.', ',') }) + ' — ' + T('{ms} ms je Bild.', { ms }));
+  console.log('  ' + T('Buch:') + ` ${path.relative(WURZEL, BUCH)}\n`);
+})().catch((e) => { console.error('  ' + T('FEHLER:'), e.message); entsperren(); process.exit(1); });
