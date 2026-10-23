@@ -1,0 +1,338 @@
+{
+ "zu viele Umleitungen": {
+  "en": "too many redirects",
+  "ru": "слишком много перенаправлений"
+ },
+ "GitHub antwortet HTTP {code}": {
+  "en": "GitHub answered with HTTP {code}",
+  "ru": "GitHub ответил с кодом HTTP {code}"
+ },
+ "Download HTTP {code}": {
+  "en": "Download failed with HTTP {code}",
+  "ru": "Загрузка завершилась с кодом HTTP {code}"
+ },
+ "keine Antwort von GitHub": {
+  "en": "no answer from GitHub",
+  "ru": "GitHub не отвечает"
+ },
+ "Download steht still": {
+  "en": "the download has stalled",
+  "ru": "загрузка остановилась"
+ },
+ "GitHub brach die Antwort ab": {
+  "en": "GitHub cut off the answer",
+  "ru": "GitHub оборвал ответ"
+ },
+ "Download abgebrochen: {grund}": {
+  "en": "Download aborted: {grund}",
+  "ru": "Загрузка прервана: {grund}"
+ },
+ "Download unvollstaendig ({ist} von {soll} Bytes)": {
+  "en": "Download incomplete ({ist} of {soll} bytes)",
+  "ru": "Загрузка неполная ({ist} из {soll} байт)"
+ },
+ "GitHub lieferte kein JSON": {
+  "en": "GitHub did not return JSON",
+  "ru": "GitHub вернул не JSON"
+ },
+ "Auspacken ging nicht ({programm}).": {
+  "en": "Unpacking did not work ({programm}).",
+  "ru": "Не удалось распаковать архив ({programm})."
+ },
+ "  Pakete neu setzen (package-lock hat sich geaendert) …": {
+  "en": "  Reinstalling packages (package-lock has changed) …",
+  "ru": "  Переустанавливаю пакеты (package-lock изменился) …"
+ },
+ "npm ci ist gescheitert.": {
+  "en": "npm ci failed.",
+  "ru": "npm ci завершился с ошибкой."
+ },
+ "  NVIDIA-Overlay bleibt dabei (KLANG_CUDA).": {
+  "en": "  The NVIDIA overlay stays in place (KLANG_CUDA).",
+  "ru": "  Надстройка для NVIDIA сохраняется (KLANG_CUDA)."
+ },
+ "  Container neu bauen — das dauert ein paar Minuten.": {
+  "en": "  Rebuilding the container — this takes a few minutes.",
+  "ru": "  Пересобираю контейнер — это займёт несколько минут."
+ },
+ "Er war angehalten und bleibt es.": {
+  "en": "It was stopped and stays stopped.",
+  "ru": "Он был остановлен и останется остановленным."
+ },
+ "Docker-Build ist gescheitert.": {
+  "en": "The Docker build failed.",
+  "ru": "Сборка Docker завершилась с ошибкой."
+ },
+ "git status scheiterte": {
+  "en": "git status failed",
+  "ru": "git status завершился с ошибкой"
+ },
+ "git fetch scheiterte": {
+  "en": "git fetch failed",
+  "ru": "git fetch завершился с ошибкой"
+ },
+ "Die ungesicherten Aenderungen liessen sich nicht im git stash sichern. Ich lasse alles, wie es ist.": {
+  "en": "The unsaved changes could not be put into the git stash. I am leaving everything as it is.",
+  "ru": "Несохранённые изменения не удалось поместить в git stash. Я ничего не трогаю."
+ },
+ "  Die Kopie {datei} im Hauptordner habe ich weggeraeumt –\n  ab jetzt spielt bin/aktualisieren.js das Update ein.": {
+  "en": "  I removed the copy {datei} in the main folder –\n  from now on bin/aktualisieren.js installs the update.",
+  "ru": "  Копию {datei} в главной папке я удалил –\n  отныне обновление устанавливает bin/aktualisieren.js."
+ },
+ "  Die Kopie {pfad} liess sich nicht wegraeumen ({grund}).\n  Bitte von Hand loeschen - ab jetzt gilt bin/aktualisieren.js.": {
+  "en": "  The copy {pfad} could not be removed ({grund}).\n  Please delete it by hand - from now on bin/aktualisieren.js is the one that counts.",
+  "ru": "  Копию {pfad} удалить не удалось ({grund}).\n  Удалите её вручную – отныне действует bin/aktualisieren.js."
+ },
+ "  KlangTresor — Update einspielen": {
+  "en": "  KlangTresor — installing the update",
+  "ru": "  KlangTresor — установка обновления"
+ },
+ "  Das hier laeuft im Container. Aktualisieren gehoert auf den Rechner,\n  in den Projektordner (dort liegt library/ daneben):": {
+  "en": "  This is running inside the container. Updating belongs on your computer,\n  in the project folder (library/ sits next to it):",
+  "ru": "  Сейчас программа работает внутри контейнера. Обновлять нужно на самом компьютере,\n  в папке проекта (рядом с ней лежит library/):"
+ },
+ "    oder aktualisieren-macos.command / aktualisieren-windows.cmd": {
+  "en": "    or aktualisieren-macos.command / aktualisieren-windows.cmd",
+  "ru": "    или aktualisieren-macos.command / aktualisieren-windows.cmd"
+ },
+ "  Diese Datei liegt eine Ebene zu tief, in {ordner}/.\n  Kopiere aktualisieren.js und {anlasser} in den Ordner darueber,\n  dort, wo library/ liegt, und starte es dort:": {
+  "en": "  This file is one level too deep, in {ordner}/.\n  Copy aktualisieren.js and {anlasser} into the folder above,\n  where library/ is, and start it there:",
+  "ru": "  Этот файл лежит на уровень глубже, чем нужно, – в {ordner}/.\n  Скопируйте aktualisieren.js и {anlasser} в папку выше,\n  туда, где лежит library/, и запустите его там:"
+ },
+ "  Hier liegt kein KlangTresor:  {ordner}\n  Kopiere aktualisieren.js und {anlasser} in deinen\n  KlangTresor- bzw. MySuno-Ordner (dort, wo library/ liegt) und starte es dort.": {
+  "en": "  There is no KlangTresor here:  {ordner}\n  Copy aktualisieren.js and {anlasser} into your\n  KlangTresor or MySuno folder (where library/ is) and start it there.",
+  "ru": "  Здесь нет KlangTresor:  {ordner}\n  Скопируйте aktualisieren.js и {anlasser} в вашу\n  папку KlangTresor или MySuno (где лежит library/) и запустите там."
+ },
+ "  Neben diesem Programm liegt kein library/ – das ist wohl nicht deine\n  Installation, sondern ein frisch ausgepacktes Zip. Starte das Skript im\n  Ordner, in dem dein KlangTresor laeuft (dort liegt library/).": {
+  "en": "  There is no library/ next to this program – this is probably not your\n  installation but a freshly unpacked zip. Start the script in the\n  folder where your KlangTresor runs (library/ is there).",
+  "ru": "  Рядом с этой программой нет library/ – похоже, это не ваша\n  установка, а только что распакованный архив. Запустите скрипт в\n  папке, где работает ваш KlangTresor (там лежит library/)."
+ },
+ "  Wirklich hier einspielen: --trotzdem": {
+  "en": "  To really install here: --trotzdem",
+  "ru": "  Чтобы всё же установить сюда: --trotzdem"
+ },
+ "  Docker antwortet nicht. Ob dein KlangTresor im Container laeuft, laesst\n  sich so nicht klaeren – und ohne Neubau bliebe ein Container alt.\n  Starte Docker (Docker Desktop) und rufe noch einmal auf.": {
+  "en": "  Docker is not answering. Whether your KlangTresor runs in a container\n  cannot be told this way – and without a rebuild a container would stay old.\n  Start Docker (Docker Desktop) and run this again.",
+  "ru": "  Docker не отвечает. Работает ли ваш KlangTresor в контейнере,\n  так выяснить нельзя – а без пересборки контейнер останется старым.\n  Запустите Docker (Docker Desktop) и повторите вызов."
+ },
+ "  Laeuft dein KlangTresor ohne Docker: --ohne-docker": {
+  "en": "  If your KlangTresor runs without Docker: --ohne-docker",
+  "ru": "  Если ваш KlangTresor работает без Docker: --ohne-docker"
+ },
+ "  Ordner:   {ordner}": {
+  "en": "  Folder:   {ordner}",
+  "ru": "  Папка:    {ordner}"
+ },
+ "  Hier:     {version}": {
+  "en": "  Here:     {version}",
+  "ru": "  Здесь:    {version}"
+ },
+ "ohne Nummer": {
+  "en": "no number",
+  "ru": "без номера"
+ },
+ "keine Antwort": {
+  "en": "no answer",
+  "ru": "нет ответа"
+ },
+ "  Weg:      {weg}": {
+  "en": "  Method:   {weg}",
+  "ru": "  Способ:   {weg}"
+ },
+ "Git geht hier nicht": {
+  "en": "Git does not work here",
+  "ru": "Git здесь не работает"
+ },
+ "Release-Zip": {
+  "en": "release zip",
+  "ru": "zip-архив релиза"
+ },
+ "(Container angehalten)": {
+  "en": "(container stopped)",
+  "ru": "(контейнер остановлен)"
+ },
+ "  Hinweis:  die Git-Geschichte hier stammt nicht von github.com/CasparDavi/klangtresor\n            (etwa ein Klon aus der MySuno-Zeit) - ein Git-Zug geht so nicht. Darum das\n            Release-Zip; .git/ und library/ bleiben, wie sie sind.": {
+  "en": "  Note:     the git history here does not come from github.com/CasparDavi/klangtresor\n            (for example a clone from the MySuno days) - a git pull cannot work like this.\n            So the release zip is used; .git/ and library/ stay as they are.",
+  "ru": "  Заметка:  история git здесь не происходит из github.com/CasparDavi/klangtresor\n            (например, клон времён MySuno) – обновление через git так не пойдёт.\n            Поэтому берётся zip-архив релиза; .git/ и library/ остаются как есть."
+ },
+ "  Hinweis:  der Container „klangtresor\" gehoert zu einem anderen Ordner – er bleibt unberuehrt.": {
+  "en": "  Note:     the container \"klangtresor\" belongs to a different folder – it is left untouched.",
+  "ru": "  Заметка:  контейнер «klangtresor» относится к другой папке – он остаётся нетронутым."
+ },
+ "  Hinweis:  Docker antwortet nicht – einspielen ginge so nicht (Docker starten oder --ohne-docker).": {
+  "en": "  Note:     Docker is not answering – installing would not work like this (start Docker or use --ohne-docker).",
+  "ru": "  Заметка:  Docker не отвечает – установить так не получится (запустите Docker или используйте --ohne-docker)."
+ },
+ "  Hinweis:  der Container „mysuno“ aus der MySuno-Zeit gehoert zu diesem Ordner ({status}).": {
+  "en": "  Note:     the container \"mysuno\" from the MySuno days belongs to this folder ({status}).",
+  "ru": "  Заметка:  контейнер «mysuno» времён MySuno относится к этой папке ({status})."
+ },
+ "  Der Container „mysuno“ laeuft mit dem alten Programm weiter - ihn baut\n  dieses Skript nicht um. Einmal:": {
+  "en": "  The container \"mysuno\" keeps running the old program - this script does\n  not rebuild it. Once:",
+  "ru": "  Контейнер «mysuno» продолжает работать со старой программой – этот\n  скрипт его не пересобирает. Один раз выполните:"
+ },
+ "  Das baut den Container „klangtresor“ aus der neuen Version. library/ bleibt,\n  wo sie ist; den alten Container kannst du danach wegwerfen (docker rm mysuno).": {
+  "en": "  This builds the container \"klangtresor\" from the new version. library/ stays\n  where it is; afterwards you can throw the old container away (docker rm mysuno).",
+  "ru": "  Это соберёт контейнер «klangtresor» из новой версии. library/ остаётся\n  на месте; старый контейнер потом можно удалить (docker rm mysuno)."
+ },
+ "  Auf GitHub liegt eine neuere Version.": {
+  "en": "  A newer version is available on GitHub.",
+  "ru": "  На GitHub есть более новая версия."
+ },
+ "  Nachsehen ist gescheitert: {grund}": {
+  "en": "  Checking failed: {grund}",
+  "ru": "  Проверка не удалась: {grund}"
+ },
+ "  Deine Version ist neuer als die neueste auf GitHub.": {
+  "en": "  Your version is newer than the latest one on GitHub.",
+  "ru": "  Ваша версия новее, чем последняя на GitHub."
+ },
+ "  Das ist die neueste Version.": {
+  "en": "  This is the latest version.",
+  "ru": "  Это последняя версия."
+ },
+ "  Hier liegt ein Git-Ordner (.git/), aber git laeuft auf diesem Rechner nicht.\n  Entweder git einrichten und noch einmal - oder das Release-Zip ueber das\n  Programm legen. library/ und .git/ bleiben; was in Git noch nicht festgelegt\n  ist, kann ich ohne git aber nicht sichern. Im Terminal:": {
+  "en": "  This is a git folder (.git/), but git does not work on this computer.\n  Either set up git and try again - or lay the release zip over the\n  program. library/ and .git/ stay; but anything not yet committed in git\n  cannot be saved without git. In the terminal:",
+  "ru": "  Это папка git (.git/), но на этом компьютере git не работает.\n  Либо настройте git и повторите – либо распакуйте zip-архив релиза поверх\n  программы. library/ и .git/ остаются; но то, что в git ещё не зафиксировано,\n  без git сохранить нельзя. В терминале:"
+ },
+ "  Dieser Git-Ordner hat kein origin – woher die neue Version kommen soll,\n  sagt Git hier nicht.": {
+  "en": "  This git folder has no origin – git does not say where the new version\n  should come from.",
+  "ru": "  В этой папке git нет origin – git не знает, откуда брать\n  новую версию."
+ },
+ "  Die Git-Geschichte hier hat mit origin/main nichts gemein, und origin zeigt\n  nicht auf github.com/CasparDavi/klangtresor (origin: {quelle}).": {
+  "en": "  The git history here has nothing in common with origin/main, and origin does\n  not point to github.com/CasparDavi/klangtresor (origin: {quelle}).",
+  "ru": "  История git здесь ничего общего с origin/main не имеет, а origin указывает\n  не на github.com/CasparDavi/klangtresor (origin: {quelle})."
+ },
+ "  Einen Git-Ordner ueberschreibe ich nicht still mit Zip-Dateien. Das Release-Zip\n  ueber das Programm legen - library/ und .git/ bleiben, ungesicherte Aenderungen\n  lege ich vorher in den git stash. Im Terminal:": {
+  "en": "  I do not silently overwrite a git folder with zip files. Lay the release zip\n  over the program - library/ and .git/ stay, and I put unsaved changes\n  into the git stash first. In the terminal:",
+  "ru": "  Папку git я молча не перезаписываю файлами из zip. Распакуйте zip-архив\n  релиза поверх программы – library/ и .git/ остаются, а несохранённые\n  изменения я заранее помещу в git stash. В терминале:"
+ },
+ "  Ohne GitHub-Antwort kann ich kein Release-Zip holen.": {
+  "en": "  Without an answer from GitHub I cannot fetch the release zip.",
+  "ru": "  Без ответа от GitHub я не могу получить zip-архив релиза."
+ },
+ "  Die Programmdateien sind aktuell, der Container laeuft aber noch mit {version} – er wird neu gebaut.": {
+  "en": "  The program files are up to date, but the container is still running {version} – it will be rebuilt.",
+  "ru": "  Файлы программы актуальны, но контейнер всё ещё работает на версии {version} – он будет пересобран."
+ },
+ "  Im Ordner liegen ungesicherte Aenderungen. Die fasse ich nicht an.\n  Erst festlegen oder weglegen, dann noch einmal — oder --trotzdem\n  (dann lege ich sie fuer den Zug beiseite und danach wieder auf; widerspricht\n  eine davon dem Neuen, bleibt sie im git stash liegen).": {
+  "en": "  The folder contains unsaved changes. I will not touch them.\n  Commit or set them aside first, then try again — or use --trotzdem\n  (then I put them aside for the pull and apply them again afterwards; if one\n  of them clashes with the new version, it stays in the git stash).",
+  "ru": "  В папке есть несохранённые изменения. Я их не трогаю.\n  Сначала зафиксируйте их или отложите, затем повторите – или используйте --trotzdem\n  (тогда я отложу их на время обновления и потом верну; если одно из них\n  противоречит новой версии, оно останется в git stash)."
+ },
+ "  Du bist auf dem Zweig „{zweig}“. Aktualisieren zieht origin/main.\n  Wechsle auf main, oder rufe mit --trotzdem auf.": {
+  "en": "  You are on the branch \"{zweig}\". Updating pulls origin/main.\n  Switch to main, or call it with --trotzdem.",
+  "ru": "  Вы находитесь на ветке «{zweig}». Обновление берёт origin/main.\n  Переключитесь на main или вызовите с --trotzdem."
+ },
+ "  origin ist nicht erreichbar ({grund}).\n  Ob es etwas Neues gibt, laesst sich so nicht sagen – noch einmal, wenn das Netz da ist.": {
+  "en": "  origin cannot be reached ({grund}).\n  Whether there is anything new cannot be told this way – try again when the network is there.",
+  "ru": "  origin недоступен ({grund}).\n  Есть ли что-то новое, так узнать нельзя – повторите, когда появится сеть."
+ },
+ "  main und origin/main sind auseinandergelaufen. Das loese ich nicht\n  von allein. git status ansehen, oder --trotzdem (rebase).": {
+  "en": "  main and origin/main have drifted apart. I will not resolve that\n  on my own. Look at git status, or use --trotzdem (rebase).",
+  "ru": "  main и origin/main разошлись. Сам я это не улажу.\n  Посмотрите git status или используйте --trotzdem (rebase)."
+ },
+ "origin/main ist schon da. Nichts zu holen.": {
+  "en": "origin/main is already here. Nothing to fetch.",
+  "ru": "origin/main уже здесь. Загружать нечего."
+ },
+ "Deine Version liegt vor origin/main. Nichts zu holen.": {
+  "en": "Your version is ahead of origin/main. Nothing to fetch.",
+  "ru": "Ваша версия опережает origin/main. Загружать нечего."
+ },
+ "  Hineinkopiert und anders als in Git: {dateien}\n  Sie gehen auf den Git-Stand zurueck (ihr Inhalt liegt im git stash), der Zug bringt die neuen.": {
+  "en": "  Copied in and different from git: {dateien}\n  They go back to the git state (their content is in the git stash), the pull brings the new ones.",
+  "ru": "  Скопированы вручную и отличаются от git: {dateien}\n  Они вернутся к состоянию git (их содержимое лежит в git stash), обновление принесёт новые."
+ },
+ "  Hineinkopiert, Git kennt sie hier noch nicht: {dateien}\n  Der Zug bringt sie mit.": {
+  "en": "  Copied in, git does not know them here yet: {dateien}\n  The pull brings them along.",
+  "ru": "  Скопированы вручную, git их здесь ещё не знает: {dateien}\n  Обновление принесёт их с собой."
+ },
+ "  git pull ist an einem Konflikt gescheitert. Den Rebase habe ich abgebrochen – der Arbeitsbaum ist wieder, wie er war.": {
+  "en": "  git pull failed because of a conflict. I aborted the rebase – the working tree is as it was.",
+  "ru": "  git pull завершился конфликтом. Я отменил rebase – рабочее дерево такое же, как было."
+ },
+ "  git pull ist an einem Konflikt gescheitert, und der Rebase liess sich nicht abbrechen. Bitte: git rebase --abort": {
+  "en": "  git pull failed because of a conflict, and the rebase could not be aborted. Please run: git rebase --abort",
+  "ru": "  git pull завершился конфликтом, и rebase не удалось отменить. Пожалуйста: git rebase --abort"
+ },
+ "  git pull ist gescheitert. Der Arbeitsbaum bleibt, wie er war.": {
+  "en": "  git pull failed. The working tree stays as it was.",
+  "ru": "  git pull завершился с ошибкой. Рабочее дерево осталось таким, как было."
+ },
+ "Release und lokale Nummer sind gleich. Nichts zu holen. (Erneut einspielen: --trotzdem)": {
+  "en": "Release and local number are the same. Nothing to fetch. (To install again: --trotzdem)",
+  "ru": "Номер релиза и локальный номер совпадают. Загружать нечего. (Установить заново: --trotzdem)"
+ },
+ "Release und lokale Nummer sind gleich (oder deine ist neuer). Nichts zu holen. (Erneut einspielen: --trotzdem)": {
+  "en": "Release and local number are the same (or yours is newer). Nothing to fetch. (To install again: --trotzdem)",
+  "ru": "Номер релиза и локальный номер совпадают (или ваш новее). Загружать нечего. (Установить заново: --trotzdem)"
+ },
+ "  Ungesicherte Aenderungen liegen jetzt im git stash (ansehen: git stash show -p).": {
+  "en": "  Unsaved changes are now in the git stash (to view: git stash show -p).",
+  "ru": "  Несохранённые изменения теперь лежат в git stash (посмотреть: git stash show -p)."
+ },
+ "  → hole {datei}": {
+  "en": "  → fetching {datei}",
+  "ru": "  → загружаю {datei}"
+ },
+ "  → packe ueber die Programmdaten (library/ bleibt)": {
+  "en": "  → unpacking over the program files (library/ stays)",
+  "ru": "  → распаковываю поверх файлов программы (library/ остаётся)"
+ },
+ "  {n} Eintraege erneuert.": {
+  "en": "  {n} entries renewed.",
+  "ru": "  Обновлено записей: {n}."
+ },
+ "  Fertig. Die Seite einmal hart neu laden (Bilder und Skripte sonst aus dem Vorrat).": {
+  "en": "  Done. Reload the page once with a hard reload (otherwise images and scripts come from the cache).",
+  "ru": "  Готово. Один раз перезагрузите страницу с очисткой кэша (иначе изображения и скрипты берутся из кэша)."
+ },
+ "  Adresse:  {adresse}": {
+  "en": "  Address:  {adresse}",
+  "ru": "  Адрес:    {adresse}"
+ },
+ "  Der Container ist neu gebaut und angehalten, wie vorher. Starten: docker start klangtresor": {
+  "en": "  The container has been rebuilt and is stopped, as before. To start it: docker start klangtresor",
+  "ru": "  Контейнер пересобран и остановлен, как и раньше. Запуск: docker start klangtresor"
+ },
+ "  Die Pakete musst du von Hand setzen: npm ci": {
+  "en": "  You have to install the packages by hand: npm ci",
+  "ru": "  Пакеты нужно установить вручную: npm ci"
+ },
+ "  Laeuft dein KlangTresor ohne Container: den Server einmal neu starten (starten-linux.sh /\n  starten-macos.command / starten-windows.cmd) und die Seite hart neu laden.": {
+  "en": "  If your KlangTresor runs without a container: restart the server once (starten-linux.sh /\n  starten-macos.command / starten-windows.cmd) and hard-reload the page.",
+  "ru": "  Если ваш KlangTresor работает без контейнера: один раз перезапустите сервер (starten-linux.sh /\n  starten-macos.command / starten-windows.cmd) и перезагрузите страницу с очисткой кэша."
+ },
+ "  Das Programm liegt, die Pakete musst du von Hand setzen: npm ci": {
+  "en": "  The program is in place; you have to install the packages by hand: npm ci",
+  "ru": "  Программа на месте; пакеты нужно установить вручную: npm ci"
+ },
+ "  Noch immer fehlen: {liste} — Ausweg: im KlangTresor-Ordner node bin/pakete.js --tun": {
+  "en": "  Still missing: {liste} — way out: in the KlangTresor folder run node bin/pakete.js --tun",
+  "ru": "  По-прежнему отсутствуют: {liste} — выход: в папке KlangTresor выполните node bin/pakete.js --tun"
+ },
+ "  Paketprüfung: {grund}": {
+  "en": "  Package check: {grund}",
+  "ru": "  Проверка пакетов: {grund}"
+ },
+ "  Fertig. Den laufenden Server einmal neu starten:": {
+  "en": "  Done. Restart the running server once:",
+  "ru": "  Готово. Один раз перезапустите работающий сервер:"
+ },
+ "    ./starten-linux.sh   oder starten-macos.command / starten-windows.cmd": {
+  "en": "    ./starten-linux.sh   or starten-macos.command / starten-windows.cmd",
+  "ru": "    ./starten-linux.sh   или starten-macos.command / starten-windows.cmd"
+ },
+ "  Danach die Seite hart neu laden.": {
+  "en": "  Then hard-reload the page.",
+  "ru": "  Затем перезагрузите страницу с очисткой кэша."
+ },
+ "  KlangTresor ist auf {adresse} — Browser geht auf (Chrome).": {
+  "en": "  KlangTresor is at {adresse} — the browser is opening (Chrome).",
+  "ru": "  KlangTresor доступен по адресу {adresse} — открывается браузер (Chrome)."
+ },
+ "  KlangTresor ist auf {adresse} — Browser geht auf.": {
+  "en": "  KlangTresor is at {adresse} — the browser is opening.",
+  "ru": "  KlangTresor доступен по адресу {adresse} — открывается браузер."
+ }
+}

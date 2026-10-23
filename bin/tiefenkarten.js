@@ -58,6 +58,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const melden = require('./melden.js');
+const { T } = require('./sprache.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
@@ -382,8 +383,8 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
 
     const rest = zeiten.length ? Math.round((offen.length - n) * zeiten[zeiten.length - 1] / 1000) : 0;
     console.log(`  [${n}/${offen.length}] ${marke}  ${bm[0]}x${bm[1]}  (gerechnet ${W}x${H})  aus ${path.basename(b.datei)} → ${path.basename(b.ziel)}`);
-    melden.lauf({ was: 'Tiefenkarten werden gerechnet', n, von: offen.length, nEinheit: 'Standbild',
-      jetzt: b.id.slice(0, 8), rest: rest > 3 ? `noch etwa ${rest > 90 ? Math.round(rest / 60) + ' Minuten' : rest + ' Sekunden'}` : '' });
+    melden.lauf({ was: T('Tiefenkarten werden gerechnet'), n, von: offen.length, nEinheit: T('Standbild'),
+      jetzt: b.id.slice(0, 8), rest: rest > 3 ? (rest > 90 ? T('noch etwa {n} Minuten', { n: Math.round(rest / 60) }) : T('noch etwa {n} Sekunden', { n: rest })) : '' });
     if (n % 20 === 0) buchSchreiben();
   }
 

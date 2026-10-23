@@ -40,6 +40,10 @@ const https = require('node:https');
 const http = require('node:http');
 const { spawnSync } = require('node:child_process');
 const readline = require('node:readline');
+/* Die Sprache: einmal frueh bestimmt - sprache() schreibt KT_SPRACHE in die
+   Umgebung, und alle Kinder erben sie. */
+const { T, sprache, spracheSetzen, neuUebersetzen } = require('./sprache.js');
+sprache();
 
 const WURZEL = path.resolve(__dirname, '..');
 const WERKZEUG = path.join(WURZEL, 'werkzeug');
@@ -68,7 +72,12 @@ const SEITE_WUNSCH = (() => { const i = process.argv.indexOf('--seite'); return 
    ZUSTAND.zeilen bleibt daneben bestehen: das ist das rohe Protokoll,
    das auf der Seite nur noch hinter der Registerlasche "Protokoll"
    steht - fuer die Fehlersuche, nicht als Oberflaeche. */
-const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, dialog: null, fertig: false, adresse: null, weiter: null, gesamt: 10, dauer: null };
+const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, dialog: null, fertig: false, adresse: null, weiter: null, gesamt: 10, dauer: null, sprache: sprache() };
+/* NODE IN DEN SUCHPFAD (23.10.2026, im Windows-11-Test gefunden): npm fuehrt Installationsskripte ueber
+   cmd.exe aus - bei onnxruntime-node `node ./script/install`. Kommt Node nur aus werkzeug\node und steht nicht
+   im PATH, findet cmd.exe kein `node`, das Skript scheitert, und npm rollt ALLE Pakete zurueck (Lutz' fehlendes
+   umap-js). Also den Ordner des laufenden Node vorn in den PATH - fuer uns und alle Kinder. */
+process.env.PATH = path.dirname(process.execPath) + path.delimiter + (process.env.PATH || '');
 const SYS = process.platform === 'win32' ? 'win' : process.platform === 'darwin' ? 'mac' : 'linux';
 const jetztSchritt = () => ZUSTAND.schritte[ZUSTAND.aktuell - 1] || null;
 /* „Du musst nicht warten." Schritt 9 laesst sich abbrechen - bisher nur
@@ -143,8 +152,8 @@ const SCHRITTE = 10;
 /* Die Liste links steht von Anfang an da - man soll sehen, was kommt,
    nicht erst, was schon war. Die Namen hier sind dieselben, die
    schritt() spaeter als "kurz" setzt. */
-const KURZ = ['Ordner prüfen', 'Was ist schon da?', 'ffmpeg', 'Pakete', 'KI-Modelle',
-              'Dein Suno-Name', 'Songliste', 'Deine Suno-Dateien', 'Bilder', 'Zum Schluss'];
+const KURZ = [T('Ordner prüfen'), T('Was ist schon da?'), 'ffmpeg', T('Pakete'), T('KI-Modelle'),
+              T('Dein Suno-Name'), T('Songliste'), T('Deine Suno-Dateien'), T('Bilder'), T('Zum Schluss')];
 KURZ.forEach((k, i) => { ZUSTAND.schritte[i] = { nr: i + 1, kurz: k, name: k, erklaerung: '', zustand: '', zeilen: [], kacheln: [], titel: [], lauf: null }; });
 /* kurz  - wie der Schritt in der Liste links heisst
    titel - die Ueberschrift rechts, in ganzen Worten
@@ -190,7 +199,7 @@ function marke() {
     } else schreib(MARKE(z));
   }
   leer();
-  matt('dein eigenes Archiv, auf deinem Rechner');
+  matt(T('dein eigenes Archiv, auf deinem Rechner'));
   leer();
 }
 
@@ -217,40 +226,48 @@ function antwortVonSeite(id, wert) {
 }
 function fragen(t, meta) {
   process.stdout.write(t);
+  /* hinweisTeile: ein Hinweis aus mehreren T()-Stuecken - so kann ein Sprachwechsel jedes Stueck neu setzen */
+  if (meta && meta.hinweisTeile) meta.hinweis = meta.hinweisTeile.filter(Boolean).join('');
   ZUSTAND.frage = Object.assign({ id: ++_frageNr, art: 'text', text: ohneFarbe(t).trim() }, meta || {});
   return new Promise((r) => { _antwort = r; });
 }
 
 async function jaNein(text, vorgabe = 'j') {
-  const zeige = vorgabe === 'j' ? '[J/n]' : '[j/N]';
+  /* Die Buchstaben je Sprache; angenommen werden j, y und д in jeder. */
+  const [J, N] = ({ en: ['y', 'n'], ru: ['д', 'н'] })[sprache()] || ['j', 'n'];
+  const zeige = vorgabe === 'j' ? `[${J.toUpperCase()}/${N}]` : `[${J}/${N.toUpperCase()}]`;
   const a = await fragen('     ' + AKZENT(`${text} ${zeige} `),
-    { art: 'wahl', text, vorgabe, optionen: [{ wert: 'j', label: 'Ja', vor: vorgabe === 'j' }, { wert: 'n', label: 'Nein', vor: vorgabe !== 'j' }] });
+    { art: 'wahl', text, vorgabe, optionen: [{ wert: 'j', label: T('Ja'), vor: vorgabe === 'j' }, { wert: 'n', label: T('Nein'), vor: vorgabe !== 'j' }] });
   if (!a) return vorgabe === 'j';
-  return /^[jJyY]/.test(a);
+  return /^[jJyYдД]/.test(a);
 }
 
 /* Ein Fehlschlag ist kein Weltuntergang, solange die Sache verzichtbar
    ist. Dann wird gefragt, statt abzubrechen. */
 async function wieWeiter(was, folge) {
   leer();
-  wink(`${was} hat nicht geklappt.`);
+  wink(T('{was} hat nicht geklappt.', { was }));
   matt(folge);
   leer();
-  matt('  [w] noch einmal versuchen');
-  matt('  [ü] jetzt überspringen und ohne weitermachen');
-  matt('  [s] hier Schluss machen — später neu starten');
-  const a = await fragen('     ' + AKZENT('Was tun? [w/ü/s] '),
-    { art: 'wahl', text: `${was} hat nicht geklappt. ${folge}`, vorgabe: 'ü',
-      optionen: [{ wert: 'w', label: 'Noch einmal versuchen' }, { wert: 'ü', label: 'Überspringen und weiter', vor: true }, { wert: 's', label: 'Schluss — später neu starten' }] });
-  if (/^[wW]/.test(a)) return 'wieder';
-  if (/^[sS]/.test(a)) return 'schluss';
+  /* Die Tasten je Sprache. Die Werte der Seite (w/ü/s) gelten immer; die
+     englischen und russischen Tasten sind so gewaehlt, dass sie mit
+     ihnen nicht zusammenstossen. */
+  const [kW, kU, kS] = ({ en: ['r', 'n', 'q'], ru: ['п', 'д', 'в'] })[sprache()] || ['w', 'ü', 's'];
+  matt(T('  [{taste}] noch einmal versuchen', { taste: kW }));
+  matt(T('  [{taste}] jetzt überspringen und ohne weitermachen', { taste: kU }));
+  matt(T('  [{taste}] hier Schluss machen — später neu starten', { taste: kS }));
+  const a = await fragen('     ' + AKZENT(T('Was tun? [{tasten}] ', { tasten: [kW, kU, kS].join('/') })),
+    { art: 'wahl', text: T('{was} hat nicht geklappt. {folge}', { was, folge }), vorgabe: 'ü',
+      optionen: [{ wert: 'w', label: T('Noch einmal versuchen') }, { wert: 'ü', label: T('Überspringen und weiter'), vor: true }, { wert: 's', label: T('Schluss — später neu starten') }] });
+  if (/^[wWrRпП]/.test(a)) return 'wieder';
+  if (/^[sSqQвВ]/.test(a)) return 'schluss';
   return 'ueber';
 }
 
 function wiederkommen() {
   leer();
-  matt('Nichts ist verloren. Starte das Einrichten einfach noch einmal —');
-  matt('es erkennt, was schon da ist, und macht dort weiter.');
+  matt(T('Nichts ist verloren. Starte das Einrichten einfach noch einmal —'));
+  matt(T('es erkennt, was schon da ist, und macht dort weiter.'));
   leer();
 }
 
@@ -275,7 +292,8 @@ function quellenLesen() {
    Begrenzt wird der STILLSTAND, nicht die Gesamtdauer: hundert Megabyte
    dürfen lange dauern, aber zwei Minuten ohne ein einziges Byte heißen,
    dass nichts mehr kommt. Dieselbe Regel wie in bin/modelle-holen.js. */
-const MB = (n) => (n / 1048576).toFixed(1) + ' MB';
+/* Groesse in der Sprache der Einrichtung: Komma und МБ im Russischen, Komma im Deutschen. */
+const MB = (n) => { const z = (n / 1048576).toFixed(1); return sprache() === 'en' ? z + ' MB' : sprache() === 'ru' ? z.replace('.', ',') + ' МБ' : z.replace('.', ',') + ' MB'; };
 const STILLSTAND = 120000;
 
 function holen(url, ziel, was, tiefe = 0) {
@@ -289,7 +307,7 @@ function holen(url, ziel, was, tiefe = 0) {
       }
       if (a.statusCode !== 200) {
         a.resume();
-        boese(`${was} ging nicht: die Gegenstelle sagt ${a.statusCode}`);
+        boese(T('{was} ging nicht: die Gegenstelle sagt {code}', { was, code: a.statusCode }));
         return fertig(false);
       }
       const ganz = Number(a.headers['content-length']) || 0;
@@ -299,7 +317,7 @@ function holen(url, ziel, was, tiefe = 0) {
       let wacht = setInterval(() => {
         if (Date.now() - zuletzt > STILLSTAND) {
           clearInterval(wacht); a.destroy(); datei.close();
-          boese(`${was}: zwei Minuten ohne ein einziges Byte — die Leitung schweigt.`);
+          boese(T('{was}: zwei Minuten ohne ein einziges Byte — die Leitung schweigt.', { was }));
           fertig(false);
         }
       }, 5000);
@@ -315,9 +333,9 @@ function holen(url, ziel, was, tiefe = 0) {
         let rest = '';
         if (ganz && tempo > 0) {
           const s = Math.round((ganz - summe) / tempo);
-          rest = s >= 60 ? `, noch etwa ${Math.ceil(s / 60)} min` : `, noch etwa ${s} s`;
+          rest = s >= 60 ? T(', noch etwa {n} min', { n: Math.ceil(s / 60) }) : T(', noch etwa {n} s', { n: s });
         }
-        const teil = ganz ? ` von ${MB(ganz)} (${Math.round(summe / ganz * 100)} %)` : '';
+        const teil = ganz ? T(' von {mb} ({prozent} %)', { mb: MB(ganz), prozent: Math.round(summe / ganz * 100) }) : '';
         const zeile = `     ${MARKE('->  ')}  ${was} … ${MB(summe)}${teil}${rest}`;
         lauf({ was, bytes: summe, gesamt: ganz || null, rest: rest.replace(/^, /, '') });
         /* Auf dem Schirm überschreibt sich die Zeile. In einer Datei täte
@@ -331,12 +349,12 @@ function holen(url, ziel, was, tiefe = 0) {
         clearInterval(wacht); datei.close();
         if (BUNT) process.stdout.write('\r' + ' '.repeat(78) + '\r');
         lauf(null);
-        gut(`${was} geholt (${MB(summe)})`);
+        gut(T('{was} geholt ({mb})', { was, mb: MB(summe) }));
         fertig(true);
       });
     });
-    anfrage.on('error', (e) => { boese(`${was} ging nicht: ${e.message}`); fertig(false); });
-    anfrage.setTimeout(30000, () => { anfrage.destroy(new Error('keine Antwort')); });
+    anfrage.on('error', (e) => { boese(T('{was} ging nicht: {fehler}', { was, fehler: e.message })); fertig(false); });
+    anfrage.setTimeout(30000, () => { anfrage.destroy(new Error(T('keine Antwort'))); });
   });
 }
 
@@ -352,7 +370,7 @@ function auspacken(zip, ziel) {
       ? ['ditto', ['-x', '-k', zip, ziel]]
       : ['unzip', ['-q', '-o', zip, '-d', ziel]];
   const e = spawnSync(w[0], w[1], { stdio: 'ignore' });
-  if (e.status !== 0) { boese(`Auspacken ging nicht (${w[0]} meldet ${e.status}).`); return false; }
+  if (e.status !== 0) { boese(T('Auspacken ging nicht ({programm} meldet {status}).', { programm: w[0], status: e.status })); return false; }
   return true;
 }
 
@@ -479,7 +497,11 @@ function laeuft(befehl, argumente, optionen) {
     const { spawn } = require('node:child_process');
     /* KT_MELDEN=1: die Kinder duerfen Zahlen melden (bin/melden.js).
        Ohne das schweigen sie - fuer den Morgenlauf aendert sich nichts. */
-    const kind = spawn(befehl, argumente, { stdio: ['inherit', 'pipe', 'pipe'], shell: brauchtSchale,
+    /* KEINE EINGABE FUER DIE KINDER (23.10.2026, Windows-11-Test): mit 'inherit' erbte npm die Eingabe, die
+       diese Einrichtung selbst liest, und blieb unter Windows schon beim Start stehen - ohne eine Zeile
+       Protokoll, eine halbe Stunde lang. Kein Kind der Einrichtung fragt etwas; Escape liest weiter nur die
+       Einrichtung selbst (laeuftAbbrechbar). */
+    const kind = spawn(befehl, argumente, { stdio: ['ignore', 'pipe', 'pipe'], shell: brauchtSchale,
       detached: eigeneGruppe,
       env: Object.assign({}, process.env, { KT_MELDEN: '1' }) });
     kind.eigeneGruppe = eigeneGruppe;
@@ -597,10 +619,10 @@ const { chromeFinden, seiteAufmachen } = require('./browser.js');
 function ortInWorten(p) {
   const q = String(p).replace(/\\/g, '/');
   const m = q.match(/^\/\/psf\/Home\/(.*)$/i);
-  if (m) return 'Auf dem Mac öffnest du ihn unter:  ~/' + m[1];
-  if (/^\/\/psf\//i.test(q)) return 'Der Ordner liegt auf dem Mac, nicht in Windows.';
+  if (m) return T('Auf dem Mac öffnest du ihn unter:  {pfad}', { pfad: '~/' + m[1] });
+  if (/^\/\/psf\//i.test(q)) return T('Der Ordner liegt auf dem Mac, nicht in Windows.');
   const n = q.match(/^\/\/([^/]+)\/([^/]+)/);
-  if (n) return `Der Ordner liegt auf dem Rechner „${n[1]}", Freigabe „${n[2]}" — nicht hier.`;
+  if (n) return T('Der Ordner liegt auf dem Rechner „{rechner}", Freigabe „{freigabe}" — nicht hier.', { rechner: n[1], freigabe: n[2] });
   return null;
 }
 
@@ -657,7 +679,7 @@ function ausLager(name, ziel) {
   const q = path.join(lager, name);
   try {
     if (!fs.existsSync(q) || !fs.readdirSync(q).length) return false;
-    tut(`${name} liegt schon auf diesem Rechner — ich kopiere statt zu laden.`);
+    tut(T('{name} liegt schon auf diesem Rechner — ich kopiere statt zu laden.', { name }));
     fs.mkdirSync(path.dirname(ziel), { recursive: true });
     fs.cpSync(q, ziel, { recursive: true, force: true });
     return true;
@@ -731,7 +753,7 @@ function schreibtischVerknuepfung(ordner) {
         `$s.TargetPath = ${JSON.stringify(path.join(ordner, 'starten-windows.cmd'))}`,
         `$s.WorkingDirectory = ${JSON.stringify(ordner)}`,
         `$s.IconLocation = ${JSON.stringify(path.join(ordner, 'web', 'symbol', 'klangtresor.ico') + ',0')}`,
-        '$s.Description = "KlangTresor starten"',
+        `$s.Description = ${JSON.stringify(T('KlangTresor starten'))}`,
         '$s.Save()',
       ].join('; ');
       spawnSync('powershell', ['-NoProfile', '-Command', ps], { stdio: 'ignore' });
@@ -774,7 +796,7 @@ open -a Terminal ${JSON.stringify(starter)}
     const starter = path.join(ordner, 'starten-linux.sh');
     try { fs.chmodSync(starter, 0o755); } catch (e) {}
     fs.writeFileSync(d, ['[Desktop Entry]', 'Type=Application', 'Name=KlangTresor',
-      'Comment=Dein eigenes Suno-Archiv', `Exec=${JSON.stringify(starter)}`,
+      'Comment=' + T('Dein eigenes Suno-Archiv'), `Exec=${JSON.stringify(starter)}`,
       `Path=${ordner}`, `Icon=${path.join(ordner, 'web', 'symbol', 'klangtresor-256.png')}`, 'Terminal=true', ''].join('\n'), { mode: 0o755 });
     return d;
   } catch (e) { return null; }
@@ -821,17 +843,28 @@ open -a Terminal ${JSON.stringify(starter)}
         if (u.pathname === '/antwort' && req.method === 'POST') {
           let d = {}; try { d = JSON.parse(await rumpf(req) || '{}'); } catch (e) {}
           const ok = antwortVonSeite(d.id, d.wert);
-          if (ok) schreib(HELL(String(d.wert == null ? '' : d.wert)) + MATT('   (aus der Seite)'));
+          if (ok) schreib(HELL(String(d.wert == null ? '' : d.wert)) + MATT(T('   (aus der Seite)')));
           return antwort(res, 200, 'application/json', JSON.stringify({ ok }));
         }
         if (u.pathname === '/abbrechen' && req.method === 'POST') {
           ABBRUCHWUNSCH = true;
-          schreib(HELL('     Abbrechen — von der Seite aus.'));
+          schreib(HELL(T('     Abbrechen — von der Seite aus.')));
           return antwort(res, 200, 'application/json', JSON.stringify({ ok: true }));
+        }
+        /* DIE SPRACHE, vom Umschalter auf der Seite. Was schon dasteht, bleibt,
+           wie es ist; alles danach kommt in der neuen Sprache. */
+        if (u.pathname === '/sprache' && req.method === 'POST') {
+          let d = {}; try { d = JSON.parse(await rumpf(req) || '{}'); } catch (e) {}
+          spracheSetzen(d.sprache);
+          ZUSTAND.sprache = sprache();
+          neuUebersetzen(ZUSTAND);   /* Schrittliste, offene Frage, Zeilen: was schon dasteht, wechselt mit */
+          neuUebersetzen(KURZ);      /* und die Kurznamen, aus denen spaetere Schritte ihren Namen nehmen */
+          if (ZUSTAND.frage && ZUSTAND.frage.hinweisTeile) ZUSTAND.frage.hinweis = ZUSTAND.frage.hinweisTeile.filter(Boolean).join('');
+          res.writeHead(204, { 'Cache-Control': 'no-store' }); return res.end();
         }
         if (u.pathname === '/ordner' && req.method === 'POST') {
           let d = {}; try { d = JSON.parse(await rumpf(req) || '{}'); } catch (e) {}
-          const r = await require('./ordnerdialog.js').ordnerWaehlenNebenher(os.homedir(), String(d.titel || 'Ordner wählen').slice(0, 120));
+          const r = await require('./ordnerdialog.js').ordnerWaehlenNebenher(os.homedir(), String(d.titel || T('Ordner wählen')).slice(0, 120));
           return antwort(res, 200, 'application/json', JSON.stringify({ pfad: r.pfad || null, ging: r.ging }));
         }
         return antwort(res, 404, 'text/plain', 'nicht da');
@@ -847,8 +880,8 @@ open -a Terminal ${JSON.stringify(starter)}
       ZUSTAND.adresse = `http://127.0.0.1:${port}/`;
       const seiteWartet = SEITE_WUNSCH && port === SEITE_WUNSCH;   /* nach dem Umzug: die alte Seite kommt herueber */
       const inChrome = (OHNE_BROWSER || seiteWartet) ? false : seiteAufmachen(ZUSTAND.adresse);
-      matt(`Die Einrichtung läuft auch als Seite: ${ZUSTAND.adresse}` + (inChrome ? ' (Chrome)' : ''));
-      matt('Hier im Fenster siehst du dasselbe — und hier kannst du auch antworten.');
+      matt(T('Die Einrichtung läuft auch als Seite: {adresse}', { adresse: ZUSTAND.adresse }) + (inChrome ? ' (Chrome)' : ''));
+      matt(T('Hier im Fenster siehst du dasselbe — und hier kannst du auch antworten.'));
       /* unref: die Seite haelt die Einrichtung nicht am Leben. Sie endet,
          wenn die Arbeit endet - danach laeuft der KlangTresor-Server
          weiter, und die Seite ist ohnehin nicht mehr gemeint. */
@@ -860,8 +893,8 @@ open -a Terminal ${JSON.stringify(starter)}
   marke();
 
   if (!quellenLesen()) {
-    boese('quellen.txt fehlt — dort stehen die Adressen der Werkzeuge.');
-    matt('Die Datei gehört neben package.json. Aus dem Paket von GitHub ist sie dabei.');
+    boese(T('quellen.txt fehlt — dort stehen die Adressen der Werkzeuge.'));
+    matt(T('Die Datei gehört neben package.json. Aus dem Paket von GitHub ist sie dabei.'));
     leer(); schluss(1);
   }
 
@@ -913,20 +946,20 @@ open -a Terminal ${JSON.stringify(starter)}
      der Mensch darf tippen - „der text bleibt der fallback". */
   const { ordnerWaehlenNebenher } = require('./ordnerdialog.js');
   async function ordnerErfragen(titel) {
-    matt('Ein Auswahlfenster geht auf. Siehst du es nicht? Dann liegt es hinter');
-    matt('diesem Fenster - in der Taskleiste beziehungsweise im Dock nachsehen.');
+    matt(T('Ein Auswahlfenster geht auf. Siehst du es nicht? Dann liegt es hinter'));
+    matt(T('diesem Fenster - in der Taskleiste beziehungsweise im Dock nachsehen.'));
     ZUSTAND.dialog = titel;
     let r;
     try { r = await ordnerWaehlenNebenher(os.homedir(), titel); }
     finally { ZUSTAND.dialog = null; }
     if (r.pfad) return r.pfad;
     if (r.ging) return null;
-    wink('Das Auswahlfenster ging nicht auf' + (r.grund ? ' (' + r.grund + ')' : '') + '.');
-    matt('Dann tippst du den Ordner hier - oder lässt es leer.');
-    const t = await fragen('     ' + AKZENT('Ordner: '), { art: 'text', text: 'Das Auswahlfenster ging nicht auf. Ordner tippen - oder leer lassen.' });
+    wink(r.grund ? T('Das Auswahlfenster ging nicht auf ({grund}).', { grund: r.grund }) : T('Das Auswahlfenster ging nicht auf.'));
+    matt(T('Dann tippst du den Ordner hier - oder lässt es leer.'));
+    const t = await fragen('     ' + AKZENT(T('Ordner: ')), { art: 'text', text: T('Das Auswahlfenster ging nicht auf. Ordner tippen - oder leer lassen.') });
     return String(t || '').trim().replace(/^["']|["']$/g, '') || null;
   }
-  const ordnerWaehlen = () => ordnerErfragen('Wo soll KlangTresor liegen? Es wird ein Ordner „KlangTresor" darin angelegt.');
+  const ordnerWaehlen = () => ordnerErfragen(T('Wo soll KlangTresor liegen? Es wird ein Ordner „KlangTresor" darin angelegt.'));
 
   function heimatVorschlag() {
     const heim = os.homedir();
@@ -977,14 +1010,16 @@ open -a Terminal ${JSON.stringify(starter)}
     funde.sort((a, b) => b.titel - a.titel || (b.wann || 0) - (a.wann || 0));
     return funde;
   }
-  const archivText = (f) => f.pfad + MATT(` — ${f.titel} Titel` + (f.wann ? `, zuletzt ${f.wann.toLocaleDateString('de-DE')}` : ''));
+  const archivText = (f) => f.pfad + MATT(f.wann
+    ? T(' — {n} Titel, zuletzt {datum}', { n: f.titel, datum: f.wann.toLocaleDateString({ de: 'de-DE', en: 'en-GB', ru: 'ru-RU' }[sprache()]) })
+    : T(' — {n} Titel', { n: f.titel }));
 
   function mussUmziehen(p) {
     const q = p.replace(/\\/g, '/');
-    if (process.platform === 'win32' && q.startsWith('//')) return 'auf einer Netzfreigabe';
-    if (/\/(downloads|download)(\/|$)/i.test(q))            return 'im Download-Ordner';
-    if (/\/(temp|tmp)(\/|$)/i.test(q))                       return 'in einem temporären Ordner';
-    if (/^klangtresor[-_]?(main|master)$/i.test(path.basename(p))) return 'in einem Ordner, den GitHub benannt hat';
+    if (process.platform === 'win32' && q.startsWith('//')) return T('auf einer Netzfreigabe');
+    if (/\/(downloads|download)(\/|$)/i.test(q))            return T('im Download-Ordner');
+    if (/\/(temp|tmp)(\/|$)/i.test(q))                       return T('in einem temporären Ordner');
+    if (/^klangtresor[-_]?(main|master)$/i.test(path.basename(p))) return T('in einem Ordner, den GitHub benannt hat');
     return null;
   }
 
@@ -1008,7 +1043,7 @@ open -a Terminal ${JSON.stringify(starter)}
     const f = freierPlatz(q);
     return f === null ? null : f / 1073741824;
   };
-  const gbText = (g) => g === null ? '' : `  (${g.toFixed(0)} GB frei)`;
+  const gbText = (g) => g === null ? '' : T('  ({gb} GB frei)', { gb: g.toFixed(0) });
 
   const grund = mussUmziehen(WURZEL);
   /* Liegt HIER schon ein Archiv, ist hier das Zuhause - auch im
@@ -1024,60 +1059,66 @@ open -a Terminal ${JSON.stringify(starter)}
   const funde = archiveFinden();
 
   if (schonZuhause) {
-    matt(archivHier ? 'Hier liegt dein Archiv, und hier bleibt es:' : 'KlangTresor liegt hier, und hier bleibt es:');
+    matt(archivHier ? T('Hier liegt dein Archiv, und hier bleibt es:') : T('KlangTresor liegt hier, und hier bleibt es:'));
     satz(HELL('  ' + WURZEL) + MATT(gbText(gbFrei(WURZEL))));
-    if (archivHier && grund) matt('  (Das ist zwar ' + grund + ' — aber mit dem Archiv darin bleibt es hier. Umziehen: den ganzen Ordner verschieben.)');
+    if (archivHier && grund) matt(T('  (Das ist zwar {grund} — aber mit dem Archiv darin bleibt es hier. Umziehen: den ganzen Ordner verschieben.)', { grund }));
     if (funde.length && !archivHier) {
       leer();
-      wink('Aber woanders gibt es schon ein Archiv' + (funde.length > 1 ? `, sogar ${funde.length}` : '') + ':');
+      wink(funde.length > 1 ? T('Aber woanders gibt es schon ein Archiv, sogar {n}:', { n: funde.length }) : T('Aber woanders gibt es schon ein Archiv:'));
       for (const f of funde.slice(0, 3)) satz('    ' + HELL(archivText(f)));
-      matt('Vermutlich dein bisheriges KlangTresor oder MySuno. Führe ich es dort weiter,');
-      matt('wird nur das Programm erneuert — deine Titel, Bilder und Töne bleiben.');
+      matt(T('Vermutlich dein bisheriges KlangTresor oder MySuno. Führe ich es dort weiter,'));
+      matt(T('wird nur das Programm erneuert — deine Titel, Bilder und Töne bleiben.'));
       leer();
-      if (await jaNein('Das vorhandene Archiv weiterführen?', 'j')) ziel = funde[0].pfad;
+      if (await jaNein(T('Das vorhandene Archiv weiterführen?'), 'j')) ziel = funde[0].pfad;
     }
   } else {
-    matt('Du bist hier — dort, wo das Zip ausgepackt wurde:');
+    matt(T('Du bist hier — dort, wo das Zip ausgepackt wurde:'));
     satz(HELL('  ' + WURZEL) + MATT(gbText(gbFrei(WURZEL))));
     { const wo = ortInWorten(WURZEL); if (wo) matt('  ' + wo); }
     leer();
     const vorgabe = funde.length ? 'a' : (grund ? 'n' : 'd');
+    /* Die Tasten je Sprache: Archiv, hier, Nutzerverzeichnis, woanders. Die
+       Werte der Seite (a/d/n/w) gelten immer; die englischen und russischen
+       Tasten stossen mit ihnen nicht zusammen. */
+    const [tA, tD, tN, tW] = ({ en: ['a', 'h', 'u', 'e'], ru: ['а', 'з', 'д', 'в'] })[sprache()] || ['a', 'd', 'n', 'w'];
     if (funde.length) {
-      wink('Ein Archiv gibt es schon' + (funde.length > 1 ? `, sogar ${funde.length}` : '') + ' — vermutlich dein bisheriges KlangTresor oder MySuno:');
+      wink(funde.length > 1 ? T('Ein Archiv gibt es schon, sogar {n} — vermutlich dein bisheriges KlangTresor oder MySuno:', { n: funde.length }) : T('Ein Archiv gibt es schon — vermutlich dein bisheriges KlangTresor oder MySuno:'));
       for (const f of funde.slice(0, 3)) satz('    ' + HELL(archivText(f)));
       leer();
-      satz(HELL('  [A]') + MATT('  dieses Archiv weiterführen: ') + HELL(funde[0].pfad));
-      matt('       Nur das Programm wird erneuert — Titel, Bilder und Töne bleiben, wie sie sind.');
+      satz(HELL(`  [${tA.toUpperCase()}]`) + MATT(T('  dieses Archiv weiterführen: ')) + HELL(funde[0].pfad));
+      matt(T('       Nur das Programm wird erneuert — Titel, Bilder und Töne bleiben, wie sie sind.'));
     }
-    satz(HELL('  [D]') + MATT('  hier bleiben — KlangTresor wird genau in diesem Ordner eingerichtet'));
-    if (grund) matt('       Achtung: das liegt ' + grund + ' — dort wird gern aufgeräumt' +
-                    (grund.includes('Netz') ? ', und die Pakete scheitern' : '') + '.');
-    satz(HELL('  [N]') + MATT('  in dein Nutzerverzeichnis: ') + HELL(heimZiel) + MATT(gbText(gbFrei(heimZiel))));
-    matt('       Dann liegt alles bei deinen Daten.');
-    satz(HELL('  [W]') + MATT('  woanders — ein Fenster geht auf, du wählst (etwa eine externe Platte)'));
+    satz(HELL(`  [${tD.toUpperCase()}]`) + MATT(T('  hier bleiben — KlangTresor wird genau in diesem Ordner eingerichtet')));
+    if (grund) matt((process.platform === 'win32' && WURZEL.replace(/\\/g, '/').startsWith('//'))
+      ? T('       Achtung: das liegt {grund} — dort wird gern aufgeräumt, und die Pakete scheitern.', { grund })
+      : T('       Achtung: das liegt {grund} — dort wird gern aufgeräumt.', { grund }));
+    satz(HELL(`  [${tN.toUpperCase()}]`) + MATT(T('  in dein Nutzerverzeichnis: ')) + HELL(heimZiel) + MATT(gbText(gbFrei(heimZiel))));
+    matt(T('       Dann liegt alles bei deinen Daten.'));
+    satz(HELL(`  [${tW.toUpperCase()}]`) + MATT(T('  woanders — ein Fenster geht auf, du wählst (etwa eine externe Platte)')));
     leer();
-    matt('Denk daran: für alle Funktionen braucht KlangTresor ziemlich viel Platz.');
-    matt('Die Einrichtung selbst rund 1,6 GB — dazu je Titel bis zu 100 MB, wenn');
-    matt('WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.');
+    matt(T('Denk daran: für alle Funktionen braucht KlangTresor ziemlich viel Platz.'));
+    matt(T('Die Einrichtung selbst rund 1,6 GB — dazu je Titel bis zu 100 MB, wenn'));
+    matt(T('WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.'));
     leer();
-    const tasten = (funde.length ? [vorgabe === 'a' ? 'A' : 'a'] : []).concat([vorgabe === 'd' ? 'D' : 'd', vorgabe === 'n' ? 'N' : 'n', 'w']).join('/');
-    const antwort = (await fragen('     ' + AKZENT(`Wohin? [${tasten}] `),
-      { art: 'wahl', text: 'Wohin soll KlangTresor?', vorgabe,
-        hinweis: (funde.length ? `Gefundenes Archiv: ${funde[0].pfad} (${funde[0].titel} Titel). ` : '') + (grund ? `Achtung: das hier liegt ${grund} - dort wird gern aufgeräumt. ` : '') + `Nutzerverzeichnis: ${heimZiel}`,
+    const gross = (t, w) => (vorgabe === w ? t.toUpperCase() : t);
+    const tasten = (funde.length ? [gross(tA, 'a')] : []).concat([gross(tD, 'd'), gross(tN, 'n'), tW]).join('/');
+    const antwort = (await fragen('     ' + AKZENT(T('Wohin? [{tasten}] ', { tasten })),
+      { art: 'wahl', text: T('Wohin soll KlangTresor?'), vorgabe,
+        hinweisTeile: [(funde.length ? T('Gefundenes Archiv: {pfad} ({n} Titel). ', { pfad: funde[0].pfad, n: funde[0].titel }) : ''), (grund ? T('Achtung: das hier liegt {grund} - dort wird gern aufgeräumt. ', { grund }) : ''), T('Nutzerverzeichnis: {pfad}', { pfad: heimZiel })],
         optionen: [
-          ...(funde.length ? [{ wert: 'a', label: `Vorhandenes Archiv weiterführen (${funde[0].titel} Titel)`, vor: true }] : []),
-          { wert: 'd', label: 'Hier bleiben', vor: vorgabe === 'd' },
-          { wert: 'n', label: 'In mein Nutzerverzeichnis', vor: vorgabe === 'n' },
-          { wert: 'w', label: 'Woanders - Ordner wählen …' }] })).toLowerCase() || vorgabe;
-    if (antwort.startsWith('a') && funde.length) ziel = funde[0].pfad;
-    else if (antwort.startsWith('n')) ziel = heimZiel;
-    else if (antwort.startsWith('w')) {
+          ...(funde.length ? [{ wert: 'a', label: T('Vorhandenes Archiv weiterführen ({n} Titel)', { n: funde[0].titel }), vor: true }] : []),
+          { wert: 'd', label: T('Hier bleiben'), vor: vorgabe === 'd' },
+          { wert: 'n', label: T('In mein Nutzerverzeichnis'), vor: vorgabe === 'n' },
+          { wert: 'w', label: T('Woanders - Ordner wählen …') }] })).toLowerCase() || vorgabe;
+    if (/^[aа]/.test(antwort) && funde.length) ziel = funde[0].pfad;
+    else if (/^[nuд]/.test(antwort)) ziel = heimZiel;
+    else if (/^[weв]/.test(antwort)) {
       const eltern = await ordnerWaehlen();
       if (eltern) ziel = path.basename(eltern) === 'KlangTresor' ? eltern : path.join(eltern, 'KlangTresor');
-      else { matt('Kein Ordner gewählt — dann bleibt es hier.'); ziel = WURZEL; }
+      else { matt(T('Kein Ordner gewählt — dann bleibt es hier.')); ziel = WURZEL; }
     }
     leer();
-    satz(MATT('Ziel:  ') + HELL(ziel));
+    satz(MATT(T('Ziel:  ')) + HELL(ziel));
   }
 
   /* Der freie Platz DORT, wo das Archiv hinkommt. Fuer einen Ordner, den
@@ -1089,14 +1130,14 @@ open -a Terminal ${JSON.stringify(starter)}
     if (frei !== null) {
       const gb = frei / 1073741824;
       if (gb < 20) {
-        wink(`Dort sind nur ${gb.toFixed(1)} GB frei.`);
-        matt('Die Einrichtung selbst braucht rund 1,6 GB, aber dein Archiv wächst mit');
-        matt('jedem Lied — bei ein paar hundert Titeln sind es schnell zehn GB und mehr.');
-        matt('Eine externe Platte ist dafür völlig in Ordnung. Trotzdem hier?');
+        wink(T('Dort sind nur {gb} GB frei.', { gb: gb.toFixed(1) }));
+        matt(T('Die Einrichtung selbst braucht rund 1,6 GB, aber dein Archiv wächst mit'));
+        matt(T('jedem Lied — bei ein paar hundert Titeln sind es schnell zehn GB und mehr.'));
+        matt(T('Eine externe Platte ist dafür völlig in Ordnung. Trotzdem hier?'));
         leer();
-        if (!await jaNein('Hier weitermachen?', 'n')) { wiederkommen(); schluss(0); }
+        if (!await jaNein(T('Hier weitermachen?'), 'n')) { wiederkommen(); schluss(0); }
       } else {
-        gut(`Dort sind ${gb.toFixed(0)} GB frei — das reicht lange.`);
+        gut(T('Dort sind {gb} GB frei — das reicht lange.', { gb: gb.toFixed(0) }));
       }
     }
   }
@@ -1109,11 +1150,11 @@ open -a Terminal ${JSON.stringify(starter)}
        fs.existsSync(path.join(ziel, 'library', 'katalog.json.gz')) || fs.existsSync(path.join(ziel, 'library', 'katalog.json')));
 
     if (zielBelegt && !zielIstKlangTresor) {
-      wink('Dort liegt schon etwas anderes — das fasse ich nicht an.');
-      matt('Räum es weg oder benenn es um, dann starte noch einmal.');
-      matt('Oder lass KlangTresor hier liegen; es kann gutgehen.');
+      wink(T('Dort liegt schon etwas anderes — das fasse ich nicht an.'));
+      matt(T('Räum es weg oder benenn es um, dann starte noch einmal.'));
+      matt(T('Oder lass KlangTresor hier liegen; es kann gutgehen.'));
       leer();
-      if (!await jaNein('Hier weitermachen?', 'n')) { wiederkommen(); schluss(0); }
+      if (!await jaNein(T('Hier weitermachen?'), 'n')) { wiederkommen(); schluss(0); }
     } else {
       /* Kopieren und dort neu starten. Liegt am Ziel schon ein
          KlangTresor, ist das der Aktualisierungsfall: Programmdateien
@@ -1121,9 +1162,9 @@ open -a Terminal ${JSON.stringify(starter)}
          node_modules/. Vorher hiess es hier "raeum es weg"; fuer ein
          Update genau verkehrt. */
       if (zielIstKlangTresor) {
-        gut('Dort liegt schon ein KlangTresor — ich aktualisiere ihn.');
-        matt('Dein Archiv, die Werkzeuge und die Pakete bleiben, nur das Programm wird erneuert.');
-      } else tut('Umziehen …');
+        gut(T('Dort liegt schon ein KlangTresor — ich aktualisiere ihn.'));
+        matt(T('Dein Archiv, die Werkzeuge und die Pakete bleiben, nur das Programm wird erneuert.'));
+      } else tut(T('Umziehen …'));
       const bleibt = new Set(['library', 'werkzeug', 'node_modules', '.git', 'proben']);
       let gezogen = false;
       try {
@@ -1135,12 +1176,12 @@ open -a Terminal ${JSON.stringify(starter)}
         }
         gezogen = fs.existsSync(path.join(ziel, 'bin', 'einrichten.js'));
       } catch (e) {
-        boese('Das ging nicht: ' + String(e.message).slice(0, 120));
+        boese(T('Das ging nicht: {fehler}', { fehler: String(e.message).slice(0, 120) }));
       }
       if (gezogen) {
-        gut('Liegt jetzt in ' + ziel + '.');
-        matt('Ich mache dort weiter — dieses Fenster bleibt, du siehst alles.');
-        matt('Den entpackten Ordner darfst du danach wegwerfen.');
+        gut(T('Liegt jetzt in {ordner}.', { ordner: ziel }));
+        matt(T('Ich mache dort weiter — dieses Fenster bleibt, du siehst alles.'));
+        matt(T('Den entpackten Ordner darfst du danach wegwerfen.'));
         leer();
         leser.close();
         const weiter = [path.join(ziel, 'bin', 'einrichten.js'),
@@ -1169,57 +1210,57 @@ open -a Terminal ${JSON.stringify(starter)}
         const e = spawnSync(process.execPath, weiter, { stdio: 'inherit', cwd: ziel });
         process.exit(e.status === null ? 1 : e.status);
       }
-      matt('Ich mache hier weiter, wo ich bin.');
+      matt(T('Ich mache hier weiter, wo ich bin.'));
       leer();
     }
   }
 
-  wink('Bevor du anfängst — zwei Sätze zu deinen Suno-Titeln und ihren Audiodateien:');
-  matt('Deine Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte holt');
-  matt('KlangTresor selbst. Beim Ton gibt es zwei Wege, und der erste kostet');
-  matt('nichts.');
+  wink(T('Bevor du anfängst — zwei Sätze zu deinen Suno-Titeln und ihren Audiodateien:'));
+  matt(T('Deine Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte holt'));
+  matt(T('KlangTresor selbst. Beim Ton gibt es zwei Wege, und der erste kostet'));
+  matt(T('nichts.'));
   leer();
-  satz(HELL('  1. Was du schon hast.'));
-  matt('  Hast du deine Lieder bei Suno früher heruntergeladen? In deinen');
-  matt('  Download- und Musikordnern sehe ich von selbst nach; liegen sie');
-  matt('  woanders, zeig mir den Ordner. Ich erkenne die');
-  matt('  Dateien am Inhalt, nicht am Namen, auch umbenannte, auch in');
-  matt('  Unterordnern, und ordne sie deinen Titeln zu. Das ist der');
-  matt('  Hauptweg, und er kostet nichts.');
+  satz(HELL(T('  1. Was du schon hast.')));
+  matt(T('  Hast du deine Lieder bei Suno früher heruntergeladen? In deinen'));
+  matt(T('  Download- und Musikordnern sehe ich von selbst nach; liegen sie'));
+  matt(T('  woanders, zeig mir den Ordner. Ich erkenne die'));
+  matt(T('  Dateien am Inhalt, nicht am Namen, auch umbenannte, auch in'));
+  matt(T('  Unterordnern, und ordne sie deinen Titeln zu. Das ist der'));
+  matt(T('  Hauptweg, und er kostet nichts.'));
   leer();
-  satz(HELL('  2. Was dir fehlt.'));
-  matt('  Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links');
-  matt('  heraus, auch dem Besitzer nicht. Was du nicht schon hast, musst du');
-  matt('  bei Suno einmal freischalten: Drei Punkte, Download, „Unlock and');
-  matt('  Download". Das kostet ein Guthaben aus deinem Download-Kontingent,');
-  matt('  gilt dann aber dauerhaft und für alle Formate.');
+  satz(HELL(T('  2. Was dir fehlt.')));
+  matt(T('  Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links'));
+  matt(T('  heraus, auch dem Besitzer nicht. Was du nicht schon hast, musst du'));
+  matt(T('  bei Suno einmal freischalten: Drei Punkte, Download, „Unlock and'));
+  matt(T('  Download". Das kostet ein Guthaben aus deinem Download-Kontingent,'));
+  matt(T('  gilt dann aber dauerhaft und für alle Formate.'));
   leer();
-  matt('Ohne bezahlten Plan ist nur der zweite Weg versperrt. Der erste bleibt');
-  matt('offen, und alles andere funktioniert ohnehin.');
+  matt(T('Ohne bezahlten Plan ist nur der zweite Weg versperrt. Der erste bleibt'));
+  matt(T('offen, und alles andere funktioniert ohnehin.'));
   leer();
-  matt('Am besten legst du dir jetzt schon zurecht, wo dein Suno-Zeug liegt.');
-  matt('Und wenn du bei Suno etwas freischalten willst: jetzt ist ein guter');
-  matt('Moment, dann liegt es bereit, wenn ich danach frage.');
+  matt(T('Am besten legst du dir jetzt schon zurecht, wo dein Suno-Zeug liegt.'));
+  matt(T('Und wenn du bei Suno etwas freischalten willst: jetzt ist ein guter'));
+  matt(T('Moment, dann liegt es bereit, wenn ich danach frage.'));
   leer();
   if (!chromeFinden()) {
-    wink('Noch etwas: Chrome ist nicht installiert.');
-    matt('Zum Hören und Stöbern reicht jeder Browser. Für die Daten, die nur du');
-    matt('sehen darfst — unveröffentlichte Titel, wer geherzt und kommentiert hat —');
-    matt('braucht es aber Chrome. Das lässt sich auch später nachholen.');
+    wink(T('Noch etwas: Chrome ist nicht installiert.'));
+    matt(T('Zum Hören und Stöbern reicht jeder Browser. Für die Daten, die nur du'));
+    matt(T('sehen darfst — unveröffentlichte Titel, wer geherzt und kommentiert hat —'));
+    matt(T('braucht es aber Chrome. Das lässt sich auch später nachholen.'));
     leer();
   }
-  if (!await jaNein('Verstanden, weiter?')) {
-    matt('Dann bis später. Das Einrichten läuft nicht weg.');
+  if (!await jaNein(T('Verstanden, weiter?'))) {
+    matt(T('Dann bis später. Das Einrichten läuft nicht weg.'));
     wiederkommen(); schluss(0);
   }
 
   leer();
-  matt('Beim ersten Mal werden rund 450 MB geholt. Wie lange das dauert, hängt');
-  matt('an deiner Leitung — von wenigen Minuten bis zu einer halben Stunde.');
+  matt(T('Beim ersten Mal werden rund 450 MB geholt. Wie lange das dauert, hängt'));
+  matt(T('an deiner Leitung — von wenigen Minuten bis zu einer halben Stunde.'));
   leer();
-  matt('Lass das Fenster am besten offen, dann siehst du sofort, ob es gut');
-  matt('läuft oder ob es hakt. Bei Abbruch kann man einfach von diesem Stand');
-  matt('fortsetzen.');
+  matt(T('Lass das Fenster am besten offen, dann siehst du sofort, ob es gut'));
+  matt(T('läuft oder ob es hakt. Bei Abbruch kann man einfach von diesem Stand'));
+  matt(T('fortsetzen.'));
   leer();
   /* Caspar_D, 13.09.2026, nach einer halben Stunde Fehlersuche an einem
      Fenster, das gar nicht haengen geblieben war: „das musst du als
@@ -1233,53 +1274,51 @@ open -a Terminal ${JSON.stringify(starter)}
      und eine Warnung vor etwas, das es nicht gibt, ist schlechter als
      keine. */
   if (process.platform === 'win32' && QUICKEDIT_AUS) {
-    matt('Ein Klick in dieses Fenster würde Windows sonst in den Markierungsmodus');
-    matt('schalten und alles anhalten — für dieses Fenster ist das abgeschaltet.');
+    matt(T('Ein Klick in dieses Fenster würde Windows sonst in den Markierungsmodus'));
+    matt(T('schalten und alles anhalten — für dieses Fenster ist das abgeschaltet.'));
   } else if (process.platform === 'win32') {
-    wink('Wenn es plötzlich stehenbleibt: einmal Escape drücken.');
-    matt('Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und');
-    matt('hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape');
-    matt('löst es wieder. Am besten gar nicht erst hineinklicken.');
+    wink(T('Wenn es plötzlich stehenbleibt: einmal Escape drücken.'));
+    matt(T('Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und'));
+    matt(T('hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape'));
+    matt(T('löst es wieder. Am besten gar nicht erst hineinklicken.'));
   }
 
   /* ================================================================ */
-  schritt('Ordner prüfen', 'Ordner prüfen: Schreibrecht, keine Verwalterrechte, Platz',
-    `Geprüft wird ${WURZEL}. KlangTresor schreibt nur in diesen Ordner — kein Systemordner, ` +
-    'keine Registry, keine Administratorrechte. Erhöhte Rechte wären sogar schädlich: Alles ' +
-    'Angelegte gehörte danach dem Verwalter, und du kämst an dein eigenes Archiv nicht mehr heran.');
+  schritt(T('Ordner prüfen'), T('Ordner prüfen: Schreibrecht, keine Verwalterrechte, Platz'),
+    T('Geprüft wird {ordner}. KlangTresor schreibt nur in diesen Ordner — kein Systemordner, keine Registry, keine Administratorrechte. Erhöhte Rechte wären sogar schädlich: Alles Angelegte gehörte danach dem Verwalter, und du kämst an dein eigenes Archiv nicht mehr heran.', { ordner: WURZEL }));
 
   if (!darfSchreiben(WURZEL)) {
-    boese('In diesen Ordner darf ich nicht schreiben.');
-    matt('KlangTresor legt hier seine Werkzeuge und sein Archiv ab — ohne');
-    matt('Schreibrecht geht das nicht.');
+    boese(T('In diesen Ordner darf ich nicht schreiben.'));
+    matt(T('KlangTresor legt hier seine Werkzeuge und sein Archiv ab — ohne'));
+    matt(T('Schreibrecht geht das nicht.'));
     leer();
-    matt('Verschiebe den Ordner an einen Platz, der dir gehört, zum Beispiel');
-    matt(process.platform === 'win32' ? '  C:\\Users\\<du>\\KlangTresor' : '  ~/KlangTresor');
+    matt(T('Verschiebe den Ordner an einen Platz, der dir gehört, zum Beispiel'));
+    matt(process.platform === 'win32' ? T('  C:\\Users\\<du>\\KlangTresor') : '  ~/KlangTresor');
     leer(); schluss(1);
   }
-  gut('Schreibrecht im Projektordner: ja.');
-  zeile('schreiben', 'Schreibrecht', 'ja');
+  gut(T('Schreibrecht im Projektordner: ja.'));
+  zeile('schreiben', T('Schreibrecht'), T('ja'));
 
   if (imSystemordner(WURZEL)) {
-    wink('Dieser Ordner liegt in einem Systembereich.');
-    matt('Das geht meist eine Weile gut und bricht dann an einer Stelle, die');
-    matt('niemand vermutet. Besser wäre ein Ordner, der dir selbst gehört.');
+    wink(T('Dieser Ordner liegt in einem Systembereich.'));
+    matt(T('Das geht meist eine Weile gut und bricht dann an einer Stelle, die'));
+    matt(T('niemand vermutet. Besser wäre ein Ordner, der dir selbst gehört.'));
     leer();
-    if (!await jaNein('Trotzdem hier bleiben?', 'n')) { wiederkommen(); schluss(0); }
+    if (!await jaNein(T('Trotzdem hier bleiben?'), 'n')) { wiederkommen(); schluss(0); }
   }
 
   if (erhoeht()) {
-    wink('Das läuft gerade mit erhöhten Rechten (Administrator bzw. root).');
-    matt('Gebraucht wird das NICHT — KlangTresor schreibt nur in seinen eigenen');
-    matt('Ordner. Es schadet aber: alles Angelegte gehört danach dem Verwalter,');
-    matt('und im Alltag kommst du an dein eigenes Archiv nicht mehr heran.');
+    wink(T('Das läuft gerade mit erhöhten Rechten (Administrator bzw. root).'));
+    matt(T('Gebraucht wird das NICHT — KlangTresor schreibt nur in seinen eigenen'));
+    matt(T('Ordner. Es schadet aber: alles Angelegte gehört danach dem Verwalter,'));
+    matt(T('und im Alltag kommst du an dein eigenes Archiv nicht mehr heran.'));
     leer();
-    matt('Besser: dieses Fenster schließen und ohne erhöhte Rechte neu starten.');
+    matt(T('Besser: dieses Fenster schließen und ohne erhöhte Rechte neu starten.'));
     leer();
-    if (!await jaNein('Trotzdem so weitermachen?', 'n')) { wiederkommen(); schluss(0); }
+    if (!await jaNein(T('Trotzdem so weitermachen?'), 'n')) { wiederkommen(); schluss(0); }
   } else {
-    gut('Keine erhöhten Rechte nötig — und es laufen auch keine.');
-    zeile('rechte', 'Keine erhöhten Rechte', 'es laufen auch keine');
+    gut(T('Keine erhöhten Rechte nötig — und es laufen auch keine.'));
+    zeile('rechte', T('Keine erhöhten Rechte'), T('es laufen auch keine'));
   }
 
   /* Platz: rund 1,6 GB fuer Werkzeuge, Pakete und Modelle (gemessen
@@ -1288,16 +1327,18 @@ open -a Terminal ${JSON.stringify(starter)}
      genannt und nicht nur geprueft. */
   const platz = freierPlatz(WURZEL);
   if (platz === null) {
-    matt('Freien Platz konnte ich nicht ermitteln — ich mache weiter.');
+    matt(T('Freien Platz konnte ich nicht ermitteln — ich mache weiter.'));
   } else if (platz < 2147483648) {
-    boese(`Hier sind nur ${MB(platz)} frei. Für die Einrichtung braucht es rund 1,6 GB,`);
-    zeile('platz', 'Platz', `nur ${MB(platz)} frei — gebraucht wird rund 1,6 GB`, 'wink');
-    matt('und das Archiv kommt danach erst noch dazu.');
+    boese(T('Hier sind nur {mb} frei. Für die Einrichtung braucht es rund 1,6 GB,', { mb: MB(platz) }));
+    zeile('platz', T('Platz'), T('nur {mb} frei — gebraucht wird rund 1,6 GB', { mb: MB(platz) }), 'wink');
+    matt(T('und das Archiv kommt danach erst noch dazu.'));
     leer();
-    if (!await jaNein('Trotzdem versuchen?', 'n')) { wiederkommen(); schluss(0); }
+    if (!await jaNein(T('Trotzdem versuchen?'), 'n')) { wiederkommen(); schluss(0); }
   } else {
-    gut(`Platz: ${(platz / 1073741824).toFixed(1)} GB frei — die Einrichtung braucht rund 1 GB.`);
-    zeile('platz', 'Platz', `${(platz / 1073741824).toFixed(1).replace('.', ',')} GB frei, die Einrichtung braucht rund 1,6 GB`);
+    /* Dezimalkomma ausser im Englischen; und dieselbe Zahl wie auf der Seite (vorher hier „rund 1 GB", dort „1,6 GB"). */
+    const gbText = sprache() === 'en' ? (platz / 1073741824).toFixed(1) : (platz / 1073741824).toFixed(1).replace('.', ',');
+    gut(T('Platz: {gb} GB frei — die Einrichtung braucht rund 1,6 GB.', { gb: gbText }));
+    zeile('platz', T('Platz'), T('{gb} GB frei, die Einrichtung braucht rund 1,6 GB', { gb: gbText }));
   }
 
   /* Ein Projekt auf einer Netzwerkfreigabe ist unter Windows heikel:
@@ -1306,29 +1347,28 @@ open -a Terminal ${JSON.stringify(starter)}
      sollte man es trotzdem. */
   if (process.platform === 'win32' && WURZEL.startsWith('\\\\')) {
     leer();
-    wink('KlangTresor liegt nicht auf dieser Maschine.');
+    wink(T('KlangTresor liegt nicht auf dieser Maschine.'));
     matt(`  ${WURZEL}`);
     { const wo = ortInWorten(WURZEL); if (wo) matt(`  ${wo}`); }
-    matt('Windows kommt mit solchen Pfaden nur halb zurecht: manche Werkzeuge');
-    matt('springen stillschweigend nach C:\\Windows. npm gehört dazu, und ich');
-    matt('helfe ihm gleich mit einem Kniff darüber hinweg — verlassen würde');
-    matt('ich mich darauf nicht.');
+    matt(T('Windows kommt mit solchen Pfaden nur halb zurecht: manche Werkzeuge'));
+    matt(T('springen stillschweigend nach C:\\Windows. npm gehört dazu, und ich'));
+    matt(T('helfe ihm gleich mit einem Kniff darüber hinweg — verlassen würde'));
+    matt(T('ich mich darauf nicht.'));
     leer();
-    matt('Sicherer ist ein Ordner auf der Platte dieses Rechners, etwa');
-    matt('C:\\Users\\<du>\\KlangTresor. Wenn du jetzt abbrichst, den Ordner');
-    matt('dorthin verschiebst und neu startest, bleibt alles Geholte erhalten.');
+    matt(T('Sicherer ist ein Ordner auf der Platte dieses Rechners, etwa'));
+    matt(T('C:\\Users\\<du>\\KlangTresor. Wenn du jetzt abbrichst, den Ordner'));
+    matt(T('dorthin verschiebst und neu startest, bleibt alles Geholte erhalten.'));
   }
 
   /* ================================================================ */
-  schritt('Was ist schon da?', 'Was wird gebraucht, was ist schon da? Archiv, Werkzeuge, KI-Modelle',
-    `${WURZEL} zeigt folgendes. Nichts wird doppelt geholt und nichts überschrieben: Was fehlt, ` +
-    'wird in den nächsten Schritten geholt — ich sage genau, worum es sich handelt.');
+  schritt(T('Was ist schon da?'), T('Was wird gebraucht, was ist schon da? Archiv, Werkzeuge, KI-Modelle'),
+    T('{ordner} zeigt folgendes. Nichts wird doppelt geholt und nichts überschrieben: Was fehlt, wird in den nächsten Schritten geholt — ich sage genau, worum es sich handelt.', { ordner: WURZEL }));
 
   for (const n of ['package.json', 'bin', 'server', 'web']) {
     if (!fs.existsSync(path.join(WURZEL, n))) {
-      boese('Das sieht nicht nach KlangTresor aus.');
-      matt(`Hier fehlt ${n}. Beim Aktualisieren gehört der INHALT des Pakets in`);
-      matt('den bestehenden Ordner, nicht der ausgepackte Ordner daneben.');
+      boese(T('Das sieht nicht nach KlangTresor aus.'));
+      matt(T('Hier fehlt {name}. Beim Aktualisieren gehört der INHALT des Pakets in', { name: n }));
+      matt(T('den bestehenden Ordner, nicht der ausgepackte Ordner daneben.'));
       leer(); schluss(1);
     }
   }
@@ -1341,9 +1381,9 @@ open -a Terminal ${JSON.stringify(starter)}
   try { songs = fs.readdirSync(path.join(WURZEL, 'library/songs')).length; } catch (e) {}
 
   if (katalogDa || songs > 0) {
-    gut(`Hier liegt ein KlangTresor-Archiv: ${songs} Songs.`);
-    matt('Es wird ergänzt, nichts überschrieben.');
-    zeile('archiv', 'KlangTresor-Archiv', `${songs} Titel sind da, nur Änderungen werden ergänzt`);
+    gut(T('Hier liegt ein KlangTresor-Archiv: {n} Songs.', { n: songs }));
+    matt(T('Es wird ergänzt, nichts überschrieben.'));
+    zeile('archiv', T('KlangTresor-Archiv'), T('{n} Titel sind da, nur Änderungen werden ergänzt', { n: songs }));
   } else {
     /* Caspar_D, 24.08.2026: „Hier kann wirklich am meisten schief gehen."
        Wer den ausgepackten Ordner NEBEN das Archiv legt und dort startet,
@@ -1359,19 +1399,19 @@ open -a Terminal ${JSON.stringify(starter)}
       }
     } catch (e) {}
     if (nachbar) {
-      wink('Hier ist kein KlangTresor-Archiv — aber nebenan liegt eines:');
+      wink(T('Hier ist kein KlangTresor-Archiv — aber nebenan liegt eines:'));
       satz('    ' + HELL(nachbar));
       leer();
-      matt('Vermutlich ist das der Ordner, der gemeint war. Beim Aktualisieren');
-      matt('gehört der INHALT dieses Pakets dorthin, nicht der Ordner daneben.');
-      matt('Fängst du hier neu an, wird alles neu geladen — und zurück kommen');
-      matt('Titelbilder und Bewegtbilder, aber keine WAV und keine Instrumentspuren.');
+      matt(T('Vermutlich ist das der Ordner, der gemeint war. Beim Aktualisieren'));
+      matt(T('gehört der INHALT dieses Pakets dorthin, nicht der Ordner daneben.'));
+      matt(T('Fängst du hier neu an, wird alles neu geladen — und zurück kommen'));
+      matt(T('Titelbilder und Bewegtbilder, aber keine WAV und keine Instrumentspuren.'));
       leer();
-      zeile('archiv', 'KlangTresor-Archiv', 'keins hier — aber eines nebenan: ' + nachbar, 'wink');
-      if (!await jaNein('Trotzdem hier neu anfangen?', 'n')) { wiederkommen(); schluss(0); }
+      zeile('archiv', T('KlangTresor-Archiv'), T('keins hier — aber eines nebenan: {pfad}', { pfad: nachbar }), 'wink');
+      if (!await jaNein(T('Trotzdem hier neu anfangen?'), 'n')) { wiederkommen(); schluss(0); }
     } else {
-      gut('Hier ist noch kein KlangTresor-Archiv. Ich lege eines an.');
-      zeile('archiv', 'KlangTresor-Archiv', 'noch keins — es wird angelegt', 'laeuft');
+      gut(T('Hier ist noch kein KlangTresor-Archiv. Ich lege eines an.'));
+      zeile('archiv', T('KlangTresor-Archiv'), T('noch keins — es wird angelegt'), 'laeuft');
     }
   }
 
@@ -1381,52 +1421,52 @@ open -a Terminal ${JSON.stringify(starter)}
   {
     const ffDa = fs.existsSync(path.join(WERKZEUG, 'ffmpeg', 'bin', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg')) || !!da('ffmpeg');
     const ffLager = !ffDa && lagerHat('ffmpeg');
-    if (ffDa) zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'ist da');
-    else if (ffLager) zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'liegt auf diesem Rechner, wird kopiert', 'laeuft');
-    else if (process.platform === 'win32') zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'fehlt, wird geholt (rund 100 MB)', 'laeuft');
-    else zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'fehlt — der Paketverwalter holt es, ein Befehl', 'wink');
+    if (ffDa) zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('ist da'));
+    else if (ffLager) zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('liegt auf diesem Rechner, wird kopiert'), 'laeuft');
+    else if (process.platform === 'win32') zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt, wird geholt (rund 100 MB)'), 'laeuft');
+    else zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt — der Paketverwalter holt es, ein Befehl'), 'wink');
 
     /* ALLE Pakete aus package.json, nicht nur onnxruntime-node (Lutz, 23.10.2026: umap-js fehlte, und
        die Einrichtung hielt die Pakete fuer vollstaendig) - bin/pakete.js. */
     const paketeDa = require('./pakete.js').fehlende().length === 0;
-    zeile('pakete', 'Pakete: Programmbausteine des Servers', paketeDa ? 'sind da' : 'fehlen, werden geholt (19 Pakete, rund 240 MB)', paketeDa ? 'fertig' : 'laeuft');
+    zeile('pakete', T('Pakete: Programmbausteine des Servers'), paketeDa ? T('sind da') : T('fehlen, werden geholt (19 Pakete, rund 240 MB)'), paketeDa ? 'fertig' : 'laeuft');
 
     /* Die Zahl der Modelle kommt aus bin/modelle-holen.js selbst (07.10.2026): hier stand fest
        "13 von 13", waehrend die Liste laengst 15 Eintraege hatte - die Seite meldete fertig,
        obwohl SCRFD und PP-OCRv3 fehlten. */
     const { da: mDa, von: mVon } = require('./modelle-holen.js').bestand();
     const mLager = !mDa && lagerHat('modelle');
-    if (mDa >= mVon) zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', `${mDa} von ${mVon} sind da`);
-    else if (mLager) zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', 'liegen auf diesem Rechner, werden kopiert (rund 1,2 GB)', 'laeuft');
-    else zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', `${mDa} von ${mVon} — der Rest wird geholt (rund 1,2 GB)`, 'laeuft');
+    if (mDa >= mVon) zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} sind da', { da: mDa, von: mVon }));
+    else if (mLager) zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('liegen auf diesem Rechner, werden kopiert (rund 1,2 GB)'), 'laeuft');
+    else zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} — der Rest wird geholt (rund 1,2 GB)', { da: mDa, von: mVon }), 'laeuft');
 
     const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= mVon || mLager ? 0 : 1200);
-    if (zuHolen) zeile('summe', 'Zu holen', `rund ${zuHolen} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung`, 'laeuft');
-    else zeile('summe', 'Zu holen', 'nichts — alles liegt schon hier');
+    if (zuHolen) zeile('summe', T('Zu holen'), T('rund {mb} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung', { mb: zuHolen }), 'laeuft');
+    else zeile('summe', T('Zu holen'), T('nichts — alles liegt schon hier'));
   }
 
   if (await jemandAufPort(8788)) {
     leer();
-    wink('Auf Port 8788 antwortet bereits ein KlangTresor.');
-    matt('Solange der läuft, kann dieser hier nicht starten — und der Browser');
-    matt('würde den anderen zeigen. Erst dort das Fenster mit Strg-C beenden.');
+    wink(T('Auf Port 8788 antwortet bereits ein KlangTresor.'));
+    matt(T('Solange der läuft, kann dieser hier nicht starten — und der Browser'));
+    matt(T('würde den anderen zeigen. Erst dort das Fenster mit Strg-C beenden.'));
     leer();
-    zeile('port', 'Port 8788 für den Server', 'belegt — dort antwortet schon ein KlangTresor', 'wink');
-    if (!await jaNein('Trotzdem weitermachen?', 'n')) { wiederkommen(); schluss(0); }
-  } else zeile('port', 'Port 8788 für den Server, der KlangTresor im Browser zeigt', 'frei');
+    zeile('port', T('Port 8788 für den Server'), T('belegt — dort antwortet schon ein KlangTresor'), 'wink');
+    if (!await jaNein(T('Trotzdem weitermachen?'), 'n')) { wiederkommen(); schluss(0); }
+  } else zeile('port', T('Port 8788 für den Server, der KlangTresor im Browser zeigt'), T('frei'));
 
   /* ================================================================ */
   schritt('ffmpeg',
     process.platform === 'win32'
-      ? 'Lokale Medienverarbeitung mit ffmpeg: Lokale Verfügbarkeit wird geprüft, ggf. wird das Paket geladen'
-      : 'Lokale Medienverarbeitung mit ffmpeg: Lokale Verfügbarkeit wird geprüft',
-    'ffmpeg arbeitet mit den Ton- und Bilddaten: Klanganalyse, Wellenformen, Videoschnitt. ' +
+      ? T('Lokale Medienverarbeitung mit ffmpeg: Lokale Verfügbarkeit wird geprüft, ggf. wird das Paket geladen')
+      : T('Lokale Medienverarbeitung mit ffmpeg: Lokale Verfügbarkeit wird geprüft'),
+    T('ffmpeg arbeitet mit den Ton- und Bilddaten: Klanganalyse, Wellenformen, Videoschnitt.') + ' ' +
     (process.platform === 'win32'
-      ? `Es wird geholt und nach ${path.join(WERKZEUG, 'ffmpeg')} gelegt.`
+      ? T('Es wird geholt und nach {ordner} gelegt.', { ordner: path.join(WERKZEUG, 'ffmpeg') })
       : process.platform === 'darwin'
-        ? 'Auf dem Mac ist dafür der Paketverwalter zuständig — ein Befehl im Terminal, und es gilt für den ganzen Rechner.'
-        : 'Unter Linux ist dafür der Paketverwalter zuständig — ein Befehl, und es gilt für den ganzen Rechner.'));
-  matt('Für Klanganalyse, Wellenformen und den Videoschnitt.');
+        ? T('Auf dem Mac ist dafür der Paketverwalter zuständig — ein Befehl im Terminal, und es gilt für den ganzen Rechner.')
+        : T('Unter Linux ist dafür der Paketverwalter zuständig — ein Befehl, und es gilt für den ganzen Rechner.')));
+  matt(T('Für Klanganalyse, Wellenformen und den Videoschnitt.'));
 
   const ffEigen = path.join(WERKZEUG, 'ffmpeg', 'bin',
     process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
@@ -1435,22 +1475,22 @@ open -a Terminal ${JSON.stringify(starter)}
   if (!fs.existsSync(ffEigen) && !da('ffmpeg')) ausLager('ffmpeg', path.join(WERKZEUG, 'ffmpeg'));
   let ffmpeg = fs.existsSync(ffEigen) ? ffEigen : da('ffmpeg');
   if (ffmpeg) {
-    gut(`ffmpeg ist da: ${ffmpeg}`);
-    zeile('ffmpeg', 'ffmpeg', ffmpeg.startsWith(WERKZEUG) ? 'liegt in werkzeug/ffmpeg' : 'auf diesem Rechner vorhanden');
+    gut(T('ffmpeg ist da: {pfad}', { pfad: ffmpeg }));
+    zeile('ffmpeg', 'ffmpeg', ffmpeg.startsWith(WERKZEUG) ? T('liegt in werkzeug/ffmpeg') : T('auf diesem Rechner vorhanden'));
   } else if (process.platform !== 'win32') {
     /* Auf Mac und Linux gibt es einen Paketverwalter, der es besser kann
        als ein Download an ihm vorbei. */
-    wink('ffmpeg fehlt.');
-    zeile('ffmpeg', 'ffmpeg', 'fehlt — ein Befehl im Terminal holt es', 'wink');
+    wink(T('ffmpeg fehlt.'));
+    zeile('ffmpeg', 'ffmpeg', T('fehlt — ein Befehl im Terminal holt es'), 'wink');
     matt(process.platform === 'darwin' ? '  brew install ffmpeg' : '  sudo apt install ffmpeg');
-    matt('Danach dieses Einrichten noch einmal starten — es macht hier weiter.');
+    matt(T('Danach dieses Einrichten noch einmal starten — es macht hier weiter.'));
   } else {
     const url = QUELLEN['ffmpeg-windows'];
-    if (!url) wink("In quellen.txt fehlt die Zeile 'ffmpeg-windows' — ich mache ohne weiter.");
+    if (!url) wink(T("In quellen.txt fehlt die Zeile 'ffmpeg-windows' — ich mache ohne weiter."));
     else {
       let versuche = true;
       while (versuche && !ffmpeg) {
-        tut('ffmpeg holen — rund 100 MB.');
+        tut(T('ffmpeg holen — rund 100 MB.'));
         fs.mkdirSync(WERKZEUG, { recursive: true });
         const zip = path.join(WERKZEUG, 'ffmpeg.zip');
         const roh = path.join(WERKZEUG, '_ff_roh');
@@ -1458,16 +1498,16 @@ open -a Terminal ${JSON.stringify(starter)}
           einenOrdnerHeben(roh, path.join(WERKZEUG, 'ffmpeg'));
           try { fs.rmSync(zip, { force: true }); } catch (e) {}
           if (fs.existsSync(ffEigen)) {
-            ffmpeg = ffEigen; gut('ffmpeg liegt jetzt in werkzeug/ffmpeg.');
-            zeile('ffmpeg', 'ffmpeg', 'geholt und abgelegt in werkzeug/ffmpeg');
+            ffmpeg = ffEigen; gut(T('ffmpeg liegt jetzt in werkzeug/ffmpeg.'));
+            zeile('ffmpeg', 'ffmpeg', T('geholt und abgelegt in werkzeug/ffmpeg'));
             insLager('ffmpeg', path.join(WERKZEUG, 'ffmpeg'));
           }
         }
         if (!ffmpeg) {
-          const w = await wieWeiter('ffmpeg holen',
-            'Ohne ffmpeg läuft alles — nur Klangmessung und Videoschnitt fehlen.');
+          const w = await wieWeiter(T('ffmpeg holen'),
+            T('Ohne ffmpeg läuft alles — nur Klangmessung und Videoschnitt fehlen.'));
           if (w === 'schluss') { wiederkommen(); schluss(0); }
-          if (w === 'ueber') { wink('Weiter ohne ffmpeg. Ein späterer Lauf holt es nach.'); versuche = false; }
+          if (w === 'ueber') { wink(T('Weiter ohne ffmpeg. Ein späterer Lauf holt es nach.')); versuche = false; }
         }
       }
     }
@@ -1483,11 +1523,9 @@ open -a Terminal ${JSON.stringify(starter)}
   }
 
   /* ================================================================ */
-  schritt('Pakete', 'Programmbausteine des Servers: 19 Pakete werden geladen und eingerichtet',
-    'Fertige Bausteine, die KlangTresor benutzt statt sie selbst zu bauen: der Rechenkern für die ' +
-    'Klangmodelle, die Karte des Klangraums, Matrixrechnung. Sie liegen nicht im Paket, weil sie für ' +
-    `jedes System eigens gebaut werden — deshalb werden sie jetzt geholt, nach ${path.join(WURZEL, 'node_modules')}.`);
-  matt('Ein bis fünf Minuten, und zwischendurch ist es still.');
+  schritt(T('Pakete'), T('Programmbausteine des Servers: 19 Pakete werden geladen und eingerichtet'),
+    T('Fertige Bausteine, die KlangTresor benutzt statt sie selbst zu bauen: der Rechenkern für die Klangmodelle, die Karte des Klangraums, Matrixrechnung. Sie liegen nicht im Paket, weil sie für jedes System eigens gebaut werden — deshalb werden sie jetzt geholt, nach {ordner}.', { ordner: path.join(WURZEL, 'node_modules') }));
+  matt(T('Ein bis fünf Minuten, und zwischendurch ist es still.'));
   /* NPM OHNE EINGABEAUFFORDERUNG AUFRUFEN.
 
      `await laeuft()` startet unter Windows mit shell:true, also ueber cmd.exe -
@@ -1535,7 +1573,7 @@ open -a Terminal ${JSON.stringify(starter)}
   async function npmLaufen(args) {
     const na = npmAufruf();
     if (process.platform === 'win32' && WURZEL.startsWith('\\\\')) {
-      tut('Der Ordner liegt auf einer Freigabe — ich blende ihn kurz als Laufwerk ein.');
+      tut(T('Der Ordner liegt auf einer Freigabe — ich blende ihn kurz als Laufwerk ein.'));
       const teile = [`pushd "${WURZEL}"`, '&&',
                      `"${na.befehl}"`, ...na.vorn.map((v) => `"${v}"`), ...args].join(' ');
       const e = spawnSync('cmd', ['/d', '/c', teile], { stdio: 'inherit' });
@@ -1565,26 +1603,26 @@ open -a Terminal ${JSON.stringify(starter)}
         } } catch (e) {}
       }
     } catch (e) {}
-    lauf({ was: 'Pakete werden geladen und eingerichtet', n: zahl, von: 19, bytes, gesamt: 240 * 1048576,
-      hinweis: 'Zwischendurch ist es still: Manche Bausteine holen nach dem Laden noch eigene Teile nach. Das dauert, sieht aber nur nach Stillstand aus.' });
+    lauf({ was: T('Pakete werden geladen und eingerichtet'), n: zahl, von: 19, bytes, gesamt: 240 * 1048576,
+      hinweis: T('Zwischendurch ist es still: Manche Bausteine holen nach dem Laden noch eigene Teile nach. Das dauert, sieht aber nur nach Stillstand aus.') });
   }, 3000);
   const paketeGut = await npmLaufen(['install', '--no-fund', '--no-audit']);
   clearInterval(paketBlick); lauf(null);
   if (!paketeGut) {
     /* Kein „ueberspringen" hier: ohne die Pakete startet der Server
        nicht, die Wahl fuehrte also in eine Sackgasse. */
-    zeile('pakete', 'Pakete', 'konnten nicht geholt werden', 'wink');
-    wink('Die Pakete konnten nicht geholt werden.');
-    matt('Ohne sie startet der Server nicht — dieser Schritt ist der einzige,');
-    matt('der sich nicht überspringen lässt. Meist hilft: noch einmal versuchen.');
-    matt('Bleibt es dabei, blockiert oft ein Firmennetz oder ein Virenschutz den');
-    matt('Zugang zu registry.npmjs.org.');
+    zeile('pakete', T('Pakete'), T('konnten nicht geholt werden'), 'wink');
+    wink(T('Die Pakete konnten nicht geholt werden.'));
+    matt(T('Ohne sie startet der Server nicht — dieser Schritt ist der einzige,'));
+    matt(T('der sich nicht überspringen lässt. Meist hilft: noch einmal versuchen.'));
+    matt(T('Bleibt es dabei, blockiert oft ein Firmennetz oder ein Virenschutz den'));
+    matt(T('Zugang zu registry.npmjs.org.'));
     leer();
-    if (await jaNein('Noch einmal versuchen?')) {
+    if (await jaNein(T('Noch einmal versuchen?'))) {
       if (!await npmLaufen(['install', '--no-fund', '--no-audit'])) { wiederkommen(); schluss(1); }
-      gut('Pakete sind da.'); zeile('pakete', 'Pakete', '19 Pakete geholt');
+      gut(T('Pakete sind da.')); zeile('pakete', T('Pakete'), T('19 Pakete geholt'));
     } else { wiederkommen(); schluss(1); }
-  } else { gut('Pakete sind da.'); zeile('pakete', 'Pakete', '19 Pakete geholt'); }
+  } else { gut(T('Pakete sind da.')); zeile('pakete', T('Pakete'), T('19 Pakete geholt')); }
   /* NACHSEHEN STATT GLAUBEN: npm kann mit Erfolg enden und trotzdem ein Paket nicht hinlegen (Lutz,
      23.10.2026, umap-js). Was dann fehlt, holt bin/pakete.js einzeln nach - ohne fremde
      Installationsskripte, an denen ein volles npm install scheitert und alles zurueckrollt. */
@@ -1592,31 +1630,26 @@ open -a Terminal ${JSON.stringify(starter)}
     if (pk.fehlende().length) {
       const rest = pk.nachholen((t) => matt(t.trim()));
       if (rest.length) {
-        wink('Diese Pakete fehlen noch: ' + rest.join(', ') + '.');
-        matt('Ohne sie fehlen einzelne Funktionen (etwa Klangraum oder Klanganalyse). Ausweg: die Einrichtung');
-        matt('noch einmal starten oder später aktualisieren-* doppelklicken — beide holen das Fehlende nach.');
-        zeile('pakete', 'Pakete', 'es fehlen noch: ' + rest.join(', '), 'wink');
-      } else zeile('pakete', 'Pakete', '19 Pakete geholt, fehlende nachgeholt');
+        wink(T('Diese Pakete fehlen noch: {liste}.', { liste: rest.join(', ') }));
+        matt(T('Ohne sie fehlen einzelne Funktionen (etwa Klangraum oder Klanganalyse). Ausweg: die Einrichtung'));
+        matt(T('noch einmal starten oder später aktualisieren-* doppelklicken — beide holen das Fehlende nach.'));
+        zeile('pakete', T('Pakete'), T('es fehlen noch: {liste}', { liste: rest.join(', ') }), 'wink');
+      } else zeile('pakete', T('Pakete'), T('19 Pakete geholt, fehlende nachgeholt'));
     } }
 
   /* ================================================================ */
-  schritt('KI-Modelle', `KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — ${require('./modelle-holen.js').DATEIEN.length} Dateien, rund 1,2 GB`,
-    'Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird ' +
-    'einmal; auf diesem Rechner Gefundenes wird kopiert statt geladen. Drei Gruppen: Musikstil ' +
-    '(hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ' +
-    'ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht ' +
-    'aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, ' +
-    'was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).');
-  matt('Stemtrennung, Musikstil, Textverständnis und Tiefe. Klappt das nicht, läuft alles andere trotzdem.');
+  schritt(T('KI-Modelle'), T('KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — {n} Dateien, rund 1,2 GB', { n: require('./modelle-holen.js').DATEIEN.length }),
+    T('Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird einmal; auf diesem Rechner Gefundenes wird kopiert statt geladen. Drei Gruppen: Musikstil (hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).'));
+  matt(T('Stemtrennung, Musikstil, Textverständnis und Tiefe. Klappt das nicht, läuft alles andere trotzdem.'));
   const modelle = path.join(WURZEL, 'library', 'modelle');
   if (!fs.existsSync(modelle) || !fs.readdirSync(modelle).length) ausLager('modelle', modelle);
   if (!await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')])) {
-    const w = await wieWeiter('Modelle holen', 'Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.');
+    const w = await wieWeiter(T('Modelle holen'), T('Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.'));
     if (w === 'schluss') { wiederkommen(); schluss(0); }
     if (w === 'wieder') await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
   } else {
     const { da, von } = require('./modelle-holen.js').bestand();
-    gut('Modelle sind da.'); zeile('modelle', 'KI-Modelle', `${da} von ${von} sind da`, da >= von ? 'fertig' : 'wink'); insLager('modelle', modelle);
+    gut(T('Modelle sind da.')); zeile('modelle', T('KI-Modelle'), T('{da} von {von} sind da', { da, von }), da >= von ? 'fertig' : 'wink'); insLager('modelle', modelle);
   }
 
   /* ================================================================
@@ -1630,53 +1663,48 @@ open -a Terminal ${JSON.stringify(starter)}
      Drei Dinge werden deshalb ausdruecklich gesagt: WER hier bei Suno
      anklopft (ein Besucher, kein Angemeldeter), WAS dabei herkommt, und
      WAS NICHT - und was man tun muesste, wenn man auch das will. */
-  schritt('Dein Suno-Name', 'Wie heißt du bei Suno? Der Name entscheidet, wessen Daten geholt werden',
-    'KlangTresor ist eingerichtet und bereit, dein Archiv anzulegen. Dazu ruft es deine ' +
-    'Suno-Profilseite auf wie jeder beliebige Besucher: nur lesend, ohne Passwort, ohne Anmeldung. ' +
-    'Was ein Fremder sehen kann, kann KlangTresor holen. Alles andere kommt später.');
-  matt('KlangTresor ist eingerichtet und bereit, dein Archiv anzulegen.');
+  schritt(T('Dein Suno-Name'), T('Wie heißt du bei Suno? Der Name entscheidet, wessen Daten geholt werden'),
+    T('KlangTresor ist eingerichtet und bereit, dein Archiv anzulegen. Dazu ruft es deine Suno-Profilseite auf wie jeder beliebige Besucher: nur lesend, ohne Passwort, ohne Anmeldung. Was ein Fremder sehen kann, kann KlangTresor holen. Alles andere kommt später.'));
+  matt(T('KlangTresor ist eingerichtet und bereit, dein Archiv anzulegen.'));
   leer();
-  matt('Dazu rufe ich deine Profilseite auf wie jeder beliebige Besucher:');
-  matt('nur lesend, ohne Passwort, ohne Anmeldung. Was ein');
-  matt('Fremder sehen kann, kann ich holen. Alles andere kommt später.');
+  matt(T('Dazu rufe ich deine Profilseite auf wie jeder beliebige Besucher:'));
+  matt(T('nur lesend, ohne Passwort, ohne Anmeldung. Was ein'));
+  matt(T('Fremder sehen kann, kann ich holen. Alles andere kommt später.'));
   leer();
   let handle = '';
   try { handle = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library/konfig.json'), 'utf8')).handle || ''; } catch (e) {}
-  if (handle) { gut(`Gemerkt: @${handle}`); zeile('name', 'Dein Suno-Name', '@' + handle); }
+  if (handle) { gut(T('Gemerkt: {name}', { name: '@' + handle })); zeile('name', T('Dein Suno-Name'), '@' + handle); }
   else {
-    matt('Dein Suno-Name ist das, was hinter dem @ steht: Wenn deine Profilseite');
-    matt('suno.com/@musikfreund heißt, ist es „musikfreund". Nicht deine');
-    matt('E-Mail-Adresse und nicht der Anzeigename über deinen Liedern.');
+    matt(T('Dein Suno-Name ist das, was hinter dem @ steht: Wenn deine Profilseite'));
+    matt(T('suno.com/@musikfreund heißt, ist es „musikfreund". Nicht deine'));
+    matt(T('E-Mail-Adresse und nicht der Anzeigename über deinen Liedern.'));
     leer();
     /* Kleingeschrieben und ohne @ - so, wie Suno ihn fuehrt. Wer "Caspar_D"
        tippt, meint caspar_d; am 13.09.2026 fuehrte genau das zu einem
        leeren Katalog, weil der Wächter in aufbereiten.js buchstabengenau
        verglich. Dort ist es jetzt auch behoben; hier wird gar nicht erst
        Zweideutiges weitergegeben. */
-    handle = (await fragen('     ' + AKZENT('Dein Suno-Name: '),
-      { art: 'name', text: 'Dein Suno-Name',
-        hinweis: 'Nicht deine E-Mail-Adresse. Nicht der Anzeigename über deinen Liedern — der darf Leerzeichen und Großbuchstaben haben, der Suno-Name nicht.' }))
+    handle = (await fragen('     ' + AKZENT(T('Dein Suno-Name: ')),
+      { art: 'name', text: T('Dein Suno-Name'),
+        hinweis: T('Nicht deine E-Mail-Adresse. Nicht der Anzeigename über deinen Liedern — der darf Leerzeichen und Großbuchstaben haben, der Suno-Name nicht.') }))
       .replace(/^@/, '').replace(/^.*suno\.com\//i, '').replace(/^@/, '').trim().toLowerCase();
-    if (handle) zeile('name', 'Dein Suno-Name', '@' + handle);
+    if (handle) zeile('name', T('Dein Suno-Name'), '@' + handle);
   }
-  if (!handle) { boese('Ohne den Namen geht es nicht weiter.'); wiederkommen(); schluss(1); }
+  if (!handle) { boese(T('Ohne den Namen geht es nicht weiter.')); wiederkommen(); schluss(1); }
 
   /* ================================================================ */
-  schritt('Songliste', `Deine Songliste von @${handle}: Titel, Texte, Stile, Alben`,
-    'Gelesen wird deine Profilseite, Seite für Seite, zwanzig Titel je Seite. Es kommen Titel, ' +
-    'Liedtexte, Stilangaben, Modell und Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die ' +
-    'Alben, soweit sie öffentlich stehen. Noch keine Audiodateien: die kommen in den nächsten ' +
-    'beiden Schritten.');
-  matt('Ich lese deine Profilseite durch, Seite für Seite, zwanzig Titel je');
-  matt('Seite. Schnell geht das nicht, und das ist Absicht: ein fremder');
-  matt('Server bekommt eine Anfrage nach der anderen, nie hundert auf einmal.');
+  schritt(T('Songliste'), T('Deine Songliste von {name}: Titel, Texte, Stile, Alben', { name: '@' + handle }),
+    T('Gelesen wird deine Profilseite, Seite für Seite, zwanzig Titel je Seite. Es kommen Titel, Liedtexte, Stilangaben, Modell und Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die Alben, soweit sie öffentlich stehen. Noch keine Audiodateien: die kommen in den nächsten beiden Schritten.'));
+  matt(T('Ich lese deine Profilseite durch, Seite für Seite, zwanzig Titel je'));
+  matt(T('Seite. Schnell geht das nicht, und das ist Absicht: ein fremder'));
+  matt(T('Server bekommt eine Anfrage nach der anderen, nie hundert auf einmal.'));
   leer();
-  matt('Was dabei hereinkommt: Titel, Liedtexte, Stilangaben, Modell und');
-  matt('Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die Alben,');
-  matt('soweit sie öffentlich stehen.');
+  matt(T('Was dabei hereinkommt: Titel, Liedtexte, Stilangaben, Modell und'));
+  matt(T('Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die Alben,'));
+  matt(T('soweit sie öffentlich stehen.'));
   leer();
   if (!await laeuft(process.execPath, [path.join('bin', 'sammeln.js'), handle])) {
-    const w = await wieWeiter('Songliste holen', 'Ohne sie gibt es nichts zu archivieren.');
+    const w = await wieWeiter(T('Songliste holen'), T('Ohne sie gibt es nichts zu archivieren.'));
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
   }
   /* DEN KATALOG GLEICH BAUEN, NICHT ERST IN SCHRITT 9.
@@ -1691,19 +1719,19 @@ open -a Terminal ${JSON.stringify(starter)}
 
      Dieselbe Reihenfolge wie im Morgenlauf: Katalog, dann uebernehmen,
      dann laden. */
-  matt('Ich ordne das Gesammelte zu einem Katalog — das dauert einen Moment.');
-  lauf({ was: 'Der Katalog wird gebaut' });
+  matt(T('Ich ordne das Gesammelte zu einem Katalog — das dauert einen Moment.'));
+  lauf({ was: T('Der Katalog wird gebaut') });
   if (!await laeuft(process.execPath, [path.join('bin', 'aufbereiten.js')])) {
-    wink('Der Katalog ließ sich nicht bauen — der nächste Schritt findet dann nichts.');
+    wink(T('Der Katalog ließ sich nicht bauen — der nächste Schritt findet dann nichts.'));
   }
 
   /* Erst tun, dann benennen. Ein neuer Mensch kennt den „Morgenlauf"
      nicht - er kann ihn erst einordnen, wenn er einmal gesehen hat,
      was dabei passiert. */
   leer();
-  matt('Genau das passiert von jetzt an jeden Morgen: KlangTresor sieht');
-  matt('nach, was neu dazugekommen ist, und hält dein Archiv auf Stand.');
-  matt('Einen Knopf dafür findest du später auf der Seite.');
+  matt(T('Genau das passiert von jetzt an jeden Morgen: KlangTresor sieht'));
+  matt(T('nach, was neu dazugekommen ist, und hält dein Archiv auf Stand.'));
+  matt(T('Einen Knopf dafür findest du später auf der Seite.'));
 
   /* ================================================================
      DEIN EIGENES SUNO-ZEUG ZUERST.
@@ -1722,31 +1750,27 @@ open -a Terminal ${JSON.stringify(starter)}
      Wer seit 2025 dabei ist, hat aber meist alles schon einmal
      heruntergeladen und irgendwo liegen — und DAS ist der Bestand, den
      KlangTresor sonst nie wiederbekäme. */
-  schritt('Deine Suno-Dateien', 'Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet',
-    'Die Daten für deine KlangTresor-Bibliothek sind jetzt da — es fehlen die Audiodateien. Suno ' +
-    'gibt sie seit dem 03.09.2026 nicht mehr über Links heraus, selbst dem Besitzer nicht. Aber du ' +
-    'hast sie vermutlich längst auf der Platte. Erkannt werden sie durch KlangTresor am Inhalt, nie ' +
-    'am Dateinamen: Suno schreibt eine Kennung in den Kopf jeder Datei. KlangTresor wird nur lesen ' +
-    'und kopieren. Nichts wird verschoben, nichts gelöscht.');
-  matt('Die Daten für deine Bibliothek sind da — es fehlen die Audiodateien.');
+  schritt(T('Deine Suno-Dateien'), T('Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet'),
+    T('Die Daten für deine KlangTresor-Bibliothek sind jetzt da — es fehlen die Audiodateien. Suno gibt sie seit dem 03.09.2026 nicht mehr über Links heraus, selbst dem Besitzer nicht. Aber du hast sie vermutlich längst auf der Platte. Erkannt werden sie durch KlangTresor am Inhalt, nie am Dateinamen: Suno schreibt eine Kennung in den Kopf jeder Datei. KlangTresor wird nur lesen und kopieren. Nichts wird verschoben, nichts gelöscht.'));
+  matt(T('Die Daten für deine Bibliothek sind da — es fehlen die Audiodateien.'));
   leer();
-  matt('Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links');
-  matt('heraus — auch dem Besitzer nicht. Ich kann sie also nicht einfach');
-  matt('holen. Aber du hast sie vermutlich längst: Wer eine Weile dabei ist,');
-  matt('hat seine Lieder heruntergeladen und irgendwo liegen.');
+  matt(T('Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links'));
+  matt(T('heraus — auch dem Besitzer nicht. Ich kann sie also nicht einfach'));
+  matt(T('holen. Aber du hast sie vermutlich längst: Wer eine Weile dabei ist,'));
+  matt(T('hat seine Lieder heruntergeladen und irgendwo liegen.'));
   leer();
-  matt('Zeig mir, wo dein Suno-Zeug bisher lagert. Ich sehe dort nach, auch');
-  matt('in Unterordnern, sechs Ebenen tief.');
+  matt(T('Zeig mir, wo dein Suno-Zeug bisher lagert. Ich sehe dort nach, auch'));
+  matt(T('in Unterordnern, sechs Ebenen tief.'));
   leer();
-  matt('Erkannt wird am INHALT, nie am Dateinamen: Suno schreibt seine');
-  matt('Kennung in den Kopf jeder Datei. Was sie nicht trägt, fasse ich');
-  matt('nicht an — deine übrige Musik bleibt unberührt. Nichts wird');
-  matt('verschoben und nichts gelöscht, nur kopiert.');
+  matt(T('Erkannt wird am INHALT, nie am Dateinamen: Suno schreibt seine'));
+  matt(T('Kennung in den Kopf jeder Datei. Was sie nicht trägt, fasse ich'));
+  matt(T('nicht an — deine übrige Musik bleibt unberührt. Nichts wird'));
+  matt(T('verschoben und nichts gelöscht, nur kopiert.'));
   leer();
-  matt('In deinen Download- und Musikordnern sehe ich ohnehin nach — jetzt und');
-  matt('bei jedem Abgleich. Nennen musst du nur, was woanders liegt. Taucht');
-  matt('dasselbe Lied zweimal auf, ordne ich es einmal ein — welche Datei');
-  matt('gemeint ist, sagt die Kennung, nicht der Name.');
+  matt(T('In deinen Download- und Musikordnern sehe ich ohnehin nach — jetzt und'));
+  matt(T('bei jedem Abgleich. Nennen musst du nur, was woanders liegt. Taucht'));
+  matt(T('dasselbe Lied zweimal auf, ordne ich es einmal ein — welche Datei'));
+  matt(T('gemeint ist, sagt die Kennung, nicht der Name.'));
   leer();
   /* KEIN PFADFELD. Caspar_D, 13.09.2026, zum dritten Mal: „hier wird
      immer noch nach einem Textpfad gefragt, nochmal, das kann kein DAU."
@@ -1754,61 +1778,56 @@ open -a Terminal ${JSON.stringify(starter)}
      Mensch tippt einen Pfad. Ohne Bildschirm (Roehre, ferngesteuert)
      geht kein Dialog auf; dann bleibt es bei Download- und Musikordnern,
      und die Kommandozeile mit --ordner steht im Text. */
-  matt('Liegen deine Suno-Dateien noch woanders — in einem Backup, auf einer');
-  matt('externen Platte? Dann öffne ich ein Fenster, in dem du den Ordner wählst.');
+  matt(T('Liegen deine Suno-Dateien noch woanders — in einem Backup, auf einer'));
+  matt(T('externen Platte? Dann öffne ich ein Fenster, in dem du den Ordner wählst.'));
   leer();
   let ordner = '';
-  if (await jaNein('Ordner wählen?', 'n')) {
-    ordner = (await ordnerErfragen('Wo liegen deine Suno-Dateien?')) || '';
+  if (await jaNein(T('Ordner wählen?'), 'n')) {
+    ordner = (await ordnerErfragen(T('Wo liegen deine Suno-Dateien?'))) || '';
     if (!ordner) {
-      matt('Kein Ordner gewählt — dann nur Download- und Musikordner. Später jederzeit');
-      matt('auf der Seite unter „Suno-Dateien aus einem weiteren Ordner einlesen".');
+      matt(T('Kein Ordner gewählt — dann nur Download- und Musikordner. Später jederzeit'));
+      matt(T('auf der Seite unter „Suno-Dateien aus einem weiteren Ordner einlesen".'));
     }
   }
 
   const einlesen = [path.join('bin', 'uebernehmen.js'), '--tun'];
   if (ordner) {
     if (!fs.existsSync(ordner)) {
-      wink(`Den Ordner gibt es nicht: ${ordner}`);
-      matt('Ich sehe trotzdem im Download-Ordner nach. Später jederzeit:');
-      matt('  node bin/uebernehmen.js --ordner /pfad/zum/ordner --tun');
+      wink(T('Den Ordner gibt es nicht: {pfad}', { pfad: ordner }));
+      matt(T('Ich sehe trotzdem im Download-Ordner nach. Später jederzeit:'));
+      matt('  node bin/uebernehmen.js --ordner ' + T('/pfad/zum/ordner') + ' --tun');
     } else {
       einlesen.push('--ordner', ordner);
-      matt('Der Pfad wird gemerkt: ich sehe von jetzt an bei jedem Abgleich');
-      matt('auch dort nach, ohne dass du ihn noch einmal nennen musst.');
+      matt(T('Der Pfad wird gemerkt: ich sehe von jetzt an bei jedem Abgleich'));
+      matt(T('auch dort nach, ohne dass du ihn noch einmal nennen musst.'));
     }
   }
   leer();
   await laeuft(process.execPath, einlesen);
 
   /* ================================================================ */
-  schritt('Bilder', 'Titelbilder und Bewegtbilder werden geladen und aufbereitet',
-    'Zu jedem Titel gehört sein Bild — und wo Suno eines hat, ein kurzes Video. Beides liegt offen ' +
-    'auf Sunos Bildspeicher, dafür braucht es keine Anmeldung. Aus den Bildern rechnet KlangTresor ' +
-    'danach die Kacheln, die Farben, mit denen die Oberfläche sich später einfärbt, und zu jedem ' +
-    'Titelbild eine Tiefenkarte — sie sagt, was darin vorn und was hinten liegt, damit Licht, Dunst ' +
-    'und Partikel den Raum im Bild kennen. Das ist der längste Schritt — und du musst ihn nicht ' +
-    'abwarten.');
-  matt('Das dauert am längsten — abbrechen und später fortsetzen ist');
-  matt('erlaubt, was da ist wird nicht noch einmal geholt.');
-  if (PROBE.length) wink(`Probelauf: es werden nur ${PROBE[1]} Titel geholt.`);
+  schritt(T('Bilder'), T('Titelbilder und Bewegtbilder werden geladen und aufbereitet'),
+    T('Zu jedem Titel gehört sein Bild — und wo Suno eines hat, ein kurzes Video. Beides liegt offen auf Sunos Bildspeicher, dafür braucht es keine Anmeldung. Aus den Bildern rechnet KlangTresor danach die Kacheln, die Farben, mit denen die Oberfläche sich später einfärbt, und zu jedem Titelbild eine Tiefenkarte — sie sagt, was darin vorn und was hinten liegt, damit Licht, Dunst und Partikel den Raum im Bild kennen. Das ist der längste Schritt — und du musst ihn nicht abwarten.'));
+  matt(T('Das dauert am längsten — abbrechen und später fortsetzen ist'));
+  matt(T('erlaubt, was da ist wird nicht noch einmal geholt.'));
+  if (PROBE.length) wink(T('Probelauf: es werden nur {n} Titel geholt.', { n: PROBE[1] }));
   if (process.stdin.isTTY) {
     leer();
-    wink('Escape unterbricht das Laden und startet KlangTresor für einen ersten Blick.');
-    matt('Weitergeladen wird dann mit dem roten Knopf oben rechts im KlangTresor —');
-    matt('was schon da ist, wird nicht noch einmal geholt.');
+    wink(T('Escape unterbricht das Laden und startet KlangTresor für einen ersten Blick.'));
+    matt(T('Weitergeladen wird dann mit dem roten Knopf oben rechts im KlangTresor —'));
+    matt(T('was schon da ist, wird nicht noch einmal geholt.'));
     leer();
   }
   {
     const s = jetztSchritt();
-    if (s) s.abbrechbar = { text: 'Du musst nicht warten.',
-      klein: 'KlangTresor kann jetzt schon starten — die Bilder holt der rote Knopf oben rechts später nach, und was da ist, wird nicht noch einmal geladen. Du siehst dann eine vollständige Bibliothek, nur mit ein paar grauen Kacheln.',
-      knopf: 'Jetzt starten, Rest später' };
+    if (s) s.abbrechbar = { text: T('Du musst nicht warten.'),
+      klein: T('KlangTresor kann jetzt schon starten — die Bilder holt der rote Knopf oben rechts später nach, und was da ist, wird nicht noch einmal geladen. Du siehst dann eine vollständige Bibliothek, nur mit ein paar grauen Kacheln.'),
+      knopf: T('Jetzt starten, Rest später') };
     const e = await laeuftAbbrechbar(process.execPath, [path.join('bin', 'wiederherstellen.js'), ...PROBE]);
     if (s) s.abbrechbar = null;
     if (e.abgebrochen) {
       leer();
-      gut('Das Laden ist unterbrochen — der rote Knopf oben rechts holt später den Rest.');
+      gut(T('Das Laden ist unterbrochen — der rote Knopf oben rechts holt später den Rest.'));
     }
   }
 
@@ -1818,71 +1837,60 @@ open -a Terminal ${JSON.stringify(starter)}
      Bis hierher lief alles ohne Anmeldung. Wer mehr will, muss das
      Lesezeichen einrichten - und der Grund dafuer gehoert dazu, sonst
      klingt es nach Schikane statt nach Vorsicht. */
-  schritt('Zum Schluss', 'Fertig — und was nur du selbst holen kannst',
-    'Bis hierher war alles öffentlich — KlangTresor hat nur gelesen, was jeder Besucher deiner ' +
-    'Profilseite sehen kann. Was nur dir gehört, holt ein Lesezeichen in Chrome, mit deiner eigenen ' +
-    'Anmeldung.');
+  schritt(T('Zum Schluss'), T('Fertig — und was nur du selbst holen kannst'),
+    T('Bis hierher war alles öffentlich — KlangTresor hat nur gelesen, was jeder Besucher deiner Profilseite sehen kann. Was nur dir gehört, holt ein Lesezeichen in Chrome, mit deiner eigenen Anmeldung.'));
   { const a = jetztSchritt();
     if (a) a.abschluss = {
       fehlt: [
-        ['Deine unveröffentlichten Titel', 'mit Abrufen und Herzen'],
-        ['Wer dir gefolgt ist', 'wer geherzt, wer kommentiert hat — mit Namen und Zeitpunkt'],
-        ['Deine privaten Alben', ''],
-        ['Sunos eigene Analyse', 'Tempo, Taktraster, Hüllkurve'],
-        ['Die Wort-Zeitmarken', 'für den mitlaufenden Text'],
-        ['Die Audiodateien', 'für alles, was du bei Suno schon freigeschaltet hast'],
+        [T('Deine unveröffentlichten Titel'), T('mit Abrufen und Herzen')],
+        [T('Wer dir gefolgt ist'), T('wer geherzt, wer kommentiert hat — mit Namen und Zeitpunkt')],
+        [T('Deine privaten Alben'), ''],
+        [T('Sunos eigene Analyse'), T('Tempo, Taktraster, Hüllkurve')],
+        [T('Die Wort-Zeitmarken'), T('für den mitlaufenden Text')],
+        [T('Die Audiodateien'), T('für alles, was du bei Suno schon freigeschaltet hast')],
       ],
-      warum: 'Dafür braucht KlangTresor dich — und das hat einen guten Grund. Der Ausweis, den Suno '
-           + 'verlangt, lebt etwa eine Minute und gilt nur im Browser. KlangTresor bekommt ihn nicht und '
-           + 'soll ihn nicht bekommen: So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto. '
-           + 'Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin angemeldet bist — ein Klick, '
-           + 'einmal am Tag.',
-      zitat: 'Auf der KlangTresor-Seite findest du oben rechts den roten Knopf für den täglichen Abgleich '
-           + '— und darunter die Frage „Willst Du auch die nur Dir zugänglichen Daten im KlangTresor '
-           + 'sehen?". Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung. Chrome wird dafür '
-           + 'gebraucht.',
-      nachsatz: 'Was du bei Suno schon freigeschaltet hast, kostet dabei nichts — ein Guthaben zahlst du '
-              + 'nur beim Freischalten selbst, und das machst du bei Suno, nicht hier. Das alles geht auch '
-              + 'später jederzeit: KlangTresor läuft auch ohne.',
+      warum: T('Dafür braucht KlangTresor dich — und das hat einen guten Grund. Der Ausweis, den Suno verlangt, lebt etwa eine Minute und gilt nur im Browser. KlangTresor bekommt ihn nicht und soll ihn nicht bekommen: So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto. Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin angemeldet bist — ein Klick, einmal am Tag.'),
+      zitat: T('Auf der KlangTresor-Seite findest du oben rechts den roten Knopf für den täglichen Abgleich — und darunter die Frage „Willst Du auch die nur Dir zugänglichen Daten im KlangTresor sehen?". Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung. Chrome wird dafür gebraucht.'),
+      nachsatz: T('Was du bei Suno schon freigeschaltet hast, kostet dabei nichts — ein Guthaben zahlst du nur beim Freischalten selbst, und das machst du bei Suno, nicht hier. Das alles geht auch später jederzeit: KlangTresor läuft auch ohne.'),
     };
   }
-  matt('Bis hierher war alles öffentlich. Was nur dir gehört, fehlt noch:');
+  matt(T('Bis hierher war alles öffentlich. Was nur dir gehört, fehlt noch:'));
   leer();
-  satz(MATT('  · deine unveröffentlichten Titel, mit Abrufen und Herzen'));
-  satz(MATT('  · wer dir gefolgt ist, wer geherzt, wer kommentiert hat —'));
-  satz(MATT('    mit Namen und Zeitpunkt'));
-  satz(MATT('  · deine Alben, auch die privaten'));
-  satz(MATT('  · Sunos eigene Analyse: Tempo, Taktraster, Hüllkurve'));
-  satz(MATT('  · die Wort-Zeitmarken für den mitlaufenden Text'));
-  satz(MATT('  · und der Ton für alles, was du bei Suno schon freigeschaltet hast'));
+  satz(MATT(T('  · deine unveröffentlichten Titel, mit Abrufen und Herzen')));
+  satz(MATT(T('  · wer dir gefolgt ist, wer geherzt, wer kommentiert hat —')));
+  satz(MATT(T('    mit Namen und Zeitpunkt')));
+  satz(MATT(T('  · deine Alben, auch die privaten')));
+  satz(MATT(T('  · Sunos eigene Analyse: Tempo, Taktraster, Hüllkurve')));
+  satz(MATT(T('  · die Wort-Zeitmarken für den mitlaufenden Text')));
+  satz(MATT(T('  · und der Ton für alles, was du bei Suno schon freigeschaltet hast')));
   leer();
-  matt('Dafür brauche ich dich, und das hat einen guten Grund. Der Ausweis,');
-  matt('den Suno dafür verlangt, lebt etwa eine Minute und gilt nur im');
-  matt('Browser. KlangTresor bekommt ihn nicht und soll ihn nicht bekommen:');
-  matt('So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto.');
+  matt(T('Dafür brauche ich dich, und das hat einen guten Grund. Der Ausweis,'));
+  matt(T('den Suno dafür verlangt, lebt etwa eine Minute und gilt nur im'));
+  matt(T('Browser. KlangTresor bekommt ihn nicht und soll ihn nicht bekommen:'));
+  matt(T('So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto.'));
   leer();
-  matt('Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin');
-  matt('angemeldet bist. Es kostet einen Klick, einmal am Tag.');
+  matt(T('Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin'));
+  matt(T('angemeldet bist. Es kostet einen Klick, einmal am Tag.'));
   leer();
-  matt('Die KlangTresor-Seite geht gleich auf. Dort findest du den roten');
-  matt('Knopf für den täglichen Abgleich — und darunter diese Frage:');
+  matt(T('Die KlangTresor-Seite geht gleich auf. Dort findest du den roten'));
+  matt(T('Knopf für den täglichen Abgleich — und darunter diese Frage:'));
   leer();
-  satz(HELL('  „Willst Du auch die nur Dir zugänglichen Daten'));
-  satz(HELL('   im KlangTresor sehen?"'));
+  satz(HELL(T('  „Willst Du auch die nur Dir zugänglichen Daten')));
+  satz(HELL(T('   im KlangTresor sehen?"')));
   leer();
-  matt('Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung.');
-  matt('Chrome wird dafür gebraucht — in anderen Browsern gibt es das nicht.');
+  matt(T('Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung.'));
+  matt(T('Chrome wird dafür gebraucht — in anderen Browsern gibt es das nicht.'));
   leer();
-  matt('Der Ton, den du bei Suno freigeschaltet hast, kostet dabei nichts —');
-  matt('ein Guthaben zahlst du nur beim Freischalten selbst, und das machst');
-  matt('du bei Suno, nicht hier.');
+  matt(T('Der Ton, den du bei Suno freigeschaltet hast, kostet dabei nichts —'));
+  matt(T('ein Guthaben zahlst du nur beim Freischalten selbst, und das machst'));
+  matt(T('du bei Suno, nicht hier.'));
   leer();
-  matt('Das geht auch später jederzeit. KlangTresor läuft auch ohne.');
+  matt(T('Das geht auch später jederzeit. KlangTresor läuft auch ohne.'));
 
   /* ================================================================ */
   leer();
-  schreib('  ' + MARKE('####') + '  ' + HELL('Fertig. KlangTresor ist eingerichtet.'));
-  merken('schritt', 'Fertig. KlangTresor ist eingerichtet.');
+  schreib('  ' + MARKE('####') + '  ' + HELL(T('Fertig. KlangTresor ist eingerichtet.')));
+  merken('schritt', T('Fertig. KlangTresor ist eingerichtet.'));
   if (ZUSTAND.schritte[SCHRITT - 1]) ZUSTAND.schritte[SCHRITT - 1].zustand = 'fertig';
   ZUSTAND.fertig = true;
   leer();
@@ -1907,29 +1915,29 @@ open -a Terminal ${JSON.stringify(starter)}
     } catch (e) {}
     let alben = 0;
     try { const k = require('./katalog.js').lesen(); alben = (k && k.playlists ? k.playlists.length : 0); } catch (e) {}
-    kachel('Titel', String(titel));
-    kachel('mit Audiodatei', String(mitTon));
-    if (alben) kachel('Alben', String(alben));
-    kachel('Bilder', String(mitBild));
+    kachel(T('Titel'), String(titel));
+    kachel(T('mit Audiodatei'), String(mitTon));
+    if (alben) kachel(T('Alben'), String(alben));
+    kachel(T('Bilder'), String(mitBild));
     if (a && a.abschluss) a.abschluss.adressen = [];
   }
   { const v = schreibtischVerknuepfung(WURZEL);
-    if (v) { gut('Auf dem Schreibtisch liegt jetzt „KlangTresor" — damit startest du es künftig.');
-             zeile('desktop', 'Auf dem Schreibtisch liegt jetzt „KlangTresor"', 'damit startest du es künftig'); }
-    else { matt('Zum späteren Starten: der Starter liegt in ' + WURZEL + '.');
-           zeile('desktop', 'Zum späteren Starten', 'der Starter liegt in ' + WURZEL, 'wink'); } }
+    if (v) { gut(T('Auf dem Schreibtisch liegt jetzt „KlangTresor" — damit startest du es künftig.'));
+             zeile('desktop', T('Auf dem Schreibtisch liegt jetzt „KlangTresor"'), T('damit startest du es künftig')); }
+    else { matt(T('Zum späteren Starten: der Starter liegt in {ordner}.', { ordner: WURZEL }));
+           zeile('desktop', T('Zum späteren Starten'), T('der Starter liegt in {ordner}', { ordner: WURZEL }), 'wink'); } }
   leer();
-  satz(MATT('Adresse:  ') + MARKE('http://localhost:8788'));
-  zeile('adresse', 'Auf diesem Rechner', 'http://localhost:8788');
-  if (netz[0]) { satz(MATT('Im WLAN:  ') + MARKE(`http://${netz[0]}:8788`));
-                 zeile('wlan', 'Im WLAN, etwa vom Handy', `http://${netz[0]}:8788`); }
-  matt('Zum Beenden Strg-C. Später genügt der Starter im Projektordner.');
+  satz(MATT(T('Adresse:  ')) + MARKE('http://localhost:8788'));
+  zeile('adresse', T('Auf diesem Rechner'), 'http://localhost:8788');
+  if (netz[0]) { satz(MATT(T('Im WLAN:  ')) + MARKE(`http://${netz[0]}:8788`));
+                 zeile('wlan', T('Im WLAN, etwa vom Handy'), `http://${netz[0]}:8788`); }
+  matt(T('Zum Beenden Strg-C. Später genügt der Starter im Projektordner.'));
   leer();
   leser.close();
   if (OHNE_START) {
     /* Probelauf ohne Serverstart: die Seite bleibt stehen, damit man das
        Ergebnis ansehen kann. Sonst waere sie im selben Augenblick weg. */
-    if (SEITENSERVER) { SEITENSERVER.ref(); matt('Die Seite bleibt offen — mit Strg-C beenden.'); }
+    if (SEITENSERVER) { SEITENSERVER.ref(); matt(T('Die Seite bleibt offen — mit Strg-C beenden.')); }
     return;
   }
   /* Erst aufmachen, dann starten: der Browser braucht laenger zum
@@ -1943,20 +1951,18 @@ open -a Terminal ${JSON.stringify(starter)}
      vorher sagen, was kommt und was anzuhaken ist. */
   if (process.platform === 'win32') {
     { const a = jetztSchritt(); if (a && a.abschluss) a.abschluss.windows =
-      'Windows fragt in einem Moment, ob „Node.js JavaScript Runtime" ins Netzwerk darf. Das ist der '
-    + 'KlangTresor-Server. Hake „Private Netzwerke" an — sonst erreichst du ihn im eigenen WLAN nicht, '
-    + 'etwa vom Handy — und klicke „Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.'; }
-    wink('Gleich fragt Windows, ob „Node.js JavaScript Runtime" ins Netzwerk darf.');
-    matt('Das ist der KlangTresor-Server. Hake „Private Netzwerke" an — sonst');
-    matt('erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke');
-    matt('„Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.');
+      T('Windows fragt in einem Moment, ob „Node.js JavaScript Runtime" ins Netzwerk darf. Das ist der KlangTresor-Server. Hake „Private Netzwerke" an — sonst erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke „Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.'); }
+    wink(T('Gleich fragt Windows, ob „Node.js JavaScript Runtime" ins Netzwerk darf.'));
+    matt(T('Das ist der KlangTresor-Server. Hake „Private Netzwerke" an — sonst'));
+    matt(T('erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke'));
+    matt(T('„Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.'));
     leer();
   }
-  if (seiteAufmachen('http://localhost:8788')) gut('KlangTresor geht in Chrome auf.');
+  if (seiteAufmachen('http://localhost:8788/?sprache=' + sprache())) gut(T('KlangTresor geht in Chrome auf.'));
   else {
-    wink('KlangTresor geht in deinem Standardbrowser auf — Chrome habe ich nicht gefunden.');
-    matt('Zum Hören und Stöbern reicht jeder Browser. Nur das Lesezeichen für die');
-    matt('Daten, die nur du sehen darfst, läuft ausschließlich in Chrome:');
+    wink(T('KlangTresor geht in deinem Standardbrowser auf — Chrome habe ich nicht gefunden.'));
+    matt(T('Zum Hören und Stöbern reicht jeder Browser. Nur das Lesezeichen für die'));
+    matt(T('Daten, die nur du sehen darfst, läuft ausschließlich in Chrome:'));
     satz(MATT('  ') + MARKE('https://www.google.com/chrome/'));
   }
   await laeuft(process.execPath, [path.join('server', 'server.js')]);

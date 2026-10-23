@@ -38,7 +38,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KlangTresor wird eingerichtet</title>
+<title data-t="titel_seite">KlangTresor wird eingerichtet</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Cg transform='translate(32 32)' stroke='%23e8e8ec' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23e8e8ec'/%3E%3C/svg%3E">
 <style>
   :root{
@@ -64,6 +64,9 @@
     mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg transform='translate(32 32)' stroke='%23fff' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat}
   .stand{margin-left:auto;font-size:12px;color:var(--schwach);white-space:nowrap;font-variant-numeric:tabular-nums}
   .stand.fertig{color:var(--gut)}
+  .sprachen{display:flex;gap:calc(var(--e)/2);flex:0 0 auto}
+  .sprachen .pille{padding:4px 11px}
+  .sprachen .pille.an{padding:3px 10px}
 
   .rumpf{max-width:1000px;margin:calc(var(--e)*2) auto;display:grid;grid-template-columns:270px 1fr;
     gap:calc(var(--e)*2);padding:0 16px;align-items:start}
@@ -187,6 +190,11 @@
   <div class="kopfzeile">
     <h1 id="marke"><span id="markezeichen" aria-hidden="true"></span>KlangTresor</h1>
     <div class="stand" id="stand">wird eingerichtet</div>
+    <div class="sprachen" id="sprachen">
+      <button class="pille" type="button" data-sp="de">DE</button>
+      <button class="pille" type="button" data-sp="en" data-tip="en">EN*</button>
+      <button class="pille" type="button" data-sp="ru" data-tip="ru">RU*</button>
+    </div>
   </div>
 </header>
 
@@ -194,18 +202,18 @@
   <div class="liste" id="liste"></div>
   <div>
     <div class="register">
-      <button class="reg an" id="regE" type="button">Einrichtung</button>
-      <button class="reg" id="regP" type="button">Protokoll</button>
+      <button class="reg an" id="regE" type="button" data-t="regE">Einrichtung</button>
+      <button class="reg" id="regP" type="button" data-t="regP">Protokoll</button>
     </div>
 
     <div id="seiteE">
-      <h2><small id="nummer">Vorbereitung</small><span id="titel">Gleich geht es los …</span></h2>
+      <h2><small id="nummer" data-t="vorbereitung">Vorbereitung</small><span id="titel" data-t="gleich_los">Gleich geht es los …</span></h2>
       <div class="was" id="was"></div>
 
       <div class="karte warte" id="dialog" hidden>
-        <span class="ueber">ein Fenster ist offen</span>
+        <span class="ueber" data-t="fenster_offen">ein Fenster ist offen</span>
         <p id="dialogtext"></p>
-        <p class="klein">Siehst du es nicht? Dann liegt es hinter diesem Fenster — in der Taskleiste beziehungsweise im Dock nachsehen. Dort wählst du den Ordner; hier geht es danach weiter.</p>
+        <p class="klein" data-t="dialog_klein">Siehst du es nicht? Dann liegt es hinter diesem Fenster — in der Taskleiste beziehungsweise im Dock nachsehen. Dort wählst du den Ordner; hier geht es danach weiter.</p>
       </div>
 
       <div class="zeilen" id="zeilen"></div>
@@ -219,10 +227,10 @@
       <div class="kacheln" id="kacheln"></div>
 
       <div class="karte warte" id="abbrechen" hidden>
-        <span class="ueber">du musst nicht warten</span>
+        <span class="ueber" data-t="nicht_warten">du musst nicht warten</span>
         <p id="abbrtext"></p>
         <p class="klein" id="abbrklein"></p>
-        <div class="knoepfe"><button class="pille an" type="button" id="abbrknopf"></button><button class="pille" type="button" id="abbrnein">Weiter warten</button></div>
+        <div class="knoepfe"><button class="pille an" type="button" id="abbrknopf"></button><button class="pille" type="button" id="abbrnein" data-t="weiter_warten">Weiter warten</button></div>
       </div>
 
       <div id="abschluss" hidden>
@@ -231,7 +239,7 @@
         <div class="zitat" id="zitat"></div>
         <div class="was" id="nachsatz"></div>
         <div class="karte warte" id="windows" hidden>
-          <span class="ueber">gleich, nur unter Windows</span>
+          <span class="ueber" data-t="nur_windows">gleich, nur unter Windows</span>
           <p id="windowstext"></p>
         </div>
       </div>
@@ -250,7 +258,7 @@
 </div>
 
 <footer>
-  <span id="fussl">Abbrechen ist erlaubt — beim nächsten Start geht es von diesem Stand weiter.</span>
+  <span id="fussl" data-t="fuss_l">Abbrechen ist erlaubt — beim nächsten Start geht es von diesem Stand weiter.</span>
   <span id="fussr"></span>
 </footer>
 
@@ -259,12 +267,81 @@
 const $ = (i) => document.getElementById(i);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 /* Dezimalkomma und Tausenderpunkt - Hausregel 14. */
-const zahl = (n) => Number(n).toLocaleString('de-DE');
-const mb = (b) => b >= 1073741824 ? (b / 1073741824).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' GB'
-                                  : (b / 1048576).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' MB';
-const dauerText = (s) => s >= 90 ? 'noch etwa ' + Math.round(s / 60) + ' Minuten'
-                                 : 'noch etwa ' + Math.max(5, Math.round(s / 5) * 5) + ' Sekunden';
+const zahl = (n) => Number(n).toLocaleString(ZAHLSPRACHE[sp]);
+const mb = (b) => b >= 1073741824 ? (b / 1073741824).toLocaleString(ZAHLSPRACHE[sp], { maximumFractionDigits: 1 }) + ' ' + t('einh_gb')
+                                  : (b / 1048576).toLocaleString(ZAHLSPRACHE[sp], { maximumFractionDigits: 1 }) + ' ' + t('einh_mb');
+const dauerText = (s) => s >= 90 ? t('dauer_min', { n: Math.round(s / 60) })
+                                 : t('dauer_sek', { n: Math.max(5, Math.round(s / 5) * 5) });
+const von = (a, b) => t('a_von_b', { a: a, b: b });
 
+/* ---- Sprache. Die Seite laeuft im Browser und kann sprache.js nicht laden;
+   die eigenen Texte stehen hier. Texte vom Server kommen schon uebersetzt. ---- */
+const ZAHLSPRACHE = { de: 'de-DE', en: 'en-GB', ru: 'ru-RU' };
+const TIPP = { en: 'Translation partly AI-generated and still being revised', ru: 'Перевод частично создан с помощью ИИ и ещё дорабатывается' };
+const TX = {
+  titel_seite: { de: 'KlangTresor wird eingerichtet', en: 'KlangTresor is being set up', ru: 'Идёт настройка KlangTresor' },
+  stand_wird: { de: 'wird eingerichtet', en: 'being set up', ru: 'идёт настройка' },
+  stand_fertig: { de: 'eingerichtet', en: 'set up', ru: 'настроено' },
+  stand_schritt: { de: 'wird eingerichtet · Schritt {n} von {m}', en: 'being set up · step {n} of {m}', ru: 'идёт настройка · шаг {n} из {m}' },
+  regE: { de: 'Einrichtung', en: 'Setup', ru: 'Настройка' },
+  regP: { de: 'Protokoll', en: 'Log', ru: 'Журнал' },
+  vorbereitung: { de: 'Vorbereitung', en: 'Preparation', ru: 'Подготовка' },
+  gleich_los: { de: 'Gleich geht es los …', en: 'Starting in a moment …', ru: 'Сейчас начнём …' },
+  fertig: { de: 'Fertig', en: 'Done', ru: 'Готово' },
+  schritt_von: { de: 'Schritt {n} von {m}', en: 'Step {n} of {m}', ru: 'Шаг {n} из {m}' },
+  wohin: { de: 'Wohin KlangTresor gehört', en: 'Where KlangTresor belongs', ru: 'Где будет находиться KlangTresor' },
+  wohin_was: { de: 'Gleich wird gefragt, wo KlangTresor liegen soll — und ob nicht schon ein Archiv von dir auf diesem Rechner liegt.',
+    en: 'In a moment you will be asked where KlangTresor should live — and whether an archive of yours is already on this computer.',
+    ru: 'Сейчас вас спросят, где должен находиться KlangTresor и нет ли на этом компьютере вашего архива.' },
+  fenster_offen: { de: 'ein Fenster ist offen', en: 'a window is open', ru: 'открыто окно' },
+  dialog_klein: { de: 'Siehst du es nicht? Dann liegt es hinter diesem Fenster — in der Taskleiste beziehungsweise im Dock nachsehen. Dort wählst du den Ordner; hier geht es danach weiter.',
+    en: 'Cannot see it? Then it is behind this window — look in the taskbar or the Dock. Choose the folder there; this page carries on afterwards.',
+    ru: 'Не видите окно? Значит, оно за этим окном — посмотрите на панели задач или в Dock. Выберите папку там, а здесь всё продолжится дальше.' },
+  dialog_text: { de: 'Ein Auswahlfenster ist offen: „{n}"', en: 'A selection window is open: “{n}”', ru: 'Открыто окно выбора: «{n}»' },
+  nicht_warten: { de: 'du musst nicht warten', en: 'you do not have to wait', ru: 'ждать необязательно' },
+  weiter_warten: { de: 'Weiter warten', en: 'Keep waiting', ru: 'Подождать' },
+  abbrechen: { de: 'Abbrechen', en: 'Cancel', ru: 'Отменить' },
+  nur_windows: { de: 'gleich, nur unter Windows', en: 'shortly, Windows only', ru: 'скоро, только в Windows' },
+  frage_wahl: { de: 'bitte wählen', en: 'please choose', ru: 'выберите' },
+  frage_eingabe: { de: 'deine Eingabe', en: 'your input', ru: 'ваш ввод' },
+  weiter: { de: 'Weiter', en: 'Next', ru: 'Далее' },
+  fuss_l: { de: 'Abbrechen ist erlaubt — beim nächsten Start geht es von diesem Stand weiter.', en: 'Cancelling is fine — the next start carries on from where you stopped.', ru: 'Отменить можно — при следующем запуске настройка продолжится с этого места.' },
+  fuss_fertig: { de: 'Fertig. Du kannst dieses Fenster schließen.', en: 'Done. You can close this window.', ru: 'Готово. Это окно можно закрыть.' },
+  fuss_stumm: { de: 'Die Einrichtung antwortet nicht mehr — das Fenster ist vermutlich zu.', en: 'The setup is no longer responding — the window has probably been closed.', ru: 'Программа настройки больше не отвечает — вероятно, её окно закрыто.' },
+  laeuft_seit: { de: 'läuft seit {z}', en: 'running for {z}', ru: 'работает: {z}' },
+  a_von_b: { de: '{a} von {b}', en: '{a} of {b}', ru: '{a} из {b}' },
+  einh_titel: { de: 'Titel', en: 'titles', ru: 'треков' },
+  einh_gb: { de: 'GB', en: 'GB', ru: 'ГБ' },
+  einh_mb: { de: 'MB', en: 'MB', ru: 'МБ' },
+  dauer_min: { de: 'noch etwa {n} Minuten', en: 'about {n} minutes left', ru: 'осталось примерно минут: {n}' },
+  dauer_sek: { de: 'noch etwa {n} Sekunden', en: 'about {n} seconds left', ru: 'осталось примерно секунд: {n}' }
+};
+const zuSp = (x) => { x = String(x || '').toLowerCase(); return x.indexOf('ru') === 0 ? 'ru' : x.indexOf('de') === 0 ? 'de' : 'en'; };
+let sp = zuSp(navigator.language), spBis = 0;
+function t(id, v) {
+  const e = TX[id]; let x = e ? (e[sp] || e.en || e.de) : id;
+  if (v) for (const k in v) x = x.split('{' + k + '}').join(v[k]);
+  return x;
+}
+function malenSprache() {
+  document.documentElement.lang = sp;
+  document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = t(el.getAttribute('data-t')); });
+  document.title = t('titel_seite');
+  document.querySelectorAll('#sprachen [data-sp]').forEach(function (b) {
+    b.classList.toggle('an', b.getAttribute('data-sp') === sp);
+    const tip = b.getAttribute('data-tip'); if (tip) b.title = TIPP[tip];
+  });
+  letzteFrage = null; letzterStand = ''; /* Fragen und Zeilen neu malen */
+}
+function spracheWaehlen(neu) {
+  if (neu === sp) return;
+  sp = neu; spBis = Date.now() + 2500;
+  malenSprache();
+  fetch('/sprache', { method: 'POST', body: JSON.stringify({ sprache: neu }) }).catch(function () {});
+}
+document.querySelectorAll('#sprachen [data-sp]').forEach(function (b) { b.onclick = function () { spracheWaehlen(b.getAttribute('data-sp')); }; });
+
+let letzterStand = '';
 let start = Date.now(), letzteFrage = null, letztesProtokoll = 0, laschE = true;
 const tempoSpur = [];
 
@@ -294,16 +371,17 @@ function malenListe(s) {
 function malenSchritt(s) {
   const akt = (s.schritte || [])[s.aktuell - 1];
   if (akt) {
-    $('nummer').textContent = s.fertig ? 'Fertig' : 'Schritt ' + akt.nr + ' von ' + (s.gesamt || 10);
+    $('nummer').textContent = s.fertig ? t('fertig') : t('schritt_von', { n: akt.nr, m: s.gesamt || 10 });
     $('titel').textContent = akt.name;
     $('was').textContent = akt.erklaerung || '';
   } else {
-    $('nummer').textContent = 'Vorbereitung';
-    $('titel').textContent = 'Wohin KlangTresor gehört';
-    $('was').textContent = 'Gleich wird gefragt, wo KlangTresor liegen soll — und ob nicht schon ein Archiv von dir auf diesem Rechner liegt.';
+    $('nummer').textContent = t('vorbereitung');
+    $('titel').textContent = t('wohin');
+    $('was').textContent = t('wohin_was');
   }
-  if (s.fertig) { $('stand').textContent = 'eingerichtet'; $('stand').classList.add('fertig'); }
-  else if (akt) $('stand').textContent = 'wird eingerichtet · Schritt ' + akt.nr + ' von ' + (s.gesamt || 10);
+  if (s.fertig) { $('stand').textContent = t('stand_fertig'); $('stand').classList.add('fertig'); }
+  else if (akt) $('stand').textContent = t('stand_schritt', { n: akt.nr, m: s.gesamt || 10 });
+  else $('stand').textContent = t('stand_wird');
 
   const zz = (akt && akt.zeilen) || [];
   const marke = { fertig: '✓', laeuft: '→', offen: '◇', wink: '!' };
@@ -320,17 +398,17 @@ function malenSchritt(s) {
     /* Rechts oben steht, WAS gezaehlt wird - Seiten, Dateien, Titel.
        nEinheit gehoert zu n/von, einheit zur Stueckzahl darunter. */
     $('laufwo').textContent = L.quelle
-      || (L.n && L.von ? (L.nEinheit ? L.nEinheit + ' ' + zahl(L.n) + ' von ' + zahl(L.von)
-                                     : zahl(L.n) + ' von ' + zahl(L.von)) : '');
+      || (L.n && L.von ? (L.nEinheit ? L.nEinheit + ' ' + von(zahl(L.n), zahl(L.von))
+                                     : von(zahl(L.n), zahl(L.von))) : '');
     const hatMass = (L.gesamt && L.bytes != null) || (L.von && L.n != null);
     const teil = (L.gesamt && L.bytes != null) ? L.bytes / L.gesamt : (L.von ? L.n / L.von : 0);
     $('balken').classList.toggle('unbestimmt', !hatMass);
     $('fuell').style.width = hatMass ? Math.max(1, Math.min(100, teil * 100)).toFixed(1) + '%' : '';
 
     const links = [];
-    if (L.stueck != null) links.push(zahl(L.stueck) + (L.stueckVon ? ' von ' + zahl(L.stueckVon) : '') + ' ' + (L.einheit || 'Titel'));
-    else if (L.n != null && L.von) links.push((L.nEinheit ? L.nEinheit + ' ' : '') + zahl(L.n) + ' von ' + zahl(L.von) + (L.einheit && !L.nEinheit ? ' ' + L.einheit : ''));
-    if (L.bytes != null) links.push(L.gesamt ? mb(L.bytes) + ' von ' + mb(L.gesamt) : mb(L.bytes));
+    if (L.stueck != null) links.push((L.stueckVon ? von(zahl(L.stueck), zahl(L.stueckVon)) : zahl(L.stueck)) + ' ' + (L.einheit || t('einh_titel')));
+    else if (L.n != null && L.von) links.push((L.nEinheit ? L.nEinheit + ' ' : '') + von(zahl(L.n), zahl(L.von)) + (L.einheit && !L.nEinheit ? ' ' + L.einheit : ''));
+    if (L.bytes != null) links.push(L.gesamt ? von(mb(L.bytes), mb(L.gesamt)) : mb(L.bytes));
     if (L.jetzt) links.push(L.jetzt);
     $('laufzahl').textContent = links.join(' · ');
 
@@ -365,7 +443,7 @@ function malenSchritt(s) {
   if (A) {
     $('abbrtext').textContent = A.text || '';
     $('abbrklein').textContent = A.klein || '';
-    $('abbrknopf').textContent = A.knopf || 'Abbrechen';
+    $('abbrknopf').textContent = A.knopf || t('abbrechen');
   }
 
   /* Der Schluss: was nur der Mensch selbst holen kann. */
@@ -396,7 +474,7 @@ function malenFrage(f) {
   letzteFrage = f.id; box.hidden = false;
   const kn = $('fragknoepfe'); kn.innerHTML = '';
   const fd = $('fragefeld'); fd.innerHTML = ''; fd.hidden = true;
-  $('frageueber').textContent = f.art === 'wahl' ? 'bitte wählen' : 'deine Eingabe';
+  $('frageueber').textContent = f.art === 'wahl' ? t('frage_wahl') : t('frage_eingabe');
   $('fragetext').textContent = f.text || '';
   $('fragehinweis').hidden = !f.hinweis; $('fragehinweis').textContent = f.hinweis || '';
 
@@ -427,7 +505,7 @@ function malenFrage(f) {
   const e = document.createElement('input');
   e.type = 'text'; e.spellcheck = false; e.autocapitalize = 'off'; e.autocomplete = 'off';
   const b = document.createElement('button');
-  b.type = 'button'; b.className = 'pille an'; b.textContent = 'Weiter';
+  b.type = 'button'; b.className = 'pille an'; b.textContent = t('weiter');
   const los = function () { senden(e.value); };
   b.onclick = los;
   e.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === 'Return') los(); });
@@ -449,22 +527,23 @@ function malenProtokoll(zeilen) {
 async function tick() {
   let s;
   try { s = await (await fetch('/stand', { cache: 'no-store' })).json(); }
-  catch (e) { $('fussr').textContent = 'Die Einrichtung antwortet nicht mehr — das Fenster ist vermutlich zu.'; return; }
+  catch (e) { $('fussr').textContent = t('fuss_stumm'); return; }
 
   /* Nach einem Umzug wartet der Lauf auf einem anderen Port - dorthin,
      im selben Reiter (sonst gingen zwei Fenster auf). */
   if (s.weiter) { location.replace(s.weiter); return; }
 
+  if (s.sprache && s.sprache !== sp && Date.now() > spBis) { sp = zuSp(s.sprache); malenSprache(); }
   malenListe(s);
   malenSchritt(s);
   malenFrage(s.frage);
   $('dialog').hidden = !s.dialog;
-  if (s.dialog) $('dialogtext').textContent = 'Ein Auswahlfenster ist offen: „' + s.dialog + '"';
+  if (s.dialog) $('dialogtext').textContent = t('dialog_text', { n: s.dialog });
   malenProtokoll(s.zeilen || []);
 
-  if (s.fertig) $('fussl').textContent = 'Fertig. Du kannst dieses Fenster schließen.';
+  $('fussl').textContent = t(s.fertig ? 'fuss_fertig' : 'fuss_l');
   const sek = Math.round((Date.now() - start) / 1000);
-  $('fussr').textContent = 'läuft seit ' + Math.floor(sek / 60) + ':' + String(sek % 60).padStart(2, '0');
+  $('fussr').textContent = t('laeuft_seit', { z: Math.floor(sek / 60) + ':' + String(sek % 60).padStart(2, '0') });
 }
 
 $('abbrknopf').onclick = function () {
@@ -473,6 +552,7 @@ $('abbrknopf').onclick = function () {
 };
 $('abbrnein').onclick = function () { $('abbrechen').hidden = true; };
 
+malenSprache();
 malenLaschen();
 tick();
 setInterval(tick, 600);

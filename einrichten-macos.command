@@ -11,6 +11,17 @@
 # Abfolge wie unter Windows und Linux, aus derselben Datei.
 
 cd "$(dirname "$0")" || exit 1
+
+# SPRACHE (Deutsch, Englisch, Russisch): das System fragen, nicht die Umgebung -
+# ein Doppelklick startet ohne LANG. Die Wahl geht als KT_SPRACHE an Node weiter
+# (bin/sprache.js liest sie); t/say geben den Text in dieser Sprache aus.
+case "${KT_SPRACHE:-}" in de|en|ru) ;; *)
+  _sp=$(defaults read -g AppleLanguages 2>/dev/null | tr -d '(), "' | grep -v '^$' | head -1)
+  [ -n "$_sp" ] || _sp=${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}
+  case "$_sp" in ru*|RU*) KT_SPRACHE=ru ;; de*|DE*) KT_SPRACHE=de ;; *) KT_SPRACHE=en ;; esac ;;
+esac
+export KT_SPRACHE
+
 KT_SYSTEM=macos
 KT_ANHALTEN=1        # Doppelklick: das Fenster soll nicht wegspringen
 . bin/anlasser.sh "$@"

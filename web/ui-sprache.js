@@ -1,6 +1,7 @@
 /* KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE */
 /* Sprache der Oberfläche. DE, EN* und RU*, als Textkürzel, keine Flaggen (Stern: Übersetzung in Teilen KI-erzeugt, in Überarbeitung).
-   Nicht aus dem Browser erraten: wer nichts gewählt hat, sieht Deutsch.
+   Nicht aus dem Browser erraten: wer nichts gewählt hat, sieht die Sprache, die Einrichtung oder Starter
+   im System erkannt haben (?sprache=), sonst Deutsch.
    Russisch stammt von Henry (Discord, 22.10.2026, zum Teil zweimal geprüft); es steht
    in web/ui-sprache-ru.js (window.UI_RU, Schlüssel → Satz), das VOR dieser Datei lädt.
    Fehlendes Russisch fällt auf Englisch zurück, fehlendes Englisch auf Deutsch, nie auf den Rohschlüssel.
@@ -4084,12 +4085,26 @@
 
   const FEHLT = new Set();
 
+  /* ERSTES OEFFNEN NACH DER EINRICHTUNG (23.10.2026): Einrichtung und Starter erkennen die Sprache des
+     Systems (bin/sprache.js) und oeffnen die Seite mit ?sprache=de|en|ru. Hat hier noch niemand gewaehlt,
+     gilt sie und wird gemerkt; eine eigene Wahl im Umschalter schlaegt sie immer. Der Parameter
+     verschwindet danach aus der Adresszeile. */
   function spracheLesen() {
+    let url = null;
+    try {
+      const q = new URLSearchParams(location.search).get('sprache');
+      if (q && WOERTER[q]) url = q;
+      if (q) {
+        const u = new URL(location.href); u.searchParams.delete('sprache');
+        history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+      }
+    } catch (e) {}
     try {
       const s = localStorage.getItem(SPRACHE_MERK);
       if (s && WOERTER[s]) return s;
+      if (url) { localStorage.setItem(SPRACHE_MERK, url); return url; }
     } catch (e) {}
-    return SPRACHE_ANFANG;
+    return url || SPRACHE_ANFANG;
   }
 
   let sprache = spracheLesen();

@@ -72,10 +72,16 @@ const http = require('node:http');
 const https = require('node:https');
 const { spawnSync } = require('node:child_process');
 const { pipeline } = require('node:stream');
+const { T } = require('./sprache.js');
 
 /* WO DAS PROGRAMM LIEGT (Weg A, 15.10.2026): liegt diese Datei in bin/, ist es der Ordner darueber; sonst ihr eigener -
    die Kopie aus KlangTresor-Update.zip liegt im Hauptordner, neben library/. */
 const WURZEL = path.basename(__dirname).toLowerCase() === 'bin' ? path.resolve(__dirname, '..') : path.resolve(__dirname);
+/* NODE IN DEN SUCHPFAD (23.10.2026, im Windows-11-Test gefunden): npm fuehrt Installationsskripte ueber
+   cmd.exe aus - bei onnxruntime-node `node ./script/install`. Kommt Node nur aus werkzeug\node und steht nicht
+   im PATH, findet cmd.exe kein `node`, das Skript scheitert, und npm rollt ALLE Pakete zurueck (Lutz' fehlendes
+   umap-js). Also den Ordner des laufenden Node vorn in den PATH - fuer uns und alle Kinder. */
+process.env.PATH = path.dirname(process.execPath) + path.delimiter + (process.env.PATH || '');
 /* Was KlangTresor-Update.zip in den Ordner bringt, so wie Git die Pfade kennt (bin/aktualisieren.js nur, wenn jemand
    die Kopie dorthin legt; aktualisieren.js im Hauptordner kennt Git nie und haelt darum auch keinen Zug auf). */
 const PAKET = ['aktualisieren-linux.sh', 'aktualisieren-macos.command', 'aktualisieren-windows.cmd', 'bin/aktualisieren.js'];
@@ -193,7 +199,7 @@ function cudaGenutzt() {
    Exit 0, und der Server blieb auf /api/fassung ohne Antwort). Beim Download zaehlt zusaetzlich Content-Length. */
 function anfrage(url, kopf, timeoutMs, antwort, bruch) {
   const los = (u, tiefe) => {
-    if (tiefe > 5) return bruch(new Error('zu viele Umleitungen'));
+    if (tiefe > 5) return bruch(new Error(T('zu viele Umleitungen')));
     const nimm = u.startsWith('https') ? https : http;
     const req = nimm.get(u, { headers: kopf, timeout: timeoutMs }, (a) => {
       if (a.statusCode >= 300 && a.statusCode < 400 && a.headers.location) {
@@ -202,11 +208,11 @@ function anfrage(url, kopf, timeoutMs, antwort, bruch) {
       }
       if (a.statusCode !== 200) {
         a.resume();
-        return bruch(new Error((u.includes('api.github.com') ? 'GitHub antwortet HTTP ' : 'Download HTTP ') + a.statusCode));
+        return bruch(new Error(u.includes('api.github.com') ? T('GitHub antwortet HTTP {code}', { code: a.statusCode }) : T('Download HTTP {code}', { code: a.statusCode })));
       }
       antwort(a);
     });
-    req.on('timeout', () => req.destroy(new Error(u.includes('api.github.com') ? 'keine Antwort von GitHub' : 'Download steht still')));
+    req.on('timeout', () => req.destroy(new Error(u.includes('api.github.com') ? T('keine Antwort von GitHub') : T('Download steht still'))));
     req.on('error', bruch);
   };
   los(url, 0);
@@ -216,9 +222,9 @@ function holenText(url, timeoutMs) {
     anfrage(url, { 'User-Agent': UA, Accept: 'application/json' }, timeoutMs || 12000, (a) => {
       const stuecke = [];
       a.on('data', t => stuecke.push(t));
-      a.on('aborted', () => bruch(new Error('GitHub brach die Antwort ab')));
+      a.on('aborted', () => bruch(new Error(T('GitHub brach die Antwort ab'))));
       a.on('error', bruch);
-      a.on('end', () => { if (a.complete) fertig(Buffer.concat(stuecke).toString('utf8')); else bruch(new Error('GitHub brach die Antwort ab')); });
+      a.on('end', () => { if (a.complete) fertig(Buffer.concat(stuecke).toString('utf8')); else bruch(new Error(T('GitHub brach die Antwort ab'))); });
     }, bruch);
   });
 }
@@ -231,8 +237,8 @@ function holenDatei(url, ziel) {
       let ist = 0;
       a.on('data', t => { ist += t.length; });
       pipeline(a, fs.createWriteStream(ziel), (fehler) => {
-        if (fehler) return bruch(new Error('Download abgebrochen: ' + (fehler.message || fehler)));
-        if (!a.complete || (soll && ist !== soll)) return bruch(new Error('Download unvollstaendig (' + ist + ' von ' + (soll || '?') + ' Bytes)'));
+        if (fehler) return bruch(new Error(T('Download abgebrochen: {grund}', { grund: fehler.message || fehler })));
+        if (!a.complete || (soll && ist !== soll)) return bruch(new Error(T('Download unvollstaendig ({ist} von {soll} Bytes)', { ist, soll: soll || '?' })));
         fertig(ziel);
       });
     }, bruch);
@@ -242,7 +248,7 @@ function holenDatei(url, ziel) {
 async function githubRelease() {
   const roh = await holenText(QUELLEN.fassung);
   let d;
-  try { d = JSON.parse(roh); } catch (e) { throw new Error('GitHub lieferte kein JSON'); }
+  try { d = JSON.parse(roh); } catch (e) { throw new Error(T('GitHub lieferte kein JSON')); }
   const tag = d.tag_name || d.name || '';
   const version = String(tag).replace(/^v/i, '') || null;
   const zipAsset = Array.isArray(d.assets) ? d.assets.find(a => a && a.name === ZIP_NAME) : null;
@@ -318,7 +324,7 @@ function auspacken(zip, ziel) {
       ? ['ditto', ['-x', '-k', zip, ziel]]
       : ['unzip', ['-q', '-o', zip, '-d', ziel]];
   const e = spawnSync(w[0], w[1], { encoding: 'utf8' });
-  if (e.status !== 0) throw new Error('Auspacken ging nicht (' + w[0] + ').');
+  if (e.status !== 0) throw new Error(T('Auspacken ging nicht ({programm}).', { programm: w[0] }));
 }
 
 function zipUeberlegen(quelle) {
@@ -355,9 +361,9 @@ function npmCiWennNoetig(vorherHash) {
   try { nachher = fs.readFileSync(lock); } catch (e) { return false; }
   if (vorherHash && vorherHash.equals(nachher)) return false;
   const n = npmAufruf();
-  sag('  Pakete neu setzen (package-lock hat sich geaendert) …');
+  sag(T('  Pakete neu setzen (package-lock hat sich geaendert) …'));
   const r = spawnSync(n.befehl, n.vorn.concat(['ci', '--omit=dev']), { cwd: WURZEL, stdio: 'inherit', shell: n.schale });
-  if (r.status !== 0) throw new Error('npm ci ist gescheitert.');
+  if (r.status !== 0) throw new Error(T('npm ci ist gescheitert.'));
   return true;
 }
 
@@ -365,7 +371,7 @@ function composeBauen(laeuft) {
   const dateien = ['-f', 'docker/docker-compose.yml'];
   if (cudaGenutzt() && fs.existsSync(path.join(WURZEL, 'docker', 'docker-compose.cuda.yml'))) {
     dateien.push('-f', 'docker/docker-compose.cuda.yml');
-    sag('  NVIDIA-Overlay bleibt dabei (KLANG_CUDA).');
+    sag(T('  NVIDIA-Overlay bleibt dabei (KLANG_CUDA).'));
   }
   /* War der Container angehalten, bleibt er es: neu gebaut und angelegt, aber nicht gestartet (--no-start). */
   const hoch = laeuft ? ['up', '-d', '--build'] : ['up', '--no-start', '--build'];
@@ -375,9 +381,9 @@ function composeBauen(laeuft) {
     cmd = 'docker-compose';
     args = dateien.concat(hoch);
   }
-  sag('  Container neu bauen — das dauert ein paar Minuten.' + (laeuft ? '' : ' Er war angehalten und bleibt es.'));
+  sag(T('  Container neu bauen — das dauert ein paar Minuten.') + (laeuft ? '' : ' ' + T('Er war angehalten und bleibt es.')));
   const r = spawnSync(cmd, args, { cwd: WURZEL, stdio: 'inherit' });
-  if (r.status !== 0) throw new Error('Docker-Build ist gescheitert.');
+  if (r.status !== 0) throw new Error(T('Docker-Build ist gescheitert.'));
 }
 
 function sag(t) { console.log(t); }
@@ -414,7 +420,7 @@ function istKlangTresor(ordner) {
    andere ungetrackte Ordner haelt git pull nicht auf - vorher brach jede eingerichtete Installation hier ab. */
 function gitSchmutz() {
   const r = spawnSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: WURZEL, encoding: 'utf8' });
-  if (r.status !== 0) throw new Error(((r.stderr || '').trim().split('\n')[0]) || 'git status scheiterte');
+  if (r.status !== 0) throw new Error(((r.stderr || '').trim().split('\n')[0]) || T('git status scheiterte'));
   return (r.stdout || '').replace(/\s+$/, '');
 }
 function schmutzPfade(schmutz) {
@@ -432,7 +438,7 @@ function schmutzPfade(schmutz) {
 function gitSichern(schmutz, warum) {
   if (!schmutz) return false;
   const h = git(['stash', 'create'], true);
-  if (!h) throw new Error('Die ungesicherten Aenderungen liessen sich nicht im git stash sichern. Ich lasse alles, wie es ist.');
+  if (!h) throw new Error(T('Die ungesicherten Aenderungen liessen sich nicht im git stash sichern. Ich lasse alles, wie es ist.'));
   git(['stash', 'store', '-m', 'KlangTresor-Update ' + new Date().toISOString().slice(0, 10) + ': ' + warum, h]);
   return true;
 }
@@ -475,7 +481,7 @@ function gitZustand() {
   if (!quelle) return { zweig, schmutz, quelle, unserOrigin, lage: 'ohne-origin' };
   /* ein gescheitertes fetch ist „Stand unbekannt", nicht „nichts zu holen" (Pruefung bei der Uebernahme) */
   const geholt = spawnSync('git', ['fetch', 'origin'], { cwd: WURZEL, encoding: 'utf8' });
-  if (geholt.status !== 0) return { zweig, schmutz, quelle, unserOrigin, lage: 'unerreichbar', grund: ((geholt.stderr || '').trim().split('\n')[0] || 'git fetch scheiterte') };
+  if (geholt.status !== 0) return { zweig, schmutz, quelle, unserOrigin, lage: 'unerreichbar', grund: ((geholt.stderr || '').trim().split('\n')[0] || T('git fetch scheiterte')) };
   const origin = git(['rev-parse', '--verify', '-q', 'origin/main'], true) || null;
   const kopf = git(['rev-parse', '--verify', '-q', 'HEAD'], true) || null;
   let lage = 'unbekannt';
@@ -504,40 +510,33 @@ function kopieWegraeumen() {
   if (gleicherOrdner(__filename, eigen) || !fs.existsSync(eigen)) return;
   try {
     fs.unlinkSync(__filename);
-    sag('  Die Kopie ' + path.basename(__filename) + ' im Hauptordner habe ich weggeraeumt –');
-    sag('  ab jetzt spielt bin/aktualisieren.js das Update ein.');
+    sag(T('  Die Kopie {datei} im Hauptordner habe ich weggeraeumt –\n  ab jetzt spielt bin/aktualisieren.js das Update ein.', { datei: path.basename(__filename) }));
   } catch (e) {
-    sag('  Die Kopie ' + __filename + ' liess sich nicht wegraeumen (' + (e.code || e.message) + ').');
-    sag('  Bitte von Hand loeschen - ab jetzt gilt bin/aktualisieren.js.');
+    sag(T('  Die Kopie {pfad} liess sich nicht wegraeumen ({grund}).\n  Bitte von Hand loeschen - ab jetzt gilt bin/aktualisieren.js.', { pfad: __filename, grund: e.code || e.message }));
   }
   sag('');
 }
 
 async function main() {
   sag('');
-  sag('  KlangTresor — Update einspielen');
+  sag(T('  KlangTresor — Update einspielen'));
   sag('  ===============================');
   sag('');
 
   if (imContainer()) {
-    sag('  Das hier laeuft im Container. Aktualisieren gehoert auf den Rechner,');
-    sag('  in den Projektordner (dort liegt library/ daneben):');
+    sag(T('  Das hier laeuft im Container. Aktualisieren gehoert auf den Rechner,\n  in den Projektordner (dort liegt library/ daneben):'));
     sag('    ./aktualisieren-linux.sh');
-    sag('    oder aktualisieren-macos.command / aktualisieren-windows.cmd');
+    sag(T('    oder aktualisieren-macos.command / aktualisieren-windows.cmd'));
     sag('');
     process.exit(1);
   }
   if (!istKlangTresor(WURZEL)) {
     const darueber = path.dirname(WURZEL);
     if (WURZEL === path.resolve(__dirname) && istKlangTresor(darueber)) {
-      sag('  Diese Datei liegt eine Ebene zu tief, in ' + path.basename(WURZEL) + '/.');
-      sag('  Kopiere aktualisieren.js und ' + anlasser('aktualisieren') + ' in den Ordner darueber,');
-      sag('  dort, wo library/ liegt, und starte es dort:');
+      sag(T('  Diese Datei liegt eine Ebene zu tief, in {ordner}/.\n  Kopiere aktualisieren.js und {anlasser} in den Ordner darueber,\n  dort, wo library/ liegt, und starte es dort:', { ordner: path.basename(WURZEL), anlasser: anlasser('aktualisieren') }));
       sag('    ' + darueber);
     } else {
-      sag('  Hier liegt kein KlangTresor:  ' + WURZEL);
-      sag('  Kopiere aktualisieren.js und ' + anlasser('aktualisieren') + ' in deinen');
-      sag('  KlangTresor- bzw. MySuno-Ordner (dort, wo library/ liegt) und starte es dort.');
+      sag(T('  Hier liegt kein KlangTresor:  {ordner}\n  Kopiere aktualisieren.js und {anlasser} in deinen\n  KlangTresor- bzw. MySuno-Ordner (dort, wo library/ liegt) und starte es dort.', { ordner: WURZEL, anlasser: anlasser('aktualisieren') }));
     }
     sag('');
     process.exit(1);
@@ -545,10 +544,8 @@ async function main() {
   /* DER RICHTIGE ORDNER (Pruefung bei der Uebernahme): wer ein neues Zip auspackt und darin aktualisieren-* startet,
      spielt in den Entpackordner ein statt in seine Installation - dort liegt kein library/. */
   if (!NUR_STAND && !fs.existsSync(path.join(WURZEL, 'library')) && !TROTZDEM) {
-    sag('  Neben diesem Programm liegt kein library/ – das ist wohl nicht deine');
-    sag('  Installation, sondern ein frisch ausgepacktes Zip. Starte das Skript im');
-    sag('  Ordner, in dem dein KlangTresor laeuft (dort liegt library/).');
-    sag('  Wirklich hier einspielen: --trotzdem');
+    sag(T('  Neben diesem Programm liegt kein library/ – das ist wohl nicht deine\n  Installation, sondern ein frisch ausgepacktes Zip. Starte das Skript im\n  Ordner, in dem dein KlangTresor laeuft (dort liegt library/).'));
+    sag(T('  Wirklich hier einspielen: --trotzdem'));
     sag('');
     process.exit(1);
   }
@@ -559,10 +556,8 @@ async function main() {
   const neuer = stand.neuer || (!stand.hier && !!stand.github);
   const dz = stand.docker || { art: 'keins' };
   if (dz.art === 'unerreichbar' && !OHNE_DOCKER && !NUR_STAND) {
-    sag('  Docker antwortet nicht. Ob dein KlangTresor im Container laeuft, laesst');
-    sag('  sich so nicht klaeren – und ohne Neubau bliebe ein Container alt.');
-    sag('  Starte Docker (Docker Desktop) und rufe noch einmal auf.');
-    sag('  Laeuft dein KlangTresor ohne Docker: --ohne-docker');
+    sag(T('  Docker antwortet nicht. Ob dein KlangTresor im Container laeuft, laesst\n  sich so nicht klaeren – und ohne Neubau bliebe ein Container alt.\n  Starte Docker (Docker Desktop) und rufe noch einmal auf.'));
+    sag(T('  Laeuft dein KlangTresor ohne Docker: --ohne-docker'));
     sag('');
     process.exit(1);
   }
@@ -584,72 +579,61 @@ async function main() {
     if (g.lage === 'unverwandt' && g.unserOrigin) { weg = 'zip'; unverwandt = true; }
   }
 
-  sag('  Ordner:   ' + WURZEL);
-  sag('  Hier:     ' + (stand.hier || 'ohne Nummer'));
-  sag('  GitHub:   ' + (stand.github ? stand.github + (stand.tag && stand.tag !== stand.github ? '  (' + stand.tag + ')' : '') : (stand.grund || 'keine Antwort')));
+  sag(T('  Ordner:   {ordner}', { ordner: WURZEL }));
+  sag(T('  Hier:     {version}', { version: stand.hier || T('ohne Nummer') }));
+  sag('  GitHub:   ' + (stand.github ? stand.github + (stand.tag && stand.tag !== stand.github ? '  (' + stand.tag + ')' : '') : (stand.grund || T('keine Antwort'))));
   const gitGehtNicht = !!g && (g.lage === 'ohne-git' || g.lage === 'ohne-origin' || (g.lage === 'unverwandt' && !g.unserOrigin));
-  sag('  Weg:      ' + (gitGehtNicht ? 'Git geht hier nicht' : weg === 'git' ? 'Git' : 'Release-Zip') + (mitDocker ? ' + Docker' + (laeuft ? '' : ' (Container angehalten)') : ''));
+  sag(T('  Weg:      {weg}', { weg: (gitGehtNicht ? T('Git geht hier nicht') : weg === 'git' ? 'Git' : T('Release-Zip')) + (mitDocker ? ' + Docker' + (laeuft ? '' : ' ' + T('(Container angehalten)')) : '') }));
   if (unverwandt) {
-    sag('  Hinweis:  die Git-Geschichte hier stammt nicht von github.com/CasparDavi/klangtresor');
-    sag('            (etwa ein Klon aus der MySuno-Zeit) - ein Git-Zug geht so nicht. Darum das');
-    sag('            Release-Zip; .git/ und library/ bleiben, wie sie sind.');
+    sag(T('  Hinweis:  die Git-Geschichte hier stammt nicht von github.com/CasparDavi/klangtresor\n            (etwa ein Klon aus der MySuno-Zeit) - ein Git-Zug geht so nicht. Darum das\n            Release-Zip; .git/ und library/ bleiben, wie sie sind.'));
   }
-  if (dz.art === 'fremd') sag('  Hinweis:  der Container „klangtresor" gehoert zu einem anderen Ordner – er bleibt unberuehrt.');
-  if (dz.art === 'unerreichbar' && !OHNE_DOCKER) sag('  Hinweis:  Docker antwortet nicht – einspielen ginge so nicht (Docker starten oder --ohne-docker).');
-  if (mysuno) sag('  Hinweis:  der Container „mysuno“ aus der MySuno-Zeit gehoert zu diesem Ordner (' + mysuno + ').');
+  if (dz.art === 'fremd') sag(T('  Hinweis:  der Container „klangtresor" gehoert zu einem anderen Ordner – er bleibt unberuehrt.'));
+  if (dz.art === 'unerreichbar' && !OHNE_DOCKER) sag(T('  Hinweis:  Docker antwortet nicht – einspielen ginge so nicht (Docker starten oder --ohne-docker).'));
+  if (mysuno) sag(T('  Hinweis:  der Container „mysuno“ aus der MySuno-Zeit gehoert zu diesem Ordner ({status}).', { status: mysuno }));
   sag('');
 
   /* Der Container aus der MySuno-Zeit: was zu tun ist, damit er nicht alt weiterlaeuft. */
   const mysunoSchritte = () => {
     if (!mysuno) return;
-    sag('  Der Container „mysuno“ laeuft mit dem alten Programm weiter - ihn baut');
-    sag('  dieses Skript nicht um. Einmal:');
+    sag(T('  Der Container „mysuno“ laeuft mit dem alten Programm weiter - ihn baut\n  dieses Skript nicht um. Einmal:'));
     sag('    docker stop mysuno');
     befehlHier(anlasser('einrichten-docker'));
-    sag('  Das baut den Container „klangtresor“ aus der neuen Version. library/ bleibt,');
-    sag('  wo sie ist; den alten Container kannst du danach wegwerfen (docker rm mysuno).');
+    sag(T('  Das baut den Container „klangtresor“ aus der neuen Version. library/ bleibt,\n  wo sie ist; den alten Container kannst du danach wegwerfen (docker rm mysuno).'));
     sag('');
   };
   /* Nach einem Lauf ohne Fehler, an jedem Ausgang: Hinweise und die Kopie im Hauptordner. */
   const schluss = () => { mysunoSchritte(); kopieWegraeumen(); };
 
   if (NUR_STAND) {
-    if (neuer) sag('  Auf GitHub liegt eine neuere Version.');
-    else if (!stand.github) sag('  Nachsehen ist gescheitert: ' + stand.grund);
-    else if (stand.lage === -1) sag('  Deine Version ist neuer als die neueste auf GitHub.');
-    else sag('  Das ist die neueste Version.');
+    if (neuer) sag(T('  Auf GitHub liegt eine neuere Version.'));
+    else if (!stand.github) sag(T('  Nachsehen ist gescheitert: {grund}', { grund: stand.grund }));
+    else if (stand.lage === -1) sag(T('  Deine Version ist neuer als die neueste auf GitHub.'));
+    else sag(T('  Das ist die neueste Version.'));
     sag('');
     mysunoSchritte();
     return;
   }
 
   if (g && g.lage === 'ohne-git') {
-    sag('  Hier liegt ein Git-Ordner (.git/), aber git laeuft auf diesem Rechner nicht.');
-    sag('  Entweder git einrichten und noch einmal - oder das Release-Zip ueber das');
-    sag('  Programm legen. library/ und .git/ bleiben; was in Git noch nicht festgelegt');
-    sag('  ist, kann ich ohne git aber nicht sichern. Im Terminal:');
+    sag(T('  Hier liegt ein Git-Ordner (.git/), aber git laeuft auf diesem Rechner nicht.\n  Entweder git einrichten und noch einmal - oder das Release-Zip ueber das\n  Programm legen. library/ und .git/ bleiben; was in Git noch nicht festgelegt\n  ist, kann ich ohne git aber nicht sichern. Im Terminal:'));
     befehlHier(anlasser('aktualisieren') + ' --zip');
     sag('');
     process.exit(1);
   }
   if (gitGehtNicht) {
     if (g.lage === 'ohne-origin') {
-      sag('  Dieser Git-Ordner hat kein origin – woher die neue Version kommen soll,');
-      sag('  sagt Git hier nicht.');
+      sag(T('  Dieser Git-Ordner hat kein origin – woher die neue Version kommen soll,\n  sagt Git hier nicht.'));
     } else {
-      sag('  Die Git-Geschichte hier hat mit origin/main nichts gemein, und origin zeigt');
-      sag('  nicht auf github.com/CasparDavi/klangtresor (origin: ' + g.quelle + ').');
+      sag(T('  Die Git-Geschichte hier hat mit origin/main nichts gemein, und origin zeigt\n  nicht auf github.com/CasparDavi/klangtresor (origin: {quelle}).', { quelle: g.quelle }));
     }
-    sag('  Einen Git-Ordner ueberschreibe ich nicht still mit Zip-Dateien. Das Release-Zip');
-    sag('  ueber das Programm legen - library/ und .git/ bleiben, ungesicherte Aenderungen');
-    sag('  lege ich vorher in den git stash. Im Terminal:');
+    sag(T('  Einen Git-Ordner ueberschreibe ich nicht still mit Zip-Dateien. Das Release-Zip\n  ueber das Programm legen - library/ und .git/ bleiben, ungesicherte Aenderungen\n  lege ich vorher in den git stash. Im Terminal:'));
     befehlHier(anlasser('aktualisieren') + ' --zip');
     sag('');
     process.exit(1);
   }
 
   if (!stand.github && weg === 'zip') {
-    sag('  Ohne GitHub-Antwort kann ich kein Release-Zip holen.');
+    sag(T('  Ohne GitHub-Antwort kann ich kein Release-Zip holen.'));
     sag('  ' + (stand.grund || ''));
     sag('');
     process.exit(1);
@@ -665,7 +649,7 @@ async function main() {
   };
   const nichtsZuHolen = (satz) => {
     const alt = mitDocker ? containerAlt() : null;
-    if (alt) { sag('  Die Programmdateien sind aktuell, der Container laeuft aber noch mit ' + alt + ' – er wird neu gebaut.'); return false; }
+    if (alt) { sag(T('  Die Programmdateien sind aktuell, der Container laeuft aber noch mit {version} – er wird neu gebaut.', { version: alt })); return false; }
     sag('  ' + satz); sag(''); schluss(); return true;
   };
 
@@ -679,46 +663,38 @@ async function main() {
     const geaendert = schmutzPfade(g.schmutz);
     const paketGeaendert = geaendert.filter(p => PAKET.indexOf(p) >= 0);
     if (geaendert.length > paketGeaendert.length && !TROTZDEM) {
-      sag('  Im Ordner liegen ungesicherte Aenderungen. Die fasse ich nicht an.');
-      sag('  Erst festlegen oder weglegen, dann noch einmal — oder --trotzdem');
-      sag('  (dann lege ich sie fuer den Zug beiseite und danach wieder auf; widerspricht');
-      sag('  eine davon dem Neuen, bleibt sie im git stash liegen).');
+      sag(T('  Im Ordner liegen ungesicherte Aenderungen. Die fasse ich nicht an.\n  Erst festlegen oder weglegen, dann noch einmal — oder --trotzdem\n  (dann lege ich sie fuer den Zug beiseite und danach wieder auf; widerspricht\n  eine davon dem Neuen, bleibt sie im git stash liegen).'));
       sag('');
       process.exit(1);
     }
     if (g.zweig !== 'main' && g.zweig !== 'master' && !TROTZDEM) {
-      sag('  Du bist auf dem Zweig „' + g.zweig + '“. Aktualisieren zieht origin/main.');
-      sag('  Wechsle auf main, oder rufe mit --trotzdem auf.');
+      sag(T('  Du bist auf dem Zweig „{zweig}“. Aktualisieren zieht origin/main.\n  Wechsle auf main, oder rufe mit --trotzdem auf.', { zweig: g.zweig }));
       sag('');
       process.exit(1);
     }
     if (g.lage === 'unerreichbar') {
-      sag('  origin ist nicht erreichbar (' + g.grund + ').');
-      sag('  Ob es etwas Neues gibt, laesst sich so nicht sagen – noch einmal, wenn das Netz da ist.');
+      sag(T('  origin ist nicht erreichbar ({grund}).\n  Ob es etwas Neues gibt, laesst sich so nicht sagen – noch einmal, wenn das Netz da ist.', { grund: g.grund }));
       sag('');
       process.exit(1);
     }
     if (g.lage === 'auseinander' && !TROTZDEM) {
-      sag('  main und origin/main sind auseinandergelaufen. Das loese ich nicht');
-      sag('  von allein. git status ansehen, oder --trotzdem (rebase).');
+      sag(T('  main und origin/main sind auseinandergelaufen. Das loese ich nicht\n  von allein. git status ansehen, oder --trotzdem (rebase).'));
       sag('');
       process.exit(1);
     }
     if ((g.lage === 'gleich' || g.lage === 'davor') && !neuer && !TROTZDEM) {
-      if (nichtsZuHolen(g.lage === 'gleich' ? 'origin/main ist schon da. Nichts zu holen.' : 'Deine Version liegt vor origin/main. Nichts zu holen.')) return;
+      if (nichtsZuHolen(g.lage === 'gleich' ? T('origin/main ist schon da. Nichts zu holen.') : T('Deine Version liegt vor origin/main. Nichts zu holen.'))) return;
       geholt = false;
     }
     if (geholt) {
       if (paketGeaendert.length) {
         gitSichern(g.schmutz, 'hineinkopierte Update-Dateien vor dem Zug');
         git(['checkout', 'HEAD', '--'].concat(paketGeaendert));
-        sag('  Hineinkopiert und anders als in Git: ' + paketGeaendert.join(', '));
-        sag('  Sie gehen auf den Git-Stand zurueck (ihr Inhalt liegt im git stash), der Zug bringt die neuen.');
+        sag(T('  Hineinkopiert und anders als in Git: {dateien}\n  Sie gehen auf den Git-Stand zurueck (ihr Inhalt liegt im git stash), der Zug bringt die neuen.', { dateien: paketGeaendert.join(', ') }));
       }
       const beiseite = paketBeiseite();
       if (beiseite.length) {
-        sag('  Hineinkopiert, Git kennt sie hier noch nicht: ' + beiseite.map(w => w.name).join(', '));
-        sag('  Der Zug bringt sie mit.');
+        sag(T('  Hineinkopiert, Git kennt sie hier noch nicht: {dateien}\n  Der Zug bringt sie mit.', { dateien: beiseite.map(w => w.name).join(', ') }));
       }
       /* --trotzdem bei verfolgten Aenderungen: ohne --autostash verweigert git den Rebase immer (Pruefung bei der Uebernahme) -
          die Aenderungen werden beiseitegelegt und danach wieder aufgelegt */
@@ -733,34 +709,34 @@ async function main() {
         if (fs.existsSync(path.join(gitDir, 'rebase-merge')) || fs.existsSync(path.join(gitDir, 'rebase-apply'))) {
           const ab = spawnSync('git', ['rebase', '--abort'], { cwd: WURZEL, encoding: 'utf8' });
           sag(ab.status === 0
-            ? '  git pull ist an einem Konflikt gescheitert. Den Rebase habe ich abgebrochen – der Arbeitsbaum ist wieder, wie er war.'
-            : '  git pull ist an einem Konflikt gescheitert, und der Rebase liess sich nicht abbrechen. Bitte: git rebase --abort');
-        } else sag('  git pull ist gescheitert. Der Arbeitsbaum bleibt, wie er war.');
+            ? T('  git pull ist an einem Konflikt gescheitert. Den Rebase habe ich abgebrochen – der Arbeitsbaum ist wieder, wie er war.')
+            : T('  git pull ist an einem Konflikt gescheitert, und der Rebase liess sich nicht abbrechen. Bitte: git rebase --abort'));
+        } else sag(T('  git pull ist gescheitert. Der Arbeitsbaum bleibt, wie er war.'));
         paketZurueck(beiseite);
         process.exit(1);
       }
     }
   } else {
     if (!neuer && !TROTZDEM) {
-      if (nichtsZuHolen('Release und lokale Nummer sind gleich' + (stand.lage === -1 ? ' (oder deine ist neuer)' : '') + '. Nichts zu holen. (Erneut einspielen: --trotzdem)')) return;
+      if (nichtsZuHolen(stand.lage === -1 ? T('Release und lokale Nummer sind gleich (oder deine ist neuer). Nichts zu holen. (Erneut einspielen: --trotzdem)') : T('Release und lokale Nummer sind gleich. Nichts zu holen. (Erneut einspielen: --trotzdem)'))) return;
       geholt = false;
     }
     if (geholt) {
       /* Ueber einen Git-Ordner (--zip oder unverwandte Geschichte): erst sichern, was Git noch nicht festgehalten hat -
          Festgelegtes steht ohnehin in .git/, und .git/ fasst das Zip nicht an. */
       if (stand.git && gitDa() && gitSichern(gitSchmutz(), 'Stand vor dem Release-Zip')) {
-        sag('  Ungesicherte Aenderungen liegen jetzt im git stash (ansehen: git stash show -p).');
+        sag(T('  Ungesicherte Aenderungen liegen jetzt im git stash (ansehen: git stash show -p).'));
       }
       const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'klangtresor-update-'));
       const zip = path.join(tmp, ZIP_NAME);
       const entpackt = path.join(tmp, 'aus');
       try {
-        sag('  → hole ' + ZIP_NAME);
+        sag(T('  → hole {datei}', { datei: ZIP_NAME }));
         await holenDatei(stand.zip || QUELLEN.zip, zip);
-        sag('  → packe ueber die Programmdaten (library/ bleibt)');
+        sag(T('  → packe ueber die Programmdaten (library/ bleibt)'));
         auspacken(zip, entpackt);
         const n = zipUeberlegen(entpackt);
-        sag('  ' + n + ' Eintraege erneuert.');
+        sag(T('  {n} Eintraege erneuert.', { n }));
       } finally {
         try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (e) {}
       }
@@ -771,32 +747,31 @@ async function main() {
     composeBauen(laeuft);
     sag('');
     if (laeuft) {
-      sag('  Fertig. Die Seite einmal hart neu laden (Bilder und Skripte sonst aus dem Vorrat).');
-      sag('  Adresse:  http://localhost:8788');
+      sag(T('  Fertig. Die Seite einmal hart neu laden (Bilder und Skripte sonst aus dem Vorrat).'));
+      sag(T('  Adresse:  {adresse}', { adresse: 'http://localhost:8788' }));
     } else {
-      sag('  Der Container ist neu gebaut und angehalten, wie vorher. Starten: docker start klangtresor');
+      sag(T('  Der Container ist neu gebaut und angehalten, wie vorher. Starten: docker start klangtresor'));
       /* Ein alter, angehaltener Container kann neben einer inzwischen direkt laufenden Installation stehen
          (Pruefung bei der Uebernahme) - dann braucht auch der Ordner seine Pakete und seinen Neustart. */
       if (fs.existsSync(path.join(WURZEL, 'node_modules'))) {
-        try { npmCiWennNoetig(lockVorher); } catch (e) { sag('  ' + e.message); sag('  Die Pakete musst du von Hand setzen: npm ci'); }
-        sag('  Laeuft dein KlangTresor ohne Container: den Server einmal neu starten (starten-linux.sh /');
-        sag('  starten-macos.command / starten-windows.cmd) und die Seite hart neu laden.');
+        try { npmCiWennNoetig(lockVorher); } catch (e) { sag('  ' + e.message); sag(T('  Die Pakete musst du von Hand setzen: npm ci')); }
+        sag(T('  Laeuft dein KlangTresor ohne Container: den Server einmal neu starten (starten-linux.sh /\n  starten-macos.command / starten-windows.cmd) und die Seite hart neu laden.'));
       }
     }
   } else {
     try { npmCiWennNoetig(lockVorher); } catch (e) {
       sag('  ' + e.message);
-      sag('  Das Programm liegt, die Pakete musst du von Hand setzen: npm ci');
+      sag(T('  Das Programm liegt, die Pakete musst du von Hand setzen: npm ci'));
     }
     /* Auch bei unveraendertem package-lock nachsehen: eine einmal unvollstaendige Installation blieb
        es sonst fuer immer (Lutz, 23.10.2026, umap-js). bin/pakete.js holt nur, was fehlt. */
     try { const rest = require('./pakete.js').nachholen(sag);
-          if (rest.length) sag('  Noch immer fehlen: ' + rest.join(', ') + ' — Ausweg: im KlangTresor-Ordner node bin/pakete.js --tun'); }
-    catch (e) { sag('  Paketprüfung: ' + e.message); }
+          if (rest.length) sag(T('  Noch immer fehlen: {liste} — Ausweg: im KlangTresor-Ordner node bin/pakete.js --tun', { liste: rest.join(', ') })); }
+    catch (e) { sag(T('  Paketprüfung: {grund}', { grund: e.message })); }
     sag('');
-    sag('  Fertig. Den laufenden Server einmal neu starten:');
-    sag('    ./starten-linux.sh   oder starten-macos.command / starten-windows.cmd');
-    sag('  Danach die Seite hart neu laden.');
+    sag(T('  Fertig. Den laufenden Server einmal neu starten:'));
+    sag(T('    ./starten-linux.sh   oder starten-macos.command / starten-windows.cmd'));
+    sag(T('  Danach die Seite hart neu laden.'));
   }
   sag('');
   schluss();

@@ -22,6 +22,15 @@
 #               (Doppelklick im Finder: sonst ist es weg, bevor man liest)
 
 set -u
+# SPRACHE: kommt normalerweise schon vom Aufrufer (einrichten-*.command/.sh) als KT_SPRACHE;
+# sonst hier bestimmen. t gibt den Text in dieser Sprache aus (de, en, ru).
+case "${KT_SPRACHE:-}" in de|en|ru) ;; *)
+  _sp=$(defaults read -g AppleLanguages 2>/dev/null | tr -d '(), "' | grep -v '^$' | head -1)
+  [ -n "$_sp" ] || _sp=${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}
+  case "$_sp" in ru*|RU*) KT_SPRACHE=ru ;; de*|DE*) KT_SPRACHE=de ;; *) KT_SPRACHE=en ;; esac ;;
+esac
+export KT_SPRACHE
+t() { case "$KT_SPRACHE" in ru) printf '%s' "$3" ;; en) printf '%s' "$2" ;; *) printf '%s' "$1" ;; esac; }
 KT_SYSTEM="${KT_SYSTEM:-linux}"
 KT_ANHALTEN="${KT_ANHALTEN:-0}"
 
@@ -36,19 +45,19 @@ else
   O=''; P=''; M=''; R=''; G=''; X=''
 fi
 zeile() { printf '     %s\n' "$1"; }
-warten() { [ "$KT_ANHALTEN" = "1" ] && read -r -p "     [Eingabetaste] " _ ; }
+warten() { [ "$KT_ANHALTEN" = "1" ] && read -r -p "$(t "     [Eingabetaste] " "     [Press Enter] " "     [Нажмите Enter] ")" _ ; }
 
 printf '\n     %sK L A N G T R E S O R%s\n' "$O" "$X"
-printf '     %seinrichten%s\n\n' "$M" "$X"
+printf '     %s%s%s\n\n' "$M" "$(t einrichten 'set up' установка)" "$X"
 
 # --- Liegen wir richtig? -----------------------------------------------
 if [ ! -f bin/einrichten.js ] || [ ! -f package.json ]; then
-  zeile "${R}[x]${X}  Das sieht nicht nach KlangTresor aus."
-  zeile "${M}Hier fehlt bin/einrichten.js oder package.json.${X}"
+  zeile "${R}[x]${X}  $(t "Das sieht nicht nach KlangTresor aus." "This does not look like KlangTresor." "Это не похоже на KlangTresor.")"
+  zeile "${M}$(t "Hier fehlt bin/einrichten.js oder package.json." "bin/einrichten.js or package.json is missing here." "Здесь нет bin/einrichten.js или package.json.")${X}"
   echo ""
-  zeile "${M}Diese Datei muss in dem Ordner liegen, in dem auch bin/ liegt.${X}"
-  zeile "${M}Beim Aktualisieren gehört der INHALT des Pakets in den bestehenden${X}"
-  zeile "${M}Ordner, nicht der ausgepackte Ordner daneben.${X}"
+  zeile "${M}$(t "Diese Datei muss in dem Ordner liegen, in dem auch bin/ liegt." "This file has to sit in the folder that also contains bin/." "Этот файл должен лежать в той же папке, где лежит bin/.")${X}"
+  zeile "${M}$(t "Beim Aktualisieren gehört der INHALT des Pakets in den bestehenden" "When updating, the CONTENTS of the package belong in the existing" "При обновлении СОДЕРЖИМОЕ пакета нужно положить в существующую")${X}"
+  zeile "${M}$(t "Ordner, nicht der ausgepackte Ordner daneben." "folder, not the unpacked folder next to it." "папку, а не в распакованную папку рядом с ней.")${X}"
   echo ""
   warten
   exit 1
@@ -70,12 +79,12 @@ NODE=""
 
 if [ -x "$EIGEN" ] && node_tauglich "$EIGEN"; then
   NODE="$EIGEN"
-  zeile "${G}[ok]${X} Node.js $("$EIGEN" -v) liegt im Projektordner."
+  zeile "${G}[ok]${X} Node.js $("$EIGEN" -v) $(t "liegt im Projektordner." "is in the project folder." "лежит в папке проекта.")"
 elif command -v node >/dev/null 2>&1 && node_tauglich node; then
   NODE="$(command -v node)"
-  zeile "${G}[ok]${X} Node.js $(node -v) ist auf diesem Rechner installiert."
+  zeile "${G}[ok]${X} Node.js $(node -v) $(t "ist auf diesem Rechner installiert." "is installed on this computer." "установлен на этом компьютере.")"
 elif command -v node >/dev/null 2>&1; then
-  zeile "${O}[!]${X}  Das installierte Node.js ist zu alt ($(node -v)) — ich hole eine eigene Fassung daneben."
+  zeile "${O}[!]${X}  $(t "Das installierte Node.js ist zu alt" "The installed Node.js is too old" "Установленный Node.js слишком старый") ($(node -v)) — $(t "ich hole eine eigene Fassung daneben." "I will fetch a version of my own alongside." "я загружу рядом собственную версию.")"
 fi
 
 # Liegt Node schon im Zwischenlager dieses Rechners? Dann kopieren statt
@@ -84,13 +93,13 @@ fi
 LAGER="${XDG_CACHE_HOME:-$HOME/.cache}/klangtresor"
 [ "$(uname)" = "Darwin" ] && LAGER="$HOME/Library/Caches/KlangTresor"
 if [ -z "$NODE" ] && [ -x "$LAGER/node/bin/node" ] && node_tauglich "$LAGER/node/bin/node"; then
-  zeile "${O}->${X}   Node.js liegt schon auf diesem Rechner — ich kopiere es her."
+  zeile "${O}->${X}   $(t "Node.js liegt schon auf diesem Rechner — ich kopiere es her." "Node.js is already on this computer — I will copy it over." "Node.js уже есть на этом компьютере — я скопирую его сюда.")"
   mkdir -p "$WERKZEUG"
   rm -rf "$WERKZEUG/node"
   cp -R "$LAGER/node" "$WERKZEUG/node" 2>/dev/null
   if [ -x "$EIGEN" ] && node_tauglich "$EIGEN"; then
     NODE="$EIGEN"
-    zeile "${G}[ok]${X} Node.js $("$EIGEN" -v) aus dem Zwischenlager."
+    zeile "${G}[ok]${X} Node.js $("$EIGEN" -v) $(t "aus dem Zwischenlager." "from the local cache." "из локального хранилища.")"
   fi
 fi
 
@@ -112,19 +121,19 @@ while [ -z "$NODE" ]; do
          if (k == s) print w }' | tail -n1)"
   fi
   if [ -z "$URL" ]; then
-    zeile "${R}[x]${X}  In quellen.txt fehlt die Zeile '$SCHLUESSEL'."
+    zeile "${R}[x]${X}  $(t "In quellen.txt fehlt die Zeile" "The line is missing in quellen.txt:" "В quellen.txt нет строки:") '$SCHLUESSEL'."
     if [ "$KT_SYSTEM" = "macos" ]; then
-      zeile "${M}Von Hand: https://nodejs.org (LTS) — oder: brew install node${X}"
+      zeile "${M}$(t "Von Hand: https://nodejs.org (LTS) — oder: brew install node" "By hand: https://nodejs.org (LTS) — or: brew install node" "Вручную: https://nodejs.org (LTS) — или: brew install node")${X}"
     else
-      zeile "${M}Von Hand: https://nodejs.org (LTS) — oder über den Paketmanager.${X}"
+      zeile "${M}$(t "Von Hand: https://nodejs.org (LTS) — oder über den Paketmanager." "By hand: https://nodejs.org (LTS) — or via the package manager." "Вручную: https://nodejs.org (LTS) — или через менеджер пакетов.")${X}"
     fi
     echo ""
     warten
     exit 1
   fi
 
-  printf '     %s->  %s Node.js holen — rund 30 MB. Es wird NICHT installiert, nur hierher gelegt.\n' "$O" "$X"
-  zeile "${M}Kein Eintrag im System, keine Verwalterrechte.${X}"
+  printf '     %s->  %s %s\n' "$O" "$X" "$(t 'Node.js holen — rund 30 MB. Es wird NICHT installiert, nur hierher gelegt.' 'Fetching Node.js — about 30 MB. It is NOT installed, only placed here.' 'Загрузка Node.js — около 30 МБ. Он НЕ устанавливается, а только кладётся сюда.')"
+  zeile "${M}$(t "Kein Eintrag im System, keine Verwalterrechte." "No entry in the system, no administrator rights." "Никаких записей в системе, права администратора не нужны.")${X}"
   echo ""
 
   mkdir -p "$WERKZEUG"
@@ -140,7 +149,7 @@ while [ -z "$NODE" ]; do
   elif command -v wget >/dev/null 2>&1; then
     wget -q --show-progress -U 'KlangTresor-Anlasser' -T 30 -O "$TAR" "$URL" && GUT=1
   else
-    zeile "${R}[x]${X}  Weder curl noch wget ist da — ohne eines von beiden kann ich nichts holen."
+    zeile "${R}[x]${X}  $(t "Weder curl noch wget ist da — ohne eines von beiden kann ich nichts holen." "Neither curl nor wget is here — without one of them I cannot fetch anything." "Нет ни curl, ни wget — без одного из них я ничего не могу загрузить.")"
   fi
 
   if [ "$GUT" = "1" ]; then
@@ -155,29 +164,29 @@ while [ -z "$NODE" ]; do
       rm -rf "$ROH"; rm -f "$TAR"
       if [ -x "$EIGEN" ] && node_tauglich "$EIGEN"; then
         NODE="$EIGEN"
-        zeile "${G}[ok]${X} Node.js $("$EIGEN" -v) liegt jetzt in werkzeug/node."
+        zeile "${G}[ok]${X} Node.js $("$EIGEN" -v) $(t "liegt jetzt in werkzeug/node." "is now in werkzeug/node." "теперь лежит в werkzeug/node.")"
         # fuer das naechste Mal aufheben
         mkdir -p "$LAGER" && rm -rf "$LAGER/node" && cp -R "$WERKZEUG/node" "$LAGER/node" 2>/dev/null
       fi
     else
-      zeile "${R}[x]${X}  Auspacken ging nicht."
+      zeile "${R}[x]${X}  $(t "Auspacken ging nicht." "Unpacking failed." "Не удалось распаковать.")"
     fi
   fi
 
   if [ -z "$NODE" ]; then
     echo ""
-    zeile "${M}Ohne Node.js geht es nicht weiter — überspringen kann man das nicht.${X}"
+    zeile "${M}$(t "Ohne Node.js geht es nicht weiter — überspringen kann man das nicht." "Without Node.js it cannot go on — this step cannot be skipped." "Без Node.js дальше никак — этот шаг пропустить нельзя.")${X}"
     if [ "$KT_SYSTEM" = "macos" ]; then
-      zeile "${M}Von Hand geht es auch: brew install node, oder https://nodejs.org (LTS).${X}"
+      zeile "${M}$(t "Von Hand geht es auch: brew install node, oder https://nodejs.org (LTS)." "By hand works too: brew install node, or https://nodejs.org (LTS)." "Можно и вручную: brew install node или https://nodejs.org (LTS).")${X}"
     else
-      zeile "${M}Von Hand geht es auch: über den Paketmanager, oder https://nodejs.org (LTS).${X}"
+      zeile "${M}$(t "Von Hand geht es auch: über den Paketmanager, oder https://nodejs.org (LTS)." "By hand works too: via the package manager, or https://nodejs.org (LTS)." "Можно и вручную: через менеджер пакетов или https://nodejs.org (LTS).")${X}"
     fi
     echo ""
-    printf '     %sNoch einmal versuchen? [J/n] %s' "$P" "$X"
+    printf '     %s%s%s' "$P" "$(t 'Noch einmal versuchen? [J/n] ' 'Try again? [Y/n] ' 'Попробовать ещё раз? [Д/n] ')" "$X"
     read -r a
     case "$a" in
-      [nN]*)
-        zeile "${M}Nichts ist verloren. Starte diese Datei einfach noch einmal.${X}"
+      [nN]*|[нН]*)
+        zeile "${M}$(t "Nichts ist verloren. Starte diese Datei einfach noch einmal." "Nothing is lost. Just start this file again." "Ничего не потеряно. Просто запустите этот файл ещё раз.")${X}"
         echo ""
         warten
         exit 1 ;;

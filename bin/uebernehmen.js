@@ -51,7 +51,8 @@
 const fs   = require('node:fs');
 const path = require('node:path');
 const os   = require('node:os');
-const melden = require('./melden.js');   /* Zahlen fuer die Einrichtungsseite */
+const melden = require('./melden.js');
+const { T } = require('./sprache.js');   /* Zahlen fuer die Einrichtungsseite */
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
@@ -206,12 +207,12 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   if (JSON.stringify(gemerkt) !== JSON.stringify(konf.sunoOrdner || [])) konfigMerken({ sunoOrdner: gemerkt });
   for (const g of gemerkt) if (!orte.includes(g)) orte.push(g);
   const dateien = [];
-  for (const o of orte) melden.zeile('ort:' + o, o, 'wartet', 'offen');
+  for (const o of orte) melden.zeile('ort:' + o, o, T('wartet'), 'offen');
   for (const o of orte) {
-    melden.zeile('ort:' + o, o, 'wird durchgesehen …', 'laeuft');
+    melden.zeile('ort:' + o, o, T('wird durchgesehen …'), 'laeuft');
     const hier = suchen(o);
     dateien.push(...hier);
-    melden.zeile('ort:' + o, o, `${hier.length} Datei${hier.length === 1 ? '' : 'en'} gefunden`, 'fertig');
+    melden.zeile('ort:' + o, o, hier.length === 1 ? T('1 Datei gefunden') : T('{n} Dateien gefunden', { n: hier.length }), 'fertig');
   }
 
   if (!dateien.length) {
@@ -235,8 +236,8 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   let gelesen = 0, uebersprungen = 0, geprueft = 0;
   for (const d of dateien) {
     if (++geprueft % 25 === 0 || geprueft === dateien.length)
-      melden.lauf({ was: 'Dateien werden geprüft und eingeordnet', n: geprueft, von: dateien.length,
-        nEinheit: 'Datei', jetzt: path.basename(d).slice(0, 50) });
+      melden.lauf({ was: T('Dateien werden geprüft und eingeordnet'), n: geprueft, von: dateien.length,
+        nEinheit: T('Datei'), jetzt: path.basename(d).slice(0, 50) });
     const endung = path.extname(d).toLowerCase();
     const st = stempel(d);
     let id;
@@ -265,9 +266,9 @@ function fragenWennEtwasFehlt(bekannt, orte) {
       console.log(`    ${path.basename(f.ziel).padEnd(10)} ${gross(f.bytes).padStart(8)}   ${f.titel}`);
   }
   melden.ausLauf();
-  melden.kachel('übernommen', String(fertig.length));
-  melden.kachel('schon im Archiv', String(schonDa.length));
-  melden.kachel('nicht von Suno', String(ohneSig.length + fremd.length));
+  melden.kachel(T('übernommen'), String(fertig.length));
+  melden.kachel(T('schon im Archiv'), String(schonDa.length));
+  melden.kachel(T('nicht von Suno'), String(ohneSig.length + fremd.length));
   if (schonDa.length)  console.log(`\n  Schon im Archiv (${schonDa.length}) — mit --ersetzen überschreiben.`);
   if (doppelt.length) console.log(`\n  Doppelt gefunden (${doppelt.length}) — je Lied wird nur die größte Fassung genommen.`);
   if (falschesFormat.length) console.log(`  Übergangen, Format wird nicht geführt (${falschesFormat.length}): `

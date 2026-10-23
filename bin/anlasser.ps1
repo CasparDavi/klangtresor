@@ -17,10 +17,19 @@
 #   in Bash fuer Linux, einmal fuer den Mac. Jede Aenderung musste
 #   dreimal gemacht und dreimal geprueft werden.
 #
-#   Und PowerShell 5.1 liest eine Datei ohne Byte Order Mark als CP1252;
+#   Und PowerShell 5.1 liest eine Datei OHNE Byte Order Mark als CP1252;
 #   jedes Sonderzeichen zerfaellt dabei (Casto, 23.08.2026: "1000
-#   Fehlermeldungen"). Deshalb steht hier REINES ASCII, ohne Umlaute.
+#   Fehlermeldungen"). Reines ASCII war darum nur noetig, solange diese
+#   Datei kein BOM hatte. Sie hat eines (UTF-8 mit BOM, das muss bleiben):
+#   deshalb duerfen hier die russischen Texte stehen. Die anderen Windows-
+#   Starter (*.cmd) bleiben reines ASCII - cmd.exe kennt kein BOM.
 #   Node liest UTF-8, immer - dort drueben darf es huebsch sein.
+#
+# DIE SPRACHE (Deutsch, Englisch, Russisch): hier gibt es noch kein Node
+# und also auch kein bin/sprache.js. $SPR kommt aus KT_SPRACHE, sonst aus
+# der Anzeigesprache von Windows (Get-UICulture) - dieselbe Regel wie in
+# bin/sprache.js: ru -> ru, de -> de, alles andere -> en. Die Wahl geht
+# als KT_SPRACHE an bin/einrichten.js weiter.
 #
 # Geprueft mit bin/pruefe-skripte.js.
 
@@ -28,6 +37,15 @@ Set-Location -Path (Split-Path -Parent $PSScriptRoot)   # bin\ -> Projektordner
 $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+$SPR = ("$env:KT_SPRACHE").Trim().ToLower()
+if ($SPR -notin 'de', 'en', 'ru') {
+  $kultur = ''
+  try { $kultur = (Get-UICulture).Name.ToLower() } catch {}
+  $SPR = if ($kultur.StartsWith('ru')) { 'ru' } elseif ($kultur.StartsWith('de')) { 'de' } else { 'en' }
+}
+$env:KT_SPRACHE = $SPR
+function L($de, $en, $ru) { switch ($SPR) { 'ru' { $ru } 'en' { $en } default { $de } } }
 
 $O = 'Yellow'      # so nah am KlangTresor-Orange, wie die Konsole kann
 $P = 'Magenta'
@@ -39,19 +57,19 @@ function Zeile([string]$t, [string]$farbe = 'Gray') { Write-Host "     $t" -Fore
 # zweimal hintereinander waere sie albern.
 Write-Host ""
 Write-Host "     K L A N G T R E S O R" -ForegroundColor $O
-Write-Host "     einrichten" -ForegroundColor $M
+Write-Host ("     " + (L 'einrichten' 'set up' 'установка')) -ForegroundColor $M
 Write-Host ""
 
 # --- Liegen wir richtig? ---------------------------------------------
 if (-not (Test-Path 'bin\einrichten.js') -or -not (Test-Path 'package.json')) {
-  Zeile "[x]  Das sieht nicht nach KlangTresor aus." 'Red'
-  Zeile "Hier fehlt bin\einrichten.js oder package.json." $M
+  Zeile (L "[x]  Das sieht nicht nach KlangTresor aus." "[x]  This does not look like KlangTresor." "[x]  Это не похоже на KlangTresor.") 'Red'
+  Zeile (L "Hier fehlt bin\einrichten.js oder package.json." "bin\einrichten.js or package.json is missing here." "Здесь нет bin\einrichten.js или package.json.") $M
   Write-Host ""
-  Zeile "Diese Datei muss in dem Ordner liegen, in dem auch bin\ liegt." $M
-  Zeile "Beim Aktualisieren gehoert der INHALT des Pakets in den bestehenden" $M
-  Zeile "Ordner, nicht der ausgepackte Ordner daneben." $M
+  Zeile (L "Diese Datei muss in dem Ordner liegen, in dem auch bin\ liegt." "This file has to sit in the folder that also contains bin\." "Этот файл должен лежать в той же папке, где лежит bin\.") $M
+  Zeile (L "Beim Aktualisieren gehoert der INHALT des Pakets in den bestehenden" "When updating, the CONTENTS of the package belong in the existing" "При обновлении СОДЕРЖИМОЕ пакета нужно положить в существующую") $M
+  Zeile (L "Ordner, nicht der ausgepackte Ordner daneben." "folder, not the unpacked folder next to it." "папку, а не в распакованную папку рядом с ней.") $M
   Write-Host ""
-  Read-Host "     [Eingabetaste zum Schliessen]" | Out-Null
+  Read-Host (L "     [Eingabetaste zum Schliessen]" "     [Press Enter to close]" "     [Нажмите Enter, чтобы закрыть]") | Out-Null
   exit 1
 }
 
@@ -74,14 +92,14 @@ $NODE = $null
 
 if (Test-Path $EIGEN) {
   $v = NodeTauglich $EIGEN
-  if ($v) { $NODE = $EIGEN; Zeile "[ok] Node.js v$v liegt im Projektordner." 'Green' }
+  if ($v) { $NODE = $EIGEN; Zeile (L "[ok] Node.js v$v liegt im Projektordner." "[ok] Node.js v$v is in the project folder." "[ok] Node.js v$v лежит в папке проекта.") 'Green' }
 }
 if (-not $NODE) {
   $sys = Get-Command node -ErrorAction SilentlyContinue
   if ($sys) {
     $v = NodeTauglich $sys.Source
-    if ($v) { $NODE = $sys.Source; Zeile "[ok] Node.js v$v ist auf diesem Rechner installiert." 'Green' }
-    else { Zeile "[!]  Das installierte Node.js ist zu alt - ich hole eine eigene Fassung daneben." 'Yellow' }
+    if ($v) { $NODE = $sys.Source; Zeile (L "[ok] Node.js v$v ist auf diesem Rechner installiert." "[ok] Node.js v$v is installed on this computer." "[ok] Node.js v$v установлен на этом компьютере.") 'Green' }
+    else { Zeile (L "[!]  Das installierte Node.js ist zu alt - ich hole eine eigene Fassung daneben." "[!]  The installed Node.js is too old - I will fetch a version of my own alongside." "[!]  Установленный Node.js слишком старый - я загружу рядом собственную версию.") 'Yellow' }
   }
 }
 
@@ -92,12 +110,12 @@ $LAGER = Join-Path $env:LOCALAPPDATA 'KlangTresor'
 if (-not $NODE -and (Test-Path (Join-Path $LAGER 'node\node.exe'))) {
   $v = NodeTauglich (Join-Path $LAGER 'node\node.exe')
   if ($v) {
-    Zeile "[->] Node.js liegt schon auf diesem Rechner - ich kopiere es her." $O
+    Zeile (L "[->] Node.js liegt schon auf diesem Rechner - ich kopiere es her." "[->] Node.js is already on this computer - I will copy it over." "[->] Node.js уже есть на этом компьютере - я скопирую его сюда.") $O
     New-Item -ItemType Directory -Path $WERKZEUG -Force | Out-Null
     if (Test-Path $EIGEN) { Remove-Item (Join-Path $WERKZEUG 'node') -Recurse -Force -ErrorAction SilentlyContinue }
     Copy-Item (Join-Path $LAGER 'node') (Join-Path $WERKZEUG 'node') -Recurse -Force -ErrorAction SilentlyContinue
     $v2 = NodeTauglich $EIGEN
-    if ($v2) { $NODE = $EIGEN; Zeile "[ok] Node.js v$v2 aus dem Zwischenlager." 'Green' }
+    if ($v2) { $NODE = $EIGEN; Zeile (L "[ok] Node.js v$v2 aus dem Zwischenlager." "[ok] Node.js v$v2 from the local cache." "[ok] Node.js v$v2 из локального хранилища.") 'Green' }
   }
 }
 
@@ -116,16 +134,16 @@ while (-not $NODE) {
     }
   }
   if (-not $url) {
-    Zeile "[x]  In quellen.txt fehlt die Zeile '$schluessel'." 'Red'
-    Zeile "Ohne Node.js geht es nicht. Von Hand: https://nodejs.org (LTS)." $M
+    Zeile (L "[x]  In quellen.txt fehlt die Zeile '$schluessel'." "[x]  The line '$schluessel' is missing in quellen.txt." "[x]  В quellen.txt нет строки '$schluessel'.") 'Red'
+    Zeile (L "Ohne Node.js geht es nicht. Von Hand: https://nodejs.org (LTS)." "It does not work without Node.js. By hand: https://nodejs.org (LTS)." "Без Node.js не обойтись. Вручную: https://nodejs.org (LTS).") $M
     Write-Host ""
-    Read-Host "     [Eingabetaste]" | Out-Null
+    Read-Host (L "     [Eingabetaste]" "     [Press Enter]" "     [Нажмите Enter]") | Out-Null
     exit 1
   }
 
   Write-Host "     ->   " -ForegroundColor $O -NoNewline
-  Write-Host "Node.js holen - rund 30 MB. Es wird NICHT installiert, nur hierher gelegt."
-  Zeile "Kein Eintrag im System, keine Administratorrechte." $M
+  Write-Host (L "Node.js holen - rund 30 MB. Es wird NICHT installiert, nur hierher gelegt." "Fetching Node.js - about 30 MB. It is NOT installed, only placed here." "Загрузка Node.js - около 30 МБ. Он НЕ устанавливается, а только кладётся сюда.")
+  Zeile (L "Kein Eintrag im System, keine Administratorrechte." "No entry in the system, no administrator rights." "Никаких записей в системе, права администратора не нужны.") $M
   Write-Host ""
 
   New-Item -ItemType Directory -Path $WERKZEUG -Force | Out-Null
@@ -151,8 +169,8 @@ while (-not $NODE) {
       $summe += $n
       if (((Get-Date) - $gemalt).TotalMilliseconds -ge 400) {
         $gemalt = Get-Date
-        $teil = if ($ganz -gt 0) { ' von {0:N1} MB ({1} %)' -f ($ganz / 1MB), [int]($summe / $ganz * 100) } else { '' }
-        Write-Host ("`r     ->   Node.js ... {0:N1} MB{1}          " -f ($summe / 1MB), $teil) -NoNewline -ForegroundColor $O
+        $teil = if ($ganz -gt 0) { (L ' von {0:N1} MB ({1} %)' ' of {0:N1} MB ({1} %)' ' из {0:N1} МБ ({1} %)') -f ($ganz / 1MB), [int]($summe / $ganz * 100) } else { '' }
+        Write-Host (("`r     ->   " + (L 'Node.js ... {0:N1} MB{1}' 'Node.js ... {0:N1} MB{1}' 'Node.js ... {0:N1} МБ{1}') + "          ") -f ($summe / 1MB), $teil) -NoNewline -ForegroundColor $O
       }
     }
     $datei.Close(); $quelle.Close(); $antwort.Close()
@@ -161,7 +179,8 @@ while (-not $NODE) {
   } catch {
     if ($datei) { try { $datei.Close() } catch {} }
     Write-Host ("`r" + (' ' * 78) + "`r") -NoNewline
-    Zeile "[x]  Node.js holen ging nicht: $($_.Exception.Message.Split([char]10)[0])" 'Red'
+    $fehl = $_.Exception.Message.Split([char]10)[0]
+    Zeile (L "[x]  Node.js holen ging nicht: $fehl" "[x]  Fetching Node.js failed: $fehl" "[x]  Не удалось загрузить Node.js: $fehl") 'Red'
   }
 
   if ($gut) {
@@ -177,29 +196,31 @@ while (-not $NODE) {
       Remove-Item $zip -Force -ErrorAction SilentlyContinue
       $v = NodeTauglich $EIGEN
       if ($v) {
-        $NODE = $EIGEN; Zeile "[ok] Node.js v$v liegt jetzt in werkzeug\node." 'Green'
+        $NODE = $EIGEN; Zeile (L "[ok] Node.js v$v liegt jetzt in werkzeug\node." "[ok] Node.js v$v is now in werkzeug\node." "[ok] Node.js v$v теперь лежит в werkzeug\node.") 'Green'
         # fuer das naechste Mal aufheben
         New-Item -ItemType Directory -Path $LAGER -Force | Out-Null
         Remove-Item (Join-Path $LAGER 'node') -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item (Join-Path $WERKZEUG 'node') (Join-Path $LAGER 'node') -Recurse -Force -ErrorAction SilentlyContinue
       }
     } catch {
-      Zeile "[x]  Auspacken ging nicht: $($_.Exception.Message.Split([char]10)[0])" 'Red'
+      $fehl = $_.Exception.Message.Split([char]10)[0]
+      Zeile (L "[x]  Auspacken ging nicht: $fehl" "[x]  Unpacking failed: $fehl" "[x]  Не удалось распаковать: $fehl") 'Red'
     }
   }
 
   if (-not $NODE) {
     Write-Host ""
-    Zeile "Ohne Node.js geht es nicht weiter - ueberspringen kann man das nicht." $M
-    Zeile "Von Hand geht es auch: https://nodejs.org, die LTS-Fassung." $M
+    Zeile (L "Ohne Node.js geht es nicht weiter - ueberspringen kann man das nicht." "Without Node.js it cannot go on - this step cannot be skipped." "Без Node.js дальше никак - этот шаг пропустить нельзя.") $M
+    Zeile (L "Von Hand geht es auch: https://nodejs.org, die LTS-Fassung." "By hand works too: https://nodejs.org, the LTS version." "Можно и вручную: https://nodejs.org, версия LTS.") $M
     Write-Host ""
-    Write-Host "     Noch einmal versuchen? [J/n] " -ForegroundColor $P -NoNewline
+    Write-Host (L "     Noch einmal versuchen? [J/n] " "     Try again? [Y/n] " "     Попробовать ещё раз? [Д/n] ") -ForegroundColor $P -NoNewline
     $a = Read-Host
     if ($a) { $a = $a.Trim() }
-    if ($a -and $a -notmatch '^[jJyY]') {
-      Zeile "Nichts ist verloren. Starte diese Datei einfach noch einmal." $M
+    # j/J (Deutsch), y/Y (Englisch), д/Д (Russisch) heissen ja; leer auch
+    if ($a -and $a -notmatch '^[jJyYдД]') {
+      Zeile (L "Nichts ist verloren. Starte diese Datei einfach noch einmal." "Nothing is lost. Just start this file again." "Ничего не потеряно. Просто запустите этот файл ещё раз.") $M
       Write-Host ""
-      Read-Host "     [Eingabetaste]" | Out-Null
+      Read-Host (L "     [Eingabetaste]" "     [Press Enter]" "     [Нажмите Enter]") | Out-Null
       exit 1
     }
   }

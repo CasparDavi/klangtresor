@@ -1,0 +1,174 @@
+{
+ "Avatare werden geholt": {
+  "en": "Fetching avatars",
+  "ru": "Загрузка аватаров"
+ },
+ "Avatar": {
+  "en": "avatar",
+  "ru": "аватар"
+ },
+ "Bildnisse werden mit der Feder gezeichnet": {
+  "en": "Drawing portraits with the pen",
+  "ru": "Портреты рисуются пером"
+ },
+ "Bildnis": {
+  "en": "portrait",
+  "ru": "портрет"
+ },
+ "Federzeichnungen werden gerechnet": {
+  "en": "Calculating pen drawings",
+  "ru": "Рассчитываются рисунки пером"
+ },
+ "Bild": {
+  "en": "image",
+  "ru": "изображение"
+ },
+ "Tiefenkarten werden gerechnet": {
+  "en": "Calculating depth maps",
+  "ru": "Рассчитываются карты глубины"
+ },
+ "Standbild": {
+  "en": "still",
+  "ru": "кадр"
+ },
+ "noch etwa {n} Minuten": {
+  "en": "about {n} minutes left",
+  "ru": "осталось примерно минут: {n}"
+ },
+ "noch etwa {n} Sekunden": {
+  "en": "about {n} seconds left",
+  "ru": "осталось примерно секунд: {n}"
+ },
+ "Gesichter werden gesucht": {
+  "en": "Looking for faces",
+  "ru": "Идёт поиск лиц"
+ },
+ "Titelbilder und Videos werden geladen": {
+  "en": "Downloading cover images and videos",
+  "ru": "Загрузка обложек и видео"
+ },
+ "Titel": {
+  "en": "Titles",
+  "ru": "Треки"
+ },
+ "{name} wird geladen": {
+  "en": "Downloading {name}",
+  "ru": "Загрузка: {name}"
+ },
+ "Datei": {
+  "en": "file",
+  "ru": "файл"
+ },
+ "von huggingface.co": {
+  "en": "from huggingface.co",
+  "ru": "с huggingface.co"
+ },
+ "{teil} von {ganz}": {
+  "en": "{teil} of {ganz}",
+  "ru": "{teil} из {ganz}"
+ },
+ "KI-Modelle": {
+  "en": "AI models",
+  "ru": "Модели ИИ"
+ },
+ "{da} von {von} sind da": {
+  "en": "{da} of {von} are here",
+  "ru": "готово: {da} из {von}"
+ },
+ "wartet": {
+  "en": "waiting",
+  "ru": "ожидает"
+ },
+ "wird durchgesehen …": {
+  "en": "being searched …",
+  "ru": "просматривается …"
+ },
+ "1 Datei gefunden": {
+  "en": "1 file found",
+  "ru": "найден 1 файл"
+ },
+ "{n} Dateien gefunden": {
+  "en": "{n} files found",
+  "ru": "найдено файлов: {n}"
+ },
+ "Dateien werden geprüft und eingeordnet": {
+  "en": "Checking and sorting files",
+  "ru": "Файлы проверяются и сортируются"
+ },
+ "übernommen": {
+  "en": "imported",
+  "ru": "перенесено"
+ },
+ "schon im Archiv": {
+  "en": "already in the archive",
+  "ru": "уже в архиве"
+ },
+ "nicht von Suno": {
+  "en": "not from Suno",
+  "ru": "не из Suno"
+ },
+ "Katalog aus den Rohdaten": {
+  "en": "Catalogue from the raw data",
+  "ru": "Каталог из исходных данных"
+ },
+ "Medien vom CDN (auch die privaten Songs)": {
+  "en": "Media from the CDN (including private songs)",
+  "ru": "Медиафайлы с CDN (включая приватные треки)"
+ },
+ "Kacheln im Format 3:4": {
+  "en": "Tiles in 3:4 format",
+  "ru": "Плитки в формате 3:4"
+ },
+ "Tiefenkarten aus den Titelbildern": {
+  "en": "Depth maps from the cover images",
+  "ru": "Карты глубины из обложек"
+ },
+ "Avatare der Gemeinschaft holen": {
+  "en": "Fetch the community's avatars",
+  "ru": "Загрузка аватаров сообщества"
+ },
+ "Gesichter und Schrift in Titelbildern und Avataren finden": {
+  "en": "Find faces and lettering in cover images and avatars",
+  "ru": "Поиск лиц и текста на обложках и аватарах"
+ },
+ "Zeichenmodell für das Skizzenbuch bereithalten": {
+  "en": "Have the drawing model ready for the sketchbook",
+  "ru": "Подготовка модели рисования для скетчбука"
+ },
+ "Farbpaletten aus den Covern": {
+  "en": "Colour palettes from the covers",
+  "ru": "Цветовые палитры из обложек"
+ },
+ "fertig": {
+  "en": "done",
+  "ru": "готово"
+ },
+ "läuft …": {
+  "en": "running …",
+  "ru": "выполняется …"
+ },
+ "Profilseite wird gelesen": {
+  "en": "Reading profile page",
+  "ru": "Чтение страницы профиля"
+ },
+ "Seite": {
+  "en": "page",
+  "ru": "страница"
+ },
+ "Eine Anfrage nach der anderen, nie hundert auf einmal — Sunos Server soll von KlangTresor keine Last haben. Deshalb dauert es.": {
+  "en": "One request after another, never a hundred at once — Suno's servers should not be burdened by KlangTresor. That is why it takes a while.",
+  "ru": "Запросы идут по одному, а не сотней сразу: KlangTresor не должен нагружать серверы Suno. Поэтому это занимает время."
+ },
+ "{n} Abrufe": {
+  "en": "{n} plays",
+  "ru": "прослушиваний: {n}"
+ },
+ "davon neu": {
+  "en": "of which new",
+  "ru": "из них новых"
+ },
+ "Liedtexte": {
+  "en": "Lyrics",
+  "ru": "Тексты песен"
+ }
+}

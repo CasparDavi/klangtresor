@@ -48,6 +48,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const melden = require('./melden.js');
+const { T } = require('./sprache.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
@@ -252,7 +253,7 @@ if (require.main === module) (async () => {
       console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${g.length} Gesicht${g.length === 1 ? '' : 'er'}`);
       buchSchreiben(buch);
     }
-    melden.lauf({ was: 'Gesichter werden gesucht', n, von: offen.length, nEinheit: 'Standbild', jetzt: b.id.slice(0, 8) });
+    melden.lauf({ was: T('Gesichter werden gesucht'), n, von: offen.length, nEinheit: T('Standbild'), jetzt: b.id.slice(0, 8) });
   }
   if (offen.length) buchSchreiben(buch);
   melden.ausLauf();

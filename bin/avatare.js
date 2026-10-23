@@ -25,6 +25,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const melden = require('./melden.js');
+const { T } = require('./sprache.js');
 
 const WURZEL = path.join(__dirname, '..');
 const ORDNER = path.join(WURZEL, 'library', 'avatare');
@@ -97,7 +98,7 @@ async function holen(url) {
       const alt = buch.fehlt[url]; buch.fehlt[url] = { grund: r.grund, am: new Date().toISOString(), versuche: ((alt && alt.versuche) || 0) + 1 }; daneben++;
     }
     if (n % 50 === 0) { buchSchreiben(buch); console.log(`  [${n}/${offen.length}] ${geholt} geholt${daneben ? `, ${daneben} nicht` : ''}`); }
-    melden.lauf({ was: 'Avatare werden geholt', n, von: offen.length, nEinheit: 'Avatar' });
+    melden.lauf({ was: T('Avatare werden geholt'), n, von: offen.length, nEinheit: T('Avatar') });
   };
   /* vier zugleich - rücksichtsvoll gegen Sunos Bildserver (bei 4500 Leuten einige Minuten) */
   const schlange = offen.slice();

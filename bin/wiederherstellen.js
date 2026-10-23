@@ -22,7 +22,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const melden = require('./melden.js');   /* Zahlen fuer die Einrichtungsseite */
+const melden = require('./melden.js');
+const { T } = require('./sprache.js');   /* Zahlen fuer die Einrichtungsseite */
 
 const WURZEL = path.join(__dirname, '..');
 const ROH    = path.join(WURZEL, 'library', 'roh');
@@ -97,29 +98,29 @@ const TEST = (() => {
   return i >= 0 && process.argv[i + 1] ? ['--test', process.argv[i + 1]] : [];
 })();
 const SCHRITTE = [
-  ...(nurMedien ? [] : [['aufbereiten.js', [], 'Katalog aus den Rohdaten']]),
+  ...(nurMedien ? [] : [['aufbereiten.js', [], T('Katalog aus den Rohdaten')]]),
   /* --test N wird durchgereicht: fuer Probelaeufe einer frischen
      Einrichtung, damit nicht der ganze Bestand ein zweites Mal vom CDN
      gezogen wird, nur um zu sehen, DASS es geht. */
-  ['laden.js',       ['--alle', ...TEST],'Medien vom CDN (auch die privaten Songs)'],
-  ['kacheln.js',     [],        'Kacheln im Format 3:4'],
+  ['laden.js',       ['--alle', ...TEST],T('Medien vom CDN (auch die privaten Songs)')],
+  ['kacheln.js',     [],        T('Kacheln im Format 3:4')],
   /* TIEFENKARTEN HINTER DIE KACHELN, NICHT DAVOR. Die Karte gehoert zu dem Bild, das
      die Oberflaeche zeigt - und titelbild.jpg (das Cover ohne Rand) entsteht erst in
      kacheln.js. Wer frueher rechnet, rechnet fuer das falsche Bild; genau das ist am
      14.09.2026 passiert und hat einen Nachmittag gekostet.
      --test wird durchgereicht, damit ein Probelauf nicht 19 Minuten rechnet. */
-  ['tiefenkarten.js', [...TEST], 'Tiefenkarten aus den Titelbildern'],
+  ['tiefenkarten.js', [...TEST], T('Tiefenkarten aus den Titelbildern')],
   /* Gesichter in denselben Bildern (bin/gesichter.js) - Schaum und Plakat ruecken die Cover danach in die Zelle. */
   /* Die Avatare der Gemeinschaft einmal holen (bin/avatare.js), damit gesichter.js auch in ihnen sucht */
-  ['avatare.js',     [...TEST], 'Avatare der Gemeinschaft holen'],
-  ['gesichter.js',   [...TEST], 'Gesichter und Schrift in Titelbildern und Avataren finden'],
+  ['avatare.js',     [...TEST], T('Avatare der Gemeinschaft holen')],
+  ['gesichter.js',   [...TEST], T('Gesichter und Schrift in Titelbildern und Avataren finden')],
   /* Das Zeichenmodell fuers Plakat „Skizzenbuch" bereithalten (bin/feder.js). Caspar_D, 08.10.2026: „über die
      morgenroutine werden nicht vorhandene modelle geholt oder wenn sie gebraucht werden". Nur das Modell, und nur
      wenn es fehlt - gezeichnet wird erst, wenn jemand ein Skizzenbuch oeffnet (server.js, bilderVorbereiten
      'feder'): alle Cover zu zeichnen kostet Minuten, die der Morgen nicht fuer etwas ausgeben soll, das vielleicht
      nie gebraucht wird. Gibt immer 0 zurueck - ohne Netz bricht der Morgen hier nicht ab. */
-  ['feder.js',       ['--nur-modell'], 'Zeichenmodell für das Skizzenbuch bereithalten'],
-  ['farben.js',      [],        'Farbpaletten aus den Covern'],
+  ['feder.js',       ['--nur-modell'], T('Zeichenmodell für das Skizzenbuch bereithalten')],
+  ['farben.js',      [],        T('Farbpaletten aus den Covern')],
 ];
 
 const start = Date.now();
@@ -129,8 +130,8 @@ for (let i = 0; i < SCHRITTE.length; i++){
   console.log(`[${i+1}/${SCHRITTE.length}] ${datei} ${args.join(' ')} - ${zweck}`);
   /* Jede Teilaufgabe bekommt ihre eigene Zeile mit Haken. Die vorherige
      ist damit fertig. */
-  if (i) melden.zeile('teil' + i, SCHRITTE[i-1][2], 'fertig', 'fertig');
-  melden.zeile('teil' + (i+1), zweck, 'läuft …', 'laeuft');
+  if (i) melden.zeile('teil' + i, SCHRITTE[i-1][2], T('fertig'), 'fertig');
+  melden.zeile('teil' + (i+1), zweck, T('läuft …'), 'laeuft');
   console.log('='.repeat(64) + '\n');
 
   const e = spawnSync(process.execPath, [path.join(__dirname, datei), ...args],

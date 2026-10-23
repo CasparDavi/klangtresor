@@ -31,6 +31,11 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const WURZEL = path.resolve(__dirname, '..');
+/* NODE IN DEN SUCHPFAD (23.10.2026, im Windows-11-Test gefunden): npm fuehrt Installationsskripte ueber
+   cmd.exe aus - bei onnxruntime-node `node ./script/install`. Kommt Node nur aus werkzeug\node und steht nicht
+   im PATH, findet cmd.exe kein `node`, das Skript scheitert, und npm rollt ALLE Pakete zurueck (Lutz' fehlendes
+   umap-js). Also den Ordner des laufenden Node vorn in den PATH - fuer uns und alle Kinder. */
+process.env.PATH = path.dirname(process.execPath) + path.delimiter + (process.env.PATH || '');
 
 function lesen(datei) { try { return JSON.parse(fs.readFileSync(path.join(WURZEL, datei), 'utf8')); } catch (e) { return null; } }
 

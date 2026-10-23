@@ -5,6 +5,20 @@
 docs/NAECHSTER_CHAT.md export-ignore
 .gitattributes         export-ignore
 
+# Entwicklerwerkzeug und KI-Arbeitsunterlagen (Caspar_D, 23.10.2026: „der Tresor sollte gar nicht auf
+# naechster chat verweisen, das spielt ja nur fuer ki basierte entwicklung eine Rolle"). Bleiben auf GitHub,
+# kommen nicht ins Nutzerpaket. Nichts davon wird zur Laufzeit gelesen (geprueft: server/, bin/, web/).
+CLAUDE.md              export-ignore
+labor/                 export-ignore
+docs/archiv/           export-ignore
+docs/eingang/          export-ignore
+docs/entwuerfe/        export-ignore
+docs/eichkasten/       export-ignore
+docs/messungen/        export-ignore
+docs/BACKLOG.md        export-ignore
+docs/EINRICHTUNG-TEXTE.md export-ignore
+docs/suno-*.txt        export-ignore
+
 # Windows-Starter brauchen CRLF - cmd.exe stolpert sonst ueber
 # mehrzeilige if-Bloecke, und PowerShell meldet bei LF gern kryptische
 # Parserfehler. Ohne diese Regel entscheidet die lokale

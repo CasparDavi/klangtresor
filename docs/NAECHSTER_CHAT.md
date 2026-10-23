@@ -9451,3 +9451,33 @@ zur Durchsicht vormerken**.
 
 **Wiedervorlage:** die vermuteten Windows-11-Fallen (Start aus dem ZIP, OneDrive-Ordner, überwachter Ordnerzugriff,
 Pfadlänge, Smart App Control und ffmpeg, Apostroph im Benutzernamen) sind NICHT gebaut – Lutz hat sie nicht gemeldet.
+
+## 110. 23.10.2026: 1.0.92 – Einrichtung, Aktualisieren und Starter in DE/EN/RU; Windows-11-Test; Paket ohne Entwicklerordner
+
+**Sprache:** `bin/sprache.js` erkennt die SYSTEMsprache (Windows `(Get-UICulture).Name`, macOS `defaults read -g
+AppleLanguages`, Linux LC_ALL/LC_MESSAGES/LANG; ru → ru, de → de, sonst en; `KT_SPRACHE` schlägt alles und wird an
+Kinder vererbt). Node allein rät falsch (auf Caspar_Ds Mac en-US statt de-DE). `T(deutscherSatz, vars)`, Übersetzungen
+in `bin/texte/*.json` (einrichten 409, aktualisieren 84, kinder 43 Schlüssel; alle en+ru, Platzhalter geprüft).
+Russisch dort von KI (Agenten) – **für Henry vormerken**. Anlasser/Docker-PS1 dreisprachig (hängt am BOM), `.cmd`
+nur DE/EN (cmd.exe und Kyrillisch), `.sh`/`.command` dreisprachig. Einrichtungsseite: Umschalter DE | EN* | RU*,
+`POST /sprache`; beim Wechsel übersetzt `neuUebersetzen()` alles schon Gezeigte neu (T() merkt sich die Herkunft jedes
+Textes, auch eingesetzter Werte). App: `?sprache=` beim ersten Öffnen (Einrichtung und Starter geben die erkannte
+Sprache mit), eine eigene Wahl im Umschalter schlägt sie.
+
+**Zwei echte Windows-Fehler im Test gefunden (Windows 11 in Parallels, Russisch, Schritte 1–6 inkl. KI-Modelle):**
+1. npm führt das Installationsskript von onnxruntime-node über cmd.exe aus (`node ./script/install`); Node aus
+   werkzeug\node stand nicht im PATH → Skript scheitert → npm rollt ALLE Pakete zurück. Wahrscheinlich die Ursache von
+   Lutz' fehlendem umap-js. Behoben: Node-Ordner vorn in den PATH (einrichten.js, aktualisieren.js, pakete.js).
+2. Kinder erbten die Eingabe der Einrichtung ('inherit'); npm blieb unter Windows mit weitergeleiteter Eingabe schon
+   beim Start stehen. Behoben: Kinder bekommen keine Eingabe ('ignore'); keins fragt etwas.
+Danach: „added 19 packages in 9s“, 16 Modelle (1,2 GB) geladen, Frage nach dem Suno-Namen russisch. Testreste in der
+VM entfernt (KT-Test, %LOCALAPPDATA%\KlangTresor, npm-cache), VM heruntergefahren und Platte komprimiert; „Pause idle“
+der VM auf Caspar_Ds Erlaubnis aus. Die KlangTresor.lnk auf seinem Mac-Schreibtisch (= Windows-Schreibtisch der VM!)
+ist unverändert.
+
+**Paket:** `.gitattributes` export-ignore für CLAUDE.md, labor/, docs/archiv|eingang|entwuerfe|eichkasten|messungen/,
+docs/BACKLOG.md, docs/EINRICHTUNG-TEXTE.md, docs/suno-*.txt (Caspar_D: kein Verweis auf KI-Arbeitsunterlagen). 7,4 → 6,3 MB.
+
+**Offen:** Konsolenausgabe der Kinder (z. B. modelle-holen.js „hole …“) ist deutsch – nur die Meldungen an die Seite
+sind übersetzt. README/START-HIER EN+RU folgen (1.0.93). Einige Links in README/START-HIER zeigen auf jetzt
+ausgenommene docs/-Dateien – beim Umbau der Hilfen bereinigen.

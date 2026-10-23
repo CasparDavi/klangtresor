@@ -105,6 +105,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const melden = require('./melden.js');
+const { T } = require('./sprache.js');
 
 const WURZEL = path.join(__dirname, '..');
 const LIB = path.join(WURZEL, 'library');
@@ -397,7 +398,7 @@ async function bildnisseLauf(buch, wunsch) {
   console.log(`Feder — ${offen.length} von ${bilder.length} Bildnissen zu zeichnen (${FAEDEN} Fäden)\n`);
   if (!offen.length) return;
   fs.mkdirSync(BILDNISSE, { recursive: true });
-  melden.lauf({ was: 'Bildnisse werden mit der Feder gezeichnet', n: 0, von: offen.length, nEinheit: 'Bildnis' });
+  melden.lauf({ was: T('Bildnisse werden mit der Feder gezeichnet'), n: 0, von: offen.length, nEinheit: T('Bildnis') });
   const ort = require('onnxruntime-node');
   const sitzung = await ort.InferenceSession.create(MODELL, { intraOpNumThreads: FAEDEN, logSeverityLevel: 3 });
   let n = 0, fehler = 0; const t0 = Date.now();
@@ -416,7 +417,7 @@ async function bildnisseLauf(buch, wunsch) {
     else buch.avatare[b.datei] = { quellStand: b.quellStand, w: z.w, h: z.h, tinte: z.tinte, gerechnet: new Date().toISOString() };
     console.log(`  [${n}/${offen.length}] ${b.datei.slice(0, 8)}  ${z ? 'Tinte ' + String((z.tinte * 100).toFixed(1)).replace('.', ',') + ' %' : 'nicht lesbar oder nicht zu schreiben'}`);
     if (n % 20 === 0 || n === offen.length) buchSchreiben(buch);
-    melden.lauf({ was: 'Bildnisse werden mit der Feder gezeichnet', n, von: offen.length, nEinheit: 'Bildnis', jetzt: b.datei.slice(0, 8) });
+    melden.lauf({ was: T('Bildnisse werden mit der Feder gezeichnet'), n, von: offen.length, nEinheit: T('Bildnis'), jetzt: b.datei.slice(0, 8) });
   }
   buchSchreiben(buch);
   melden.ausLauf();
@@ -470,7 +471,7 @@ if (require.main === module) (async () => {
   const offen = alle.filter(b => NEU || !gueltig(buch.bilder[b.id], b, schriftVon(b, gesichter).maske));
   console.log(`Feder — ${offen.length} von ${alle.length} Bildern zu zeichnen (${FAEDEN} Fäden)\n`);
   if (!offen.length) return;
-  melden.lauf({ was: 'Federzeichnungen werden gerechnet', n: 0, von: offen.length, nEinheit: 'Bild' });
+  melden.lauf({ was: T('Federzeichnungen werden gerechnet'), n: 0, von: offen.length, nEinheit: T('Bild') });
   /* das Netz erst laden, wenn es etwas zu tun gibt - „Bilder vorbereiten" fragt oft, wenn alles fertig ist */
   const ort = require('onnxruntime-node');
   const sitzung = await ort.InferenceSession.create(MODELL, { intraOpNumThreads: FAEDEN, logSeverityLevel: 3 });
@@ -505,7 +506,7 @@ if (require.main === module) (async () => {
       console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  Tinte ${z ? String((z.tinte * 100).toFixed(1)).replace('.', ',') + ' %' : '—'}`);
       buchSchreiben(buch);
     }
-    melden.lauf({ was: 'Federzeichnungen werden gerechnet', n, von: offen.length, nEinheit: 'Bild', jetzt: b.id.slice(0, 8) });
+    melden.lauf({ was: T('Federzeichnungen werden gerechnet'), n, von: offen.length, nEinheit: T('Bild'), jetzt: b.id.slice(0, 8) });
   }
   buchSchreiben(buch);
   melden.ausLauf();

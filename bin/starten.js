@@ -23,6 +23,7 @@ const path = require('node:path');
 const http = require('node:http');
 const { spawn } = require('node:child_process');
 const { seiteAufmachen } = require('./browser.js');
+const { T, sprache } = require('./sprache.js');
 /* Ein Klick ins Fenster darf den Server nicht anhalten: bin/konsole.js. */
 require('./konsole.js').quickEditAus();
 
@@ -42,8 +43,9 @@ function antwortet(dann) {
 function browserSobaldDa(versuch = 0) {
   if (geoeffnet || versuch > 60) return;
   antwortet((ja) => {
-    if (ja) { geoeffnet = true; const chrome = seiteAufmachen(ADRESSE);
-      console.log(`\n  KlangTresor ist auf ${ADRESSE} — Browser geht auf${chrome ? ' (Chrome)' : ''}.\n`); }
+    if (ja) { geoeffnet = true; const chrome = seiteAufmachen(ADRESSE + '?sprache=' + sprache());
+      console.log('\n' + (chrome ? T('  KlangTresor ist auf {adresse} — Browser geht auf (Chrome).', { adresse: ADRESSE })
+        : T('  KlangTresor ist auf {adresse} — Browser geht auf.', { adresse: ADRESSE })) + '\n'); }
     else setTimeout(() => browserSobaldDa(versuch + 1), 500);
   });
 }

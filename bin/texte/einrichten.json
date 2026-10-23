@@ -1,0 +1,1638 @@
+{
+ "Ordner prüfen": {
+  "en": "Check folder",
+  "ru": "Проверка папки"
+ },
+ "Was ist schon da?": {
+  "en": "What is already here?",
+  "ru": "Что уже есть?"
+ },
+ "Pakete": {
+  "en": "Packages",
+  "ru": "Пакеты"
+ },
+ "KI-Modelle": {
+  "en": "AI models",
+  "ru": "Модели ИИ"
+ },
+ "Dein Suno-Name": {
+  "en": "Your Suno name",
+  "ru": "Ваше имя в Suno"
+ },
+ "Songliste": {
+  "en": "Song list",
+  "ru": "Список треков"
+ },
+ "Deine Suno-Dateien": {
+  "en": "Your Suno files",
+  "ru": "Ваши файлы Suno"
+ },
+ "Bilder": {
+  "en": "Images",
+  "ru": "Изображения"
+ },
+ "Zum Schluss": {
+  "en": "Finally",
+  "ru": "Завершение"
+ },
+ "dein eigenes Archiv, auf deinem Rechner": {
+  "en": "your own archive, on your own computer",
+  "ru": "ваш собственный архив на вашем компьютере"
+ },
+ "Ja": {
+  "en": "Yes",
+  "ru": "Да"
+ },
+ "Nein": {
+  "en": "No",
+  "ru": "Нет"
+ },
+ "{was} hat nicht geklappt.": {
+  "en": "{was} did not work.",
+  "ru": "{was}: не получилось."
+ },
+ "  [{taste}] noch einmal versuchen": {
+  "en": "  [{taste}] try again",
+  "ru": "  [{taste}] повторить попытку"
+ },
+ "  [{taste}] jetzt überspringen und ohne weitermachen": {
+  "en": "  [{taste}] skip it now and carry on without",
+  "ru": "  [{taste}] пропустить и продолжить без этого"
+ },
+ "  [{taste}] hier Schluss machen — später neu starten": {
+  "en": "  [{taste}] stop here — start again later",
+  "ru": "  [{taste}] остановиться — запустить позже заново"
+ },
+ "Was tun? [{tasten}] ": {
+  "en": "What now? [{tasten}] ",
+  "ru": "Что делать? [{tasten}] "
+ },
+ "{was} hat nicht geklappt. {folge}": {
+  "en": "{was} did not work. {folge}",
+  "ru": "{was}: не получилось. {folge}"
+ },
+ "Noch einmal versuchen": {
+  "en": "Try again",
+  "ru": "Повторить попытку"
+ },
+ "Überspringen und weiter": {
+  "en": "Skip and continue",
+  "ru": "Пропустить и продолжить"
+ },
+ "Schluss — später neu starten": {
+  "en": "Stop — start again later",
+  "ru": "Остановиться — запустить позже"
+ },
+ "Nichts ist verloren. Starte das Einrichten einfach noch einmal —": {
+  "en": "Nothing is lost. Simply run the setup again —",
+  "ru": "Ничего не потеряно. Просто запустите установку ещё раз —"
+ },
+ "es erkennt, was schon da ist, und macht dort weiter.": {
+  "en": "it recognises what is already there and carries on from there.",
+  "ru": "она распознает, что уже есть, и продолжит с этого места."
+ },
+ "{was} ging nicht: die Gegenstelle sagt {code}": {
+  "en": "{was} failed: the server answered {code}",
+  "ru": "{was}: ошибка, сервер ответил {code}"
+ },
+ "{was}: zwei Minuten ohne ein einziges Byte — die Leitung schweigt.": {
+  "en": "{was}: two minutes without a single byte — the connection has gone silent.",
+  "ru": "{was}: две минуты без единого байта — соединение молчит."
+ },
+ ", noch etwa {n} min": {
+  "en": ", about {n} min left",
+  "ru": ", осталось около {n} мин"
+ },
+ ", noch etwa {n} s": {
+  "en": ", about {n} s left",
+  "ru": ", осталось около {n} с"
+ },
+ " von {mb} ({prozent} %)": {
+  "en": " of {mb} ({prozent} %)",
+  "ru": " из {mb} ({prozent} %)"
+ },
+ "{was} geholt ({mb})": {
+  "en": "{was} downloaded ({mb})",
+  "ru": "{was}: загружено ({mb})"
+ },
+ "{was} ging nicht: {fehler}": {
+  "en": "{was} failed: {fehler}",
+  "ru": "{was}: ошибка — {fehler}"
+ },
+ "keine Antwort": {
+  "en": "no answer",
+  "ru": "нет ответа"
+ },
+ "Auspacken ging nicht ({programm} meldet {status}).": {
+  "en": "Unpacking failed ({programm} reports {status}).",
+  "ru": "Не удалось распаковать ({programm} сообщает {status})."
+ },
+ "Auf dem Mac öffnest du ihn unter:  {pfad}": {
+  "en": "On the Mac you open it at:  {pfad}",
+  "ru": "На Mac она открывается по пути:  {pfad}"
+ },
+ "Der Ordner liegt auf dem Mac, nicht in Windows.": {
+  "en": "The folder is on the Mac, not in Windows.",
+  "ru": "Папка находится на Mac, а не в Windows."
+ },
+ "Der Ordner liegt auf dem Rechner „{rechner}\", Freigabe „{freigabe}\" — nicht hier.": {
+  "en": "The folder is on the computer “{rechner}”, share “{freigabe}” — not here.",
+  "ru": "Папка находится на компьютере «{rechner}», общая папка «{freigabe}» — не здесь."
+ },
+ "{name} liegt schon auf diesem Rechner — ich kopiere statt zu laden.": {
+  "en": "{name} is already on this computer — copying instead of downloading.",
+  "ru": "{name} уже есть на этом компьютере — копирую вместо загрузки."
+ },
+ "KlangTresor starten": {
+  "en": "Start KlangTresor",
+  "ru": "Запустить KlangTresor"
+ },
+ "Dein eigenes Suno-Archiv": {
+  "en": "Your own Suno archive",
+  "ru": "Ваш собственный архив Suno"
+ },
+ "   (aus der Seite)": {
+  "en": "   (from the page)",
+  "ru": "   (со страницы)"
+ },
+ "     Abbrechen — von der Seite aus.": {
+  "en": "     Cancel — from the page.",
+  "ru": "     Отмена — со страницы."
+ },
+ "Ordner wählen": {
+  "en": "Choose folder",
+  "ru": "Выбрать папку"
+ },
+ "Die Einrichtung läuft auch als Seite: {adresse}": {
+  "en": "The setup also runs as a page: {adresse}",
+  "ru": "Установка также открыта как страница: {adresse}"
+ },
+ "Hier im Fenster siehst du dasselbe — und hier kannst du auch antworten.": {
+  "en": "You see the same here in the window — and you can answer here too.",
+  "ru": "В этом окне отображается то же самое — и здесь тоже можно отвечать."
+ },
+ "quellen.txt fehlt — dort stehen die Adressen der Werkzeuge.": {
+  "en": "quellen.txt is missing — it holds the addresses of the tools.",
+  "ru": "Нет файла quellen.txt — в нём указаны адреса инструментов."
+ },
+ "Die Datei gehört neben package.json. Aus dem Paket von GitHub ist sie dabei.": {
+  "en": "The file belongs next to package.json. It is included in the package from GitHub.",
+  "ru": "Файл должен лежать рядом с package.json. Он входит в пакет с GitHub."
+ },
+ "Ein Auswahlfenster geht auf. Siehst du es nicht? Dann liegt es hinter": {
+  "en": "A selection window opens. Can’t see it? Then it is behind",
+  "ru": "Откроется окно выбора. Не видите его? Значит, оно за"
+ },
+ "diesem Fenster - in der Taskleiste beziehungsweise im Dock nachsehen.": {
+  "en": "this window — look in the taskbar or the Dock.",
+  "ru": "этим окном — проверьте панель задач или Dock."
+ },
+ "Das Auswahlfenster ging nicht auf ({grund}).": {
+  "en": "The selection window did not open ({grund}).",
+  "ru": "Окно выбора не открылось ({grund})."
+ },
+ "Das Auswahlfenster ging nicht auf.": {
+  "en": "The selection window did not open.",
+  "ru": "Окно выбора не открылось."
+ },
+ "Dann tippst du den Ordner hier - oder lässt es leer.": {
+  "en": "Then type the folder here — or leave it empty.",
+  "ru": "Тогда введите папку здесь — или оставьте поле пустым."
+ },
+ "Ordner: ": {
+  "en": "Folder: ",
+  "ru": "Папка: "
+ },
+ "Das Auswahlfenster ging nicht auf. Ordner tippen - oder leer lassen.": {
+  "en": "The selection window did not open. Type the folder — or leave it empty.",
+  "ru": "Окно выбора не открылось. Введите папку — или оставьте поле пустым."
+ },
+ "Wo soll KlangTresor liegen? Es wird ein Ordner „KlangTresor\" darin angelegt.": {
+  "en": "Where should KlangTresor live? A folder “KlangTresor” will be created inside it.",
+  "ru": "Где должен находиться KlangTresor? Внутри будет создана папка «KlangTresor»."
+ },
+ " — {n} Titel, zuletzt {datum}": {
+  "en": " — {n} titles, last on {datum}",
+  "ru": " — треков: {n}, последнее изменение {datum}"
+ },
+ " — {n} Titel": {
+  "en": " — {n} titles",
+  "ru": " — треков: {n}"
+ },
+ "auf einer Netzfreigabe": {
+  "en": "on a network share",
+  "ru": "в сетевой папке"
+ },
+ "im Download-Ordner": {
+  "en": "in the Downloads folder",
+  "ru": "в папке «Загрузки»"
+ },
+ "in einem temporären Ordner": {
+  "en": "in a temporary folder",
+  "ru": "во временной папке"
+ },
+ "in einem Ordner, den GitHub benannt hat": {
+  "en": "in a folder named by GitHub",
+  "ru": "в папке, названной GitHub"
+ },
+ "  ({gb} GB frei)": {
+  "en": "  ({gb} GB free)",
+  "ru": "  (свободно {gb} ГБ)"
+ },
+ "Hier liegt dein Archiv, und hier bleibt es:": {
+  "en": "Your archive is here, and here it stays:",
+  "ru": "Ваш архив находится здесь и здесь останется:"
+ },
+ "KlangTresor liegt hier, und hier bleibt es:": {
+  "en": "KlangTresor is here, and here it stays:",
+  "ru": "KlangTresor находится здесь и здесь останется:"
+ },
+ "  (Das ist zwar {grund} — aber mit dem Archiv darin bleibt es hier. Umziehen: den ganzen Ordner verschieben.)": {
+  "en": "  (This is {grund} — but with the archive in it, it stays here. To move it, move the whole folder.)",
+  "ru": "  (Это {grund} — но раз в ней архив, он остаётся здесь. Чтобы переехать, переместите всю папку.)"
+ },
+ "Aber woanders gibt es schon ein Archiv, sogar {n}:": {
+  "en": "But there is already an archive elsewhere — {n} of them, in fact:",
+  "ru": "Но в другом месте уже есть архив — даже несколько ({n}):"
+ },
+ "Aber woanders gibt es schon ein Archiv:": {
+  "en": "But there is already an archive elsewhere:",
+  "ru": "Но в другом месте уже есть архив:"
+ },
+ "Vermutlich dein bisheriges KlangTresor oder MySuno. Führe ich es dort weiter,": {
+  "en": "Probably your previous KlangTresor or MySuno. If I continue it there,",
+  "ru": "Вероятно, это ваш прежний KlangTresor или MySuno. Если продолжить там,"
+ },
+ "wird nur das Programm erneuert — deine Titel, Bilder und Töne bleiben.": {
+  "en": "only the program is renewed — your titles, images and audio stay.",
+  "ru": "обновится только программа — ваши треки, изображения и звук останутся."
+ },
+ "Das vorhandene Archiv weiterführen?": {
+  "en": "Continue the existing archive?",
+  "ru": "Продолжить существующий архив?"
+ },
+ "Du bist hier — dort, wo das Zip ausgepackt wurde:": {
+  "en": "You are here — where the zip was unpacked:",
+  "ru": "Вы здесь — там, где распакован zip-архив:"
+ },
+ "Ein Archiv gibt es schon, sogar {n} — vermutlich dein bisheriges KlangTresor oder MySuno:": {
+  "en": "There is already an archive — {n} of them, in fact — probably your previous KlangTresor or MySuno:",
+  "ru": "Архив уже есть — даже несколько ({n}) — вероятно, ваш прежний KlangTresor или MySuno:"
+ },
+ "Ein Archiv gibt es schon — vermutlich dein bisheriges KlangTresor oder MySuno:": {
+  "en": "There is already an archive — probably your previous KlangTresor or MySuno:",
+  "ru": "Архив уже есть — вероятно, ваш прежний KlangTresor или MySuno:"
+ },
+ "  dieses Archiv weiterführen: ": {
+  "en": "  continue this archive: ",
+  "ru": "  продолжить этот архив: "
+ },
+ "       Nur das Programm wird erneuert — Titel, Bilder und Töne bleiben, wie sie sind.": {
+  "en": "       Only the program is renewed — titles, images and audio stay as they are.",
+  "ru": "       Обновится только программа — треки, изображения и звук останутся как есть."
+ },
+ "  hier bleiben — KlangTresor wird genau in diesem Ordner eingerichtet": {
+  "en": "  stay here — KlangTresor is set up in exactly this folder",
+  "ru": "  остаться здесь — KlangTresor будет установлен именно в эту папку"
+ },
+ "       Achtung: das liegt {grund} — dort wird gern aufgeräumt, und die Pakete scheitern.": {
+  "en": "       Note: this is {grund} — things there tend to get tidied away, and the packages fail.",
+  "ru": "       Внимание: это {grund} — там часто наводят порядок, и пакеты не устанавливаются."
+ },
+ "       Achtung: das liegt {grund} — dort wird gern aufgeräumt.": {
+  "en": "       Note: this is {grund} — things there tend to get tidied away.",
+  "ru": "       Внимание: это {grund} — там часто наводят порядок."
+ },
+ "  in dein Nutzerverzeichnis: ": {
+  "en": "  into your user folder: ",
+  "ru": "  в вашу папку пользователя: "
+ },
+ "       Dann liegt alles bei deinen Daten.": {
+  "en": "       Then everything sits with your data.",
+  "ru": "       Тогда всё будет рядом с вашими данными."
+ },
+ "  woanders — ein Fenster geht auf, du wählst (etwa eine externe Platte)": {
+  "en": "  elsewhere — a window opens and you choose (an external drive, for example)",
+  "ru": "  в другое место — откроется окно для выбора (например, внешний диск)"
+ },
+ "Denk daran: für alle Funktionen braucht KlangTresor ziemlich viel Platz.": {
+  "en": "Bear in mind: for all its features KlangTresor needs quite a lot of space.",
+  "ru": "Учтите: для всех функций KlangTresor нужно довольно много места."
+ },
+ "Die Einrichtung selbst rund 1,6 GB — dazu je Titel bis zu 100 MB, wenn": {
+  "en": "The setup itself about 1.6 GB — plus up to 100 MB per title when",
+  "ru": "Сама установка — около 1,6 ГБ, плюс до 100 МБ на трек, если"
+ },
+ "WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.": {
+  "en": "WAV and instrument stems are included. With 200 titles that is about 20 GB.",
+  "ru": "есть WAV и отдельные дорожки инструментов. При 200 треках это около 20 ГБ."
+ },
+ "Wohin? [{tasten}] ": {
+  "en": "Where to? [{tasten}] ",
+  "ru": "Куда? [{tasten}] "
+ },
+ "Wohin soll KlangTresor?": {
+  "en": "Where should KlangTresor go?",
+  "ru": "Куда установить KlangTresor?"
+ },
+ "Gefundenes Archiv: {pfad} ({n} Titel). ": {
+  "en": "Archive found: {pfad} ({n} titles). ",
+  "ru": "Найден архив: {pfad} (треков: {n}). "
+ },
+ "Achtung: das hier liegt {grund} - dort wird gern aufgeräumt. ": {
+  "en": "Note: this is {grund} — things there tend to get tidied away. ",
+  "ru": "Внимание: это {grund} — там часто наводят порядок. "
+ },
+ "Nutzerverzeichnis: {pfad}": {
+  "en": "User folder: {pfad}",
+  "ru": "Папка пользователя: {pfad}"
+ },
+ "Vorhandenes Archiv weiterführen ({n} Titel)": {
+  "en": "Continue the existing archive ({n} titles)",
+  "ru": "Продолжить существующий архив (треков: {n})"
+ },
+ "Hier bleiben": {
+  "en": "Stay here",
+  "ru": "Остаться здесь"
+ },
+ "In mein Nutzerverzeichnis": {
+  "en": "Into my user folder",
+  "ru": "В мою папку пользователя"
+ },
+ "Woanders - Ordner wählen …": {
+  "en": "Elsewhere — choose a folder …",
+  "ru": "В другое место — выбрать папку …"
+ },
+ "Kein Ordner gewählt — dann bleibt es hier.": {
+  "en": "No folder chosen — so it stays here.",
+  "ru": "Папка не выбрана — значит, остаётся здесь."
+ },
+ "Ziel:  ": {
+  "en": "Target:  ",
+  "ru": "Куда:  "
+ },
+ "Dort sind nur {gb} GB frei.": {
+  "en": "Only {gb} GB free there.",
+  "ru": "Там свободно всего {gb} ГБ."
+ },
+ "Die Einrichtung selbst braucht rund 1,6 GB, aber dein Archiv wächst mit": {
+  "en": "The setup itself needs about 1.6 GB, but your archive grows with",
+  "ru": "Сама установка требует около 1,6 ГБ, но ваш архив растёт с"
+ },
+ "jedem Lied — bei ein paar hundert Titeln sind es schnell zehn GB und mehr.": {
+  "en": "every song — with a few hundred titles it quickly reaches ten GB and more.",
+  "ru": "каждым треком — при нескольких сотнях треков быстро набирается десять ГБ и больше."
+ },
+ "Eine externe Platte ist dafür völlig in Ordnung. Trotzdem hier?": {
+  "en": "An external drive is perfectly fine for this. Stay here anyway?",
+  "ru": "Внешний диск для этого вполне подходит. Всё равно здесь?"
+ },
+ "Hier weitermachen?": {
+  "en": "Carry on here?",
+  "ru": "Продолжить здесь?"
+ },
+ "Dort sind {gb} GB frei — das reicht lange.": {
+  "en": "{gb} GB free there — that will last a long time.",
+  "ru": "Там свободно {gb} ГБ — этого хватит надолго."
+ },
+ "Dort liegt schon etwas anderes — das fasse ich nicht an.": {
+  "en": "Something else is already there — I won’t touch it.",
+  "ru": "Там уже лежит что-то другое — это я трогать не буду."
+ },
+ "Räum es weg oder benenn es um, dann starte noch einmal.": {
+  "en": "Move it away or rename it, then start again.",
+  "ru": "Уберите или переименуйте это, затем запустите снова."
+ },
+ "Oder lass KlangTresor hier liegen; es kann gutgehen.": {
+  "en": "Or leave KlangTresor here; that may work out.",
+  "ru": "Или оставьте KlangTresor здесь — это может сработать."
+ },
+ "Dort liegt schon ein KlangTresor — ich aktualisiere ihn.": {
+  "en": "There is already a KlangTresor there — I will update it.",
+  "ru": "Там уже есть KlangTresor — я его обновлю."
+ },
+ "Dein Archiv, die Werkzeuge und die Pakete bleiben, nur das Programm wird erneuert.": {
+  "en": "Your archive, the tools and the packages stay; only the program is renewed.",
+  "ru": "Ваш архив, инструменты и пакеты останутся, обновится только программа."
+ },
+ "Umziehen …": {
+  "en": "Moving …",
+  "ru": "Переезд …"
+ },
+ "Das ging nicht: {fehler}": {
+  "en": "That did not work: {fehler}",
+  "ru": "Не получилось: {fehler}"
+ },
+ "Liegt jetzt in {ordner}.": {
+  "en": "Now in {ordner}.",
+  "ru": "Теперь находится в {ordner}."
+ },
+ "Ich mache dort weiter — dieses Fenster bleibt, du siehst alles.": {
+  "en": "I’ll carry on there — this window stays, you will see everything.",
+  "ru": "Я продолжу там — это окно остаётся, вы всё увидите."
+ },
+ "Den entpackten Ordner darfst du danach wegwerfen.": {
+  "en": "You can throw away the unpacked folder afterwards.",
+  "ru": "Распакованную папку потом можно удалить."
+ },
+ "Ich mache hier weiter, wo ich bin.": {
+  "en": "I’ll carry on here, where I am.",
+  "ru": "Я продолжу здесь, где нахожусь."
+ },
+ "Bevor du anfängst — zwei Sätze zu deinen Suno-Titeln und ihren Audiodateien:": {
+  "en": "Before you start — two words about your Suno titles and their audio files:",
+  "ru": "Прежде чем начать — пара слов о ваших треках Suno и их аудиофайлах:"
+ },
+ "Deine Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte holt": {
+  "en": "KlangTresor fetches your cover images, lyrics, numbers and your whole Suno",
+  "ru": "Обложки, тексты, цифры и всю вашу историю в Suno KlangTresor"
+ },
+ "KlangTresor selbst. Beim Ton gibt es zwei Wege, und der erste kostet": {
+  "en": "history by itself. For the audio there are two ways, and the first costs",
+  "ru": "получает сам. Для звука есть два пути, и первый ничего"
+ },
+ "nichts.": {
+  "en": "nothing.",
+  "ru": "не стоит."
+ },
+ "  1. Was du schon hast.": {
+  "en": "  1. What you already have.",
+  "ru": "  1. То, что у вас уже есть."
+ },
+ "  Hast du deine Lieder bei Suno früher heruntergeladen? In deinen": {
+  "en": "  Did you download your songs from Suno in the past? I look in your",
+  "ru": "  Вы раньше скачивали свои треки из Suno? Папки «Загрузки» и"
+ },
+ "  Download- und Musikordnern sehe ich von selbst nach; liegen sie": {
+  "en": "  Downloads and Music folders by myself; if they are",
+  "ru": "  «Музыка» я проверю сам; если они лежат"
+ },
+ "  woanders, zeig mir den Ordner. Ich erkenne die": {
+  "en": "  somewhere else, show me the folder. I recognise the",
+  "ru": "  в другом месте, укажите папку. Я распознаю"
+ },
+ "  Dateien am Inhalt, nicht am Namen, auch umbenannte, auch in": {
+  "en": "  files by their content, not their name — renamed ones too, in",
+  "ru": "  файлы по содержимому, а не по имени — и переименованные, и в"
+ },
+ "  Unterordnern, und ordne sie deinen Titeln zu. Das ist der": {
+  "en": "  subfolders too — and match them to your titles. This is the",
+  "ru": "  подпапках — и сопоставлю их с вашими треками. Это"
+ },
+ "  Hauptweg, und er kostet nichts.": {
+  "en": "  main way, and it costs nothing.",
+  "ru": "  основной путь, и он ничего не стоит."
+ },
+ "  2. Was dir fehlt.": {
+  "en": "  2. What you are missing.",
+  "ru": "  2. То, чего у вас нет."
+ },
+ "  Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links": {
+  "en": "  Since 03.09.2026 Suno no longer hands out audio files via links,",
+  "ru": "  С 03.09.2026 Suno больше не выдаёт аудиофайлы по ссылкам,"
+ },
+ "  heraus, auch dem Besitzer nicht. Was du nicht schon hast, musst du": {
+  "en": "  not even to their owner. Whatever you don’t already have, you must",
+  "ru": "  даже владельцу. То, чего у вас ещё нет, нужно"
+ },
+ "  bei Suno einmal freischalten: Drei Punkte, Download, „Unlock and": {
+  "en": "  unlock once at Suno: three dots, Download, “Unlock and",
+  "ru": "  один раз разблокировать в Suno: три точки, Download, «Unlock and"
+ },
+ "  Download\". Das kostet ein Guthaben aus deinem Download-Kontingent,": {
+  "en": "  Download”. This costs one credit from your download allowance,",
+  "ru": "  Download». Это стоит один кредит из вашего лимита загрузок,"
+ },
+ "  gilt dann aber dauerhaft und für alle Formate.": {
+  "en": "  but then applies permanently and for all formats.",
+  "ru": "  но затем действует навсегда и для всех форматов."
+ },
+ "Ohne bezahlten Plan ist nur der zweite Weg versperrt. Der erste bleibt": {
+  "en": "Without a paid plan only the second way is closed. The first stays",
+  "ru": "Без платного тарифа закрыт только второй путь. Первый остаётся"
+ },
+ "offen, und alles andere funktioniert ohnehin.": {
+  "en": "open, and everything else works anyway.",
+  "ru": "открытым, а всё остальное работает в любом случае."
+ },
+ "Am besten legst du dir jetzt schon zurecht, wo dein Suno-Zeug liegt.": {
+  "en": "Best to work out now where your Suno files are.",
+  "ru": "Лучше уже сейчас выяснить, где лежат ваши файлы Suno."
+ },
+ "Und wenn du bei Suno etwas freischalten willst: jetzt ist ein guter": {
+  "en": "And if you want to unlock something at Suno: now is a good",
+  "ru": "А если хотите что-то разблокировать в Suno, сейчас подходящий"
+ },
+ "Moment, dann liegt es bereit, wenn ich danach frage.": {
+  "en": "moment — then it is ready when I ask for it.",
+  "ru": "момент — тогда всё будет готово, когда я спрошу."
+ },
+ "Noch etwas: Chrome ist nicht installiert.": {
+  "en": "One more thing: Chrome is not installed.",
+  "ru": "Ещё одно: Chrome не установлен."
+ },
+ "Zum Hören und Stöbern reicht jeder Browser. Für die Daten, die nur du": {
+  "en": "Any browser will do for listening and browsing. For the data only you",
+  "ru": "Для прослушивания и просмотра подойдёт любой браузер. Но для данных, которые"
+ },
+ "sehen darfst — unveröffentlichte Titel, wer geherzt und kommentiert hat —": {
+  "en": "are allowed to see — unpublished titles, who liked and commented —",
+  "ru": "видите только вы, — неопубликованные треки, кто ставил лайки и комментировал, —"
+ },
+ "braucht es aber Chrome. Das lässt sich auch später nachholen.": {
+  "en": "you need Chrome, though. You can catch up on that later.",
+  "ru": "нужен Chrome. Это можно сделать и позже."
+ },
+ "Verstanden, weiter?": {
+  "en": "Understood, continue?",
+  "ru": "Понятно, продолжить?"
+ },
+ "Dann bis später. Das Einrichten läuft nicht weg.": {
+  "en": "See you later, then. The setup isn’t going anywhere.",
+  "ru": "Тогда до встречи. Установка никуда не денется."
+ },
+ "Beim ersten Mal werden rund 450 MB geholt. Wie lange das dauert, hängt": {
+  "en": "The first time, about 450 MB are downloaded. How long that takes depends",
+  "ru": "В первый раз загружается около 450 МБ. Сколько это займёт, зависит"
+ },
+ "an deiner Leitung — von wenigen Minuten bis zu einer halben Stunde.": {
+  "en": "on your connection — from a few minutes to half an hour.",
+  "ru": "от вашего подключения — от нескольких минут до получаса."
+ },
+ "Lass das Fenster am besten offen, dann siehst du sofort, ob es gut": {
+  "en": "Best to leave the window open; then you see straight away whether it is going",
+  "ru": "Лучше оставьте окно открытым — так вы сразу увидите, всё ли идёт"
+ },
+ "läuft oder ob es hakt. Bei Abbruch kann man einfach von diesem Stand": {
+  "en": "well or getting stuck. If it is interrupted, you can simply continue from this",
+  "ru": "хорошо или что-то застряло. После прерывания можно просто продолжить с этого"
+ },
+ "fortsetzen.": {
+  "en": "point.",
+  "ru": "места."
+ },
+ "Ein Klick in dieses Fenster würde Windows sonst in den Markierungsmodus": {
+  "en": "A click into this window would otherwise switch Windows into mark mode",
+  "ru": "Иначе клик в этом окне переключил бы Windows в режим выделения"
+ },
+ "schalten und alles anhalten — für dieses Fenster ist das abgeschaltet.": {
+  "en": "and pause everything — this has been switched off for this window.",
+  "ru": "и всё бы остановилось — для этого окна это отключено."
+ },
+ "Wenn es plötzlich stehenbleibt: einmal Escape drücken.": {
+  "en": "If it suddenly stops: press Escape once.",
+  "ru": "Если всё внезапно остановится, нажмите Escape один раз."
+ },
+ "Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und": {
+  "en": "A click into the window switches Windows into mark mode and",
+  "ru": "Щелчок в окне переключает Windows в режим выделения и"
+ },
+ "hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape": {
+  "en": "pauses everything — it looks like a crash, but it isn’t. Escape",
+  "ru": "останавливает всё — похоже на сбой, но это не сбой. Escape"
+ },
+ "löst es wieder. Am besten gar nicht erst hineinklicken.": {
+  "en": "releases it. Best not to click into it at all.",
+  "ru": "снимает его. Лучше вообще не кликать в окне."
+ },
+ "Ordner prüfen: Schreibrecht, keine Verwalterrechte, Platz": {
+  "en": "Check folder: write permission, no administrator rights, space",
+  "ru": "Проверка папки: право записи, без прав администратора, место"
+ },
+ "Geprüft wird {ordner}. KlangTresor schreibt nur in diesen Ordner — kein Systemordner, keine Registry, keine Administratorrechte. Erhöhte Rechte wären sogar schädlich: Alles Angelegte gehörte danach dem Verwalter, und du kämst an dein eigenes Archiv nicht mehr heran.": {
+  "en": "Checking {ordner}. KlangTresor writes only to this folder — no system folder, no registry, no administrator rights. Elevated rights would even be harmful: everything created would then belong to the administrator, and you could no longer get at your own archive.",
+  "ru": "Проверяется {ordner}. KlangTresor записывает только в эту папку — никаких системных папок, реестра или прав администратора. Повышенные права даже вредны: всё созданное будет принадлежать администратору, и вы потеряете доступ к собственному архиву."
+ },
+ "In diesen Ordner darf ich nicht schreiben.": {
+  "en": "I am not allowed to write to this folder.",
+  "ru": "У меня нет права записи в эту папку."
+ },
+ "KlangTresor legt hier seine Werkzeuge und sein Archiv ab — ohne": {
+  "en": "KlangTresor stores its tools and its archive here — without",
+  "ru": "KlangTresor хранит здесь свои инструменты и архив — без"
+ },
+ "Schreibrecht geht das nicht.": {
+  "en": "write permission that is not possible.",
+  "ru": "права записи это невозможно."
+ },
+ "Verschiebe den Ordner an einen Platz, der dir gehört, zum Beispiel": {
+  "en": "Move the folder to a place that belongs to you, for example",
+  "ru": "Переместите папку в место, которое принадлежит вам, например"
+ },
+ "  C:\\Users\\<du>\\KlangTresor": {
+  "en": "  C:\\Users\\<you>\\KlangTresor",
+  "ru": "  C:\\Users\\<имя>\\KlangTresor"
+ },
+ "Schreibrecht im Projektordner: ja.": {
+  "en": "Write permission in the project folder: yes.",
+  "ru": "Право записи в папке проекта: есть."
+ },
+ "Schreibrecht": {
+  "en": "Write permission",
+  "ru": "Право записи"
+ },
+ "ja": {
+  "en": "yes",
+  "ru": "есть"
+ },
+ "Dieser Ordner liegt in einem Systembereich.": {
+  "en": "This folder is in a system area.",
+  "ru": "Эта папка находится в системной области."
+ },
+ "Das geht meist eine Weile gut und bricht dann an einer Stelle, die": {
+  "en": "That usually works for a while and then breaks at a point",
+  "ru": "Обычно это какое-то время работает, а потом ломается там,"
+ },
+ "niemand vermutet. Besser wäre ein Ordner, der dir selbst gehört.": {
+  "en": "nobody expects. A folder that belongs to you would be better.",
+  "ru": "где никто не ожидает. Лучше папка, которая принадлежит вам."
+ },
+ "Trotzdem hier bleiben?": {
+  "en": "Stay here anyway?",
+  "ru": "Всё равно остаться здесь?"
+ },
+ "Das läuft gerade mit erhöhten Rechten (Administrator bzw. root).": {
+  "en": "This is currently running with elevated rights (administrator or root).",
+  "ru": "Сейчас программа запущена с повышенными правами (администратор или root)."
+ },
+ "Gebraucht wird das NICHT — KlangTresor schreibt nur in seinen eigenen": {
+  "en": "That is NOT needed — KlangTresor writes only to its own",
+  "ru": "Это НЕ нужно — KlangTresor записывает только в свою"
+ },
+ "Ordner. Es schadet aber: alles Angelegte gehört danach dem Verwalter,": {
+  "en": "folder. But it does harm: everything created then belongs to the administrator,",
+  "ru": "папку. Но это вредит: всё созданное будет принадлежать администратору,"
+ },
+ "und im Alltag kommst du an dein eigenes Archiv nicht mehr heran.": {
+  "en": "and in everyday use you can no longer get at your own archive.",
+  "ru": "и в повседневной работе вы потеряете доступ к собственному архиву."
+ },
+ "Besser: dieses Fenster schließen und ohne erhöhte Rechte neu starten.": {
+  "en": "Better: close this window and start again without elevated rights.",
+  "ru": "Лучше закройте это окно и запустите снова без повышенных прав."
+ },
+ "Trotzdem so weitermachen?": {
+  "en": "Carry on like this anyway?",
+  "ru": "Всё равно продолжить так?"
+ },
+ "Keine erhöhten Rechte nötig — und es laufen auch keine.": {
+  "en": "No elevated rights needed — and none are in use.",
+  "ru": "Повышенные права не нужны — и они не используются."
+ },
+ "Keine erhöhten Rechte": {
+  "en": "No elevated rights",
+  "ru": "Без повышенных прав"
+ },
+ "es laufen auch keine": {
+  "en": "none are in use",
+  "ru": "и они не используются"
+ },
+ "Freien Platz konnte ich nicht ermitteln — ich mache weiter.": {
+  "en": "I could not determine the free space — carrying on.",
+  "ru": "Не удалось определить свободное место — продолжаю."
+ },
+ "Hier sind nur {mb} frei. Für die Einrichtung braucht es rund 1,6 GB,": {
+  "en": "Only {mb} free here. The setup needs about 1.6 GB,",
+  "ru": "Здесь свободно всего {mb}. Для установки нужно около 1,6 ГБ,"
+ },
+ "Platz": {
+  "en": "Space",
+  "ru": "Место"
+ },
+ "nur {mb} frei — gebraucht wird rund 1,6 GB": {
+  "en": "only {mb} free — about 1.6 GB is needed",
+  "ru": "свободно всего {mb} — нужно около 1,6 ГБ"
+ },
+ "und das Archiv kommt danach erst noch dazu.": {
+  "en": "and the archive only comes on top of that.",
+  "ru": "а архив добавится к этому позже."
+ },
+ "Trotzdem versuchen?": {
+  "en": "Try anyway?",
+  "ru": "Всё равно попробовать?"
+ },
+ "{gb} GB frei, die Einrichtung braucht rund 1,6 GB": {
+  "en": "{gb} GB free, the setup needs about 1.6 GB",
+  "ru": "свободно {gb} ГБ, установке нужно около 1,6 ГБ"
+ },
+ "KlangTresor liegt nicht auf dieser Maschine.": {
+  "en": "KlangTresor is not on this machine.",
+  "ru": "KlangTresor находится не на этом компьютере."
+ },
+ "Windows kommt mit solchen Pfaden nur halb zurecht: manche Werkzeuge": {
+  "en": "Windows only half copes with paths like this: some tools",
+  "ru": "Windows справляется с такими путями лишь наполовину: некоторые инструменты"
+ },
+ "springen stillschweigend nach C:\\Windows. npm gehört dazu, und ich": {
+  "en": "silently jump to C:\\Windows. npm is one of them, and I",
+  "ru": "молча переходят в C:\\Windows. npm в их числе, и я"
+ },
+ "helfe ihm gleich mit einem Kniff darüber hinweg — verlassen würde": {
+  "en": "will help it over that with a trick in a moment — but I would not",
+  "ru": "сейчас помогу ему обойти это хитростью — но полагаться"
+ },
+ "ich mich darauf nicht.": {
+  "en": "rely on it.",
+  "ru": "на это я бы не стал."
+ },
+ "Sicherer ist ein Ordner auf der Platte dieses Rechners, etwa": {
+  "en": "Safer is a folder on this computer’s own drive, such as",
+  "ru": "Надёжнее папка на диске этого компьютера, например"
+ },
+ "C:\\Users\\<du>\\KlangTresor. Wenn du jetzt abbrichst, den Ordner": {
+  "en": "C:\\Users\\<you>\\KlangTresor. If you cancel now, move the folder",
+  "ru": "C:\\Users\\<имя>\\KlangTresor. Если сейчас прервать, переместить папку"
+ },
+ "dorthin verschiebst und neu startest, bleibt alles Geholte erhalten.": {
+  "en": "there and start again, everything already downloaded is kept.",
+  "ru": "туда и запустить снова, всё уже загруженное сохранится."
+ },
+ "Was wird gebraucht, was ist schon da? Archiv, Werkzeuge, KI-Modelle": {
+  "en": "What is needed, what is already here? Archive, tools, AI models",
+  "ru": "Что нужно и что уже есть? Архив, инструменты, модели ИИ"
+ },
+ "{ordner} zeigt folgendes. Nichts wird doppelt geholt und nichts überschrieben: Was fehlt, wird in den nächsten Schritten geholt — ich sage genau, worum es sich handelt.": {
+  "en": "{ordner} shows the following. Nothing is downloaded twice and nothing is overwritten: whatever is missing is fetched in the next steps — I will say exactly what it is.",
+  "ru": "{ordner} содержит следующее. Ничего не загружается дважды и ничего не перезаписывается: недостающее будет загружено на следующих этапах — я точно скажу, о чём идёт речь."
+ },
+ "Das sieht nicht nach KlangTresor aus.": {
+  "en": "This doesn’t look like KlangTresor.",
+  "ru": "Это не похоже на KlangTresor."
+ },
+ "Hier fehlt {name}. Beim Aktualisieren gehört der INHALT des Pakets in": {
+  "en": "{name} is missing here. When updating, the CONTENTS of the package belong in",
+  "ru": "Здесь нет {name}. При обновлении СОДЕРЖИМОЕ пакета должно попасть в"
+ },
+ "den bestehenden Ordner, nicht der ausgepackte Ordner daneben.": {
+  "en": "the existing folder, not the unpacked folder next to it.",
+  "ru": "существующую папку, а не распакованная папка рядом с ней."
+ },
+ "Hier liegt ein KlangTresor-Archiv: {n} Songs.": {
+  "en": "There is a KlangTresor archive here: {n} songs.",
+  "ru": "Здесь есть архив KlangTresor: треков: {n}."
+ },
+ "Es wird ergänzt, nichts überschrieben.": {
+  "en": "It will be added to, nothing overwritten.",
+  "ru": "Он будет дополнен, ничего не перезаписывается."
+ },
+ "KlangTresor-Archiv": {
+  "en": "KlangTresor archive",
+  "ru": "Архив KlangTresor"
+ },
+ "{n} Titel sind da, nur Änderungen werden ergänzt": {
+  "en": "{n} titles are here, only changes are added",
+  "ru": "треков в наличии: {n}, добавляются только изменения"
+ },
+ "Hier ist kein KlangTresor-Archiv — aber nebenan liegt eines:": {
+  "en": "There is no KlangTresor archive here — but there is one next door:",
+  "ru": "Здесь нет архива KlangTresor — но рядом есть:"
+ },
+ "Vermutlich ist das der Ordner, der gemeint war. Beim Aktualisieren": {
+  "en": "That is probably the folder that was meant. When updating,",
+  "ru": "Вероятно, имелась в виду именно эта папка. При обновлении"
+ },
+ "gehört der INHALT dieses Pakets dorthin, nicht der Ordner daneben.": {
+  "en": "the CONTENTS of this package belong there, not the folder next to it.",
+  "ru": "СОДЕРЖИМОЕ этого пакета должно попасть туда, а не в папку рядом."
+ },
+ "Fängst du hier neu an, wird alles neu geladen — und zurück kommen": {
+  "en": "If you start afresh here, everything is downloaded again — and what comes back is",
+  "ru": "Если начать здесь заново, всё будет загружено снова — и вернутся"
+ },
+ "Titelbilder und Bewegtbilder, aber keine WAV und keine Instrumentspuren.": {
+  "en": "cover images and videos, but no WAV and no instrument stems.",
+  "ru": "обложки и видео, но не WAV и не дорожки инструментов."
+ },
+ "keins hier — aber eines nebenan: {pfad}": {
+  "en": "none here — but there is one next door: {pfad}",
+  "ru": "здесь нет — но рядом есть: {pfad}"
+ },
+ "Trotzdem hier neu anfangen?": {
+  "en": "Start afresh here anyway?",
+  "ru": "Всё равно начать здесь заново?"
+ },
+ "Hier ist noch kein KlangTresor-Archiv. Ich lege eines an.": {
+  "en": "There is no KlangTresor archive here yet. I will create one.",
+  "ru": "Здесь ещё нет архива KlangTresor. Я создам его."
+ },
+ "noch keins — es wird angelegt": {
+  "en": "none yet — it will be created",
+  "ru": "пока нет — будет создан"
+ },
+ "ffmpeg zur Medienbearbeitung": {
+  "en": "ffmpeg for media processing",
+  "ru": "ffmpeg для обработки медиа"
+ },
+ "ist da": {
+  "en": "is here",
+  "ru": "есть"
+ },
+ "liegt auf diesem Rechner, wird kopiert": {
+  "en": "is on this computer, will be copied",
+  "ru": "есть на этом компьютере, будет скопирован"
+ },
+ "fehlt, wird geholt (rund 100 MB)": {
+  "en": "missing, will be downloaded (about 100 MB)",
+  "ru": "отсутствует, будет загружен (около 100 МБ)"
+ },
+ "fehlt — der Paketverwalter holt es, ein Befehl": {
+  "en": "missing — the package manager fetches it, one command",
+  "ru": "отсутствует — его установит менеджер пакетов, одна команда"
+ },
+ "Pakete: Programmbausteine des Servers": {
+  "en": "Packages: building blocks of the server",
+  "ru": "Пакеты: компоненты сервера"
+ },
+ "sind da": {
+  "en": "are here",
+  "ru": "есть"
+ },
+ "fehlen, werden geholt (19 Pakete, rund 240 MB)": {
+  "en": "missing, will be downloaded (19 packages, about 240 MB)",
+  "ru": "отсутствуют, будут загружены (19 пакетов, около 240 МБ)"
+ },
+ "KI-Modelle für Klang, Text und Tiefe": {
+  "en": "AI models for sound, lyrics and depth",
+  "ru": "Модели ИИ для звука, текста и глубины"
+ },
+ "{da} von {von} sind da": {
+  "en": "{da} of {von} are here",
+  "ru": "есть {da} из {von}"
+ },
+ "liegen auf diesem Rechner, werden kopiert (rund 1,2 GB)": {
+  "en": "are on this computer, will be copied (about 1.2 GB)",
+  "ru": "есть на этом компьютере, будут скопированы (около 1,2 ГБ)"
+ },
+ "{da} von {von} — der Rest wird geholt (rund 1,2 GB)": {
+  "en": "{da} of {von} — the rest will be downloaded (about 1.2 GB)",
+  "ru": "{da} из {von} — остальные будут загружены (около 1,2 ГБ)"
+ },
+ "Zu holen": {
+  "en": "To download",
+  "ru": "Загрузить"
+ },
+ "rund {mb} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung": {
+  "en": "about {mb} MB — a few minutes to about half an hour, depending on your connection",
+  "ru": "около {mb} МБ — от нескольких минут до получаса, в зависимости от подключения"
+ },
+ "nichts — alles liegt schon hier": {
+  "en": "nothing — everything is already here",
+  "ru": "ничего — всё уже здесь"
+ },
+ "Auf Port 8788 antwortet bereits ein KlangTresor.": {
+  "en": "A KlangTresor is already answering on port 8788.",
+  "ru": "На порту 8788 уже отвечает KlangTresor."
+ },
+ "Solange der läuft, kann dieser hier nicht starten — und der Browser": {
+  "en": "As long as that one is running, this one cannot start — and the browser",
+  "ru": "Пока он работает, этот запуститься не сможет — а браузер"
+ },
+ "würde den anderen zeigen. Erst dort das Fenster mit Strg-C beenden.": {
+  "en": "would show the other one. First close that window with Ctrl+C.",
+  "ru": "показывал бы другой. Сначала закройте то окно клавишами Ctrl+C."
+ },
+ "Port 8788 für den Server": {
+  "en": "Port 8788 for the server",
+  "ru": "Порт 8788 для сервера"
+ },
+ "belegt — dort antwortet schon ein KlangTresor": {
+  "en": "in use — a KlangTresor is already answering there",
+  "ru": "занят — там уже отвечает KlangTresor"
+ },
+ "Trotzdem weitermachen?": {
+  "en": "Carry on anyway?",
+  "ru": "Всё равно продолжить?"
+ },
+ "Port 8788 für den Server, der KlangTresor im Browser zeigt": {
+  "en": "Port 8788 for the server that shows KlangTresor in the browser",
+  "ru": "Порт 8788 для сервера, который показывает KlangTresor в браузере"
+ },
+ "frei": {
+  "en": "free",
+  "ru": "свободен"
+ },
+ "Lokale Medienverarbeitung mit ffmpeg: Lokale Verfügbarkeit wird geprüft, ggf. wird das Paket geladen": {
+  "en": "Local media processing with ffmpeg: checking whether it is available, downloading the package if needed",
+  "ru": "Локальная обработка медиа с ffmpeg: проверяется наличие, при необходимости пакет загружается"
+ },
+ "Lokale Medienverarbeitung mit ffmpeg: Lokale Verfügbarkeit wird geprüft": {
+  "en": "Local media processing with ffmpeg: checking whether it is available",
+  "ru": "Локальная обработка медиа с ffmpeg: проверяется наличие"
+ },
+ "ffmpeg arbeitet mit den Ton- und Bilddaten: Klanganalyse, Wellenformen, Videoschnitt.": {
+  "en": "ffmpeg works with the sound and image data: sound analysis, waveforms, video editing.",
+  "ru": "ffmpeg работает со звуком и изображениями: анализ звука, волновые формы, монтаж видео."
+ },
+ "Es wird geholt und nach {ordner} gelegt.": {
+  "en": "It is downloaded and placed in {ordner}.",
+  "ru": "Он будет загружен и помещён в {ordner}."
+ },
+ "Auf dem Mac ist dafür der Paketverwalter zuständig — ein Befehl im Terminal, und es gilt für den ganzen Rechner.": {
+  "en": "On the Mac the package manager takes care of this — one command in Terminal, and it applies to the whole computer.",
+  "ru": "На Mac за это отвечает менеджер пакетов — одна команда в Терминале, и он доступен на всём компьютере."
+ },
+ "Unter Linux ist dafür der Paketverwalter zuständig — ein Befehl, und es gilt für den ganzen Rechner.": {
+  "en": "On Linux the package manager takes care of this — one command, and it applies to the whole computer.",
+  "ru": "В Linux за это отвечает менеджер пакетов — одна команда, и он доступен на всём компьютере."
+ },
+ "Für Klanganalyse, Wellenformen und den Videoschnitt.": {
+  "en": "For sound analysis, waveforms and video editing.",
+  "ru": "Для анализа звука, волновых форм и монтажа видео."
+ },
+ "ffmpeg ist da: {pfad}": {
+  "en": "ffmpeg is here: {pfad}",
+  "ru": "ffmpeg есть: {pfad}"
+ },
+ "liegt in werkzeug/ffmpeg": {
+  "en": "is in werkzeug/ffmpeg",
+  "ru": "находится в werkzeug/ffmpeg"
+ },
+ "auf diesem Rechner vorhanden": {
+  "en": "present on this computer",
+  "ru": "есть на этом компьютере"
+ },
+ "ffmpeg fehlt.": {
+  "en": "ffmpeg is missing.",
+  "ru": "ffmpeg отсутствует."
+ },
+ "fehlt — ein Befehl im Terminal holt es": {
+  "en": "missing — one command in Terminal fetches it",
+  "ru": "отсутствует — его установит одна команда в Терминале"
+ },
+ "Danach dieses Einrichten noch einmal starten — es macht hier weiter.": {
+  "en": "Then run this setup again — it carries on from here.",
+  "ru": "Затем запустите эту установку снова — она продолжит отсюда."
+ },
+ "In quellen.txt fehlt die Zeile 'ffmpeg-windows' — ich mache ohne weiter.": {
+  "en": "The line 'ffmpeg-windows' is missing from quellen.txt — carrying on without.",
+  "ru": "В quellen.txt нет строки 'ffmpeg-windows' — продолжаю без него."
+ },
+ "ffmpeg holen — rund 100 MB.": {
+  "en": "Downloading ffmpeg — about 100 MB.",
+  "ru": "Загрузка ffmpeg — около 100 МБ."
+ },
+ "ffmpeg liegt jetzt in werkzeug/ffmpeg.": {
+  "en": "ffmpeg is now in werkzeug/ffmpeg.",
+  "ru": "ffmpeg теперь находится в werkzeug/ffmpeg."
+ },
+ "geholt und abgelegt in werkzeug/ffmpeg": {
+  "en": "downloaded and stored in werkzeug/ffmpeg",
+  "ru": "загружен и помещён в werkzeug/ffmpeg"
+ },
+ "ffmpeg holen": {
+  "en": "Downloading ffmpeg",
+  "ru": "Загрузка ffmpeg"
+ },
+ "Ohne ffmpeg läuft alles — nur Klangmessung und Videoschnitt fehlen.": {
+  "en": "Without ffmpeg everything works — only sound measurement and video editing are missing.",
+  "ru": "Без ffmpeg всё работает — нет только анализа звука и монтажа видео."
+ },
+ "Weiter ohne ffmpeg. Ein späterer Lauf holt es nach.": {
+  "en": "Carrying on without ffmpeg. A later run will fetch it.",
+  "ru": "Продолжаю без ffmpeg. Следующий запуск загрузит его."
+ },
+ "Programmbausteine des Servers: 19 Pakete werden geladen und eingerichtet": {
+  "en": "Building blocks of the server: 19 packages are downloaded and set up",
+  "ru": "Компоненты сервера: загружаются и настраиваются 19 пакетов"
+ },
+ "Fertige Bausteine, die KlangTresor benutzt statt sie selbst zu bauen: der Rechenkern für die Klangmodelle, die Karte des Klangraums, Matrixrechnung. Sie liegen nicht im Paket, weil sie für jedes System eigens gebaut werden — deshalb werden sie jetzt geholt, nach {ordner}.": {
+  "en": "Ready-made building blocks that KlangTresor uses instead of building them itself: the compute engine for the sound models, the map of the sound space, matrix maths. They are not in the package because they are built specifically for each system — so they are fetched now, into {ordner}.",
+  "ru": "Готовые компоненты, которые KlangTresor использует, а не создаёт сам: вычислительное ядро для звуковых моделей, карта звукового пространства, матричные вычисления. Их нет в пакете, потому что они собираются отдельно для каждой системы — поэтому сейчас они загружаются в {ordner}."
+ },
+ "Ein bis fünf Minuten, und zwischendurch ist es still.": {
+  "en": "One to five minutes, and at times it goes quiet.",
+  "ru": "От одной до пяти минут, и временами ничего не происходит."
+ },
+ "Der Ordner liegt auf einer Freigabe — ich blende ihn kurz als Laufwerk ein.": {
+  "en": "The folder is on a network share — I am briefly mapping it as a drive.",
+  "ru": "Папка находится в сетевом ресурсе — ненадолго подключаю её как диск."
+ },
+ "Pakete werden geladen und eingerichtet": {
+  "en": "Packages are being downloaded and set up",
+  "ru": "Пакеты загружаются и настраиваются"
+ },
+ "Zwischendurch ist es still: Manche Bausteine holen nach dem Laden noch eigene Teile nach. Das dauert, sieht aber nur nach Stillstand aus.": {
+  "en": "At times it goes quiet: some building blocks fetch extra parts of their own after downloading. That takes a while, but only looks like a standstill.",
+  "ru": "Временами ничего не происходит: некоторые компоненты после загрузки докачивают свои части. Это занимает время, но лишь выглядит как остановка."
+ },
+ "konnten nicht geholt werden": {
+  "en": "could not be downloaded",
+  "ru": "не удалось загрузить"
+ },
+ "Die Pakete konnten nicht geholt werden.": {
+  "en": "The packages could not be downloaded.",
+  "ru": "Не удалось загрузить пакеты."
+ },
+ "Ohne sie startet der Server nicht — dieser Schritt ist der einzige,": {
+  "en": "Without them the server does not start — this step is the only one",
+  "ru": "Без них сервер не запустится — это единственный этап,"
+ },
+ "der sich nicht überspringen lässt. Meist hilft: noch einmal versuchen.": {
+  "en": "that cannot be skipped. Usually it helps to try again.",
+  "ru": "который нельзя пропустить. Обычно помогает повторная попытка."
+ },
+ "Bleibt es dabei, blockiert oft ein Firmennetz oder ein Virenschutz den": {
+  "en": "If it keeps failing, a company network or antivirus is often blocking",
+  "ru": "Если ошибка повторяется, часто корпоративная сеть или антивирус блокирует"
+ },
+ "Zugang zu registry.npmjs.org.": {
+  "en": "access to registry.npmjs.org.",
+  "ru": "доступ к registry.npmjs.org."
+ },
+ "Noch einmal versuchen?": {
+  "en": "Try again?",
+  "ru": "Попробовать ещё раз?"
+ },
+ "Pakete sind da.": {
+  "en": "Packages are here.",
+  "ru": "Пакеты на месте."
+ },
+ "19 Pakete geholt": {
+  "en": "19 packages downloaded",
+  "ru": "19 пакетов загружено"
+ },
+ "Diese Pakete fehlen noch: {liste}.": {
+  "en": "These packages are still missing: {liste}.",
+  "ru": "Эти пакеты ещё отсутствуют: {liste}."
+ },
+ "Ohne sie fehlen einzelne Funktionen (etwa Klangraum oder Klanganalyse). Ausweg: die Einrichtung": {
+  "en": "Without them some features are missing (such as the sound space or sound analysis). Way out: run the setup",
+  "ru": "Без них не будет отдельных функций (например, звукового пространства или анализа звука). Решение: запустите установку"
+ },
+ "noch einmal starten oder später aktualisieren-* doppelklicken — beide holen das Fehlende nach.": {
+  "en": "again, or later double-click aktualisieren-* — both fetch what is missing.",
+  "ru": "ещё раз или позже дважды кликните aktualisieren-* — оба способа загрузят недостающее."
+ },
+ "es fehlen noch: {liste}": {
+  "en": "still missing: {liste}",
+  "ru": "ещё отсутствуют: {liste}"
+ },
+ "19 Pakete geholt, fehlende nachgeholt": {
+  "en": "19 packages downloaded, missing ones fetched",
+  "ru": "19 пакетов загружено, недостающие догружены"
+ },
+ "KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — {n} Dateien, rund 1,2 GB": {
+  "en": "AI models: stem separation, music style, lyric understanding and depth — {n} files, about 1.2 GB",
+  "ru": "Модели ИИ: разделение на дорожки, музыкальный стиль, понимание текста и глубина — файлов: {n}, около 1,2 ГБ"
+ },
+ "Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird einmal; auf diesem Rechner Gefundenes wird kopiert statt geladen. Drei Gruppen: Musikstil (hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).": {
+  "en": "They run later on your own computer: nothing leaves it for this. They are downloaded once; anything already found on this computer is copied instead. Three groups: music style (hears what a piece sounds like — genre, mood, instruments), stem separation (splits a song into vocals, drums, bass, guitar, piano and the rest), lyric understanding (turns lyrics into numbers so that similar ones sit together) and depth (estimates from an image what is in front and what is behind — so that light, haze and particles know the space in the cover image).",
+  "ru": "Позже они работают у вас, на вашем компьютере: ничего не покидает его. Загружаются один раз; найденное на этом компьютере копируется, а не загружается. Группы: музыкальный стиль (определяет, как звучит трек — жанр, настроение, инструменты), разделение на дорожки (раскладывает трек на вокал, ударные, бас, гитару, фортепиано и остальное), понимание текста (превращает тексты песен в числа, чтобы похожие оказывались рядом) и глубина (оценивает по изображению, что впереди, а что позади, — чтобы свет, дымка и частицы учитывали пространство обложки)."
+ },
+ "Stemtrennung, Musikstil, Textverständnis und Tiefe. Klappt das nicht, läuft alles andere trotzdem.": {
+  "en": "Stem separation, music style, lyric understanding and depth. If this fails, everything else still works.",
+  "ru": "Разделение на дорожки, музыкальный стиль, понимание текста и глубина. Если не получится, всё остальное всё равно работает."
+ },
+ "Modelle holen": {
+  "en": "Downloading models",
+  "ru": "Загрузка моделей"
+ },
+ "Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.": {
+  "en": "Without them stem separation and music style are missing — nothing else.",
+  "ru": "Без них не будет разделения на дорожки и музыкального стиля — больше ничего."
+ },
+ "Modelle sind da.": {
+  "en": "Models are here.",
+  "ru": "Модели на месте."
+ },
+ "Wie heißt du bei Suno? Der Name entscheidet, wessen Daten geholt werden": {
+  "en": "What is your name on Suno? The name decides whose data is fetched",
+  "ru": "Как вас зовут в Suno? Имя определяет, чьи данные будут получены"
+ },
+ "KlangTresor ist eingerichtet und bereit, dein Archiv anzulegen. Dazu ruft es deine Suno-Profilseite auf wie jeder beliebige Besucher: nur lesend, ohne Passwort, ohne Anmeldung. Was ein Fremder sehen kann, kann KlangTresor holen. Alles andere kommt später.": {
+  "en": "KlangTresor is set up and ready to create your archive. To do so it opens your Suno profile page like any visitor: read-only, without a password, without signing in. Whatever a stranger can see, KlangTresor can fetch. Everything else comes later.",
+  "ru": "KlangTresor установлен и готов создать ваш архив. Для этого он открывает вашу страницу профиля в Suno как любой посетитель: только чтение, без пароля, без входа. Всё, что может увидеть посторонний, KlangTresor может получить. Остальное — позже."
+ },
+ "KlangTresor ist eingerichtet und bereit, dein Archiv anzulegen.": {
+  "en": "KlangTresor is set up and ready to create your archive.",
+  "ru": "KlangTresor установлен и готов создать ваш архив."
+ },
+ "Dazu rufe ich deine Profilseite auf wie jeder beliebige Besucher:": {
+  "en": "To do so I open your profile page like any visitor:",
+  "ru": "Для этого я открываю вашу страницу профиля как любой посетитель:"
+ },
+ "nur lesend, ohne Passwort, ohne Anmeldung. Was ein": {
+  "en": "read-only, without a password, without signing in. Whatever a",
+  "ru": "только чтение, без пароля, без входа. Всё, что может"
+ },
+ "Fremder sehen kann, kann ich holen. Alles andere kommt später.": {
+  "en": "stranger can see, I can fetch. Everything else comes later.",
+  "ru": "увидеть посторонний, я могу получить. Остальное — позже."
+ },
+ "Gemerkt: {name}": {
+  "en": "Remembered: {name}",
+  "ru": "Запомнено: {name}"
+ },
+ "Dein Suno-Name ist das, was hinter dem @ steht: Wenn deine Profilseite": {
+  "en": "Your Suno name is what comes after the @: if your profile page",
+  "ru": "Ваше имя в Suno — это то, что стоит после @: если ваша страница профиля"
+ },
+ "suno.com/@musikfreund heißt, ist es „musikfreund\". Nicht deine": {
+  "en": "is suno.com/@musikfreund, it is “musikfreund”. Not your",
+  "ru": "— suno.com/@musikfreund, то имя — «musikfreund». Не адрес"
+ },
+ "E-Mail-Adresse und nicht der Anzeigename über deinen Liedern.": {
+  "en": "email address and not the display name above your songs.",
+  "ru": "электронной почты и не отображаемое имя над вашими треками."
+ },
+ "Dein Suno-Name: ": {
+  "en": "Your Suno name: ",
+  "ru": "Ваше имя в Suno: "
+ },
+ "Nicht deine E-Mail-Adresse. Nicht der Anzeigename über deinen Liedern — der darf Leerzeichen und Großbuchstaben haben, der Suno-Name nicht.": {
+  "en": "Not your email address. Not the display name above your songs — that may contain spaces and capital letters, the Suno name may not.",
+  "ru": "Не адрес электронной почты. Не отображаемое имя над вашими треками — в нём могут быть пробелы и заглавные буквы, а в имени Suno — нет."
+ },
+ "Ohne den Namen geht es nicht weiter.": {
+  "en": "Without the name it can’t go on.",
+  "ru": "Без имени продолжить нельзя."
+ },
+ "Deine Songliste von {name}: Titel, Texte, Stile, Alben": {
+  "en": "Your song list from {name}: titles, lyrics, styles, albums",
+  "ru": "Ваш список треков {name}: названия, тексты, стили, альбомы"
+ },
+ "Gelesen wird deine Profilseite, Seite für Seite, zwanzig Titel je Seite. Es kommen Titel, Liedtexte, Stilangaben, Modell und Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die Alben, soweit sie öffentlich stehen. Noch keine Audiodateien: die kommen in den nächsten beiden Schritten.": {
+  "en": "Your profile page is read page by page, twenty titles per page. What comes in: titles, lyrics, style details, model and date — plus plays, likes and comment counts, and the albums, as far as they are public. No audio files yet: they come in the next two steps.",
+  "ru": "Ваша страница профиля читается постранично, по двадцать треков на странице. Поступают названия, тексты, указания стиля, модель и дата — а также прослушивания, лайки, число комментариев и альбомы, если они публичные. Аудиофайлов пока нет: они появятся на следующих двух этапах."
+ },
+ "Ich lese deine Profilseite durch, Seite für Seite, zwanzig Titel je": {
+  "en": "I read through your profile page, page by page, twenty titles per",
+  "ru": "Я читаю вашу страницу профиля постранично, по двадцать треков на"
+ },
+ "Seite. Schnell geht das nicht, und das ist Absicht: ein fremder": {
+  "en": "page. That isn’t quick, and that is on purpose: a third-party",
+  "ru": "странице. Это небыстро, и так задумано: чужой"
+ },
+ "Server bekommt eine Anfrage nach der anderen, nie hundert auf einmal.": {
+  "en": "server gets one request after another, never a hundred at once.",
+  "ru": "сервер получает запросы по одному, а не сотню сразу."
+ },
+ "Was dabei hereinkommt: Titel, Liedtexte, Stilangaben, Modell und": {
+  "en": "What comes in: titles, lyrics, style details, model and",
+  "ru": "Что поступает: названия, тексты, указания стиля, модель и"
+ },
+ "Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die Alben,": {
+  "en": "date — plus plays, likes and comment counts, and the albums,",
+  "ru": "дата — а также прослушивания, лайки, число комментариев и альбомы,"
+ },
+ "soweit sie öffentlich stehen.": {
+  "en": "as far as they are public.",
+  "ru": "если они публичные."
+ },
+ "Songliste holen": {
+  "en": "Fetching the song list",
+  "ru": "Получение списка треков"
+ },
+ "Ohne sie gibt es nichts zu archivieren.": {
+  "en": "Without it there is nothing to archive.",
+  "ru": "Без него архивировать нечего."
+ },
+ "Ich ordne das Gesammelte zu einem Katalog — das dauert einen Moment.": {
+  "en": "I am arranging what was collected into a catalogue — this takes a moment.",
+  "ru": "Я собираю полученное в каталог — это займёт немного времени."
+ },
+ "Der Katalog wird gebaut": {
+  "en": "Building the catalogue",
+  "ru": "Создаётся каталог"
+ },
+ "Der Katalog ließ sich nicht bauen — der nächste Schritt findet dann nichts.": {
+  "en": "The catalogue could not be built — the next step will then find nothing.",
+  "ru": "Не удалось создать каталог — следующий этап ничего не найдёт."
+ },
+ "Genau das passiert von jetzt an jeden Morgen: KlangTresor sieht": {
+  "en": "From now on, exactly this happens every morning: KlangTresor checks",
+  "ru": "Именно это теперь будет происходить каждое утро: KlangTresor проверяет,"
+ },
+ "nach, was neu dazugekommen ist, und hält dein Archiv auf Stand.": {
+  "en": "what is new and keeps your archive up to date.",
+  "ru": "что появилось нового, и поддерживает ваш архив в актуальном состоянии."
+ },
+ "Einen Knopf dafür findest du später auf der Seite.": {
+  "en": "You will find a button for it on the page later.",
+  "ru": "Кнопку для этого вы позже найдёте на странице."
+ },
+ "Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet": {
+  "en": "Suno files you have already downloaded are recognised and sorted in",
+  "ru": "Уже скачанные файлы Suno распознаются и упорядочиваются"
+ },
+ "Die Daten für deine KlangTresor-Bibliothek sind jetzt da — es fehlen die Audiodateien. Suno gibt sie seit dem 03.09.2026 nicht mehr über Links heraus, selbst dem Besitzer nicht. Aber du hast sie vermutlich längst auf der Platte. Erkannt werden sie durch KlangTresor am Inhalt, nie am Dateinamen: Suno schreibt eine Kennung in den Kopf jeder Datei. KlangTresor wird nur lesen und kopieren. Nichts wird verschoben, nichts gelöscht.": {
+  "en": "The data for your KlangTresor library is here now — the audio files are missing. Since 03.09.2026 Suno no longer hands them out via links, not even to their owner. But you probably have them on your drive already. KlangTresor recognises them by their content, never by the file name: Suno writes an identifier into the header of every file. KlangTresor will only read and copy. Nothing is moved, nothing deleted.",
+  "ru": "Данные для вашей библиотеки KlangTresor уже здесь — не хватает аудиофайлов. С 03.09.2026 Suno больше не выдаёт их по ссылкам, даже владельцу. Но, скорее всего, они давно есть у вас на диске. KlangTresor распознаёт их по содержимому, а не по имени файла: Suno записывает идентификатор в заголовок каждого файла. KlangTresor будет только читать и копировать. Ничего не перемещается и не удаляется."
+ },
+ "Die Daten für deine Bibliothek sind da — es fehlen die Audiodateien.": {
+  "en": "The data for your library is here — the audio files are missing.",
+  "ru": "Данные для вашей библиотеки здесь — не хватает аудиофайлов."
+ },
+ "Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links": {
+  "en": "Since 03.09.2026 Suno no longer hands out audio files via links",
+  "ru": "С 03.09.2026 Suno больше не выдаёт аудиофайлы по ссылкам"
+ },
+ "heraus — auch dem Besitzer nicht. Ich kann sie also nicht einfach": {
+  "en": "— not even to their owner. So I can’t simply",
+  "ru": "— даже владельцу. Поэтому я не могу просто"
+ },
+ "holen. Aber du hast sie vermutlich längst: Wer eine Weile dabei ist,": {
+  "en": "fetch them. But you probably have them already: anyone who has been around a while",
+  "ru": "получить их. Но, скорее всего, они у вас уже есть: кто пользуется Suno давно,"
+ },
+ "hat seine Lieder heruntergeladen und irgendwo liegen.": {
+  "en": "has downloaded their songs and has them lying around somewhere.",
+  "ru": "скачивал свои треки, и они где-то лежат."
+ },
+ "Zeig mir, wo dein Suno-Zeug bisher lagert. Ich sehe dort nach, auch": {
+  "en": "Show me where your Suno files have been kept so far. I look there, including",
+  "ru": "Укажите, где до сих пор хранятся ваши файлы Suno. Я проверю там, в том числе"
+ },
+ "in Unterordnern, sechs Ebenen tief.": {
+  "en": "subfolders, six levels deep.",
+  "ru": "в подпапках, на шесть уровней вглубь."
+ },
+ "Erkannt wird am INHALT, nie am Dateinamen: Suno schreibt seine": {
+  "en": "Recognition is by CONTENT, never by file name: Suno writes its",
+  "ru": "Распознавание идёт по СОДЕРЖИМОМУ, а не по имени файла: Suno записывает свой"
+ },
+ "Kennung in den Kopf jeder Datei. Was sie nicht trägt, fasse ich": {
+  "en": "identifier into the header of every file. Anything without it I",
+  "ru": "идентификатор в заголовок каждого файла. Файлы без него я"
+ },
+ "nicht an — deine übrige Musik bleibt unberührt. Nichts wird": {
+  "en": "leave alone — the rest of your music stays untouched. Nothing is",
+  "ru": "не трогаю — остальная ваша музыка остаётся нетронутой. Ничего не"
+ },
+ "verschoben und nichts gelöscht, nur kopiert.": {
+  "en": "moved and nothing deleted, only copied.",
+  "ru": "перемещается и не удаляется, только копируется."
+ },
+ "In deinen Download- und Musikordnern sehe ich ohnehin nach — jetzt und": {
+  "en": "I look in your Downloads and Music folders anyway — now and",
+  "ru": "Папки «Загрузки» и «Музыка» я проверяю в любом случае — сейчас и"
+ },
+ "bei jedem Abgleich. Nennen musst du nur, was woanders liegt. Taucht": {
+  "en": "at every sync. You only need to name what is elsewhere. If",
+  "ru": "при каждой синхронизации. Указать нужно только то, что лежит в другом месте. Если"
+ },
+ "dasselbe Lied zweimal auf, ordne ich es einmal ein — welche Datei": {
+  "en": "the same song turns up twice, I sort it in once — which file",
+  "ru": "один и тот же трек встречается дважды, я добавляю его один раз — какой файл"
+ },
+ "gemeint ist, sagt die Kennung, nicht der Name.": {
+  "en": "is meant is told by the identifier, not the name.",
+  "ru": "имеется в виду, определяет идентификатор, а не имя."
+ },
+ "Liegen deine Suno-Dateien noch woanders — in einem Backup, auf einer": {
+  "en": "Are your Suno files somewhere else as well — in a backup, on an",
+  "ru": "Ваши файлы Suno лежат ещё где-то — в резервной копии, на"
+ },
+ "externen Platte? Dann öffne ich ein Fenster, in dem du den Ordner wählst.": {
+  "en": "external drive? Then I’ll open a window where you choose the folder.",
+  "ru": "внешнем диске? Тогда я открою окно, в котором вы выберете папку."
+ },
+ "Ordner wählen?": {
+  "en": "Choose a folder?",
+  "ru": "Выбрать папку?"
+ },
+ "Wo liegen deine Suno-Dateien?": {
+  "en": "Where are your Suno files?",
+  "ru": "Где лежат ваши файлы Suno?"
+ },
+ "Kein Ordner gewählt — dann nur Download- und Musikordner. Später jederzeit": {
+  "en": "No folder chosen — then only the Downloads and Music folders. Later, any time,",
+  "ru": "Папка не выбрана — тогда только «Загрузки» и «Музыка». Позже в любой момент"
+ },
+ "auf der Seite unter „Suno-Dateien aus einem weiteren Ordner einlesen\".": {
+  "en": "on the page under “Read in Suno files from another folder”.",
+  "ru": "на странице в разделе «Загрузить файлы Suno из другой папки»."
+ },
+ "Den Ordner gibt es nicht: {pfad}": {
+  "en": "That folder does not exist: {pfad}",
+  "ru": "Такой папки нет: {pfad}"
+ },
+ "Ich sehe trotzdem im Download-Ordner nach. Später jederzeit:": {
+  "en": "I’ll look in the Downloads folder anyway. Later, any time:",
+  "ru": "Я всё равно проверю папку «Загрузки». Позже в любой момент:"
+ },
+ "/pfad/zum/ordner": {
+  "en": "/path/to/folder",
+  "ru": "/путь/к/папке"
+ },
+ "Der Pfad wird gemerkt: ich sehe von jetzt an bei jedem Abgleich": {
+  "en": "The path is remembered: from now on I also look there at every sync,",
+  "ru": "Путь запоминается: теперь я буду проверять и там при каждой синхронизации,"
+ },
+ "auch dort nach, ohne dass du ihn noch einmal nennen musst.": {
+  "en": "without you having to name it again.",
+  "ru": "без необходимости указывать его снова."
+ },
+ "Titelbilder und Bewegtbilder werden geladen und aufbereitet": {
+  "en": "Cover images and videos are downloaded and prepared",
+  "ru": "Обложки и видео загружаются и обрабатываются"
+ },
+ "Zu jedem Titel gehört sein Bild — und wo Suno eines hat, ein kurzes Video. Beides liegt offen auf Sunos Bildspeicher, dafür braucht es keine Anmeldung. Aus den Bildern rechnet KlangTresor danach die Kacheln, die Farben, mit denen die Oberfläche sich später einfärbt, und zu jedem Titelbild eine Tiefenkarte — sie sagt, was darin vorn und was hinten liegt, damit Licht, Dunst und Partikel den Raum im Bild kennen. Das ist der längste Schritt — und du musst ihn nicht abwarten.": {
+  "en": "Every title has its image — and where Suno has one, a short video. Both are openly available on Suno’s image storage; no sign-in is needed. From the images KlangTresor then computes the tiles, the colours the interface later takes on, and for each cover image a depth map — it says what in it is in front and what is behind, so that light, haze and particles know the space in the image. This is the longest step — and you don’t have to wait for it.",
+  "ru": "У каждого трека есть изображение — а если у Suno оно есть, то и короткое видео. И то и другое открыто лежит в хранилище изображений Suno, вход не нужен. Затем KlangTresor вычисляет по изображениям плитки, цвета, в которые позже окрашивается интерфейс, и для каждой обложки карту глубины — она показывает, что на изображении впереди, а что позади, чтобы свет, дымка и частицы учитывали пространство. Это самый долгий этап — и ждать его окончания не обязательно."
+ },
+ "Das dauert am längsten — abbrechen und später fortsetzen ist": {
+  "en": "This takes the longest — cancelling and continuing later is",
+  "ru": "Это самый долгий этап — прервать и продолжить позже"
+ },
+ "erlaubt, was da ist wird nicht noch einmal geholt.": {
+  "en": "allowed; what is already there is not downloaded again.",
+  "ru": "можно; уже загруженное не загружается повторно."
+ },
+ "Probelauf: es werden nur {n} Titel geholt.": {
+  "en": "Trial run: only {n} titles will be downloaded.",
+  "ru": "Пробный запуск: будет загружено только треков: {n}."
+ },
+ "Escape unterbricht das Laden und startet KlangTresor für einen ersten Blick.": {
+  "en": "Escape interrupts the download and starts KlangTresor for a first look.",
+  "ru": "Escape прерывает загрузку и запускает KlangTresor для первого знакомства."
+ },
+ "Weitergeladen wird dann mit dem roten Knopf oben rechts im KlangTresor —": {
+  "en": "Downloading then continues with the red button at the top right in KlangTresor —",
+  "ru": "Затем загрузка продолжается красной кнопкой в правом верхнем углу KlangTresor —"
+ },
+ "was schon da ist, wird nicht noch einmal geholt.": {
+  "en": "what is already there is not downloaded again.",
+  "ru": "уже загруженное не загружается повторно."
+ },
+ "Du musst nicht warten.": {
+  "en": "You don’t have to wait.",
+  "ru": "Ждать не обязательно."
+ },
+ "KlangTresor kann jetzt schon starten — die Bilder holt der rote Knopf oben rechts später nach, und was da ist, wird nicht noch einmal geladen. Du siehst dann eine vollständige Bibliothek, nur mit ein paar grauen Kacheln.": {
+  "en": "KlangTresor can start right now — the red button at the top right fetches the images later, and what is already there is not downloaded again. You then see a complete library, just with a few grey tiles.",
+  "ru": "KlangTresor может запуститься уже сейчас — изображения позже догрузит красная кнопка в правом верхнем углу, а уже загруженное не загружается повторно. Вы увидите полную библиотеку, лишь с несколькими серыми плитками."
+ },
+ "Jetzt starten, Rest später": {
+  "en": "Start now, the rest later",
+  "ru": "Запустить сейчас, остальное позже"
+ },
+ "Das Laden ist unterbrochen — der rote Knopf oben rechts holt später den Rest.": {
+  "en": "Downloading is interrupted — the red button at the top right fetches the rest later.",
+  "ru": "Загрузка прервана — остальное позже догрузит красная кнопка в правом верхнем углу."
+ },
+ "Fertig — und was nur du selbst holen kannst": {
+  "en": "Done — and what only you can fetch",
+  "ru": "Готово — и то, что можете получить только вы"
+ },
+ "Bis hierher war alles öffentlich — KlangTresor hat nur gelesen, was jeder Besucher deiner Profilseite sehen kann. Was nur dir gehört, holt ein Lesezeichen in Chrome, mit deiner eigenen Anmeldung.": {
+  "en": "Up to here everything was public — KlangTresor has only read what any visitor to your profile page can see. What belongs to you alone is fetched by a bookmark in Chrome, with your own sign-in.",
+  "ru": "До сих пор всё было публичным — KlangTresor читал только то, что видит любой посетитель вашей страницы профиля. То, что принадлежит только вам, получает закладка в Chrome — с вашим собственным входом."
+ },
+ "Deine unveröffentlichten Titel": {
+  "en": "Your unpublished titles",
+  "ru": "Ваши неопубликованные треки"
+ },
+ "mit Abrufen und Herzen": {
+  "en": "with plays and likes",
+  "ru": "с прослушиваниями и лайками"
+ },
+ "Wer dir gefolgt ist": {
+  "en": "Who followed you",
+  "ru": "Кто на вас подписался"
+ },
+ "wer geherzt, wer kommentiert hat — mit Namen und Zeitpunkt": {
+  "en": "who liked, who commented — with names and times",
+  "ru": "кто ставил лайки, кто комментировал — с именами и временем"
+ },
+ "Deine privaten Alben": {
+  "en": "Your private albums",
+  "ru": "Ваши приватные альбомы"
+ },
+ "Sunos eigene Analyse": {
+  "en": "Suno’s own analysis",
+  "ru": "Собственный анализ Suno"
+ },
+ "Tempo, Taktraster, Hüllkurve": {
+  "en": "Tempo, beat grid, envelope",
+  "ru": "Темп, сетка долей, огибающая"
+ },
+ "Die Wort-Zeitmarken": {
+  "en": "The word timestamps",
+  "ru": "Временные метки слов"
+ },
+ "für den mitlaufenden Text": {
+  "en": "for the lyrics that scroll along",
+  "ru": "для бегущего текста"
+ },
+ "Die Audiodateien": {
+  "en": "The audio files",
+  "ru": "Аудиофайлы"
+ },
+ "für alles, was du bei Suno schon freigeschaltet hast": {
+  "en": "for everything you have already unlocked at Suno",
+  "ru": "для всего, что вы уже разблокировали в Suno"
+ },
+ "Dafür braucht KlangTresor dich — und das hat einen guten Grund. Der Ausweis, den Suno verlangt, lebt etwa eine Minute und gilt nur im Browser. KlangTresor bekommt ihn nicht und soll ihn nicht bekommen: So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto. Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin angemeldet bist — ein Klick, einmal am Tag.": {
+  "en": "For this KlangTresor needs you — and there is a good reason. The pass Suno requires lives for about a minute and is only valid in the browser. KlangTresor does not get it and should not get it: that way there is no key to your Suno account on your drive. So the tool sits as a bookmark where you are signed in anyway — one click, once a day.",
+  "ru": "Для этого KlangTresor нужны вы — и на то есть веская причина. Пропуск, который требует Suno, живёт около минуты и действует только в браузере. KlangTresor его не получает и не должен получать: так на вашем диске нет ключа к вашему аккаунту Suno. Поэтому инструмент работает как закладка там, где вы и так вошли в аккаунт, — один клик, раз в день."
+ },
+ "Auf der KlangTresor-Seite findest du oben rechts den roten Knopf für den täglichen Abgleich — und darunter die Frage „Willst Du auch die nur Dir zugänglichen Daten im KlangTresor sehen?\". Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung. Chrome wird dafür gebraucht.": {
+  "en": "On the KlangTresor page you will find the red button for the daily sync at the top right — and below it the question “Do you also want to see the data only you can access in KlangTresor?”. Behind it is the bookmark to drag in, with instructions. Chrome is needed for this.",
+  "ru": "На странице KlangTresor в правом верхнем углу есть красная кнопка ежедневной синхронизации — а под ней вопрос «Хотите видеть в KlangTresor и данные, доступные только вам?». За ним — закладка для перетаскивания и инструкция. Для этого нужен Chrome."
+ },
+ "Was du bei Suno schon freigeschaltet hast, kostet dabei nichts — ein Guthaben zahlst du nur beim Freischalten selbst, und das machst du bei Suno, nicht hier. Das alles geht auch später jederzeit: KlangTresor läuft auch ohne.": {
+  "en": "What you have already unlocked at Suno costs nothing here — you only pay a credit when unlocking itself, and you do that at Suno, not here. All this can also be done later at any time: KlangTresor works without it too.",
+  "ru": "То, что вы уже разблокировали в Suno, здесь ничего не стоит — кредит списывается только при самой разблокировке, и это делается в Suno, а не здесь. Всё это можно сделать и позже в любой момент: KlangTresor работает и без этого."
+ },
+ "Bis hierher war alles öffentlich. Was nur dir gehört, fehlt noch:": {
+  "en": "Up to here everything was public. What belongs to you alone is still missing:",
+  "ru": "До сих пор всё было публичным. Не хватает того, что принадлежит только вам:"
+ },
+ "  · deine unveröffentlichten Titel, mit Abrufen und Herzen": {
+  "en": "  · your unpublished titles, with plays and likes",
+  "ru": "  · ваших неопубликованных треков, с прослушиваниями и лайками"
+ },
+ "  · wer dir gefolgt ist, wer geherzt, wer kommentiert hat —": {
+  "en": "  · who followed you, who liked, who commented —",
+  "ru": "  · кто на вас подписался, кто ставил лайки, кто комментировал —"
+ },
+ "    mit Namen und Zeitpunkt": {
+  "en": "    with names and times",
+  "ru": "    с именами и временем"
+ },
+ "  · deine Alben, auch die privaten": {
+  "en": "  · your albums, including the private ones",
+  "ru": "  · ваших альбомов, включая приватные"
+ },
+ "  · Sunos eigene Analyse: Tempo, Taktraster, Hüllkurve": {
+  "en": "  · Suno’s own analysis: tempo, beat grid, envelope",
+  "ru": "  · собственного анализа Suno: темп, сетка долей, огибающая"
+ },
+ "  · die Wort-Zeitmarken für den mitlaufenden Text": {
+  "en": "  · the word timestamps for the lyrics that scroll along",
+  "ru": "  · временных меток слов для бегущего текста"
+ },
+ "  · und der Ton für alles, was du bei Suno schon freigeschaltet hast": {
+  "en": "  · and the audio for everything you have already unlocked at Suno",
+  "ru": "  · и звука для всего, что вы уже разблокировали в Suno"
+ },
+ "Dafür brauche ich dich, und das hat einen guten Grund. Der Ausweis,": {
+  "en": "For this I need you, and there is a good reason. The pass",
+  "ru": "Для этого мне нужны вы, и на то есть веская причина. Пропуск,"
+ },
+ "den Suno dafür verlangt, lebt etwa eine Minute und gilt nur im": {
+  "en": "Suno requires for it lives for about a minute and is only valid in the",
+  "ru": "который для этого требует Suno, живёт около минуты и действует только в"
+ },
+ "Browser. KlangTresor bekommt ihn nicht und soll ihn nicht bekommen:": {
+  "en": "browser. KlangTresor does not get it and should not get it:",
+  "ru": "браузере. KlangTresor его не получает и не должен получать:"
+ },
+ "So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto.": {
+  "en": "that way there is no key to your Suno account on your drive.",
+  "ru": "так на вашем диске нет ключа к вашему аккаунту Suno."
+ },
+ "Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin": {
+  "en": "So the tool sits as a bookmark where you are signed in",
+  "ru": "Поэтому инструмент работает как закладка там, где вы"
+ },
+ "angemeldet bist. Es kostet einen Klick, einmal am Tag.": {
+  "en": "anyway. It costs one click, once a day.",
+  "ru": "и так вошли в аккаунт. Это один клик, раз в день."
+ },
+ "Die KlangTresor-Seite geht gleich auf. Dort findest du den roten": {
+  "en": "The KlangTresor page opens in a moment. There you will find the red",
+  "ru": "Сейчас откроется страница KlangTresor. Там вы найдёте красную"
+ },
+ "Knopf für den täglichen Abgleich — und darunter diese Frage:": {
+  "en": "button for the daily sync — and below it this question:",
+  "ru": "кнопку ежедневной синхронизации — а под ней этот вопрос:"
+ },
+ "  „Willst Du auch die nur Dir zugänglichen Daten": {
+  "en": "  “Do you also want to see the data only you can access",
+  "ru": "  «Хотите видеть и данные, доступные только вам,"
+ },
+ "   im KlangTresor sehen?\"": {
+  "en": "   in KlangTresor?”",
+  "ru": "   в KlangTresor?»"
+ },
+ "Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung.": {
+  "en": "Behind it is the bookmark to drag in, with instructions.",
+  "ru": "За ним — закладка для перетаскивания и инструкция."
+ },
+ "Chrome wird dafür gebraucht — in anderen Browsern gibt es das nicht.": {
+  "en": "Chrome is needed for this — other browsers don’t offer it.",
+  "ru": "Для этого нужен Chrome — в других браузерах такого нет."
+ },
+ "Der Ton, den du bei Suno freigeschaltet hast, kostet dabei nichts —": {
+  "en": "The audio you have unlocked at Suno costs nothing here —",
+  "ru": "Звук, который вы разблокировали в Suno, здесь ничего не стоит —"
+ },
+ "ein Guthaben zahlst du nur beim Freischalten selbst, und das machst": {
+  "en": "you only pay a credit when unlocking itself, and you do that",
+  "ru": "кредит списывается только при самой разблокировке, и это делается"
+ },
+ "du bei Suno, nicht hier.": {
+  "en": "at Suno, not here.",
+  "ru": "в Suno, а не здесь."
+ },
+ "Das geht auch später jederzeit. KlangTresor läuft auch ohne.": {
+  "en": "This can also be done later at any time. KlangTresor works without it too.",
+  "ru": "Это можно сделать и позже в любой момент. KlangTresor работает и без этого."
+ },
+ "Fertig. KlangTresor ist eingerichtet.": {
+  "en": "Done. KlangTresor is set up.",
+  "ru": "Готово. KlangTresor установлен."
+ },
+ "Titel": {
+  "en": "Titles",
+  "ru": "Треки"
+ },
+ "mit Audiodatei": {
+  "en": "with audio file",
+  "ru": "с аудиофайлом"
+ },
+ "Alben": {
+  "en": "Albums",
+  "ru": "Альбомы"
+ },
+ "Auf dem Schreibtisch liegt jetzt „KlangTresor\" — damit startest du es künftig.": {
+  "en": "“KlangTresor” is now on your desktop — use it to start it from now on.",
+  "ru": "На рабочем столе теперь есть «KlangTresor» — с его помощью вы будете запускать программу."
+ },
+ "Auf dem Schreibtisch liegt jetzt „KlangTresor\"": {
+  "en": "“KlangTresor” is now on your desktop",
+  "ru": "На рабочем столе теперь есть «KlangTresor»"
+ },
+ "damit startest du es künftig": {
+  "en": "use it to start it from now on",
+  "ru": "с его помощью вы будете запускать программу"
+ },
+ "Zum späteren Starten: der Starter liegt in {ordner}.": {
+  "en": "To start it later: the starter is in {ordner}.",
+  "ru": "Для запуска в будущем: стартовый файл находится в {ordner}."
+ },
+ "Zum späteren Starten": {
+  "en": "To start it later",
+  "ru": "Для запуска в будущем"
+ },
+ "der Starter liegt in {ordner}": {
+  "en": "the starter is in {ordner}",
+  "ru": "стартовый файл находится в {ordner}"
+ },
+ "Adresse:  ": {
+  "en": "Address:  ",
+  "ru": "Адрес:  "
+ },
+ "Auf diesem Rechner": {
+  "en": "On this computer",
+  "ru": "На этом компьютере"
+ },
+ "Im WLAN:  ": {
+  "en": "On Wi-Fi:  ",
+  "ru": "В Wi-Fi:  "
+ },
+ "Im WLAN, etwa vom Handy": {
+  "en": "On Wi-Fi, e.g. from your phone",
+  "ru": "В Wi-Fi, например с телефона"
+ },
+ "Zum Beenden Strg-C. Später genügt der Starter im Projektordner.": {
+  "en": "To stop, press Ctrl+C. Later, the starter in the project folder is enough.",
+  "ru": "Для остановки нажмите Ctrl+C. Позже достаточно стартового файла в папке проекта."
+ },
+ "Die Seite bleibt offen — mit Strg-C beenden.": {
+  "en": "The page stays open — stop with Ctrl+C.",
+  "ru": "Страница остаётся открытой — остановите клавишами Ctrl+C."
+ },
+ "Windows fragt in einem Moment, ob „Node.js JavaScript Runtime\" ins Netzwerk darf. Das ist der KlangTresor-Server. Hake „Private Netzwerke\" an — sonst erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke „Zugriff zulassen\". „Öffentliche Netzwerke\" brauchst du nicht.": {
+  "en": "In a moment Windows will ask whether “Node.js JavaScript Runtime” may access the network. That is the KlangTresor server. Tick “Private networks” — otherwise you can’t reach it on your own Wi-Fi, e.g. from your phone — and click “Allow access”. You don’t need “Public networks”.",
+  "ru": "Сейчас Windows спросит, можно ли «Node.js JavaScript Runtime» выходить в сеть. Это сервер KlangTresor. Отметьте «Частные сети» — иначе он будет недоступен в вашей Wi-Fi-сети, например с телефона, — и нажмите «Разрешить доступ». «Общественные сети» не нужны."
+ },
+ "Gleich fragt Windows, ob „Node.js JavaScript Runtime\" ins Netzwerk darf.": {
+  "en": "In a moment Windows asks whether “Node.js JavaScript Runtime” may access the network.",
+  "ru": "Сейчас Windows спросит, можно ли «Node.js JavaScript Runtime» выходить в сеть."
+ },
+ "Das ist der KlangTresor-Server. Hake „Private Netzwerke\" an — sonst": {
+  "en": "That is the KlangTresor server. Tick “Private networks” — otherwise",
+  "ru": "Это сервер KlangTresor. Отметьте «Частные сети» — иначе"
+ },
+ "erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke": {
+  "en": "you can’t reach it on your own Wi-Fi, e.g. from your phone — and click",
+  "ru": "он будет недоступен в вашей Wi-Fi-сети, например с телефона, — и нажмите"
+ },
+ "„Zugriff zulassen\". „Öffentliche Netzwerke\" brauchst du nicht.": {
+  "en": "“Allow access”. You don’t need “Public networks”.",
+  "ru": "«Разрешить доступ». «Общественные сети» не нужны."
+ },
+ "KlangTresor geht in Chrome auf.": {
+  "en": "KlangTresor opens in Chrome.",
+  "ru": "KlangTresor открывается в Chrome."
+ },
+ "KlangTresor geht in deinem Standardbrowser auf — Chrome habe ich nicht gefunden.": {
+  "en": "KlangTresor opens in your default browser — I could not find Chrome.",
+  "ru": "KlangTresor открывается в браузере по умолчанию — Chrome не найден."
+ },
+ "Zum Hören und Stöbern reicht jeder Browser. Nur das Lesezeichen für die": {
+  "en": "Any browser will do for listening and browsing. Only the bookmark for the",
+  "ru": "Для прослушивания и просмотра подойдёт любой браузер. Только закладка для"
+ },
+ "Daten, die nur du sehen darfst, läuft ausschließlich in Chrome:": {
+  "en": "data only you are allowed to see works exclusively in Chrome:",
+  "ru": "данных, которые видите только вы, работает исключительно в Chrome:"
+ },
+ "Platz: {gb} GB frei — die Einrichtung braucht rund 1,6 GB.": {
+  "en": "Space: {gb} GB free — the setup needs about 1.6 GB.",
+  "ru": "Место: свободно {gb} ГБ — установке нужно около 1,6 ГБ."
+ }
+}

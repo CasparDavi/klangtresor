@@ -49,7 +49,8 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const melden = require('./melden.js');   /* Zahlen fuer die Einrichtungsseite */
+const melden = require('./melden.js');
+const { T } = require('./sprache.js');   /* Zahlen fuer die Einrichtungsseite */
 const ZIEL = path.join(__dirname, '..', 'library', 'modelle');
 /* Fuer den Balken der Einrichtungsseite: welche Datei gerade laeuft,
    wie viel vor ihr schon lag, und wie viel es zusammen wird. */
@@ -222,9 +223,9 @@ async function perFetch(url, mindestens) {
           /* Die Seite bekommt die Zahlen immer: diese Datei und die
              Summe ueber alle. GEHOLT_VORHER ist, was vor dieser Datei
              schon lag - sonst spraenge der Gesamtbalken zurueck. */
-          melden.lauf({ was: NAME_JETZT + ' wird geladen', n: NUMMER_JETZT, von: LISTE.length,
-            nEinheit: 'Datei', quelle: 'von huggingface.co',
-            bytes: GEHOLT_VORHER + n, gesamt: SOLL_GESAMT, jetzt: mb(n) + (ganz ? ' von ' + mb(ganz) : '') });
+          melden.lauf({ was: T('{name} wird geladen', { name: NAME_JETZT }), n: NUMMER_JETZT, von: LISTE.length,
+            nEinheit: T('Datei'), quelle: T('von huggingface.co'),
+            bytes: GEHOLT_VORHER + n, gesamt: SOLL_GESAMT, jetzt: ganz ? T('{teil} von {ganz}', { teil: mb(n), ganz: mb(ganz) }) : mb(n) });
         }
       }
       const buf = Buffer.concat(teile);
@@ -277,8 +278,8 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN }; return; }
     NUMMER_JETZT++;
     const f = path.join(ZIEL, name);
     if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  vorhanden  ${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
-    melden.lauf({ was: name + ' wird geladen', n: NUMMER_JETZT, von: LISTE.length,
-      nEinheit: 'Datei', quelle: 'von huggingface.co', bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });
+    melden.lauf({ was: T('{name} wird geladen', { name }), n: NUMMER_JETZT, von: LISTE.length,
+      nEinheit: T('Datei'), quelle: T('von huggingface.co'), bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });
     NAME_JETZT = name;
     process.stdout.write(`  hole       ${name} … `);
     const a = await perFetch(url, mindestens);
@@ -304,7 +305,7 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN }; return; }
      Stand, den die Einrichtungsseite zeigen soll. */
   const { da, von } = bestand();
   melden.ausLauf();
-  melden.zeile('modelle', 'KI-Modelle', `${da} von ${von} sind da`, da === von ? 'fertig' : 'wink');
+  melden.zeile('modelle', T('KI-Modelle'), T('{da} von {von} sind da', { da, von }), da === von ? 'fertig' : 'wink');
   console.log(`  Modelle: ${geholt} geholt${NUR ? ` (angefragt: ${LISTE.length})` : ''}, ${da} von ${von} vorhanden → library/modelle/`);
   if (offen.length) {
     console.log(`\n  ${offen.length} Datei(en) kamen nicht an. Von Hand: im Browser öffnen, "Speichern unter" nach\n    ${ZIEL}\n  mit genau diesem Dateinamen:`);
