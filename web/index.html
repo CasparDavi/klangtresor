@@ -2389,6 +2389,76 @@ html.handy.quer #jetzt .jkopf{grid-column:1/-1}
 html.handy.quer #jetzt .jbuehne{grid-row:2/6;grid-column:1}
 html.handy.quer #jetzt .jinfo,html.handy.quer #jetzt .jlaufbox,html.handy.quer #jetzt .jsteuer,html.handy.quer #jetzt .jmodi{grid-column:2}
 html.handy.quer #jetzt .jgross{width:60px;height:60px}
+
+/* HANDYANSICHT, Schritt 3 (24.10.2026): BUEHNE AUF DEM HANDY. Das Pult traegt nur, was man vom Sofa aus braucht:
+   Titel, Zeit, Zurueck/Spielen/Weiter, Zufall/Anschluss/Schleife. Auswahlfelder, EQ, Lautstaerke (die hat das Handy
+   an der Seite) und Textversatz bleiben dem grossen Schirm; „Jetzt laeuft“ fuehrt zu Analyse und Tonstudio.
+   Die runden Knoepfe oben (Vollbild, Schliessen) fahren mit dem Pult ein und aus. Gilt nicht im Analysemodus. */
+html.ohnevollbild #bvoll{display:none!important}
+/* Hochkant im Text-Modus stehen die runden Knoepfe fest - das Bild beginnt darum unter ihnen statt unter ihnen zu liegen. */
+html.handy:not(.quer) #buehne.text-lyrics .bwrap{padding-top:calc(70px + env(safe-area-inset-top))}
+html.handy #buehne:not(.text-analyzer) #bmodi,
+html.handy #buehne:not(.text-analyzer) #bversatzgruppe,
+html.handy #buehne:not(.text-analyzer) #blautgruppe,
+html.handy #buehne:not(.text-analyzer) #bstudio{display:none!important}
+html.handy #buehne:not(.text-analyzer):not(.text-lyrics) #bzu,
+html.handy #buehne:not(.text-analyzer):not(.text-lyrics) #bvoll{transition:opacity .35s ease}
+html.handy #buehne:not(.pultAuf):not(.text-analyzer):not(.text-lyrics) #bzu,
+html.handy #buehne:not(.pultAuf):not(.text-analyzer):not(.text-lyrics) #bvoll{opacity:0}
+html.handy #buehne:not(.pultBereit):not(.text-analyzer):not(.text-lyrics) #bzu,
+html.handy #buehne:not(.pultBereit):not(.text-analyzer):not(.text-lyrics) #bvoll,
+html.handy #buehne:not(.pultBereit):not(.text-analyzer):not(.text-lyrics) .bpult{pointer-events:none}
+html.handy #buehne:not(.text-analyzer) .bsteuer{justify-content:center;gap:14px}
+html.handy #buehne:not(.text-analyzer) .bsteuer button{width:46px;height:46px;min-width:46px}
+html.handy #buehne:not(.text-analyzer) .bsteuer .gross{width:62px;height:62px;min-width:62px}
+html.handy.quer #buehne:not(.text-analyzer) .bpult{display:flex;flex-wrap:wrap;align-items:center;column-gap:18px;row-gap:4px}
+html.handy.quer #buehne:not(.text-analyzer) .bpult h2{margin:0;flex:0 1 auto;min-width:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.handy.quer #buehne:not(.text-analyzer) .bpult .bmeta{display:none}
+html.handy.quer #buehne:not(.text-analyzer) .bzeit{margin:0}
+html.handy.quer #buehne:not(.text-analyzer) .bsteuer{margin:0 0 0 auto}
+/* „Jetzt laeuft“ quer: rechts unter dem Titel laeuft der Text mit - die Zeile, die dran ist, gross; davor und danach leise. */
+#jetzt .jlyrik{display:none}
+html.handy.quer #jetzt.mittext .jlyrik{display:flex;flex-direction:column;justify-content:center;gap:4px;grid-column:2;min-height:0;overflow:hidden;text-align:left}
+/* Quer sind 360 px knapp: Mit Text schwebt die Kopfzeile (nur der Pfeil, links oben ueber dem Bild), Datum und
+   Abstaende fallen - so bekommt der Text die Hoehe, die sonst die Kopfzeile kostete. */
+html.handy.quer #jetzt.mittext{grid-template-rows:auto minmax(0,1fr) auto auto auto;row-gap:6px}
+html.handy.quer #jetzt.mittext .jkopf{position:absolute;top:calc(4px + env(safe-area-inset-top));left:10px;z-index:2;min-height:0}
+html.handy.quer #jetzt.mittext .jkopf span{display:none}
+html.handy.quer #jetzt.mittext .jkopf .jrund{background:#0c0c0d99}
+html.handy.quer #jetzt.mittext .jbuehne{grid-row:1/-1}
+html.handy.quer #jetzt.mittext .jmeta{display:none}
+html.handy.quer #jetzt.mittext .jmodi button{min-height:44px}
+#jetzt .jlyrik div{color:var(--schwach);font-size:14px;line-height:1.25;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#jetzt .jlyrik .dran{color:var(--text);font-size:21px;font-weight:700;opacity:1;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* HANDYANSICHT, Schritt 4 (24.10.2026): RAEUME AUF DEM HANDY. Die Karte nimmt die ganze Flaeche zwischen Kopf und
+   Mini-Player (Hausregel: Bildschirmflaeche ist das hoechste Gut); die Seitenleiste - Raumwahl, Einstellungen, Legende,
+   Steckbrief - wird zum Blatt von unten hinter dem Knopf „Ansicht“ links oben im Feld. Die Fussnote zum Verfahren steht
+   auf dem Handy nicht (sie haette dem Himmel die Hoehe genommen); die Legende im Blatt bleibt. */
+#raumknopf{display:none}
+html.handy #karte:not([hidden]){display:block;position:relative;padding:4px 6px}
+html.handy #karte > #kartefeld,html.handy #karte > #schaumfeld{height:100%;min-height:0}
+html.handy #karte > #kartefuss{display:none}
+html.handy #kartefeld,html.handy #schaumfeld{touch-action:none}
+/* Jedes Bild baut die Sternkreise neu; ein Finger, der auf einem Kreis aufsetzte, verlor mit ihm seine Geste (Touch-
+   Ereignisse bleiben beim alten Ziel). Auf dem Handy fasst darum das Feld an - den Stern sucht karteFingerTipp. */
+html.handy #kartesvg .stern,html.handy #kartesvg .sternbild,html.handy #kartesvg .loch{pointer-events:none}
+html.handy #raumknopf{display:flex;align-items:center;gap:8px;position:absolute;left:16px;top:14px;z-index:6;min-height:40px;padding:0 14px;
+  border-radius:999px;border:1px solid var(--rand);background:#0c0c0dcc;color:var(--text);font:inherit;font-size:14px;-webkit-tap-highlight-color:transparent}
+html.handy #raumknopf .ico{width:18px;height:18px}
+html.handy #karte > #karterechts:not([hidden]),html.handy #karte > #schaumrechts:not([hidden]){display:flex;flex-direction:column;position:fixed;
+  left:0;right:0;bottom:0;z-index:80;height:auto;max-height:80dvh;overflow:auto;overscroll-behavior:contain;background:var(--flaeche);
+  border-top:1px solid var(--rand);border-radius:16px 16px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .28s ease;visibility:hidden}
+html.handy.raum-offen #karte > #karterechts:not([hidden]),html.handy.raum-offen #karte > #schaumrechts:not([hidden]){transform:none;visibility:visible}
+html.handy.raum-offen #blattgrund{display:block;position:fixed;inset:0;z-index:79;background:rgba(0,0,0,.5)}
+html.handy.raum-offen header{backdrop-filter:none;-webkit-backdrop-filter:none}
+
+/* Schaum mit dem Finger (Schritt 4): Zellen unter Fingergroesse - 44 x 44 px an der aktuellen Zoomstufe - zeigen kein
+   Bild, nur ihre Farbe, und nehmen keinen Tipp an; ab Fingergroesse Bild und Tipp. Gezoomt wird das ganze Bild per
+   Transformation (Vektor, bleibt scharf); der Gruppen-Zoom ueber die Legende bleibt daneben bestehen. */
+#schaumbild path[data-id].winzig{fill-opacity:1;cursor:default}
+html.handy #schaumbild{transform-origin:0 0;will-change:transform}
 </style>
 </head>
 <body>
@@ -4339,6 +4409,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
      Song ein Punkt, Naehe = aehnlicher Klang (UMAP aus den EffNet-
      Embeddings), Farbe = Stilgruppe (im vollen Raum gerechnet). -->
 <div id="karte" hidden>
+  <button type="button" id="raumknopf" aria-haspopup="dialog"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span data-i18n="handy.raum.ansicht">Ansicht</span></button>
   <div id="kartefeld"><canvas id="karteschiffhinten"></canvas><canvas id="karteglut"></canvas><canvas id="karteschiff"></canvas><svg id="kartesvg" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
     <!-- Vollbild und die Anzeige des laufenden Songs gehoeren zusammen:
          im Vollbild faellt die Playerleiste weg, und dann muss irgendwo
@@ -4674,6 +4745,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
   </div>
   <div class="jbuehne" id="jbuehne"><img id="jbild" alt=""><video id="jfilm" muted loop playsinline preload="none"></video><div class="jpunkte" id="jpunkte" hidden><i class="an"></i><i></i></div></div>
   <div class="jinfo"><div class="jtitel" id="jtitel"></div><div class="jmeta" id="jmeta"></div></div>
+  <div class="jlyrik" id="jlyrik" aria-live="off"><div></div><div class="dran"></div><div></div></div>
   <div class="jlaufbox"><input type="range" class="jlauf" id="jlauf" min="0" max="1000" step="1" value="0" data-i18n-aria="handy.jetzt.stelle" aria-label="Stelle im Titel"><div class="jzeit"><span id="jzeitA">0:00</span><span id="jzeitB">0:00</span></div></div>
   <div class="jsteuer">
     <button class="jrund" id="jmisch" data-i18n-aria="player.zufall" aria-label="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
@@ -4756,8 +4828,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=6"></script>
-<script src="/ui-sprache.js?v=18"></script>
+<script src="/ui-sprache-ru.js?v=7"></script>
+<script src="/ui-sprache.js?v=19"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
 <script>
@@ -8384,7 +8456,65 @@ function coverBild(s){
   }
   return im.fertig ? im : null;
 }
+/* FINGER IM KLANGRAUM (Handy, Schritt 4, 24.10.2026). Ein Finger verschiebt (im 3-D-Raum: dreht), zwei Finger zoomen
+   um ihre Mitte, wie das Rad um den Zeiger (1- bis 40-fach). Ein kurzer Tipp nimmt den NAECHSTEN Stern im Umkreis
+   von 56 px (Caspar_D: „reinzoomen und dann naechsten Stern nehmen“) - Sterne sind kleiner als eine Fingerkuppe;
+   er zeigt kurz den Namen und spielt. Der Tipp verhindert die nachgeschobenen Mausereignisse, sonst spielte der
+   Stern unter dem Finger doppelt oder ein anderer. */
+function karteFingerTipp(feld, x, y){
+  const r = feld.getBoundingClientRect(); let best = null, bd = 56;
+  feld.querySelectorAll('#kartesvg .stern').forEach(c => { const b = c.getBoundingClientRect();
+    const d = Math.hypot(b.left + b.width / 2 - r.left - x, b.top + b.height / 2 - r.top - y); if (d < bd){ bd = d; best = c; } });
+  if (!best) return;
+  const ev = { clientX: r.left + x, clientY: r.top + y };
+  if (best.onmouseenter) best.onmouseenter(ev);
+  if (best.onclick) best.onclick(ev);
+}
+function karteFingerEinrichten(feld, neu){
+  if (feld.fingerDran) return; feld.fingerDran = true;
+  let f = null;
+  const pkt = (t) => { const r = feld.getBoundingClientRect(); return [t.clientX - r.left, t.clientY - r.top]; };
+  const zwei = (ts) => { const a = pkt(ts[0]), b = pkt(ts[1]); return { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] }; };
+  feld.addEventListener('touchstart', (ev) => {
+    if (!(window.istHandy && istHandy())) return;
+    const ts = ev.touches;
+    if (ts.length === 1){ const p = pkt(ts[0]); f = { art: 'eins', x0: p[0], y0: p[1], lx: p[0], ly: p[1], tx: karteZoom.tx, ty: karteZoom.ty, t0: performance.now(), weit: false }; }
+    else if (ts.length === 2){ const z = zwei(ts); f = { art: 'zwei', d0: z.d, m0: z.m, z0: { ...karteZoom }, weit: true }; }
+  }, { passive: true });
+  feld.addEventListener('touchmove', (ev) => {
+    if (!f) return; ev.preventDefault();
+    const ts = ev.touches;
+    if (f.art === 'zwei' && ts.length >= 2){
+      const z = zwei(ts), k = Math.min(40, Math.max(1, f.z0.k * z.d / f.d0)), q = k / f.z0.k;
+      karteZoom = k <= 1.001 ? { k: 1, tx: 0, ty: 0 } : { k, tx: z.m[0] - q * (f.m0[0] - f.z0.tx), ty: z.m[1] - q * (f.m0[1] - f.z0.ty) };
+      neu();
+    } else if (f.art === 'eins' && ts.length === 1){
+      const p = pkt(ts[0]), dx = p[0] - f.x0, dy = p[1] - f.y0;
+      if (!f.weit && Math.hypot(dx, dy) > 8) f.weit = true;
+      if (!f.weit) return;
+      if (typeof karteDim !== 'undefined' && karteDim === '3d'){
+        const mdx = p[0] - f.lx, mdy = p[1] - f.ly;
+        karteRotZiel = null;
+        karteRot = qMul(qMul(qAchse([0, 1, 0], mdx * 0.008), qAchse([1, 0, 0], -mdy * 0.008)), karteRot);
+        const nq = Math.hypot(...karteRot); karteRot = karteRot.map(v => v / nq);
+      } else { karteZoom.tx = f.tx + dx; karteZoom.ty = f.ty + dy; karteNachlaufAus = true; }
+      f.lx = p[0]; f.ly = p[1]; neu();
+    }
+  }, { passive: false });
+  const ende = (ev) => {
+    if (!f) return;
+    if (f.art === 'eins' && !f.weit && ev.type === 'touchend' && ev.touches.length === 0 && performance.now() - f.t0 < 450){
+      ev.preventDefault(); karteFingerTipp(feld, f.x0, f.y0);
+    }
+    if (f.weit) feld.geschleppt = Date.now();
+    /* Hebt einer von zwei Fingern ab, endet die Geste - sonst spraenge das Bild auf den verbliebenen Finger. */
+    f = null;
+  };
+  feld.addEventListener('touchend', ende, { passive: false });
+  feld.addEventListener('touchcancel', ende, { passive: false });
+}
 function karteZoomEinrichten(feld, svg, neu){
+  karteFingerEinrichten(feld, neu);
   if (feld.zoomDran) return; feld.zoomDran = true;
   feld.addEventListener('wheel', (ev) => {
     /* Eigener Zoom: Flugkamera bis zum naechsten Song aus (22.08.: sie
@@ -8617,7 +8747,8 @@ function karteHoehe(){
   const k = $('karte'); if (!k || k.hidden) return;
   const oben = k.getBoundingClientRect().top + window.scrollY;
   const player = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--player-h')) || 88;
-  k.style.height = Math.max(320, window.innerHeight - oben - player) + 'px';
+  /* Handy quer bleiben unter Kopf und Player rund 240 px - die Mindesthoehe 320 schob die Karte dort unter den Rand. */
+  k.style.height = Math.max(window.istHandy && istHandy() ? 160 : 320, window.innerHeight - oben - player) + 'px';
 }
 /* EIN Tooltip fuer den ganzen Himmel, mit Lebenszeit (Caspar_D, 21.08.2026:
    acht Tooltips gleichzeitig - jedes Neuzeichnen hatte einen neuen
@@ -8687,7 +8818,8 @@ function ladenDran(leg){
 /* Alle zu -> schmale Leiste, Himmel volle Breite */
 function ladenLeiste(){
   /* nur im Klangraum und im Geschichten-Raum - die Schaeume haben eigene Laden ohne Leiste (schaumLadenEinrichten) */
-  const alleZu = !karteLaden.einstellungen && !karteLaden.legende && !karteLaden.werk && raumJetzt !== 'schaum' && raumJetzt !== 'groupies';
+  const alleZu = !karteLaden.einstellungen && !karteLaden.legende && !karteLaden.werk && raumJetzt !== 'schaum' && raumJetzt !== 'groupies'
+    && !(window.istHandy && istHandy());   /* Handy: die Seite ist ein Blatt, keine Leiste */
   const k = $('karte'); if (k) k.classList.toggle('leiste', alleZu);
   if (typeof karteLage !== 'undefined') karteLage = { W: 0, H: 0, xy: null };   // Layout neu messen
   if (typeof karteZeichnen === 'function' && typeof karteDaten !== 'undefined' && karteDaten && !ladenLeiste.laeuft){ ladenLeiste.laeuft = true; setTimeout(() => { ladenLeiste.laeuft = false; karteZeichnen(); }, 260); }
@@ -8862,6 +8994,7 @@ function ansichtWaehlen(a){
   try { localStorage.setItem('mysuno-raum', raumJetzt); } catch (e) {}
   /* Die Sternbilder gelten je Raum - sonst zeigt der Geschichten-Raum die Namen aus dem Klang-Raum. */
   karteSternbilder = [];
+  document.documentElement.classList.remove('raum-offen');   /* Handy: gewaehlt heisst ansehen - das Blatt geht zu */
   zeichnen();          /* filtert die Liste neu - im Geschichten-Raum fehlen die Textlosen */
 }
 function ansichtHtml(){
@@ -9059,7 +9192,7 @@ function schaumGliederungWaehlen(id){
   else { schaumGliederung = id; schaumZoom = null; try { localStorage.setItem('mysuno-schaum-gliederung', id); } catch (e) {} }
   schaumZeichnen();
 }
-function schaumZoomen(name){ schaumZoom = name; schaumZeichnen(); }
+function schaumZoomen(name){ schaumZoom = name; document.documentElement.classList.remove('raum-offen'); schaumZeichnen(); }
 /* DER REGLER „ZEIGT N VON M" IM GROUPIESCHAUM (Caspar_D, 07.10.2026: „kannst du … eine Möglichkeit einbauen, untere Perzentile
    auszublenden" - „sie fliegen raus … das dient dazu, auch mal große Bilder zu sehen, wenn man viele follower hat"; 15.10.2026: „der
    Groupieschaum-Regler wäre einfach, er blendet Quantile der gegenwärtig aktiven Skalierung aus." - „per default ist der Regler so
@@ -10899,7 +11032,65 @@ async function schaumMorph(bild, alt, neu, lauf){
   requestAnimationFrame(schritt);
   setTimeout(ende, 2600);                                                           /* falls die Seite keine Bilder mehr zeichnet */
 }
+/* FINGER IM SCHAUM (Handy, Schritt 4, 24.10.2026; Caspar_D: „Pinch-Zoom, ALLE Titel bleiben in wahrer Flaeche; Zellen
+   unter Fingergroesse ohne Bild als getoente Flaeche und nicht antippbar, ab Fingergroesse mit Bild und antippbar -
+   nichts ausblenden, nicht verzerren“). Zwei Finger zoomen um ihre Mitte (1- bis 12-fach), einer verschiebt im
+   gezoomten Bild; die Schwelle wird nach jeder Geste neu gemessen. */
+let schaumFz = { k: 1, tx: 0, ty: 0 };
+const SCHAUM_FINGER = 44;
+function schaumFingerAnwenden(){
+  const b = $('schaumbild'); if (!b) return;
+  const z = schaumFz, f = $('schaumfeld'), W = f ? f.clientWidth : 0, H = f ? f.clientHeight : 0;
+  /* nicht aus dem Feld schieben: der Rand des Bildes bleibt am Rand des Feldes */
+  z.tx = Math.min(0, Math.max(W - W * z.k, z.tx)); z.ty = Math.min(0, Math.max(H - H * z.k, z.ty));
+  b.style.transform = z.k > 1 ? `translate(${z.tx}px,${z.ty}px) scale(${z.k})` : '';
+  schaumFingerSchwelle();
+}
+function schaumFingerSchwelle(){
+  const svg = $('schaumbild') && $('schaumbild').querySelector('svg'); if (!svg || !svg.viewBox || !svg.viewBox.baseVal) return;
+  const handy = window.istHandy && istHandy(), vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect();
+  const s = Math.min(r.width / (vb.width || 1), r.height / (vb.height || 1));      /* Bildpunkte je Einheit, mit Zoom (meet) */
+  svg.querySelectorAll('path[data-id]').forEach(p => {
+    let klein = false;
+    if (handy){ const bb = p._bb || (p._bb = p.getBBox()); klein = Math.min(bb.width, bb.height) * s < SCHAUM_FINGER; }
+    if (p.classList.contains('winzig') === klein) return;
+    p.classList.toggle('winzig', klein);
+    const sk = p.previousElementSibling, im = sk && sk.previousElementSibling;
+    if (im && im.tagName.toLowerCase() === 'image') im.style.display = klein ? 'none' : '';
+  });
+}
+function schaumFingerEinrichten(){
+  const feld = $('schaumfeld'); if (!feld || feld.fingerDran) return; feld.fingerDran = true;
+  let g = null;
+  const pkt = (t) => { const r = feld.getBoundingClientRect(); return [t.clientX - r.left, t.clientY - r.top]; };
+  const zwei = (ts) => { const a = pkt(ts[0]), b = pkt(ts[1]); return { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] }; };
+  feld.addEventListener('touchstart', (ev) => {
+    if (!(window.istHandy && istHandy())) return;
+    const ts = ev.touches;
+    if (ts.length === 2){ const z = zwei(ts); g = { art: 'zwei', d0: z.d, m0: z.m, z0: { ...schaumFz } }; }
+    else if (ts.length === 1 && schaumFz.k > 1){ const p = pkt(ts[0]); g = { art: 'eins', p0: p, z0: { ...schaumFz }, weit: false }; }
+    else g = null;
+  }, { passive: true });
+  feld.addEventListener('touchmove', (ev) => {
+    if (!g) return; ev.preventDefault();
+    const ts = ev.touches;
+    if (g.art === 'zwei' && ts.length >= 2){
+      const z = zwei(ts), k = Math.min(12, Math.max(1, g.z0.k * z.d / g.d0)), q = k / g.z0.k;
+      schaumFz = { k, tx: z.m[0] - q * (g.m0[0] - g.z0.tx), ty: z.m[1] - q * (g.m0[1] - g.z0.ty), gezogen: Date.now(), schl: g.z0.schl };
+      const b = $('schaumbild'); b.style.transform = `translate(${schaumFz.tx}px,${schaumFz.ty}px) scale(${k})`;   /* im Zug nur verschieben, gemessen wird am Ende */
+    } else if (g.art === 'eins' && ts.length === 1){
+      const p = pkt(ts[0]), dx = p[0] - g.p0[0], dy = p[1] - g.p0[1];
+      if (!g.weit && Math.hypot(dx, dy) > 8) g.weit = true;
+      if (!g.weit) return;
+      schaumFz = { k: g.z0.k, tx: g.z0.tx + dx, ty: g.z0.ty + dy, gezogen: Date.now(), schl: g.z0.schl };
+      $('schaumbild').style.transform = `translate(${schaumFz.tx}px,${schaumFz.ty}px) scale(${schaumFz.k})`;
+    }
+  }, { passive: false });
+  const ende = () => { if (!g) return; const war = g.art === 'zwei' || g.weit; g = null; if (war){ schaumFz.gezogen = Date.now(); schaumFingerAnwenden(); } };
+  feld.addEventListener('touchend', ende); feld.addEventListener('touchcancel', ende);
+}
 function schaumEinsetzenJetzt(f, einblenden){
+  schaumFingerEinrichten();
   const bild = $('schaumbild');
   schaumBildArt = f.art;
   bild.style.opacity = '';
@@ -10969,7 +11160,12 @@ function schaumEinsetzenJetzt(f, einblenden){
     bild.onmouseleave = () => { rp.setAttribute('visibility', 'hidden'); if (titel) schaumSteckbriefVon(aktuellId); };
   }
   bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (!p) return;
+    if (p.classList.contains('winzig') || Date.now() - (schaumFz.gezogen || 0) < 350) return;   /* Handy: unter Fingergroesse kein Ziel */
     if (f.art === 'person') reaktPersonAlleine(p.dataset.id); else spielenNachId(p.dataset.id); };
+  /* Ungezoomt nur bei neuer Ansicht (Art, Gruppen-Zoom, Lage); wechselt bloss der laufende Titel, bleibt der Ausschnitt -
+     wer gezoomt einen Titel antippt, will dort weitermachen. */
+  { const schl = [f.art, schaumZoom, svg && svg.getAttribute('viewBox')].join('|');
+    if (schaumFz.schl !== schl) schaumFz = { k: 1, tx: 0, ty: 0, schl }; schaumFingerAnwenden(); }
   return bereit;
 }
 /* Das Wabern steht, wenn die Musik steht - dieselbe Quelle wie die Abspielknoepfe. */
@@ -13410,7 +13606,19 @@ function karteKennwerte(d){
    multipliziert - fransig), Sterne (Kern + Glorie, Schwarzkoerper-
    farbe nach Alter, Helligkeit logarithmisch nach Dichte-Rang wie
    Magnituden, Beugungsspitzen fuer die hellsten zehn Prozent). */
+/* Handy: Nur die oberen 100 (nach Resonanz: Abrufe + 2 x Herzen + 3 x Kommentare) leuchten voll, die uebrigen
+   bleiben blass sichtbar (Caspar_D, 24.10.2026: „1a mit limitierter Menge, nur die oberen 100“). Gemerkt je Raum
+   und Bestandsgroesse - der Himmel wird jedes Bild neu gemalt. */
+let karteOben100 = { schl: '', menge: null };
+function karteObenHundert(d){
+  if (!(window.istHandy && istHandy()) || d.songs.length <= 100) return null;
+  const schl = raumJetzt + '|' + d.songs.length + '|' + alle.length;
+  if (karteOben100.schl !== schl) karteOben100 = { schl, menge: new Set([...d.songs].map(p => [p.id, schaumResonanz(song(p.id))])
+    .sort((a, b) => b[1] - a[1]).slice(0, 100).map(x => x[0])) };
+  return karteOben100.menge;
+}
 function karteHimmel(d){
+  const oben100 = karteObenHundert(d);
   const cv = $('karteglut');
   const L = karteLayout(d), W = L.W, H = L.H;
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -13563,7 +13771,7 @@ function karteHimmel(d){
        und man sieht, wo im Raum das gefilterte Haeufchen liegt. 0.12 ist
        dunkler als die Gruppendimmung (0.25) - der Suchfilter ist die
        staerkere Aussage. */
-    const blass = (karteAnflug && !karteAnflug.has(p.id) ? 0.12 : 1)
+    const blass = (oben100 && !oben100.has(p.id) ? 0.3 : 1) * (karteAnflug && !karteAnflug.has(p.id) ? 0.12 : 1)
                 * (karteGruppeAn !== null && karteGruppeAn !== p.gruppe ? 0.25 : 1) * Math.min(1, 0.45 + 0.55 * (tf - 0.7) / 0.9)
       * (typeof assimiliert !== 'undefined' && assimiliert.has(p.id) ? 0.12 : 1);    // Kubus: verloschen
     const [x, y] = pos.get(p.id);
@@ -19769,10 +19977,21 @@ function modusSetzen(id){
    das Pult hervor, und es verschwindet nach einigen Sekunden von
    selbst wieder.
 ------------------------------------------------------------- */
-let bPultTimer = null;
+let bPultTimer = null, bPultBereit = null;
+/* Wann zuletzt ein Finger auf dem Schirm war. Ein Tipp schiebt Mausereignisse nach (mousemove, mousedown, click) -
+   auch auf iOS. Die Maussteuerung darunter hielt sie fuer eine Maus: das Pult ging nach 0,45 s wieder weg, und der
+   Fokus aus dem nachgeschobenen mousedown hielt es danach fuer immer fest (Testagent, 24.10.2026; Tablets ebenso). */
+let letzteBeruehrung = 0;
+document.addEventListener('touchstart', () => { letzteBeruehrung = Date.now(); }, { capture: true, passive: true });
+const fingerGerade = (ms = 800) => Date.now() - letzteBeruehrung < ms;
 
 function pultZeigen(dauer = 0){
-  $('buehne').classList.add('pultAuf');
+  const b = $('buehne');
+  /* „Bereit“ (antippbar) erst 0,4 s nach dem Erscheinen: Der Klick, den der Tipp nachschiebt, traf sonst den Knopf,
+     der eben erst sichtbar wurde - ein Tipp auf die leere Ecke schloss die Buehne. */
+  if (!b.classList.contains('pultAuf')){ clearTimeout(bPultBereit); b.classList.remove('pultBereit');
+    bPultBereit = setTimeout(() => { if (b.classList.contains('pultAuf')) b.classList.add('pultBereit'); }, 400); }
+  b.classList.add('pultAuf');
   clearTimeout(bPultTimer);
   if (dauer) bPultTimer = setTimeout(pultVerbergen, dauer);
 }
@@ -19780,14 +19999,17 @@ function pultZeigen(dauer = 0){
 function pultVerbergen(){
   clearTimeout(bPultTimer);
   // Nicht wegnehmen, solange jemand gerade etwas bedient - sonst
-  // rutscht einem der Regler unter der Hand weg.
+  // rutscht einem der Regler unter der Hand weg. Mit dem Finger zaehlen
+  // :hover und Fokus nicht: beide bleiben nach einem Tipp einfach stehen.
   const p = $('bpult');
-  if (p.matches(':hover') || p.contains(document.activeElement)) return;
-  $('buehne').classList.remove('pultAuf');
+  if (fingerGerade(15000)){ if (p.contains(document.activeElement)) document.activeElement.blur(); }
+  else if (p.matches(':hover') || p.contains(document.activeElement)) return;
+  $('buehne').classList.remove('pultAuf', 'pultBereit'); clearTimeout(bPultBereit);
 }
 
 $('buehne').addEventListener('mousemove', (e) => {
   if (bText === 'lyrics') return;           // dort steht das Pult ohnehin fest
+  if (fingerGerade() || (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents)) return;   // vom Finger nachgeschoben
   const nahAmRand = e.clientY > window.innerHeight * 0.84;
   if (nahAmRand) pultZeigen();
   else if (!$('bpult').contains(e.target)) {
@@ -19797,9 +20019,21 @@ $('buehne').addEventListener('mousemove', (e) => {
 });
 
 // Ohne Zeiger: Berührung zeigt das Pult für ein paar Sekunden.
+/* Handy (Schritt 3, 24.10.2026): Ein zweiter Tipp auf die freie Flaeche nimmt es gleich wieder weg - wer vom Sofa aus
+   liest, will den Text frei haben. Und ein Tipp IM Pult laesst den Knopf nicht fokussiert stehen: pultVerbergen()
+   schont ein Pult mit Fokus (sonst rutscht der Regler unter der Maus weg) - mit dem Finger blieb es darum fuer immer. */
 $('buehne').addEventListener('touchstart', (e) => {
   if (bText === 'lyrics') return;
-  if (!$('bpult').contains(e.target)) pultZeigen(4000);
+  if ($('bpult').contains(e.target) || e.target.closest('#bzu,#bvoll')) return;
+  if (window.istHandy && istHandy() && $('buehne').classList.contains('pultAuf') && bText !== 'analyzer'){
+    if (document.activeElement && $('bpult').contains(document.activeElement)) document.activeElement.blur();
+    pultVerbergen(); return;
+  }
+  pultZeigen(4000);
+}, { passive: true });
+$('bpult').addEventListener('touchend', () => {
+  if (bText === 'lyrics' || bText === 'analyzer') return;
+  pultZeigen(4000);    /* jede Bedienung haelt das Pult weitere 4 s; pultVerbergen nimmt danach den Fokus mit */
 }, { passive: true });
 /* Die Bewegtbild-Leiste erscheint nur, wenn jemand ins Bild fasst. */
 $('bart').addEventListener('mousemove', () => bewegtLeisteZeigen());
@@ -23156,9 +23390,16 @@ function buehneZu(){
 
 function vollbild(){
   const e = $('buehne');
-  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-  else (e.requestFullscreen || e.webkitRequestFullscreen).call(e).catch(()=>{});
+  /* Die webkit-Fassung gibt kein Promise zurueck - .catch darauf warf. Und das iPhone kann ein Element gar nicht
+     vollbild schalten (nur Videos); dort ist der Knopf ausgeblendet (html.ohnevollbild). */
+  const leise = (r) => { if (r && r.catch) r.catch(() => {}); };
+  try {
+    if (document.fullscreenElement || document.webkitFullscreenElement)
+      leise((document.exitFullscreen || document.webkitExitFullscreen).call(document));
+    else { const f = e.requestFullscreen || e.webkitRequestFullscreen; if (f) leise(f.call(e)); }
+  } catch (x) {}
 }
+if (!(document.fullscreenEnabled || document.webkitFullscreenEnabled)) document.documentElement.classList.add('ohnevollbild');
 
 /** Klick auf eine Zeile springt an die Stelle im Song. */
 function springe(i){
@@ -30260,7 +30501,10 @@ $('suchlupe').onclick = () => { document.documentElement.classList.add('suche-of
 $('suchzu').onclick = () => { document.documentElement.classList.remove('suche-offen'); handyPilleZeigen(); };
 const filterBlatt = (auf) => document.documentElement.classList.toggle('filter-offen', auf);
 $('filterpille').onclick = () => filterBlatt(true);
-$('blattgrund').onclick = () => filterBlatt(false);
+$('blattgrund').onclick = () => { filterBlatt(false); raumBlatt(false); };
+/* Raeume auf dem Handy: die Seitenleiste als Blatt (Schritt 4). */
+const raumBlatt = (auf) => document.documentElement.classList.toggle('raum-offen', !!auf);
+$('raumknopf').onclick = () => raumBlatt(true);
 document.querySelectorAll('.blattzu').forEach(b => b.onclick = () => filterBlatt(false));
 for (const id of ['zahl', 'plZahl']) new MutationObserver(handyPilleZeigen).observe($(id), { childList: true, characterData: true, subtree: true });
 document.documentElement.dataset.reg = register;
@@ -30444,7 +30688,31 @@ function jetztFuellen(){
   const film = hatBewegtbild(s);
   $('jpunkte').hidden = !film; $('jpip').hidden = !film || !(document.pictureInPictureEnabled);
   if (!film) jetztFilmSetzen(false);
+  if (jetztZeilenFuer !== s.id) jetztLyrikLaden(s.id);
   else if (jetztFilm) { const v = $('jfilm'), u = artworkVideo(s.id); if (v.dataset.src !== u){ v.dataset.src = u; v.src = u; } }
+}
+/* Mitlaufender Text fuer „Jetzt laeuft“ quer: dieselben Zeitmarken wie die Buehne (/api/song/<id>, Feld worte), in
+   Zeilen geschnitten von inZeilen(); Abschnittsmarken wie [Chorus] fallen weg, der Textversatz des Pults gilt mit.
+   Ohne Gesang oder ohne Zeitmarken bleibt die Flaeche leer (Klasse mittext fehlt), statt Platz zu belegen. */
+let jetztZeilen = [], jetztZeilenFuer = null;
+async function jetztLyrikLaden(id){
+  jetztZeilenFuer = id; jetztZeilen = []; $('jetzt').classList.remove('mittext');
+  const s = song(id); if (!s || istInstrumental(s)) return;
+  try {
+    const d = await (await fetch('/api/song/' + encodeURIComponent(id))).json();
+    if (jetztZeilenFuer !== id) return;
+    const text = (z) => z.worte.map(w => w.text).join('').replace(ZIER_RE, '').replace(/\s+/g, ' ').trim();
+    jetztZeilen = inZeilen(d.worte || []).map(z => ({ start: z.start, text: text(z) })).filter(z => z.text && !/^\[.*\]$/.test(z.text));
+    $('jetzt').classList.toggle('mittext', jetztZeilen.length > 0);
+  } catch (e) {}
+}
+function jetztLyrikTakt(){
+  if (!jetztZeilen.length) return;
+  const t = (audio.currentTime || 0) - bVersatz / 1000;
+  let n = -1; for (let i = 0; i < jetztZeilen.length; i++){ if (jetztZeilen[i].start <= t) n = i; else break; }
+  const k = $('jlyrik').children, z = (i) => (jetztZeilen[i] && jetztZeilen[i].text) || '';
+  const neu = [z(n - 1), n < 0 ? '' : z(n), z(n < 0 ? 0 : n + 1)];
+  for (let i = 0; i < 3; i++) if (k[i].textContent !== neu[i]) k[i].textContent = neu[i];
 }
 function jetztFilmSetzen(an){
   const s = aktuellId && song(aktuellId), v = $('jfilm');
@@ -30467,6 +30735,7 @@ function jetztTakt(){
   $('jschleife').classList.toggle('an', $('schleifknopf').classList.contains('an'));
   const v = $('jfilm'); if (jetztFilm && v.src){ if (laeuft && v.paused) v.play().catch(() => {}); else if (!laeuft && !v.paused) v.pause(); }
   $('jlautregler').value = $('lautstaerke').value;
+  jetztLyrikTakt();
 }
 $('jzu').onclick = jetztZu;
 $('jspiel').onclick = () => umschalten();

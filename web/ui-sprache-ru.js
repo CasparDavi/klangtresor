@@ -19,6 +19,7 @@ window.UI_RU = {
   "handy.jetzt.mehr": "Ещё",
   "handy.jetzt.details": "О треке",
   "handy.jetzt.studio": "Звуковая студия",
+  "handy.raum.ansicht": "Вид",
   "sprache.wahl": "Язык",
   "kopf.marke": "Версия, автор, участники",
   "kopf.filter": "Фильтр",

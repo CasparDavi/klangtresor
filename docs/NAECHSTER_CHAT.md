@@ -9566,3 +9566,33 @@ Plan und Entscheidungen: Gedächtnis „klangtresor-handy-ui“ (Skizze abgenomm
 - **Nebenbefund (alt, nicht vom Umbau):** Tablet 768 px breit – im Player ist der Titel 0 px breit, „0:00 /“ bricht um.
 - **Weiter:** Schritt 3 – Bühne auf dem Handy: Pult ist überladen (Auswahlfelder, EQ, Versatz laufen rechts hinaus);
   schlankes Pult, Vollbild, Karaoke; „Jetzt läuft“ quer mit mitlaufendem Text.
+
+## 116. 24.10.2026: 1.0.98 – Handyansicht, Schritte 3 und 4 (Bühne/Karaoke, Räume)
+
+Beide Schritte in einem Release, weil sie in derselben Arbeitskopie entstanden; je Schritt ein Testagent mit echten
+Touch-Ereignissen (CDP), Nachprüfung nach jeder Korrektur.
+- **Bühne auf dem Handy** (CSS-Block „HANDYANSICHT, Schritt 3“): Pult nur Titel, Zeit, Zurück/Spielen/Weiter,
+  Zufall/Anschluss/Schleife; Auswahlfelder, EQ, Lautstärke, Versatz bleiben dem großen Schirm. Runde Knöpfe (Vollbild,
+  Schließen) fahren mit dem Pult aus. Tipp zeigt das Pult 4 s, zweiter Tipp auf freie Fläche nimmt es weg.
+  Hochkant im Text-Modus beginnt das Bild unter den Knöpfen.
+- **Zwei alte Touch-Fehler der Bühne behoben (auch Tablet):** Ein Tipp schiebt Mausereignisse nach. Der Mausweg hielt
+  sie für eine Maus und nahm das Pult nach 0,45 s weg; der Fokus aus dem nachgeschobenen mousedown hielt es danach für
+  immer. Jetzt: `letzteBeruehrung`/`fingerGerade()`; mousemove vom Finger wird übergangen; pultVerbergen achtet mit dem
+  Finger nicht auf :hover/Fokus. Geisterklick: Ein Tipp auf die leere Ecke holte das Pult und traf im selben Zug den
+  Schließen-Knopf → antippbar erst 0,4 s nach dem Erscheinen (Klasse `pultBereit`).
+- **Vollbild:** `vollbild()` warf auf webkit (kein Promise); ohne Element-Vollbild (iPhone) `html.ohnevollbild`, Knopf weg.
+- **„Jetzt läuft“ quer mit Text:** rechts unter dem Titel drei Zeilen (davor leise, aktuelle groß, danach leise), aus
+  `/api/song/<id>` (worte → inZeilen, ohne [Abschnitte], Textversatz gilt). Kopf schwebt dann, Datum entfällt.
+- **Räume** (Block „HANDYANSICHT, Schritt 4“): Karte füllt die Fläche; Seitenleiste als Blatt hinter „Ansicht“
+  (`raum-offen`), Raumwahl und Gruppen-Zoom schließen es; Fußnote zum Verfahren auf dem Handy weg; Kartenhöhe quer
+  min. 160 statt 320 px.
+- **Klangraum mit Fingern:** ein Finger verschiebt (3D: dreht), zwei zoomen um ihre Mitte (1–40×), Tipp nimmt den
+  nächsten Stern im Umkreis 56 px. Sternkreise auf dem Handy ohne pointer-events (Neuzeichnen ersetzte das Touch-Ziel,
+  Geste brach ab). Obere 100 nach Resonanz voll, Rest blass (`karteObenHundert`).
+- **Schaum mit Fingern:** Zwei-Finger-Zoom 1–12× als Transformation, Ziehen im gezoomten Bild, Rand bleibt am Feld.
+  Zellen unter 44×44 px (an der Zoomstufe) ohne Bild, nur Farbe (`path.winzig`), kein Tipp. Ungezoomt 252 von 266
+  winzig, bei 4× noch 11. Ausschnitt bleibt beim Titelwechsel, zurück bei neuer Ansicht/Gruppen-Zoom.
+- **Offen/notiert:** Schaum hochkant fast quadratisch (je ~70 px schwarz oben/unten) – Layout-Seitenverhältnis der
+  Engine, nicht angefasst. Tablet 768: Titel im Player 0 px breit (alt).
+- **Weiter:** Zusatzschritt – Profil-Lasche „Aufs Handy“ (Adresse über Namen, QR-Code, Anleitung Home-Bildschirm),
+  `web/qr.js` (eigener Kodierer, gegen Apple Vision geprüft) und `/api/adressen` liegen schon in der Arbeitskopie.

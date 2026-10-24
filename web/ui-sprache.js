@@ -37,6 +37,7 @@
     ["handy.jetzt.mehr", "Mehr", "More"],
     ["handy.jetzt.details", "Details zum Titel", "Title details"],
     ["handy.jetzt.studio", "Tonstudio", "Sound studio"],
+    ["handy.raum.ansicht", "Ansicht", "View"],
     ['sprache.wahl', 'Sprache', 'Language'],
 
     ['kopf.marke', 'Version, Urheber, Mitstreiter', 'Version, author, contributors'],
