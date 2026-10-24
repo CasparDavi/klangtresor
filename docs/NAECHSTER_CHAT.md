@@ -9715,3 +9715,15 @@ Caspar_D: „der rote Datendownload-Knopf kann aus der Handyversion raus“. #mo
   keine Fehler. **Am iPhone noch zu bestätigen.**
 - Offen: Safari öffnete die Seite per https („keine sichere Verbindung“) – Herkunft der https-Adresse unklar
   (QR/Home-Bildschirm/Tippen?), Caspar_D gefragt.
+
+## 128. 24.10.2026: 1.0.110 – Handy: AirPlay zu den HomePods bleibt erhalten
+
+- Caspar_D: „auf dem Handy kommt es an, auf den HomePods aber nicht“. AirPlay nimmt nur den Ton direkt aus dem
+  <audio>; hängt das Element im AudioContext, kommt er aus dem Gerät (Gedächtnis „AirPlay hängt am Element“) – bis
+  zum Neuladen nicht umkehrbar. Auf dem Handy legt `analyseStarten()` den Kontext darum nur noch an, wenn
+  `handyKlangFrei` gesetzt ist – das geschieht erst beim ersten Verstellen im EQ-Blatt (Pille oder Regler). Bühne,
+  Karaoke und Signalanzeige nehmen ihren vorhandenen Weg ohne Signal. Geprüft: Abspielen/Bühne/Karaoke → kein Graph;
+  Regler gezogen → Graph läuft.
+- Das EQ-Blatt sagt es: „Mit EQ läuft der Ton durch den Browser: Über AirPlay (HomePods) kommt er dann aus dem Handy –
+  bis zum Neuladen der Seite.“ Gespeicherte Titel-EQs wirken auf dem Handy erst nach einer Bedienung im EQ-Blatt.
+- Grenze von Apple, nicht lösbar in einer Webseite: EQ und AirPlay schließen sich auf dem iPhone aus.

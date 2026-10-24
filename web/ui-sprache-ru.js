@@ -34,7 +34,7 @@ window.UI_RU = {
   "handy.mehr.schleife": "Повтор",
   "handy.mehr.details": "О треке",
   "handy.mehr.bewegtbild": "Видеообложка",
-  "handy.eq.fuss": "действует для этого трека – и на компьютере",
+  "handy.eq.fuss": "Действует для этого трека, и на компьютере тоже. С эквалайзером звук идёт через браузер: по AirPlay (HomePod) он тогда звучит из телефона – до перезагрузки страницы.",
   "handy.eq.loudness": "Loudness",
   "handy.eq.nacht": "Ночь",
   "handy.eq.sammlung": "Коллекция",

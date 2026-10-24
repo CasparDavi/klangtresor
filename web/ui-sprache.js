@@ -52,7 +52,7 @@
     ["handy.mehr.schleife", "Schleife", "Loop"],
     ["handy.mehr.details", "Details", "Details"],
     ["handy.mehr.bewegtbild", "Bewegtbild", "Motion art"],
-    ["handy.eq.fuss", "gilt für diesen Titel – am Rechner ebenso", "applies to this title – on the computer too"],
+    ["handy.eq.fuss", "Gilt für diesen Titel, am Rechner ebenso. Mit EQ läuft der Ton durch den Browser: Über AirPlay (HomePods) kommt er dann aus dem Handy – bis zum Neuladen der Seite.", "Applies to this title, on the computer too. With EQ the sound runs through the browser: over AirPlay (HomePods) it then comes from the phone – until the page is reloaded."],
     ["handy.eq.loudness", "Loudness", "Loudness"],
     ["handy.eq.nacht", "Nacht", "Night"],
     ["handy.eq.sammlung", "Sammlung", "Collection"],

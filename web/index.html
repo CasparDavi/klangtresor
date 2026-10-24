@@ -4941,8 +4941,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=11"></script>
-<script src="/ui-sprache.js?v=23"></script>
+<script src="/ui-sprache-ru.js?v=12"></script>
+<script src="/ui-sprache.js?v=24"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
@@ -19047,7 +19047,14 @@ try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } ca
 function klangWecken(){ if (hörer && hörer.ctx && hörer.ctx.state !== 'running' && hörer.ctx.state !== 'closed') hörer.ctx.resume().catch(() => {}); }
 for (const ev of ['touchend', 'click', 'keydown']) document.addEventListener(ev, klangWecken, { capture: true, passive: true });
 for (const d of [deckA, deckB]) d.addEventListener('play', klangWecken);   /* auch beim Weiterspielen nach Anruf oder Sperre */
+/* AUF DEM HANDY NUR MIT EQ (Caspar_D, 24.10.2026: „auf dem Handy kommt es an, auf den HomePods aber nicht“). AirPlay
+   nimmt nur den Ton direkt aus dem <audio>; sobald ein Element im AudioContext haengt, kommt der Ton aus dem Geraet
+   selbst (Gedaechtnis „AirPlay haengt am Element“, gemessen 26.08.2026) - und das laesst sich bis zum Neuladen nicht
+   zuruecknehmen. Darum legt das Handy den Kontext erst an, wenn man im EQ-Blatt etwas verstellt; Buehne und
+   Signalanzeige nehmen ihren Weg ohne Signal, den sie fuer diesen Fall schon haben. */
+let handyKlangFrei = false;
 function analyseStarten(){
+  if (!hörer && window.istHandy && istHandy() && !handyKlangFrei) return false;
   if (hörer) return hörer.ok;
   hörer = { ok:false };
   let ctx = null, quelle = null, quellA = null, quellB = null;   /* ausserhalb des try: der Notweg im catch braucht sie */
@@ -30960,10 +30967,12 @@ $('eqzu').onclick = eqBlattZu;
 $('eqpillen').addEventListener('click', async (e) => {
   const b = e.target.closest('button[data-p]'); if (!b) return;
   if (b.dataset.grund){ kurzMeldung(b.dataset.grund); return; }
+  handyKlangFrei = true;
   await studioPreset(b.dataset.p); eqBlattZeigen();
 });
 $('eqregler').addEventListener('input', (e) => {
   const inp = e.target.closest('input[data-i]'); if (!inp) return;
+  handyKlangFrei = true;
   eqGains[+inp.dataset.i] = +inp.value; eqAnwenden(); eqMerken(); eqPresetAnzeigen();
   inp.previousElementSibling.textContent = eqZahl(+inp.value);
   const d = $('studiopreset'), jetzt = d ? d.value : 'frei';
