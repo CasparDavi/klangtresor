@@ -9749,3 +9749,14 @@ einmal angestoßen (translateZ(0) für ein Bild). Schaum-Prüffälle (t4 hoch, F
 - **Sprache:** index.html las die Gerätesprache gar nicht und fiel auf Deutsch zurück. Jetzt: eigene Wahl >
   ?sprache= vom Starter > navigator.languages (de/en/ru, nicht gemerkt) > Englisch. Geprüft mit headless Chrome:
   ru→ru, de→de, en→en, fr→en, fr + ?sprache=ru → ru.
+
+## 132. 24.10.2026: 1.0.114 – Sprache auf dem Handy im Profil
+
+- Tarja: Sprachschalter mobil nirgends zu sehen (stand unten im Filterblatt). Caspar_D: „im Filter hat das nichts zu
+  suchen … in die Avatar-Seite, es ist eine persönliche Einstellung“. Jetzt im Profil unter „Profil auf Suno“
+  (`.profilsprache`, nur Handy); aus beiden Filterblättern entfernt. Am PC bleibt der Kopfzeilen-Schalter.
+- Profil-Knopf ohne Avatarbild war 0 px breit (Bild blendete sich bei Fehler aus) – auch am PC, das Profil war dann
+  unerreichbar. Ersatz: Person als Umriss (#ichersatz), nur wenn das Bild fehlt. SVG: Attribut entfernen,
+  `.hidden=false` wirkt dort nicht. Handy: 12 px Abstand zum Paar Lupe/Trichter.
+- Geprüft: Profil zeigt DE markiert, Tipp auf EN schaltet um und das Profil zieht nach; Filterblatt ohne Sprachwahl;
+  PC: Profil-Schalter unsichtbar, Kopfzeilen-Schalter da.

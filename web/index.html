@@ -2327,8 +2327,6 @@ html.handy.filter-offen .filter select{width:100%;min-height:44px;font-size:16px
 html.handy .filter .nurhandy{display:flex;align-items:center;justify-content:space-between;gap:10px}
 html.handy .filter .blattkopf b{font-size:16px}
 html.handy .filter .blattzu{min-height:40px;padding:0 18px}
-html.handy .filter .blattsprache{color:var(--schwach);font-size:13px;margin-top:4px}
-html.handy .filter .blattsprache button{min-height:40px;min-width:52px}
 html.handy .filter .zahl{color:var(--schwach);font-size:13px}
 /* Die Kopfzeile ist durch backdrop-filter Bezugsrahmen fuer position:fixed und liegt mit z-index 35 unter dem
    Abdunkler - solange das Blatt offen ist, beides aufheben, sonst klebt es oben und liegt im Dunkeln. */
@@ -2555,6 +2553,12 @@ html.handy.eq-offen #eqblatt{display:flex;flex-direction:column;position:fixed;l
 #eqblatt .eqband input{flex:1;min-height:0;width:34px;writing-mode:vertical-lr;direction:rtl;accent-color:var(--akzent);touch-action:none}
 #eqblatt .eqfuss{font-size:12px;color:var(--schwach);margin-top:8px}
 html.handy.quer #eqblatt .eqregler{height:150px}
+html.handy .profilsprache.nurhandy{display:flex;align-items:center;gap:12px;margin-top:12px;color:var(--schwach);font-size:14px}
+html.handy .profilsprache .sprachewahl button{min-height:36px;min-width:52px;font-size:13px}
+#ichersatz{width:24px;height:24px;margin:2px}
+/* Handy: das Profil ist keine Suche - etwas Abstand zum Paar Lupe/Trichter (Tufte) */
+html.handy #ich{margin-left:12px}
+#ichersatz[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -4400,7 +4404,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
       </svg>
     </button>
     <button id="ich" onclick="profilAuf()" title="Mein Autorenprofil" data-i18n-title="kopf.ich">
-      <img id="ichbild" src="/avatar" alt="" onerror="this.style.display='none'">
+      <img id="ichbild" src="/avatar" alt="" onerror="this.style.display='none'; this.nextElementSibling.removeAttribute('hidden')">
+      <!-- Ohne Avatarbild (frisch eingerichtet) war der Knopf 0 px breit und das Profil unerreichbar - auf dem Handy auch
+           der Sprachschalter, der dort im Profil steht. Ersatz: eine Person als Umriss. -->
+      <svg id="ichersatz" class="ico" viewBox="0 0 24 24" aria-hidden="true" hidden fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6" fill="none"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" fill="none"/></svg>
     </button>
   </div>
   <!-- Register. Jedes bringt seine eigene Filterleiste mit: Die
@@ -4467,13 +4474,6 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <button class="knopf ruecksetzer" id="ruecksetzen" hidden
             title="Suche und Filter auf den Ausgangszustand" data-i18n-title="filter.ruecksetzen.titel" data-i18n="filter.ruecksetzen" data-i18n-title="filter.ruecksetzen.titel">Filter zurücksetzen</button>
     <span class="zahl" id="zahl"></span>
-    <div class="blattsprache nurhandy"><span data-i18n="sprache.wahl">Sprache</span>
-        <span class="sprachewahl" role="group" data-i18n-aria="sprache.wahl">
-          <button type="button" data-sprache="de" onclick="spracheSetzen('de')">DE</button>
-          <button type="button" data-sprache="en" onclick="spracheSetzen('en')" title="Translation partly AI-generated and still being revised">EN*</button>
-          <button type="button" data-sprache="ru" onclick="spracheSetzen('ru')" title="Перевод частично создан с помощью ИИ и ещё дорабатывается">RU*</button>
-        </span>
-    </div>
   </div>
 
   <div class="filter" id="filterPlaylists" hidden>
@@ -4491,13 +4491,6 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <option value="likes" data-i18n="filter.pl.sort.likes">Meiste Herzen</option>
     </select>
     <span class="zahl" id="plZahl"></span>
-    <div class="blattsprache nurhandy"><span data-i18n="sprache.wahl">Sprache</span>
-        <span class="sprachewahl" role="group" data-i18n-aria="sprache.wahl">
-          <button type="button" data-sprache="de" onclick="spracheSetzen('de')">DE</button>
-          <button type="button" data-sprache="en" onclick="spracheSetzen('en')" title="Translation partly AI-generated and still being revised">EN*</button>
-          <button type="button" data-sprache="ru" onclick="spracheSetzen('ru')" title="Перевод частично создан с помощью ИИ и ещё дорабатывается">RU*</button>
-        </span>
-    </div>
   </div>
 </header>
 <div id="blattgrund"></div>
@@ -18842,6 +18835,11 @@ function profilAuf(){
              target="_blank" rel="noopener"
              title="${p.handle ? 'suno.com/@' + p.handle : 'Suno'}">${t('profil.suno_link')}</a>
         </p>
+        <!-- SPRACHE AUF DEM HANDY (Caspar_D, 24.10.2026: „nein, im Filter hat das nichts zu suchen … in die Avatar-Seite,
+             es ist eine persoenliche Einstellung“). Am Rechner bleibt der Schalter in der Kopfzeile. -->
+        <p class="profilsprache nurhandy"><span>${t('sprache.wahl')}</span><span class="sprachewahl" role="group">${
+          [['de', 'DE', ''], ['en', 'EN*', 'Translation partly AI-generated and still being revised'], ['ru', 'RU*', 'Перевод частично создан с помощью ИИ и ещё дорабатывается']]
+            .map(([k, l, ti]) => `<button type="button" data-sprache="${k}" class="${sprache() === k ? 'an' : ''}"${ti ? ` title="${ti}"` : ''} onclick="spracheSetzen('${k}')">${l}</button>`).join('')}</span></p>
       </div>
 
       <!-- ZWEI REGISTER (Caspar_D, 26.08.2026: "registerlasche in user,
