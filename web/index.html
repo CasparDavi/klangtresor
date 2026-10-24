@@ -2346,6 +2346,10 @@ html.handy.quer.suche-offen .register{display:none}
 /* HANDYANSICHT, Schritt 2 (24.10.2026): der Player wird zum MINI-PLAYER (Titelbild, Titel, Zeit, Pause, Weiter; die
    Leiste oben als duenne Linie - wie in Tarjas KlangDroid), ein Tipp darauf oeffnet „Jetzt laeuft“ (#jetzt). */
 html.handy{--player-h:66px}
+/* Der Rand unter der Home-Leiste des iPhones (env(safe-area-inset-bottom), bis 34 px) kommt DAZU: Mit box-sizing
+   border-box frass das padding-bottom des Players sonst die Hoehe, und der Spielen-Kreis ragte oben heraus
+   (Caspar_D, 24.10.2026). Der Chrome-Nachbau hat diesen Rand nicht - darum fiel es dort nicht auf. */
+html.handy #player{height:calc(var(--player-h) + env(safe-area-inset-bottom))}
 /* Die Linie zeigt nur: Ein Finger am oberen Rand traf sie per Trefferkorrektur und sprang im Lied (Testagent 24.10.).
    Springen geht im Blatt ueber den grossen Regler. */
 html.handy #leiste{position:absolute;left:0;right:0;top:0;height:3px;margin:0;border-radius:0;pointer-events:none}
@@ -8856,7 +8860,7 @@ function karteLayout(d){
 function karteHoehe(){
   const k = $('karte'); if (!k || k.hidden) return;
   const oben = k.getBoundingClientRect().top + window.scrollY;
-  const player = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--player-h')) || 88;
+  const pl = $('player'), player = (pl && pl.offsetHeight) || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--player-h')) || 88;   /* gemessen: auf dem iPhone samt Rand unter der Home-Leiste */
   /* Handy quer bleiben unter Kopf und Player rund 240 px - die Mindesthoehe 320 schob die Karte dort unter den Rand. */
   k.style.height = Math.max(window.istHandy && istHandy() ? 160 : 320, window.innerHeight - oben - player) + 'px';
 }
@@ -19031,6 +19035,14 @@ const BAENDER = [
   [4000,16000, 'Höhen'  ],   // Luft, Becken
 ];
 
+/* SAFARI HAELT DIE KLANGBEARBEITUNG AN (Caspar_D, 24.10.2026: „wenn ich das erste Mal etwas auf dem Handy bediene,
+   verliert er die Verbindung zum Audio … der Fortschrittsbalken geht voran … aber es wird kein Sound mehr abgespielt“).
+   Der Ton laeuft durch den AudioContext (EQ, Analyse); iOS startet ihn angehalten, wenn er ohne Fingertipp entstand,
+   und haelt ihn bei Unterbrechungen an ('interrupted'). Das <audio> laeuft dann weiter, hoerbar ist nichts. Jeder Tipp
+   und jedes Abspielen weckt ihn darum wieder auf - resume() darf Safari nur innerhalb einer Bedienung. */
+function klangWecken(){ if (hörer && hörer.ctx && hörer.ctx.state !== 'running' && hörer.ctx.state !== 'closed') hörer.ctx.resume().catch(() => {}); }
+for (const ev of ['touchend', 'click', 'keydown']) document.addEventListener(ev, klangWecken, { capture: true, passive: true });
+for (const d of [deckA, deckB]) d.addEventListener('play', klangWecken);   /* auch beim Weiterspielen nach Anruf oder Sperre */
 function analyseStarten(){
   if (hörer) return hörer.ok;
   hörer = { ok:false };

@@ -9692,3 +9692,16 @@ Caspar_D: „der rote Datendownload-Knopf kann aus der Handyversion raus“. #mo
   gemerkter Raum geöffnet wird. Bildschirmfoto vom iPhone erbeten.
 - Nebenbei: Collab-Video „Weißer Atem [TrYa-NON26]“ (Original stadtrotfuchs, hochgeladenes Video) auf Wunsch nur als
   Datei nach ~/Downloads gelegt; Suno nimmt hochgeladene Videos beim Projekt-Teilen nicht mit.
+
+## 126. 24.10.2026: 1.0.108 – iPhone: Ton bleibt, Player hoch genug
+
+- **Ton weg nach der ersten Bedienung (iPhone):** Beim Abspielen läuft der Ton direkt aus dem <audio>; den AudioContext
+  legt erst an, wer ihn braucht (Bühne für die Signalanzeige, EQ) – die Bühne erst nach dem Laden der Titeldaten, also
+  nicht mehr im Fingertipp. Safari startet ihn dann angehalten: Balken und Text laufen, hörbar ist nichts.
+  `klangWecken()`: jeder touchend/click/keydown und jedes play weckt den Kontext (resume nur in Bedienung erlaubt).
+  Geprüft: Kontext angehalten → ein Tipp → running.
+- **Offen, Caspar_D gefragt:** Safari hält den Kontext auch bei gesperrtem Bildschirm an. Robuster: auf dem Handy den
+  AudioContext nur für den EQ anlegen (Bühne ohne Signalanzeige).
+- **Player:** `html.handy #player{height:calc(var(--player-h) + env(safe-area-inset-bottom))}` – der Rand unter der
+  Home-Leiste wurde abgezogen statt addiert (box-sizing border-box), der Spielen-Kreis ragte heraus. karteHoehe misst
+  den Player jetzt (offsetHeight).
