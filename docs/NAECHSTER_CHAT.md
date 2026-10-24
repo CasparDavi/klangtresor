@@ -9681,3 +9681,14 @@ Trichter in 20 px – gleiche Strichzahl wirkte darum verschieden. Jetzt beide 2
 
 Caspar_D: „der rote Datendownload-Knopf kann aus der Handyversion raus“. #morgenknopf auf dem Handy ausgeblendet
 (display:none); am Rechner unverändert (geprüft).
+
+## 125. 24.10.2026: 1.0.107 – Handy: Schaum ohne Vorrechnen
+
+- Caspar_D: „das Vorrechnen ausschalten“. `schaumVorrechnen()` kehrt auf dem Handy sofort zurück. Gemessen im
+  Sandkasten in 25 s: Handy 1 Schaum-Worker (der angezeigte), Rechner wie bisher 10.
+- hfoam (schneller, bei maßvoller Genauigkeit) später einbauen – Caspar_D: „aber noch nicht“.
+- **iPhone ohne Farben im Schaum – nicht nachstellbar:** WebKit-Probe (Swift/WKWebView, scratchpad/webkit/wk, mit
+  vorgetäuschtem Touch → html.handy) malt die Zellen farbig (fill rgb(103,40,63)), auch wenn der Schaum direkt als
+  gemerkter Raum geöffnet wird. Bildschirmfoto vom iPhone erbeten.
+- Nebenbei: Collab-Video „Weißer Atem [TrYa-NON26]“ (Original stadtrotfuchs, hochgeladenes Video) auf Wunsch nur als
+  Datei nach ~/Downloads gelegt; Suno nimmt hochgeladene Videos beim Projekt-Teilen nicht mit.

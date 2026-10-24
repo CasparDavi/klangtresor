@@ -10103,6 +10103,9 @@ function groupieSaat(zeilen, W, H, gl){
    man ein Mass, das hinten gerade liegt, wartet die Seite darauf statt doppelt zu rechnen. */
 let schaumHinten = null, schaumWartet = null;
 async function schaumVorrechnen(){
+  /* Auf dem Handy rechnet nur, was man ansieht (Caspar_D, 24.10.2026: „das Vorrechnen ausschalten“) - der Schaum wird
+     dort im Browser des Handys gelegt, und das Vorrechnen aller Masse kostete Zeit und Akku. */
+  if (window.istHandy && istHandy()) return;
   if (schaumHinten || register !== 'karte' || (raumJetzt !== 'schaum' && raumJetzt !== 'groupies')) return;
   const raum = raumJetzt, verh = schaumVerh(), auftraege = [];
   if (raum === 'groupies'){ const gl = groupieGl(); for (const m of GROUPIE_MASSE) auftraege.push(() => groupieAuftrag(m, verh, gl)); }
