@@ -9596,3 +9596,19 @@ Touch-Ereignissen (CDP), Nachprüfung nach jeder Korrektur.
   Engine, nicht angefasst. Tablet 768: Titel im Player 0 px breit (alt).
 - **Weiter:** Zusatzschritt – Profil-Lasche „Aufs Handy“ (Adresse über Namen, QR-Code, Anleitung Home-Bildschirm),
   `web/qr.js` (eigener Kodierer, gegen Apple Vision geprüft) und `/api/adressen` liegen schon in der Arbeitskopie.
+
+## 117. 24.10.2026: 1.0.99 – Zusatzschritt „Aufs Handy“ (Adresse mit Namen, QR-Code, Startbildschirm)
+
+- **Profil, vierte Lasche „Aufs Handy“** (`profilHandyFuellen`): QR-Code der besten Adresse auf eigener heller Karte,
+  daneben die Adresse groß, darunter die Ausweichadressen, dann „Als Zeichen auf den Startbildschirm“ für iPhone
+  und Android. Auf dem Handy scrollt die Laschenreihe waagrecht.
+- **`/api/adressen`** (server.js): Reihenfolge Name beim Router (Rückwärtsauflösung, hier `imac.fritz.box`), Bonjour
+  (`<rechner>.local`), dann die Zahlen; je Nachschlag höchstens 1,5 s; virtuelle Netze (Parallels bridge100/101,
+  Docker, VPN …) ausgefiltert.
+- **`web/qr.js`**: eigener QR-Kodierer (Byte-Modus, Stufe M, Version 1–10, Maskenwahl nach Norm), gegengeprüft mit
+  Apples Vision-Leser (Swift, scratchpad/qr/lies) an 7 Adressen der Versionen 1–10, auch mit Umlauten: alle richtig.
+- **`web/manifest.json`** + `<link rel="manifest">`, `theme-color`. iPhone: „Zum Home-Bildschirm“ öffnet ohne
+  Adresszeile (apple-mobile-web-app-capable stand schon drin). Android-Chrome startet nur über https im Vollbild –
+  über http bleibt nach unserem Stand die Adresszeile; so steht es auch in der Lasche. **Am echten Gerät noch nicht
+  geprüft** (kein Handy hier) – Wiedervorlage für Caspar_D.
+- Apple-Touch-Icon bleibt `/avatar` (sein Profilbild) wie bisher; das Manifest nimmt das KlangTresor-Zeichen.

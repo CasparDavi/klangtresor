@@ -1,0 +1,13 @@
+{
+  "name": "KlangTresor",
+  "short_name": "KlangTresor",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0c0c0d",
+  "theme_color": "#0c0c0d",
+  "icons": [
+    { "src": "/symbol/klangtresor-256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "/symbol/klangtresor-1024.png", "sizes": "1024x1024", "type": "image/png" }
+  ]
+}

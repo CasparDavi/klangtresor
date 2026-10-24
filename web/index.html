@@ -12,6 +12,10 @@
      damit es ohne zusaetzliche Datei auskommt und in jeder Groesse scharf ist. -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23ff6a00'/%3E%3Crect x='6.2' y='6.2' width='51.6' height='51.6' rx='8' fill='none' stroke='%23151517' stroke-width='3.5'/%3E%3Ccircle cx='12.5' cy='12.5' r='1.7' fill='%23151517'/%3E%3Ccircle cx='51.5' cy='12.5' r='1.7' fill='%23151517'/%3E%3Ccircle cx='12.5' cy='51.5' r='1.7' fill='%23151517'/%3E%3Ccircle cx='51.5' cy='51.5' r='1.7' fill='%23151517'/%3E%3Cg transform='translate(32 32)' stroke='%23151517' stroke-width='4.5' stroke-linecap='round' fill='none'%3E%3Ccircle r='12.5'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-17 0H17M0-17V17'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='3.6' fill='%23151517'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="/avatar">
+<!-- „Zum Home-Bildschirm“ (24.10.2026): Name, Zeichen und Vollbild fuer Android; das iPhone liest die apple-Zeilen oben.
+     Als .json, damit der Server keinen neuen Dateityp braucht - die Browser nehmen es so an. -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0c0c0d">
 <style>
 /* Ausgangszustand unbunt - Farbe kommt erst mit dem Song.
    uiFaerben() überschreibt diese Werte mit der Coverpalette. */
@@ -2459,6 +2463,23 @@ html.handy.raum-offen header{backdrop-filter:none;-webkit-backdrop-filter:none}
    Transformation (Vektor, bleibt scharf); der Gruppen-Zoom ueber die Legende bleibt daneben bestehen. */
 #schaumbild path[data-id].winzig{fill-opacity:1;cursor:default}
 html.handy #schaumbild{transform-origin:0 0;will-change:transform}
+
+/* Profil-Lasche „Aufs Handy“: der Code auf eigener heller Karte (Kameras lesen nur dunkel auf hell), daneben die
+   Adressen; schmal untereinander. */
+html.handy .profilreg{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-right:52px}
+html.handy .profilreg .reg{white-space:nowrap;flex:0 0 auto}
+.handyblock{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;padding:6px 0 10px}
+.handyqr{flex:0 0 auto;width:200px;height:200px;border-radius:12px;overflow:hidden;background:#fff}
+.handyqr svg{display:block;width:100%;height:100%}
+.handytext{flex:1 1 280px;min-width:0;line-height:1.5}
+.handytext h3{margin:0 0 6px;font-size:17px}
+.handytext h4{margin:18px 0 4px;font-size:14px}
+.handytext p{margin:4px 0}
+.handyurl b{font-size:17px;color:var(--text);word-break:break-all}
+.handytext small{color:var(--schwach)}
+.handyliste{margin:2px 0 0;padding-left:18px;color:var(--schwach)}
+.handyliste span{color:var(--text);word-break:break-all}
+.handyhinweis,.handysonst{color:var(--schwach);font-size:13px}
 </style>
 </head>
 <body>
@@ -4828,8 +4849,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=7"></script>
-<script src="/ui-sprache.js?v=19"></script>
+<script src="/ui-sprache-ru.js?v=8"></script>
+<script src="/ui-sprache.js?v=20"></script>
+<script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
 <script>
@@ -17490,6 +17512,36 @@ function profilRegister(welches){
   /* Die Nachbarschaft wird erst beim ersten Hinsehen gebaut - sie liest
      eine eigene Datei und soll den Seitenaufbau nicht aufhalten. */
   if (welches === 'community' && typeof profilNachbarnFuellen === 'function') profilNachbarnFuellen();
+  if (welches === 'handy') profilHandyFuellen();
+}
+
+/* ---- AUFS HANDY (24.10.2026) -------------------------------------------------
+   Caspar_D: KlangTresor soll den Namen des Rechners nennen statt der Zahl, mit QR-Code. Die Zahl (192.168.…)
+   vergibt der Router und kann sich aendern; der Name bleibt. Der Server liefert die Adressen in der Reihenfolge,
+   in der sie am sichersten gehen (/api/adressen: Name beim Router, Bonjour-Name, Zahlen); der Code traegt die
+   erste. Dazu, wie man KlangTresor als Zeichen auf den Startbildschirm legt - ohne Adresszeile geht das auf dem
+   iPhone; Android-Chrome verlangt dafuer eine verschluesselte Verbindung, die das Heimnetz nicht hat. */
+async function profilHandyFuellen(){
+  const el = $('profilhandy'); if (!el) return;
+  if (!el.dataset.gefuellt) el.innerHTML = `<p class="handyhinweis">${esc(t('handy.adr.sucht'))}</p>`;
+  let d = null; try { d = await (await fetch('/api/adressen', { cache: 'no-store' })).json(); } catch (e) {}
+  const liste = (d && d.adressen) || [];
+  if (!liste.length){ el.innerHTML = `<p class="handyhinweis">${esc(t('handy.adr.keine'))}</p>`; return; }
+  const erste = liste[0], rest = liste.slice(1);
+  const art = (a) => a.art === 'name' ? t('handy.adr.art.name') : a.art === 'bonjour' ? t('handy.adr.art.bonjour') : t('handy.adr.art.ip', { schnitt: a.schnitt || '' });
+  el.dataset.gefuellt = '1';
+  el.innerHTML = `<div class="handyblock">
+    <div class="handyqr" aria-label="${esc(t('handy.adr.qr'))}" role="img">${qrSvg(erste.url)}</div>
+    <div class="handytext">
+      <h3>${esc(t('handy.adr.titel'))}</h3>
+      <p>${esc(t('handy.adr.text'))}</p>
+      <p class="handyurl"><b>${esc(erste.url)}</b> <small>${esc(art(erste))}</small></p>
+      ${rest.length ? `<p class="handysonst">${esc(t('handy.adr.sonst'))}</p><ul class="handyliste">${rest.map(a => `<li><span>${esc(a.url)}</span> <small>${esc(art(a))}</small></li>`).join('')}</ul>` : ''}
+      <h4>${esc(t('handy.home.titel'))}</h4>
+      <p><b>iPhone:</b> ${esc(t('handy.home.ios'))}</p>
+      <p><b>Android:</b> ${esc(t('handy.home.android'))}</p>
+      <p class="handyhinweis">${esc(t('handy.adr.heimnetz'))}</p>
+    </div></div>`;
 }
 
 /* ---- WOERTER JE STUECK ----------------------------------------------
@@ -18702,6 +18754,7 @@ function profilAuf(){
              nur, DASS etwas hinausgeht). Im eingefrorenen Archiv gibt es
              nichts auszugeben, dann fehlt die Lasche. -->
         ${archivEingefroren() ? '' : `<button class="reg" data-preg="export" onclick="profilRegister('export')">${t('profil.reg.export')}</button>`}
+        <button class="reg" data-preg="handy" onclick="profilRegister('handy')">${t('profil.reg.handy')}</button>
       </div>
 
       <div class="pregfeld" data-preg="daten">
@@ -18781,6 +18834,7 @@ ${t('profil.urheber.suno')}</pre>
         <div class="block" id="profilnachbarn"></div>
       </div><!-- /Register: Meine Gemeinschaft -->
 
+      <div class="pregfeld" data-preg="handy" id="profilhandy" hidden></div><!-- fuellt profilHandyFuellen() -->
       <div class="pregfeld" data-preg="export" id="profilexport" hidden></div><!-- fuellt profilExportFuellen() -->
     </div>`;
 
@@ -18807,7 +18861,7 @@ ${t('profil.urheber.suno')}</pre>
      bleiben im Speicher, nur der Bauzustand faellt. */
   _nachbarnGebaut = false;
   { let r = 'daten'; try { r = localStorage.getItem('profilRegister') || 'daten'; } catch (e) {}
-    profilRegister(r === 'community' ? 'community' : (r === 'export' && !archivEingefroren()) ? 'export' : 'daten'); }
+    profilRegister(r === 'community' ? 'community' : r === 'handy' ? 'handy' : (r === 'export' && !archivEingefroren()) ? 'export' : 'daten'); }
   profilCommunityFuellen();
   if (!archivEingefroren()) profilExportFuellen();
 }

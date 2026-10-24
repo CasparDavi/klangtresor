@@ -3800,6 +3800,30 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     });
   }
 
+  /* ADRESSEN FUERS HANDY (24.10.2026). Die Zahl (192.168.…) vergibt der Router und kann wechseln; ein Name bleibt.
+     Zuerst der Name, den der Router fuer diese Zahl kennt (Rueckwaertsaufloesung - bei der FritzBox z. B.
+     imac.fritz.box, fuer alle Geraete im Heimnetz), dann der Bonjour-Name <rechner>.local (iPhone sicher, Android
+     meist), zuletzt die Zahlen. Je Nachschlag hoechstens 1,5 s, damit die Seite nicht haengt. */
+  if (p === '/api/adressen') {
+    const ips = [];
+    for (const [schnitt, liste] of Object.entries(os.networkInterfaces()))
+      /* Virtuelle Netze (VMs, Docker, VPN) erreicht kein Handy - Parallels legte hier bridge100/101 an. */
+      for (const n of liste || []) if (n.family === 'IPv4' && !n.internal
+        && !/^(bridge|vnic|vmnet|utun|docker|br-|veth|virbr|vboxnet|zt|tailscale|wg)|vEthernet|VirtualBox|VMware|Hyper-V/i.test(schnitt)) ips.push({ ip: n.address, schnitt });
+    const kurz = String(os.hostname() || '').replace(/\.(local|fritz\.box|lan|home|localdomain)$/i, '').replace(/[^A-Za-z0-9-]/g, '-');
+    const frist = (pr) => Promise.race([pr, new Promise(r => setTimeout(() => r([]), 1500))]);
+    Promise.all(ips.map(({ ip }) => frist(require('node:dns').promises.reverse(ip).catch(() => [])))).then(namen => {
+      const liste = [], da = new Set();
+      const dazu = (art, host, schnitt) => { host = String(host).toLowerCase(); if (!host || da.has(host)) return; da.add(host);
+        liste.push({ art, host, schnitt: schnitt || null, url: 'http://' + host + ':' + PORT }); };
+      namen.forEach((nm, i) => (nm || []).forEach(n => { if (n && !/^[0-9.]+$/.test(n)) dazu('name', n, ips[i].schnitt); }));
+      if (kurz) dazu('bonjour', kurz + '.local');
+      ips.forEach(({ ip, schnitt }) => dazu('ip', ip, schnitt));
+      jsonAntwort(res, { port: PORT, adressen: liste });
+    });
+    return;
+  }
+
   /* Die Gesichter je Standbild (bin/gesichter.js): Schaum und Plakat ruecken die Cover danach in ihre Zellen. */
   if (p === '/api/gesichter') {
     let b = null, a = null;
