@@ -9670,3 +9670,9 @@ dem Handy, die PC-Fassung bleibt, wie sie ist (geprüft: am Rechner kein html.ha
 Caspar_D: „Edward Tufte sagte, was zusammengehört, hat geringere Abstände … der Trichter wirkt zu dominant, am besten
 nur Outlines“. Lupe und Trichter je 32 px breit, 2 px Abstand zueinander; quer 18 px Abstand zum Namen und zu den
 Pillen. Trichter nur Umriss (Strich 2 wie die Lupe; vorher füllte `.ico{fill:currentColor}` die Form).
+
+## 123. 24.10.2026: 1.0.105 – Handy: Lupe und Trichter gleich gezeichnet
+
+Caspar_D: Paar weiter vom Namen weg, Strichdicken angleichen. Die Lupe wurde in Schriftgröße (~16 px) gezeichnet, der
+Trichter in 20 px – gleiche Strichzahl wirkte darum verschieden. Jetzt beide 20 px, Strich 1,8. Quer: Name → Paar
+46 px, im Paar 14 px, Paar → Pillen 48 px.

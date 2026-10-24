@@ -2305,10 +2305,11 @@ html.handy .register .reg.an{border:2px solid var(--akzent);padding:6px 13px;col
 html.handy .register .regler,html.handy .register > .sprachewahl{display:none}
 html.handy #filterpille{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:32px;height:28px;padding:0;margin-left:-6px;
   position:relative;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}
-html.handy #filterpille .ico{width:20px;height:20px}
+/* Lupe und Trichter gleich gross gezeichnet - sonst wirkt bei gleicher Strichzahl der kleinere duenner */
+html.handy #filterpille .ico,html.handy #suchlupe .ico{width:20px;height:20px}
 /* Was zusammengehoert, steht enger (Caspar_D nach Tufte): Lupe und Trichter als Paar, Abstand zum Namen und quer
    zu den Pillen groesser als zwischen den beiden. */
-html.handy.quer .kopfzeile{margin-right:18px}
+html.handy.quer .kopfzeile{margin-right:24px}
 html.handy #filterpille.aktiv{color:var(--akzent)}
 html.handy #filterpille b{display:none}
 html.handy #filterpille.aktiv b{display:block;position:absolute;top:-6px;right:-8px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;
@@ -2336,7 +2337,7 @@ html.handy #raster{gap:6px;padding:8px 8px 40px}
 html.handy.quer header{display:flex;align-items:center;gap:10px;padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:6px}
 html.handy.quer .kopfzeile{flex:0 0 auto}
 html.handy.quer .register{flex:1 1 auto;margin-top:0;min-width:0}
-html.handy.quer #suchlupe{margin-left:18px}   /* Abstand zum Namen groesser als der zwischen Lupe und Trichter (Tufte) */
+html.handy.quer #suchlupe{margin-left:32px}   /* Abstand zum Namen groesser als der zwischen Lupe und Trichter (Tufte) */
 html.handy.quer.suche-offen .kopfzeile{flex:1 1 auto}
 html.handy.quer.suche-offen .register{display:none}
 
@@ -4358,11 +4359,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
          dahinter klappt die zweite Stufe auf: nur Werte, die es gibt,
          mit Anzahl. Dahinter tippt man weiter wie immer. -->
     <button id="suchlupe" type="button" title="Suchen" data-i18n-title="handy.suche" aria-label="Suchen" data-i18n-aria="handy.suche">
-      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.4 15.4 21 21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.4 15.4 21 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>
     <!-- Filter als Symbol neben der Lupe (Handy, 24.10.2026, Caspar_D: „filter ein symbol neben der lupe“ - als Pille lag er
          auf „Räume und Schäume“). Die Zahl erscheint nur, wenn gefiltert ist. -->
-    <button type="button" id="filterpille" title="Filter" data-i18n-title="handy.filter" aria-label="Filter" data-i18n-aria="handy.filter"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z" fill="none"/></svg><b id="filterpillezahl"></b></button>
+    <button type="button" id="filterpille" title="Filter" data-i18n-title="handy.filter" aria-label="Filter" data-i18n-aria="handy.filter"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z" fill="none"/></svg><b id="filterpillezahl"></b></button>
     <div class="suchfeld">
       <button id="filterpfeil" title="Filter" data-i18n-title="kopf.filter" type="button" data-i18n-title="kopf.filter">▾</button>
       <div id="filtermarken"></div>
