@@ -9705,3 +9705,13 @@ Caspar_D: „der rote Datendownload-Knopf kann aus der Handyversion raus“. #mo
 - **Player:** `html.handy #player{height:calc(var(--player-h) + env(safe-area-inset-bottom))}` – der Rand unter der
   Home-Leiste wurde abgezogen statt addiert (box-sizing border-box), der Spielen-Kreis ragte heraus. karteHoehe misst
   den Player jetzt (offsetHeight).
+
+## 127. 24.10.2026: 1.0.109 – iPhone: Audio-Session „playback“
+
+- Caspar_D: „es kommt jetzt gar kein Sound mehr“ (nach https→http von Hand). Läuft der Ton durch den AudioContext
+  (gespeicherter Titel-EQ, Bühne, EQ-Blatt), behandelt iOS ihn als Spielton: stumm beim Stummschalter, angehalten bei
+  Sperre. `navigator.audioSession.type = 'playback'` (Safari ≥ 16.4) gleich beim Laden; andere Browser haben es nicht.
+  Dazu weckt analyseStarten den neuen Kontext sofort (resume, wirkt im Fingertipp). WebKit-Probe: session=playback,
+  keine Fehler. **Am iPhone noch zu bestätigen.**
+- Offen: Safari öffnete die Seite per https („keine sichere Verbindung“) – Herkunft der https-Adresse unklar
+  (QR/Home-Bildschirm/Tippen?), Caspar_D gefragt.

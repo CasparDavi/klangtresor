@@ -19040,6 +19040,10 @@ const BAENDER = [
    Der Ton laeuft durch den AudioContext (EQ, Analyse); iOS startet ihn angehalten, wenn er ohne Fingertipp entstand,
    und haelt ihn bei Unterbrechungen an ('interrupted'). Das <audio> laeuft dann weiter, hoerbar ist nichts. Jeder Tipp
    und jedes Abspielen weckt ihn darum wieder auf - resume() darf Safari nur innerhalb einer Bedienung. */
+/* MUSIK, NICHT SPIELTON (Caspar_D, 24.10.2026: „es kommt jetzt gar kein Sound mehr“). Laeuft der Ton durch die
+   Klangbearbeitung, behandelt iOS ihn wie Spielton: stumm beim Stummschalter, angehalten bei Sperre. Die Audio-Session-
+   Schnittstelle von Safari (ab 16.4) sagt dem iPhone, dass hier Musik spielt. Andere Browser kennen sie nicht. */
+try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
 function klangWecken(){ if (hörer && hörer.ctx && hörer.ctx.state !== 'running' && hörer.ctx.state !== 'closed') hörer.ctx.resume().catch(() => {}); }
 for (const ev of ['touchend', 'click', 'keydown']) document.addEventListener(ev, klangWecken, { capture: true, passive: true });
 for (const d of [deckA, deckB]) d.addEventListener('play', klangWecken);   /* auch beim Weiterspielen nach Anruf oder Sperre */
@@ -19050,6 +19054,7 @@ function analyseStarten(){
   try{
     const AC = window.AudioContext || window.webkitAudioContext;
     ctx = new AC();
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});   /* gleich wecken - klappt, wenn wir noch im Fingertipp sind */
     /* BEIDE DECKS in dieselbe Kette (Anschluss, 23.08.2026): jedes Deck haengt
        an einem eigenen Blendregler, beide summieren sich VOR den Analysern und
        vor dem EQ. Waehrend der Naht klingen also beide Songs durch dieselben
