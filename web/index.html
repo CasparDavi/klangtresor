@@ -2301,11 +2301,13 @@ html.handy .register .reg{flex:0 0 auto;border:1px solid var(--rand);border-radi
   background:var(--flaeche2);font-size:14px}
 html.handy .register .reg.an{border:2px solid var(--akzent);padding:6px 13px;color:var(--text)}
 html.handy .register .regler,html.handy .register > .sprachewahl{display:none}
-html.handy #filterpille{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto;padding:7px 14px;border-radius:999px;
-  position:sticky;right:0;box-shadow:-10px 0 10px -2px var(--bg);
-  border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);font:inherit;font-size:14px;cursor:pointer}
-html.handy #filterpille.aktiv{border:2px solid var(--akzent);padding:6px 13px}
-html.handy #filterpille b{font-weight:400;color:var(--schwach);font-size:12px}
+html.handy #filterpille{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;padding:0;border-radius:50%;
+  position:relative;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);font:inherit;cursor:pointer}
+html.handy #filterpille .ico{width:20px;height:20px}
+html.handy #filterpille.aktiv{border:2px solid var(--akzent);color:var(--akzent)}
+html.handy #filterpille b{display:none}
+html.handy #filterpille.aktiv b{display:block;position:absolute;top:-6px;right:-8px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+  background:var(--akzent);color:#0c0c0d;font-size:11px;font-weight:700;line-height:18px;text-align:center}
 html.handy[data-reg="karte"] #filterpille{display:none}
 html.handy .filter{display:none}
 html.handy.filter-offen .filter:not([hidden]){display:flex;position:fixed;left:0;right:0;bottom:0;z-index:80;flex-direction:column;
@@ -2497,20 +2499,23 @@ html.handy.mehr-offen #mehrgrund{display:block;position:fixed;inset:0;z-index:74
 html.handy.mehr-offen #mehrblatt{display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:0;z-index:75;max-height:82dvh;overflow:auto;
   overscroll-behavior:contain;background:var(--flaeche);color:var(--text);border-top:1px solid var(--rand);border-radius:16px 16px 0 0;
   padding:10px 16px calc(14px + env(safe-area-inset-bottom))}
-#mehrblatt .mkopf{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin-bottom:4px}
-#mehrblatt .mzeile{display:flex;align-items:center;gap:14px;width:100%;min-height:52px;padding:0 4px;background:none;border:0;
-  border-bottom:1px solid var(--rand);color:var(--text);font:inherit;font-size:16px;text-align:left;-webkit-tap-highlight-color:transparent}
-#mehrblatt .mzeile{justify-content:flex-start}
-#mehrblatt .mzeile > span{flex:0 1 auto;text-align:left}
-#mehrblatt .mzeile .ico{width:22px;height:22px;flex:0 0 auto;margin:0}
-#mehrblatt .mstand{margin-left:auto;font-style:normal;font-size:13px;color:var(--schwach)}
-#mehrblatt .mzeile.an .ico,#mehrblatt .mzeile.an .mstand{color:var(--akzent)}
+#mehrblatt .mkopf{display:flex;align-items:center;justify-content:space-between;min-height:40px;margin-bottom:6px}
+#mehrblatt .msch,#mehrblatt .mziel{background:none;border:0;color:inherit;font:inherit;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#mehrblatt .ico{margin:0}
+#mehrblatt .mschalter,#mehrblatt .mziele{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+#mehrblatt .msch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0;font-size:13px;color:var(--schwach)}
+#mehrblatt .msch .k{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--rand);color:var(--schwach)}
+#mehrblatt .msch .k .ico{width:24px;height:24px}
+/* „Laut“ ist die Akzentfarbe des laufenden Covers wie auf dem grossen Schirm (Caspar_D: „das macht bei allen Nutzern
+   bisher einen Wow-Effekt“); das Symbol darauf dunkel wie bei den Pillen des Hauses. */
+#mehrblatt .msch.an{color:var(--text)}
+#mehrblatt .msch.an .k{background:var(--akzent);border-color:var(--akzent);color:var(--bg)}
+#mehrblatt .mlaut{display:flex;align-items:center;gap:12px;min-height:48px;margin:8px 0 4px;padding:0 4px;border-top:1px solid var(--rand);border-bottom:1px solid var(--rand)}
+#mehrblatt .mlaut .ico{width:22px;height:22px;flex:0 0 auto}
 #mehrblatt .mlaut input{flex:1;min-width:0;accent-color:var(--akzent);height:32px}
-#mehrblatt .mzeile[hidden]{display:none}
-/* Quer sind 360 px zu wenig fuer zehn Zeilen untereinander - zwei Spalten. */
-html.handy.quer.mehr-offen #mehrblatt{display:grid;grid-template-columns:1fr 1fr;column-gap:28px;align-content:start;max-height:94dvh;padding-top:4px}
-html.handy.quer #mehrblatt .mkopf{grid-column:1/-1;min-height:40px;margin:0}
-html.handy.quer #mehrblatt .mzeile{min-height:46px}
+#mehrblatt .mziel{display:flex;flex-direction:column;align-items:center;gap:5px;min-height:60px;justify-content:center;font-size:13px;color:var(--text)}
+#mehrblatt .mziel .ico{width:24px;height:24px}
+#mehrblatt [hidden]{display:none}
 </style>
 </head>
 <body>
@@ -4326,6 +4331,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <button id="suchlupe" type="button" title="Suchen" data-i18n-title="handy.suche" aria-label="Suchen" data-i18n-aria="handy.suche">
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.4 15.4 21 21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
     </button>
+    <!-- Filter als Symbol neben der Lupe (Handy, 24.10.2026, Caspar_D: „filter ein symbol neben der lupe“ - als Pille lag er
+         auf „Räume und Schäume“). Die Zahl erscheint nur, wenn gefiltert ist. -->
+    <button type="button" id="filterpille" title="Filter" data-i18n-title="handy.filter" aria-label="Filter" data-i18n-aria="handy.filter"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z"/></svg><b id="filterpillezahl"></b></button>
     <div class="suchfeld">
       <button id="filterpfeil" title="Filter" data-i18n-title="kopf.filter" type="button" data-i18n-title="kopf.filter">▾</button>
       <div id="filtermarken"></div>
@@ -4375,7 +4383,6 @@ h3 .infoknopf .ico{width:14px;height:14px}
          'karte'. Gesetzt wird der Name in raumLascheBenennen(). -->
     <button class="reg"    data-reg="karte" id="reg-karte">Klangraum</button>
     <!-- Nur auf dem Handy: die Filter stehen dort als Blatt von unten (24.10.2026). -->
-    <button type="button" id="filterpille"><span data-i18n="handy.filter">Filter</span><b id="filterpillezahl"></b></button>
     <!-- Die Unterregister (Klangraum, Geschichten, Klangschaum, Groupieschaum) standen hier bis 1.0.78. Seit dem
          15.10.2026 stehen die Ansichten als zwei Pillenreihen „Räume" und „Schäume" oben im Panel jeder Ansicht
          (ansichtHtml) - weiter sichtbar und nicht in einer Lade (Caspar_D, 28.08.2026: „der Register heisst räume aber
@@ -4809,20 +4816,24 @@ h3 .infoknopf .ico{width:14px;height:14px}
   </div>
 </div>
 <!-- „MEHR“ AUF DEM HANDY (24.10.2026, Caspar_D: „nur zurück, play, vorwärts und alles andere in Fly-in-Menüs“). Ein Blatt
-     von unten fuer „Jetzt laeuft“ und die Buehne; die Schalter bleiben offen stehen, bis man wegtippt. -->
+     von unten fuer „Jetzt laeuft“ und die Buehne. Oben die Schalter als Symbole: aus leise, an laut (Caspar_D: „die
+     icons sind der schalter und werden von unauffällig zu laut“), darunter Lautstaerke und die Ziele. Analyse und
+     Tonstudio gibt es auf dem Handy nicht - ihre Seiten sind nicht fuer den kleinen Schirm gebaut. -->
 <div id="mehrgrund"></div>
 <div id="mehrblatt" role="dialog" aria-modal="true">
   <div class="mkopf"><b data-i18n="handy.jetzt.mehr">Mehr</b><button type="button" class="knopf" id="mzu" data-i18n="handy.fertig">Fertig</button></div>
-  <button type="button" class="mzeile" data-tu="zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg><span data-i18n="player.zufall">Zufall</span><i class="mstand"></i></button>
-  <button type="button" class="mzeile" data-tu="schleife"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg><span data-i18n="handy.mehr.schleife">Schleife</span><i class="mstand"></i></button>
-  <button type="button" class="mzeile" data-tu="anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg><span data-i18n="player.anschluss">Anschluss</span><i class="mstand"></i></button>
-  <div class="mzeile mlaut"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg><span data-i18n="handy.jetzt.laut">Lautstärke</span><input type="range" id="mlaut" min="0" max="100" step="1" value="100" data-i18n-aria="player.laut" aria-label="Lautstärke"></div>
-  <button type="button" class="mzeile" data-tu="karaoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg><span data-i18n="player.karaoke">Karaoke</span></button>
-  <button type="button" class="mzeile" data-tu="text"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg><span data-i18n="handy.jetzt.text">Text</span></button>
-  <button type="button" class="mzeile" data-tu="analyse"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-analyse"/></svg><span data-i18n="player.analyse">Titel-Analyse</span></button>
-  <button type="button" class="mzeile" data-tu="studio"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg><span data-i18n="handy.jetzt.studio">Tonstudio</span></button>
-  <button type="button" class="mzeile" data-tu="details"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="handy.jetzt.details">Details zum Titel</span></button>
-  <button type="button" class="mzeile" data-tu="pip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pip"/></svg><span data-i18n="player.pip">Bewegtbild rauslösen</span></button>
+  <div class="mschalter">
+    <button type="button" class="msch" data-tu="zufall" aria-pressed="false"><span class="k"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></span><span data-i18n="player.zufall">Zufall</span></button>
+    <button type="button" class="msch" data-tu="schleife" aria-pressed="false"><span class="k"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></span><span data-i18n="handy.mehr.schleife">Schleife</span></button>
+    <button type="button" class="msch" data-tu="anschluss" aria-pressed="false"><span class="k"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></span><span data-i18n="player.anschluss">Anschluss</span></button>
+  </div>
+  <div class="mlaut"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg><input type="range" id="mlaut" min="0" max="100" step="1" value="100" data-i18n-aria="player.laut" aria-label="Lautstärke"></div>
+  <div class="mziele">
+    <button type="button" class="mziel" data-tu="karaoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg><span data-i18n="player.karaoke">Karaoke</span></button>
+    <button type="button" class="mziel" data-tu="text"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg><span data-i18n="handy.jetzt.text">Text</span></button>
+    <button type="button" class="mziel" data-tu="details"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="handy.mehr.details">Details</span></button>
+    <button type="button" class="mziel" data-tu="pip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pip"/></svg><span data-i18n="handy.mehr.bewegtbild">Bewegtbild</span></button>
+  </div>
 </div>
 <audio id="audio" crossorigin="anonymous"></audio>
 <video id="pipfilm" muted loop playsinline></video>
@@ -4884,8 +4895,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=9"></script>
-<script src="/ui-sprache.js?v=21"></script>
+<script src="/ui-sprache-ru.js?v=10"></script>
+<script src="/ui-sprache.js?v=22"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
@@ -30583,9 +30594,10 @@ document.querySelectorAll('.reg').forEach(b => b.onclick = () => registerSetzen(
 function handyPilleZeigen(){
   const p = $('filterpille'); if (!p) return;
   const tl = register === 'playlists' ? $('plZahl') : $('zahl');
-  $('filterpillezahl').textContent = tl ? ((tl.textContent.match(/\d[\d.,\u202f\u00a0]*/) || [''])[0]).trim() : '';   /* nur die Zahl: „Filter 266“ */
+  $('filterpillezahl').textContent = tl ? ((tl.textContent.match(/\d[\d.,\u202f\u00a0]*/) || [''])[0]).trim() : '';   /* nur die Zahl, als Plakette am Symbol, wenn gefiltert */
   p.classList.toggle('aktiv', register === 'tracks' && filterAbweichend());
-  const l = $('suchlupe'); if (l) l.classList.toggle('aktiv', !!($('suche').value.trim() || filterAktiv.some(f => f.wert !== null)));
+  /* Punkt an der Lupe nur fuer gesuchten Text - die Filter zeigt ihr eigenes Symbol */
+  const l = $('suchlupe'); if (l) l.classList.toggle('aktiv', !!$('suche').value.trim());
 }
 $('suchlupe').onclick = () => { document.documentElement.classList.add('suche-offen'); $('suche').focus(); };
 $('suchzu').onclick = () => { document.documentElement.classList.remove('suche-offen'); handyPilleZeigen(); };
@@ -30847,7 +30859,7 @@ function mehrPunkte(){
 function mehrStand(){
   for (const [tu, id] of Object.entries(mehrSchalter)){
     const z = $('mehrblatt').querySelector(`[data-tu="${tu}"]`), an = !!($(id) && $(id).classList.contains('an'));
-    z.classList.toggle('an', an); z.querySelector('.mstand').textContent = t(an ? 'handy.mehr.an' : 'handy.mehr.aus');
+    z.classList.toggle('an', an); z.setAttribute('aria-pressed', an ? 'true' : 'false');
   }
   $('mlaut').value = $('lautstaerke').value;
   const s = aktuellId && song(aktuellId);
@@ -30861,11 +30873,10 @@ $('mzu').onclick = mehrZu;
 $('mehrgrund').onclick = mehrZu;
 $('mlaut').oninput = () => { const r = $('lautstaerke'); r.value = $('mlaut').value; r.dispatchEvent(new Event('input', { bubbles: true })); };
 $('mehrblatt').addEventListener('click', (e) => {
-  const z = e.target.closest('.mzeile[data-tu]'); if (!z) return;
+  const z = e.target.closest('[data-tu]'); if (!z) return;
   const tu = z.dataset.tu, weg = () => { mehrZu(); if ($('jetzt').classList.contains('auf')) jetztZu(); };
   if (tu === 'zufall') mischen(); else if (tu === 'schleife') schleifen(); else if (tu === 'anschluss') anschlussSchalten();
-  else if (tu === 'karaoke' || tu === 'text' || tu === 'analyse'){ weg(); pmodiWaehlen(tu === 'text' ? 'lyrics' : tu === 'analyse' ? 'analyzer' : 'karaoke'); return; }
-  else if (tu === 'studio'){ weg(); studioAuf(); return; }
+  else if (tu === 'karaoke' || tu === 'text'){ weg(); pmodiWaehlen(tu === 'text' ? 'lyrics' : 'karaoke'); return; }
   else if (tu === 'details'){ const id = aktuellId; weg(); if (id) detailAuf(id); return; }
   else if (tu === 'pip'){ mehrZu(); pipUmschalten(); return; }
   mehrStand();

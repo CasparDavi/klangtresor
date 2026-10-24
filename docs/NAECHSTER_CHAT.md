@@ -9628,3 +9628,16 @@ Caspar_D: keine zweizeiligen Knopfreihen; „nur zurück play vorwärts und dann
 - Geprüft mit Touch-Ereignissen hoch/quer. Test-Chromes ab jetzt mit `--mute-audio` (die Prüftöne waren hörbar).
 - **Offen, wartet auf Caspar_D:** Pillenreihe – „Filter 266“ liegt auf „Räume und Schäume“. Vorschlag A (Pille heißt
   auf dem Handy „Räume“) + C (Filter als Symbol neben die Lupe).
+
+## 119. 24.10.2026: 1.0.101 – Handy: Filter als Symbol, Blatt „Mehr“ mit Symbolschaltern
+
+- **Filter** (Caspar_D: „filter ein symbol neben der lupe“): #filterpille sitzt jetzt in der Kopfzeile hinter der Lupe,
+  rund wie sie, Trichter-Symbol; gefiltert → Ring in Akzentfarbe und Plakette mit der Trefferzahl. Der Punkt an der
+  Lupe steht nur noch für gesuchten Text. Die Pillenreihe hat damit Platz für „Räume und Schäume“.
+- **Blatt „Mehr“, Entwurf D** (aus vier Entwürfen gewählt): Zufall, Schleife, Anschluss als runde Symbolschalter –
+  aus leise (grau, umrandet), an laut in der **Akzentfarbe des Covers** (Caspar_D: „das macht bei allen Nutzern bisher
+  einen Wow-Effekt“), Symbol dunkel darauf (`color:var(--bg)` wie die Hauspillen). Darunter Lautstärke, darunter
+  Karaoke, Text, Details, Bewegtbild als eine Reihe. Passt quer ohne Spalten (276 px).
+- **Analyse und Tonstudio auf dem Handy entfernt** (Caspar_D: A) – ihre Seiten sind nicht für den kleinen Schirm.
+  Schlüssel handy.mehr.an/aus, handy.jetzt.studio/details/laut gelöscht.
+- **Nächster Wunsch:** einfacher EQ aufs Handy – nur die acht Regler mit Voreinstellungen. Erst Skizze.
