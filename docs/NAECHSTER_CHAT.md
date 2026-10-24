@@ -9733,3 +9733,11 @@ Caspar_D: „der rote Datendownload-Knopf kann aus der Handyversion raus“. #mo
 Caspar_D: „dann sollte man EQ auf iPhones gar nicht anzeigen“. `istIos()` (UA iPhone/iPad/iPod oder MacIntel mit
 Touch = iPadOS; Chrome auf iOS ist innen WebKit) blendet das Ziel EQ im Blatt „Mehr“ aus. Android behält ihn (kein
 AirPlay). Fußzeile des EQ-Blatts wieder ohne AirPlay-Satz. WebKit-Probe: ios=true, EQ versteckt, keine Fehler.
+
+## 130. 24.10.2026: 1.0.112 – iPhone: Schaum gleich farbig
+
+Caspar_D: „die Farbe der Foam-Map kommt erst nach Zoom-in und etwas Verschieben“. Malfehler von Safari: Das SVG lag
+dauerhaft auf einer eigenen Ebene (`will-change:transform`), Klassenwechsel im Innern (winzig: Bild aus, Farbe deckend)
+wurden nicht nachgemalt. Jetzt `will-change` nur während der Geste (Klasse `zieht`), und nach dem Setzen der Schwelle
+einmal angestoßen (translateZ(0) für ein Bild). Schaum-Prüffälle (t4 hoch, Fall 6) unverändert bestanden.
+**Am iPhone zu bestätigen.**

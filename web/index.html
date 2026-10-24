@@ -2477,7 +2477,10 @@ html.handy.raum-offen header{backdrop-filter:none;-webkit-backdrop-filter:none}
    Bild, nur ihre Farbe, und nehmen keinen Tipp an; ab Fingergroesse Bild und Tipp. Gezoomt wird das ganze Bild per
    Transformation (Vektor, bleibt scharf); der Gruppen-Zoom ueber die Legende bleibt daneben bestehen. */
 #schaumbild path[data-id].winzig{fill-opacity:1;cursor:default}
-html.handy #schaumbild{transform-origin:0 0;will-change:transform}
+html.handy #schaumbild{transform-origin:0 0}
+/* will-change nur waehrend der Geste: Als Dauer-Ebene malte Safari die Aenderungen im Bild nicht nach - die Farben der
+   kleinen Zellen kamen erst nach Zoomen und Schieben (Caspar_D, iPhone, 24.10.2026). */
+html.handy #schaumbild.zieht{will-change:transform}
 
 /* Profil-Lasche „Aufs Handy“: der Code auf eigener heller Karte (Kameras lesen nur dunkel auf hell), daneben die
    Adressen; schmal untereinander. */
@@ -11167,6 +11170,7 @@ function schaumFingerSchwelle(){
   const svg = $('schaumbild') && $('schaumbild').querySelector('svg'); if (!svg || !svg.viewBox || !svg.viewBox.baseVal) return;
   const handy = window.istHandy && istHandy(), vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect();
   const s = Math.min(r.width / (vb.width || 1), r.height / (vb.height || 1));      /* Bildpunkte je Einheit, mit Zoom (meet) */
+  let geaendert = false;
   svg.querySelectorAll('path[data-id]').forEach(p => {
     let klein = false;
     if (handy){ const bb = p._bb || (p._bb = p.getBBox()); klein = Math.min(bb.width, bb.height) * s < SCHAUM_FINGER; }
@@ -11174,7 +11178,10 @@ function schaumFingerSchwelle(){
     p.classList.toggle('winzig', klein);
     const sk = p.previousElementSibling, im = sk && sk.previousElementSibling;
     if (im && im.tagName.toLowerCase() === 'image') im.style.display = klein ? 'none' : '';
+    geaendert = true;
   });
+  /* Safari malt ein SVG nach Klassenwechseln im Innern nicht immer neu - einmal anstossen */
+  if (geaendert){ svg.style.transform = 'translateZ(0)'; requestAnimationFrame(() => { svg.style.transform = ''; }); }
 }
 function schaumFingerEinrichten(){
   const feld = $('schaumfeld'); if (!feld || feld.fingerDran) return; feld.fingerDran = true;
@@ -11184,8 +11191,8 @@ function schaumFingerEinrichten(){
   feld.addEventListener('touchstart', (ev) => {
     if (!(window.istHandy && istHandy())) return;
     const ts = ev.touches;
-    if (ts.length === 2){ const z = zwei(ts); g = { art: 'zwei', d0: z.d, m0: z.m, z0: { ...schaumFz } }; }
-    else if (ts.length === 1 && schaumFz.k > 1){ const p = pkt(ts[0]); g = { art: 'eins', p0: p, z0: { ...schaumFz }, weit: false }; }
+    if (ts.length === 2){ const z = zwei(ts); g = { art: 'zwei', d0: z.d, m0: z.m, z0: { ...schaumFz } }; $('schaumbild').classList.add('zieht'); }
+    else if (ts.length === 1 && schaumFz.k > 1){ const p = pkt(ts[0]); g = { art: 'eins', p0: p, z0: { ...schaumFz }, weit: false }; $('schaumbild').classList.add('zieht'); }
     else g = null;
   }, { passive: true });
   feld.addEventListener('touchmove', (ev) => {
@@ -11203,7 +11210,8 @@ function schaumFingerEinrichten(){
       $('schaumbild').style.transform = `translate(${schaumFz.tx}px,${schaumFz.ty}px) scale(${schaumFz.k})`;
     }
   }, { passive: false });
-  const ende = () => { if (!g) return; const war = g.art === 'zwei' || g.weit; g = null; if (war){ schaumFz.gezogen = Date.now(); schaumFingerAnwenden(); } };
+  const ende = () => { if (!g) return; const war = g.art === 'zwei' || g.weit; g = null; $('schaumbild').classList.remove('zieht');
+    if (war){ schaumFz.gezogen = Date.now(); schaumFingerAnwenden(); } };
   feld.addEventListener('touchend', ende); feld.addEventListener('touchcancel', ende);
 }
 function schaumEinsetzenJetzt(f, einblenden){
