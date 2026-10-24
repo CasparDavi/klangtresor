@@ -52,6 +52,9 @@
     ["handy.home.ios", "In Safari das Teilen-Symbol, dann „Zum Home-Bildschirm“. KlangTresor öffnet dann ohne Adresszeile wie eine App.", "In Safari tap the share icon, then “Add to Home Screen”. KlangTresor then opens without the address bar, like an app."],
     ["handy.home.android", "In Chrome das Menü ⋮, dann „Zum Startbildschirm hinzufügen“. Das Zeichen öffnet KlangTresor; die Adresszeile bleibt dabei meist stehen, weil Chrome den Vollbild-Start nur über verschlüsselte Verbindungen (https) erlaubt.", "In Chrome open the ⋮ menu, then “Add to Home screen”. The icon opens KlangTresor; the address bar usually stays, because Chrome only allows the full-screen start over encrypted connections (https)."],
     ["handy.adr.heimnetz", "Die Adressen gelten nur zu Hause im selben Netz, und nur solange dieser Rechner läuft.", "These addresses only work at home on the same network, and only while this computer is running."],
+    ["handy.mehr.schleife", "Schleife", "Loop"],
+    ["handy.mehr.an", "an", "on"],
+    ["handy.mehr.aus", "aus", "off"],
     ['sprache.wahl', 'Sprache', 'Language'],
 
     ['kopf.marke', 'Version, Urheber, Mitstreiter', 'Version, author, contributors'],

@@ -2344,8 +2344,7 @@ html.handy .pinfo{display:block;flex:1;min-width:0}
 html.handy #pzeit{display:block;font-size:12px;text-align:left}
 html.handy #pbild{width:46px;height:46px}
 html.handy .pinfo b{font-size:15px}
-html.handy #pzahl,html.handy #psongeq,html.handy .pextra,html.handy .laut,html.handy .ptrenn,html.handy .pmodi,
-html.handy .psteuer button:first-child{display:none!important}
+html.handy #pzahl,html.handy #psongeq,html.handy .pextra,html.handy .laut,html.handy .ptrenn,html.handy .pmodi{display:none!important}
 html.handy .pknoepfe{display:flex!important;flex:0 0 auto;margin:0}
 html.handy .psteuer{display:flex;gap:4px;order:0}
 html.handy .psteuer button{width:46px;height:46px}
@@ -2480,6 +2479,38 @@ html.handy .profilreg .reg{white-space:nowrap;flex:0 0 auto}
 .handyliste{margin:2px 0 0;padding-left:18px;color:var(--schwach)}
 .handyliste span{color:var(--text);word-break:break-all}
 .handyhinweis,.handysonst{color:var(--schwach);font-size:13px}
+
+/* HANDY: EINE REIHE ⏮ ▶ ⏭ (24.10.2026, Caspar_D: keine zweizeiligen Knopfreihen, „nur zurück play vorwärts und dann
+   alles andere in Fly-in-Menüs“). Zufall, Schleife, Anschluss, Lautstaerke, Text, Analyse, Tonstudio, Details liegen
+   hinter „⋯“ im Blatt #mehrblatt; Karaoke bleibt in „Jetzt laeuft“ sichtbar - oben rechts, der Weg zum Fernseher.
+   Steht ein Schalter an, traegt „⋯“ einen Punkt, damit man das Mischen nicht vergisst. */
+#mehrblatt,#mehrgrund,#bmehr{display:none}
+#jetzt .jleer{visibility:hidden}
+#jetzt .jkopf #jkaraoke .ico{width:24px;height:24px}
+#jmehrknopf,#bmehr{position:relative}
+#jmehrknopf.punkt::after,#bmehr.punkt::after{content:'';position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--akzent)}
+html.handy #buehne:not(.text-analyzer) #bmehr{display:inline-flex;align-items:center;justify-content:center}
+html.handy #buehne:not(.text-analyzer) #bmisch,html.handy #buehne:not(.text-analyzer) #banschluss,
+html.handy #buehne:not(.text-analyzer) #bschleif{display:none!important}
+html.handy.quer #jetzt:not(.mittext) .jinfo{align-self:end}
+html.handy.mehr-offen #mehrgrund{display:block;position:fixed;inset:0;z-index:74;background:rgba(0,0,0,.5)}
+html.handy.mehr-offen #mehrblatt{display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:0;z-index:75;max-height:82dvh;overflow:auto;
+  overscroll-behavior:contain;background:var(--flaeche);color:var(--text);border-top:1px solid var(--rand);border-radius:16px 16px 0 0;
+  padding:10px 16px calc(14px + env(safe-area-inset-bottom))}
+#mehrblatt .mkopf{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin-bottom:4px}
+#mehrblatt .mzeile{display:flex;align-items:center;gap:14px;width:100%;min-height:52px;padding:0 4px;background:none;border:0;
+  border-bottom:1px solid var(--rand);color:var(--text);font:inherit;font-size:16px;text-align:left;-webkit-tap-highlight-color:transparent}
+#mehrblatt .mzeile{justify-content:flex-start}
+#mehrblatt .mzeile > span{flex:0 1 auto;text-align:left}
+#mehrblatt .mzeile .ico{width:22px;height:22px;flex:0 0 auto;margin:0}
+#mehrblatt .mstand{margin-left:auto;font-style:normal;font-size:13px;color:var(--schwach)}
+#mehrblatt .mzeile.an .ico,#mehrblatt .mzeile.an .mstand{color:var(--akzent)}
+#mehrblatt .mlaut input{flex:1;min-width:0;accent-color:var(--akzent);height:32px}
+#mehrblatt .mzeile[hidden]{display:none}
+/* Quer sind 360 px zu wenig fuer zehn Zeilen untereinander - zwei Spalten. */
+html.handy.quer.mehr-offen #mehrblatt{display:grid;grid-template-columns:1fr 1fr;column-gap:28px;align-content:start;max-height:94dvh;padding-top:4px}
+html.handy.quer #mehrblatt .mkopf{grid-column:1/-1;min-height:40px;margin:0}
+html.handy.quer #mehrblatt .mzeile{min-height:46px}
 </style>
 </head>
 <body>
@@ -4661,6 +4692,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <button class="schaltknopf" onclick="mischen()" id="bmisch" title="Zufall" data-i18n-title="player.zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
         <button class="schaltknopf" onclick="anschlussSchalten()" id="banschluss" title="Anschluss" data-i18n-title="player.anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
         <button class="schaltknopf" onclick="schleifen()" id="bschleif" title="Schleife: dieser Titel wiederholt sich" data-i18n-title="player.schleife"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
+        <button class="schaltknopf" type="button" id="bmehr" onclick="mehrAuf('buehne')" title="Mehr" data-i18n-title="handy.jetzt.mehr"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg></button>
         <button class="schaltknopf" onclick="studioAuf()" id="bstudio" title="Tonstudio — Equalizer" data-i18n-title="player.eq">EQ</button>
         </span>
       </div>
@@ -4762,32 +4794,35 @@ h3 .infoknopf .ico{width:14px;height:14px}
   <div class="jkopf">
     <button class="jrund" id="jzu" data-i18n-aria="handy.jetzt.zu" aria-label="Schließen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <span data-i18n="handy.jetzt">Jetzt läuft</span>
-    <span style="width:46px"></span>
+    <button class="jrund" id="jkaraoke" data-i18n-aria="player.karaoke" aria-label="Karaoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg></button>
   </div>
   <div class="jbuehne" id="jbuehne"><img id="jbild" alt=""><video id="jfilm" muted loop playsinline preload="none"></video><div class="jpunkte" id="jpunkte" hidden><i class="an"></i><i></i></div></div>
   <div class="jinfo"><div class="jtitel" id="jtitel"></div><div class="jmeta" id="jmeta"></div></div>
   <div class="jlyrik" id="jlyrik" aria-live="off"><div></div><div class="dran"></div><div></div></div>
   <div class="jlaufbox"><input type="range" class="jlauf" id="jlauf" min="0" max="1000" step="1" value="0" data-i18n-aria="handy.jetzt.stelle" aria-label="Stelle im Titel"><div class="jzeit"><span id="jzeitA">0:00</span><span id="jzeitB">0:00</span></div></div>
   <div class="jsteuer">
-    <button class="jrund" id="jmisch" data-i18n-aria="player.zufall" aria-label="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
+    <span class="jrund jleer" aria-hidden="true"></span>
     <button class="jrund" id="jzurueck" data-i18n-aria="player.zurueck" aria-label="Zurück"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-prev"/></svg></button>
     <button class="jrund jgross" id="jspiel" data-i18n-aria="player.abspielen" aria-label="Abspielen"></button>
     <button class="jrund" id="jweiter" data-i18n-aria="player.weiter" aria-label="Weiter"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-next"/></svg></button>
-    <button class="jrund" id="jschleife" data-i18n-aria="player.schleife" aria-label="Schleife"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
+    <button class="jrund" id="jmehrknopf" data-i18n-aria="handy.jetzt.mehr" aria-label="Mehr"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg></button>
   </div>
-  <div class="jmodi">
-    <button id="jkaraoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg><span data-i18n="player.karaoke">Karaoke</span></button>
-    <button id="jtext"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg><span data-i18n="handy.jetzt.text">Text</span></button>
-    <button id="jlautknopf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg><span data-i18n="handy.jetzt.laut">Lautstärke</span></button>
-    <button id="jmehrknopf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg><span data-i18n="handy.jetzt.mehr">Mehr</span></button>
-    <div class="jlaut" id="jlaut"><input type="range" id="jlautregler" min="0" max="100" step="1" value="100" data-i18n-aria="player.laut" aria-label="Lautstärke"></div>
-    <div class="jmehr" id="jmehr">
-      <button id="jdetails"><span data-i18n="handy.jetzt.details">Details zum Titel</span></button>
-      <button id="janalyse"><span data-i18n="player.analyse">Titel-Analyse</span></button>
-      <button id="jstudio"><span data-i18n="handy.jetzt.studio">Tonstudio</span></button>
-      <button id="jpip" hidden><span data-i18n="player.pip">Bewegtbild rauslösen</span></button>
-    </div>
-  </div>
+</div>
+<!-- „MEHR“ AUF DEM HANDY (24.10.2026, Caspar_D: „nur zurück, play, vorwärts und alles andere in Fly-in-Menüs“). Ein Blatt
+     von unten fuer „Jetzt laeuft“ und die Buehne; die Schalter bleiben offen stehen, bis man wegtippt. -->
+<div id="mehrgrund"></div>
+<div id="mehrblatt" role="dialog" aria-modal="true">
+  <div class="mkopf"><b data-i18n="handy.jetzt.mehr">Mehr</b><button type="button" class="knopf" id="mzu" data-i18n="handy.fertig">Fertig</button></div>
+  <button type="button" class="mzeile" data-tu="zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg><span data-i18n="player.zufall">Zufall</span><i class="mstand"></i></button>
+  <button type="button" class="mzeile" data-tu="schleife"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg><span data-i18n="handy.mehr.schleife">Schleife</span><i class="mstand"></i></button>
+  <button type="button" class="mzeile" data-tu="anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg><span data-i18n="player.anschluss">Anschluss</span><i class="mstand"></i></button>
+  <div class="mzeile mlaut"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg><span data-i18n="handy.jetzt.laut">Lautstärke</span><input type="range" id="mlaut" min="0" max="100" step="1" value="100" data-i18n-aria="player.laut" aria-label="Lautstärke"></div>
+  <button type="button" class="mzeile" data-tu="karaoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg><span data-i18n="player.karaoke">Karaoke</span></button>
+  <button type="button" class="mzeile" data-tu="text"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg><span data-i18n="handy.jetzt.text">Text</span></button>
+  <button type="button" class="mzeile" data-tu="analyse"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-analyse"/></svg><span data-i18n="player.analyse">Titel-Analyse</span></button>
+  <button type="button" class="mzeile" data-tu="studio"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg><span data-i18n="handy.jetzt.studio">Tonstudio</span></button>
+  <button type="button" class="mzeile" data-tu="details"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="handy.jetzt.details">Details zum Titel</span></button>
+  <button type="button" class="mzeile" data-tu="pip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pip"/></svg><span data-i18n="player.pip">Bewegtbild rauslösen</span></button>
 </div>
 <audio id="audio" crossorigin="anonymous"></audio>
 <video id="pipfilm" muted loop playsinline></video>
@@ -4849,8 +4884,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=8"></script>
-<script src="/ui-sprache.js?v=20"></script>
+<script src="/ui-sprache-ru.js?v=9"></script>
+<script src="/ui-sprache.js?v=21"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
@@ -20046,6 +20081,7 @@ function pultZeigen(dauer = 0){
   if (!b.classList.contains('pultAuf')){ clearTimeout(bPultBereit); b.classList.remove('pultBereit');
     bPultBereit = setTimeout(() => { if (b.classList.contains('pultAuf')) b.classList.add('pultBereit'); }, 400); }
   b.classList.add('pultAuf');
+  if (typeof mehrPunkte === 'function') mehrPunkte();
   clearTimeout(bPultTimer);
   if (dauer) bPultTimer = setTimeout(pultVerbergen, dauer);
 }
@@ -30728,7 +30764,7 @@ function jetztAuf(){
 }
 function jetztZu(){
   $('jetzt').classList.remove('auf'); document.documentElement.classList.remove('jetzt-offen');
-  clearInterval(jetztUhr); jetztUhr = 0; jetztFilmSetzen(false); $('jlaut').classList.remove('auf'); $('jmehr').classList.remove('auf');
+  clearInterval(jetztUhr); jetztUhr = 0; jetztFilmSetzen(false);
 }
 let jetztFuer = null;
 function jetztFuellen(){
@@ -30740,7 +30776,7 @@ function jetztFuellen(){
   const teile = [s.erstellt ? new Date(s.erstellt).toLocaleDateString(localeTag(), { day: 'numeric', month: 'short', year: 'numeric' }) : '', s.modell || ''].filter(Boolean);
   $('jmeta').textContent = teile.join(' · ');
   const film = hatBewegtbild(s);
-  $('jpunkte').hidden = !film; $('jpip').hidden = !film || !(document.pictureInPictureEnabled);
+  $('jpunkte').hidden = !film;
   if (!film) jetztFilmSetzen(false);
   if (jetztZeilenFuer !== s.id) jetztLyrikLaden(s.id);
   else if (jetztFilm) { const v = $('jfilm'), u = artworkVideo(s.id); if (v.dataset.src !== u){ v.dataset.src = u; v.src = u; } }
@@ -30785,40 +30821,60 @@ function jetztTakt(){
   const laeuft = !audio.paused;
   $('jspiel').innerHTML = SYM(laeuft ? 'pause' : 'play');
   $('jspiel').setAttribute('aria-label', t(laeuft ? 'player.pause' : 'player.abspielen'));
-  $('jmisch').classList.toggle('an', $('mischknopf').classList.contains('an'));
-  $('jschleife').classList.toggle('an', $('schleifknopf').classList.contains('an'));
+  mehrPunkte();
   const v = $('jfilm'); if (jetztFilm && v.src){ if (laeuft && v.paused) v.play().catch(() => {}); else if (!laeuft && !v.paused) v.pause(); }
-  $('jlautregler').value = $('lautstaerke').value;
   jetztLyrikTakt();
 }
 $('jzu').onclick = jetztZu;
 $('jspiel').onclick = () => umschalten();
 $('jzurueck').onclick = () => vor(-1);
 $('jweiter').onclick = () => vor(1);
-$('jmisch').onclick = () => mischen();
-$('jschleife').onclick = () => schleifen();
 /* Die Stelle springt erst beim Loslassen (wie in KlangDroid): beim Ziehen nur die Zeit mitzeigen. */
 $('jlauf').oninput = () => { jetztZieht = true; if (audio.duration) $('jzeitA').textContent = jz($('jlauf').value / 1000 * audio.duration); };
 $('jlauf').onchange = () => { if (audio.duration) audio.currentTime = $('jlauf').value / 1000 * audio.duration; jetztZieht = false; };
 /* Zurueck auf den Ausgangswert gezogen, feuert kein change - der Merker faellt darum auch beim Loslassen. */
 for (const ev of ['pointerup', 'pointercancel', 'touchend', 'touchcancel']) $('jlauf').addEventListener(ev, () => setTimeout(() => { jetztZieht = false; }, 0));
 $('jkaraoke').onclick = () => { jetztZu(); pmodiWaehlen('karaoke'); };
-$('jtext').onclick = () => { jetztZu(); pmodiWaehlen('lyrics'); };
-$('jlautknopf').onclick = (e) => { e.stopPropagation(); $('jmehr').classList.remove('auf');
-  const k = $('jlautknopf'), l = $('jlaut'); l.style.left = (k.offsetLeft + k.offsetWidth / 2 - 26) + 'px'; l.classList.toggle('auf'); };
-$('jlautregler').oninput = () => { const r = $('lautstaerke'); r.value = $('jlautregler').value; r.dispatchEvent(new Event('input', { bubbles: true })); };
-$('jmehrknopf').onclick = (e) => { e.stopPropagation(); $('jlaut').classList.remove('auf'); $('jmehr').classList.toggle('auf'); };
-$('jdetails').onclick = () => { const id = aktuellId; jetztZu(); if (id) detailAuf(id); };
-$('janalyse').onclick = () => { jetztZu(); pmodiWaehlen('analyzer'); };
-$('jstudio').onclick = () => { jetztZu(); studioAuf(); };
-$('jpip').onclick = () => { $('jmehr').classList.remove('auf'); pipUmschalten(); };
-$('jetzt').addEventListener('click', (e) => { if (!e.target.closest('.jlaut,#jlautknopf')) $('jlaut').classList.remove('auf');
-  if (!e.target.closest('.jmehr,#jmehrknopf')) $('jmehr').classList.remove('auf'); });
+$('jmehrknopf').onclick = () => mehrAuf('jetzt');
+/* Das Blatt „Mehr“: Schalter schalten und bleiben offen; was in einen anderen Raum fuehrt, schliesst Blatt und
+   „Jetzt laeuft“. Kein eigener Zustand - gelesen wird an den Knoepfen des grossen Players. */
+let mehrVon = null;
+const mehrSchalter = { zufall: 'mischknopf', schleife: 'schleifknopf', anschluss: 'anschlussknopf' };
+function mehrPunkte(){
+  const an = Object.values(mehrSchalter).some(id => $(id) && $(id).classList.contains('an'));
+  $('jmehrknopf').classList.toggle('punkt', an); $('bmehr').classList.toggle('punkt', an);
+}
+function mehrStand(){
+  for (const [tu, id] of Object.entries(mehrSchalter)){
+    const z = $('mehrblatt').querySelector(`[data-tu="${tu}"]`), an = !!($(id) && $(id).classList.contains('an'));
+    z.classList.toggle('an', an); z.querySelector('.mstand').textContent = t(an ? 'handy.mehr.an' : 'handy.mehr.aus');
+  }
+  $('mlaut').value = $('lautstaerke').value;
+  const s = aktuellId && song(aktuellId);
+  $('mehrblatt').querySelector('[data-tu="pip"]').hidden = !(s && hatBewegtbild(s) && document.pictureInPictureEnabled);
+  $('mehrblatt').querySelector('[data-tu="details"]').hidden = mehrVon === 'buehne';
+  mehrPunkte();
+}
+function mehrAuf(von){ mehrVon = von; mehrStand(); document.documentElement.classList.add('mehr-offen'); }
+function mehrZu(){ document.documentElement.classList.remove('mehr-offen'); mehrPunkte(); }
+$('mzu').onclick = mehrZu;
+$('mehrgrund').onclick = mehrZu;
+$('mlaut').oninput = () => { const r = $('lautstaerke'); r.value = $('mlaut').value; r.dispatchEvent(new Event('input', { bubbles: true })); };
+$('mehrblatt').addEventListener('click', (e) => {
+  const z = e.target.closest('.mzeile[data-tu]'); if (!z) return;
+  const tu = z.dataset.tu, weg = () => { mehrZu(); if ($('jetzt').classList.contains('auf')) jetztZu(); };
+  if (tu === 'zufall') mischen(); else if (tu === 'schleife') schleifen(); else if (tu === 'anschluss') anschlussSchalten();
+  else if (tu === 'karaoke' || tu === 'text' || tu === 'analyse'){ weg(); pmodiWaehlen(tu === 'text' ? 'lyrics' : tu === 'analyse' ? 'analyzer' : 'karaoke'); return; }
+  else if (tu === 'studio'){ weg(); studioAuf(); return; }
+  else if (tu === 'details'){ const id = aktuellId; weg(); if (id) detailAuf(id); return; }
+  else if (tu === 'pip'){ mehrZu(); pipUmschalten(); return; }
+  mehrStand();
+});
 /* Wischen: waagrecht auf dem Bild wechselt Titelbild/Bewegtbild, senkrecht nach unten schliesst. Der Regler und die
    Knoepfe sind ausgenommen - dort ist Ziehen Bedienung, kein Wischen. */
 { let x0 = null, y0 = 0, t0 = 0;
   const jt = $('jetzt');
-  jt.addEventListener('touchstart', (e) => { if (e.target.closest('input,button,.jmehr,.jlaut')) { x0 = null; return; }
+  jt.addEventListener('touchstart', (e) => { if (e.target.closest('input,button')) { x0 = null; return; }
     const p = e.touches[0]; x0 = p.clientX; y0 = p.clientY; t0 = Date.now(); }, { passive: true });
   jt.addEventListener('touchend', (e) => { if (x0 === null) return; const p = e.changedTouches[0];
     const dx = p.clientX - x0, dy = p.clientY - y0; x0 = null; if (Date.now() - t0 > 900) return;

@@ -9612,3 +9612,19 @@ Touch-Ereignissen (CDP), Nachprüfung nach jeder Korrektur.
   über http bleibt nach unserem Stand die Adresszeile; so steht es auch in der Lasche. **Am echten Gerät noch nicht
   geprüft** (kein Handy hier) – Wiedervorlage für Caspar_D.
 - Apple-Touch-Icon bleibt `/avatar` (sein Profilbild) wie bisher; das Manifest nimmt das KlangTresor-Zeichen.
+
+## 118. 24.10.2026: 1.0.100 – Handy: eine Reihe ⏮ ▶ ⏭, alles andere hinter „⋯“
+
+Caspar_D: keine zweizeiligen Knopfreihen; „nur zurück play vorwärts und dann alles andere in Fly-in-Menüs“. Nur Handy
+(A), Karaoke möglichst sichtbar (B).
+- **Mini-Player:** Bild, Titel, ⏮ ▶ ⏭ (⏮ ist wieder da).
+- **„Jetzt läuft“:** eine Reihe ⏮ ▶ ⏭ ⋯; die zweite Reihe (Karaoke, Text, Lautstärke, Mehr) ist weg. Karaoke als
+  Mikrofon oben rechts in der Kopfzeile.
+- **Bühne:** ⏮ ▶ ⏭ ⋯ (#bmehr); Zufall, Anschluss, Schleife auf dem Handy ausgeblendet.
+- **Blatt „Mehr“** (#mehrblatt, z-index 75, auch über der Bühne): Zufall, Schleife, Anschluss (Schalter mit an/aus,
+  Blatt bleibt offen), Lautstärke (waagrecht, steuert #lautstaerke), Karaoke, Text, Analyse, Tonstudio, Details (nicht
+  aus der Bühne), Bewegtbild rauslösen (nur mit Bewegtbild). Quer zweispaltig. Steht ein Schalter an, trägt „⋯“ einen
+  Punkt (`mehrPunkte`). Der senkrechte Lautstärkeregler (Entscheidung 3B) ist damit ins Blatt gewandert.
+- Geprüft mit Touch-Ereignissen hoch/quer. Test-Chromes ab jetzt mit `--mute-audio` (die Prüftöne waren hörbar).
+- **Offen, wartet auf Caspar_D:** Pillenreihe – „Filter 266“ liegt auf „Räume und Schäume“. Vorschlag A (Pille heißt
+  auf dem Handy „Räume“) + C (Filter als Symbol neben die Lupe).
