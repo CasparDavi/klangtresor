@@ -9530,3 +9530,21 @@ Caspar_D bestätigt die vorläufigen Entscheidungen (Bänder mit Frequenz, Urtei
 - **Nächster Brocken (Caspar_D):** Handy-Oberfläche. Technisch läuft es im Heimnetz schon (Server auf 0.0.0.0:8788,
   viewport gesetzt), aber das UI ist zu groß. Ziele: Hoch- und Querformat, Bildschirmteilung mit dem Fernseher soll gut
   aussehen, Tablets gehen wie sie sind, Handys „couch-tauglich“ – vor allem Musik hören. Erst Skizze, dann Bau.
+
+## 114. 24.10.2026: 1.0.96 – Handyansicht, Schritt 1 (Kopf, Register, Filterblatt, Spalten)
+
+Plan und Entscheidungen: Gedächtnis „klangtresor-handy-ui“ (Skizze abgenommen; 4 Schritte + Startbildschirm-Zusatz).
+- **Erkennung:** frühes Skript nach `<body>` setzt `html.handy` (matchMedia `(pointer:coarse) and (max-width:519px)` oder
+  `… (max-height:519px)`; sichtbarer Seitenbereich, Browserleisten abgezogen) und `html.quer`; `window.istHandy()`.
+  Rechner (Maus, auch schmales Fenster) und Tablet unverändert – geprüft 1280×800 (Maus), 820×1180 (Touch), 400×700 (Maus).
+- **Kopf:** Suchfeld wird zur Lupe (#suchlupe), geöffnet nimmt die Suche die ganze Zeile (#suchzu schließt, Punkt an der
+  Lupe, wenn gesucht/gefiltert wird). Register als Pillen, Größenregler und Sprachwahl weg. **Quer** alles in einer Zeile
+  (52 von 360 px).
+- **Filter** als Blatt von unten (#filterpille rechts festgeheftet, „Filter 266“, Rand orange, wenn gefiltert;
+  `html.filter-offen`; Felder 44 px, 16 px Schrift gegen iOS-Zoom; Sprachwahl im Blatt; „Fertig“ und Abdunkler schließen).
+  Falle: header hat backdrop-filter → Bezugsrahmen für position:fixed und z-index 35 unter dem Abdunkler; bei offenem
+  Blatt aufgehoben.
+- **Spalten** fest: 3 hoch, 6 quer (spaltenAnwenden).
+- Werkzeug für Handybilder: scratchpad/handybild/bild.mjs (headless Chrome, Touch + pointer:coarse nachgebildet;
+  bild2.mjs mit MAUS=1 für Rechner). Die Vorschau im App-Browser malt im Querformat nicht als Touchgerät.
+- **Weiter:** Schritt 2 (Mini-Player, „Jetzt läuft“), 3 (Quer, Fernseher, Bühne), 4 (Räume), Startbildschirm/QR/Hostname.

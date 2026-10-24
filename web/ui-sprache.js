@@ -24,6 +24,11 @@
   /* Paare: [schlüssel, deutsch, englisch]. Ein Ort, damit kein Schlüssel
      nur in einer Sprache steht. */
   const PAARE = [
+    ["handy.filter", "Filter", "Filter"],
+    ["handy.filter.titel", "Filter und Ansicht", "Filters and view"],
+    ["handy.fertig", "Fertig", "Done"],
+    ["handy.suche", "Suchen", "Search"],
+    ["handy.suche.zu", "Suche schließen", "Close search"],
     ['sprache.wahl', 'Sprache', 'Language'],
 
     ['kopf.marke', 'Version, Urheber, Mitstreiter', 'Version, author, contributors'],

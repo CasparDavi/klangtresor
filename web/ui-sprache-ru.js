@@ -6,6 +6,11 @@
    den englischen Satz. Mehrzahl in drei Formen „one|few|many“ (1/21 · 2–4/22 · 0/5–20); zwei Formen dort, wo der
    russische Satz für jede Zahl gleich lautet („людей: {z}“). Platzhalter {name} wie im Deutschen. */
 window.UI_RU = {
+  "handy.filter": "Фильтр",
+  "handy.filter.titel": "Фильтры и вид",
+  "handy.fertig": "Готово",
+  "handy.suche": "Поиск",
+  "handy.suche.zu": "Закрыть поиск",
   "sprache.wahl": "Язык",
   "kopf.marke": "Версия, автор, участники",
   "kopf.filter": "Фильтр",

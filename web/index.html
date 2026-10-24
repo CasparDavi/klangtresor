@@ -2273,9 +2273,77 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   .pmodiliste button{width:38px; height:34px}
   .psteuer button{min-width:34px;padding:6px}
 }
+
+/* ================================================================
+   HANDYANSICHT (24.10.2026, Schritt 1: Kopf, Register, Filterblatt, Spalten). Gilt nur unter html.handy -
+   gesetzt vom fruehen Skript nach <body>. Rechner und Tablet sehen nichts davon.
+   ================================================================ */
+.nurhandy,#suchlupe,#suchzu,#filterpille,#blattgrund{display:none}
+html.handy header{padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
+html.handy .kopfzeile{gap:8px;flex-wrap:nowrap}
+html.handy h1{font-size:17px}
+html.handy .suchfeld{display:none}
+html.handy #suchlupe{display:flex;align-items:center;justify-content:center;margin-left:auto;width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);position:relative}
+html.handy #suchlupe.aktiv::after{content:'';position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--akzent)}
+html.handy.suche-offen .kopfzeile > :not(.suchfeld){display:none!important}
+html.handy.suche-offen .suchfeld{display:flex;flex:1 1 auto}
+html.handy .suchfeld #suche{font-size:16px}
+html.handy.suche-offen #suchzu{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:34px;height:34px;border:0;
+  background:none;color:var(--schwach);font-size:22px;line-height:1;cursor:pointer}
+html.handy .register{border-bottom:0;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+html.handy .register::-webkit-scrollbar{display:none}
+html.handy .register .reg{flex:0 0 auto;border:1px solid var(--rand);border-radius:999px;padding:7px 14px;margin:0;white-space:nowrap;
+  background:var(--flaeche2);font-size:14px}
+html.handy .register .reg.an{border:2px solid var(--akzent);padding:6px 13px;color:var(--text)}
+html.handy .register .regler,html.handy .register > .sprachewahl{display:none}
+html.handy #filterpille{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto;padding:7px 14px;border-radius:999px;
+  position:sticky;right:0;box-shadow:-10px 0 10px -2px var(--bg);
+  border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);font:inherit;font-size:14px;cursor:pointer}
+html.handy #filterpille.aktiv{border:2px solid var(--akzent);padding:6px 13px}
+html.handy #filterpille b{font-weight:400;color:var(--schwach);font-size:12px}
+html.handy[data-reg="karte"] #filterpille{display:none}
+html.handy .filter{display:none}
+html.handy.filter-offen .filter:not([hidden]){display:flex;position:fixed;left:0;right:0;bottom:0;z-index:80;flex-direction:column;
+  align-items:stretch;gap:10px;margin:0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));background:var(--bg);
+  border-top:1px solid var(--rand);border-radius:16px 16px 0 0;max-height:82dvh;overflow:auto}
+html.handy.filter-offen .filter select{width:100%;min-height:44px;font-size:16px}
+html.handy .filter .nurhandy{display:flex;align-items:center;justify-content:space-between;gap:10px}
+html.handy .filter .blattkopf b{font-size:16px}
+html.handy .filter .blattzu{min-height:40px;padding:0 18px}
+html.handy .filter .blattsprache{color:var(--schwach);font-size:13px;margin-top:4px}
+html.handy .filter .blattsprache button{min-height:40px;min-width:52px}
+html.handy .filter .zahl{color:var(--schwach);font-size:13px}
+/* Die Kopfzeile ist durch backdrop-filter Bezugsrahmen fuer position:fixed und liegt mit z-index 35 unter dem
+   Abdunkler - solange das Blatt offen ist, beides aufheben, sonst klebt es oben und liegt im Dunkeln. */
+html.handy.filter-offen header{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:81}
+html.handy.filter-offen #blattgrund{display:block;position:fixed;inset:0;z-index:79;background:rgba(0,0,0,.5)}
+html.handy #raster{gap:6px;padding:8px 8px 40px}
+/* Quer zaehlt jede Zeile Hoehe (oft nur 330-360 px): Name, Lupe und Register in EINER Zeile. */
+html.handy.quer header{display:flex;align-items:center;gap:10px;padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:6px}
+html.handy.quer .kopfzeile{flex:0 0 auto}
+html.handy.quer .register{flex:1 1 auto;margin-top:0;min-width:0}
+html.handy.quer #suchlupe{margin-left:0}
+html.handy.quer.suche-offen .kopfzeile{flex:1 1 auto}
+html.handy.quer.suche-offen .register{display:none}
 </style>
 </head>
 <body>
+<script>
+/* DIE HANDYANSICHT (24.10.2026, Caspar_D: „couch-tauglich“). Umgeschaltet wird nach dem SICHTBAREN Seitenbereich -
+   Adresszeile und Leisten des Browsers sind darin schon abgezogen -, nicht nach der Geraetegroesse: kuerzere Seite
+   unter 520 px UND Bedienung mit dem Finger. Tablets (ab ~768) und Rechner (Maus, auch im kleinen Fenster) bleiben,
+   wie sie sind. So frueh wie moeglich gesetzt, damit nichts erst gross und dann klein aufblitzt. html.quer: Handy quer. */
+(function () {
+  const mq = matchMedia('(pointer:coarse) and (max-width:519px), (pointer:coarse) and (max-height:519px)');
+  const r = document.documentElement;
+  window.istHandy = () => mq.matches;
+  const setzen = () => { r.classList.toggle('handy', mq.matches); r.classList.toggle('quer', mq.matches && innerWidth > innerHeight); };
+  setzen();
+  mq.addEventListener('change', () => { setzen(); if (typeof spaltenAnwenden === 'function') spaltenAnwenden(); });
+  addEventListener('resize', setzen);
+})();
+</script>
 
 <!-- Symbolvorrat.
      Monochrom und über currentColor eingefärbt - dadurch folgen die
@@ -4070,12 +4138,16 @@ h3 .infoknopf .ico{width:14px;height:14px}
          eine gewaehlt, steht sie als Marke vorn im Feld, und direkt
          dahinter klappt die zweite Stufe auf: nur Werte, die es gibt,
          mit Anzahl. Dahinter tippt man weiter wie immer. -->
+    <button id="suchlupe" type="button" title="Suchen" data-i18n-title="handy.suche" aria-label="Suchen" data-i18n-aria="handy.suche">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.4 15.4 21 21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
     <div class="suchfeld">
       <button id="filterpfeil" title="Filter" data-i18n-title="kopf.filter" type="button" data-i18n-title="kopf.filter">▾</button>
       <div id="filtermarken"></div>
       <input id="suche" placeholder="Titel, Stil …" data-i18n-placeholder="suche.platz" autocomplete="off">
       <div id="filterkategorien" style="display:none"></div>
       <div id="filterwerte" style="display:none"></div>
+      <button id="suchzu" type="button" title="Suche schließen" data-i18n-title="handy.suche.zu" aria-label="Suche schließen" data-i18n-aria="handy.suche.zu">×</button>
     </div>
     <!-- Neue Version des Programms (GitHub), nicht der Bestand. Bleibt versteckt, bis
          fassungErinnern() eine neuere Nummer sieht. Klick oeffnet das Ueber-Fenster, und das
@@ -4117,6 +4189,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
          meinen klangraum zurück." Intern heisst das Register weiter
          'karte'. Gesetzt wird der Name in raumLascheBenennen(). -->
     <button class="reg"    data-reg="karte" id="reg-karte">Klangraum</button>
+    <!-- Nur auf dem Handy: die Filter stehen dort als Blatt von unten (24.10.2026). -->
+    <button type="button" id="filterpille"><span data-i18n="handy.filter">Filter</span><b id="filterpillezahl"></b></button>
     <!-- Die Unterregister (Klangraum, Geschichten, Klangschaum, Groupieschaum) standen hier bis 1.0.78. Seit dem
          15.10.2026 stehen die Ansichten als zwei Pillenreihen „Räume" und „Schäume" oben im Panel jeder Ansicht
          (ansichtHtml) - weiter sichtbar und nicht in einer Lade (Caspar_D, 28.08.2026: „der Register heisst räume aber
@@ -4140,6 +4214,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
   </div>
 
   <div class="filter" id="filterTracks">
+    <div class="blattkopf nurhandy"><b data-i18n="handy.filter.titel">Filter und Ansicht</b><button type="button" class="knopf blattzu" data-i18n="handy.fertig">Fertig</button></div>
     <select id="video" title="Eigenes Bewegtbild (nicht Sunos Lyric-Video)" data-i18n-title="filter.video">
       <option value="" data-i18n="filter.video.alle">Alle</option>
       <option value="mit" data-i18n="filter.video.mit">Mit Bewegtbild</option>
@@ -4161,9 +4236,17 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <button class="knopf ruecksetzer" id="ruecksetzen" hidden
             title="Suche und Filter auf den Ausgangszustand" data-i18n-title="filter.ruecksetzen.titel" data-i18n="filter.ruecksetzen" data-i18n-title="filter.ruecksetzen.titel">Filter zurücksetzen</button>
     <span class="zahl" id="zahl"></span>
+    <div class="blattsprache nurhandy"><span data-i18n="sprache.wahl">Sprache</span>
+        <span class="sprachewahl" role="group" data-i18n-aria="sprache.wahl">
+          <button type="button" data-sprache="de" onclick="spracheSetzen('de')">DE</button>
+          <button type="button" data-sprache="en" onclick="spracheSetzen('en')" title="Translation partly AI-generated and still being revised">EN*</button>
+          <button type="button" data-sprache="ru" onclick="spracheSetzen('ru')" title="Перевод частично создан с помощью ИИ и ещё дорабатывается">RU*</button>
+        </span>
+    </div>
   </div>
 
   <div class="filter" id="filterPlaylists" hidden>
+    <div class="blattkopf nurhandy"><b data-i18n="handy.filter.titel">Filter und Ansicht</b><button type="button" class="knopf blattzu" data-i18n="handy.fertig">Fertig</button></div>
     <button class="knopf" id="plZurueck" hidden data-i18n="filter.pl.alle">&larr; Alle Alben</button>
     <select id="plSicht" title="Sichtbarkeit auf Suno" data-i18n-title="filter.pl.sicht">
       <option value="beides" data-i18n="filter.pl.beides">Alle Alben</option>
@@ -4177,8 +4260,16 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <option value="likes" data-i18n="filter.pl.sort.likes">Meiste Herzen</option>
     </select>
     <span class="zahl" id="plZahl"></span>
+    <div class="blattsprache nurhandy"><span data-i18n="sprache.wahl">Sprache</span>
+        <span class="sprachewahl" role="group" data-i18n-aria="sprache.wahl">
+          <button type="button" data-sprache="de" onclick="spracheSetzen('de')">DE</button>
+          <button type="button" data-sprache="en" onclick="spracheSetzen('en')" title="Translation partly AI-generated and still being revised">EN*</button>
+          <button type="button" data-sprache="ru" onclick="spracheSetzen('ru')" title="Перевод частично создан с помощью ИИ и ещё дорабатывается">RU*</button>
+        </span>
+    </div>
   </div>
 </header>
+<div id="blattgrund"></div>
 
 <div id="raster"></div>
 <!-- Die Musik-Karte (bin/klang.js + bin/karte.js, 21.08.2026): jeder
@@ -4570,8 +4661,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=4"></script>
-<script src="/ui-sprache.js?v=16"></script>
+<script src="/ui-sprache-ru.js?v=5"></script>
+<script src="/ui-sprache.js?v=17"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
 <script>
@@ -7966,6 +8057,7 @@ function zeichnen(){
 
 function registerSetzen(name){
   register = name;
+  document.documentElement.dataset.reg = name;
   if (name === 'tracks') offenePlaylist = null;
   document.querySelectorAll('.reg').forEach(b => b.classList.toggle('an', b.dataset.reg === name));
   $('filterTracks').hidden    = name !== 'tracks';
@@ -13621,6 +13713,7 @@ function filterAbweichend(){
 
 function ruecksetzerZeigen(){
   $('ruecksetzen').hidden = !filterAbweichend();
+  if (typeof handyPilleZeigen === 'function') handyPilleZeigen();
 }
 
 function filterZuruecksetzen(){
@@ -29919,7 +30012,8 @@ let spaltenWunsch = parseInt(localStorage.getItem('mysuno-spalten'), 10) || 6;
 function spaltenAnwenden(){
   const platz = document.documentElement.clientWidth;
   const hoechstens = Math.max(2, Math.floor(platz / 92));
-  const wirklich = Math.min(spaltenWunsch, hoechstens);
+  /* Auf dem Handy entscheidet die Lage, nicht der Regler: drei Spalten hoch, sechs quer (24.10.2026). */
+  const wirklich = (window.istHandy && istHandy()) ? (innerWidth > innerHeight ? 6 : 3) : Math.min(spaltenWunsch, hoechstens);
   document.documentElement.style.setProperty('--spalten', wirklich);
   const breite = Math.round((platz - 36 - (wirklich-1)*14) / wirklich);
   $('groesseText').textContent = wirklich + '×';
@@ -30059,6 +30153,23 @@ $('raster').addEventListener('mouseout', (e)=>{
 $('ruecksetzen').onclick = filterZuruecksetzen;
 
 document.querySelectorAll('.reg').forEach(b => b.onclick = () => registerSetzen(b.dataset.reg));
+/* HANDY (24.10.2026): Lupe statt Suchfeld, Filter als Blatt von unten. */
+function handyPilleZeigen(){
+  const p = $('filterpille'); if (!p) return;
+  const tl = register === 'playlists' ? $('plZahl') : $('zahl');
+  $('filterpillezahl').textContent = tl ? ((tl.textContent.match(/\d[\d.,\u202f\u00a0]*/) || [''])[0]).trim() : '';   /* nur die Zahl: „Filter 266“ */
+  p.classList.toggle('aktiv', register === 'tracks' && filterAbweichend());
+  const l = $('suchlupe'); if (l) l.classList.toggle('aktiv', !!($('suche').value.trim() || filterAktiv.some(f => f.wert !== null)));
+}
+$('suchlupe').onclick = () => { document.documentElement.classList.add('suche-offen'); $('suche').focus(); };
+$('suchzu').onclick = () => { document.documentElement.classList.remove('suche-offen'); handyPilleZeigen(); };
+const filterBlatt = (auf) => document.documentElement.classList.toggle('filter-offen', auf);
+$('filterpille').onclick = () => filterBlatt(true);
+$('blattgrund').onclick = () => filterBlatt(false);
+document.querySelectorAll('.blattzu').forEach(b => b.onclick = () => filterBlatt(false));
+for (const id of ['zahl', 'plZahl']) new MutationObserver(handyPilleZeigen).observe($(id), { childList: true, characterData: true, subtree: true });
+document.documentElement.dataset.reg = register;
+handyPilleZeigen();
 $('plSicht').onchange      = zeichnen;
 $('plSortierung').onchange = zeichnen;
 $('plZurueck').onclick = () => {
