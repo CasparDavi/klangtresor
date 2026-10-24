@@ -9727,3 +9727,9 @@ Caspar_D: „der rote Datendownload-Knopf kann aus der Handyversion raus“. #mo
 - Das EQ-Blatt sagt es: „Mit EQ läuft der Ton durch den Browser: Über AirPlay (HomePods) kommt er dann aus dem Handy –
   bis zum Neuladen der Seite.“ Gespeicherte Titel-EQs wirken auf dem Handy erst nach einer Bedienung im EQ-Blatt.
 - Grenze von Apple, nicht lösbar in einer Webseite: EQ und AirPlay schließen sich auf dem iPhone aus.
+
+## 129. 24.10.2026: 1.0.111 – Kein EQ auf iPhone/iPad
+
+Caspar_D: „dann sollte man EQ auf iPhones gar nicht anzeigen“. `istIos()` (UA iPhone/iPad/iPod oder MacIntel mit
+Touch = iPadOS; Chrome auf iOS ist innen WebKit) blendet das Ziel EQ im Blatt „Mehr“ aus. Android behält ihn (kein
+AirPlay). Fußzeile des EQ-Blatts wieder ohne AirPlay-Satz. WebKit-Probe: ios=true, EQ versteckt, keine Fehler.

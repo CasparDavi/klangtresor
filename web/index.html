@@ -4941,8 +4941,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=12"></script>
-<script src="/ui-sprache.js?v=24"></script>
+<script src="/ui-sprache-ru.js?v=13"></script>
+<script src="/ui-sprache.js?v=25"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
@@ -19053,6 +19053,8 @@ for (const d of [deckA, deckB]) d.addEventListener('play', klangWecken);   /* au
    zuruecknehmen. Darum legt das Handy den Kontext erst an, wenn man im EQ-Blatt etwas verstellt; Buehne und
    Signalanzeige nehmen ihren Weg ohne Signal, den sie fuer diesen Fall schon haben. */
 let handyKlangFrei = false;
+/* iPhone, iPad (auch das iPad, das sich als Mac ausgibt) - und Chrome dort, der innen Safari ist */
+const istIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 function analyseStarten(){
   if (!hörer && window.istHandy && istHandy() && !handyKlangFrei) return false;
   if (hörer) return hörer.ok;
@@ -30934,6 +30936,9 @@ function mehrStand(){
   const s = aktuellId && song(aktuellId);
   $('mehrblatt').querySelector('[data-tu="pip"]').hidden = !(s && hatBewegtbild(s) && document.pictureInPictureEnabled);
   $('mehrblatt').querySelector('[data-tu="details"]').hidden = mehrVon === 'buehne';
+  /* Kein EQ auf iPhone/iPad (Caspar_D, 24.10.2026: „dann sollte man EQ auf iPhones gar nicht anzeigen“): Dort geht Ton
+     aus der Klangbearbeitung nie ueber AirPlay - mit EQ schwiegen die HomePods. Android behaelt ihn. */
+  $('mehrblatt').querySelector('[data-tu="eq"]').hidden = istIos();
   mehrPunkte();
 }
 function mehrAuf(von){ mehrVon = von; mehrStand(); document.documentElement.classList.add('mehr-offen'); }
