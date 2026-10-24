@@ -9760,3 +9760,12 @@ einmal angestoßen (translateZ(0) für ein Bild). Schaum-Prüffälle (t4 hoch, F
   `.hidden=false` wirkt dort nicht. Handy: 12 px Abstand zum Paar Lupe/Trichter.
 - Geprüft: Profil zeigt DE markiert, Tipp auf EN schaltet um und das Profil zieht nach; Filterblatt ohne Sprachwahl;
   PC: Profil-Schalter unsichtbar, Kopfzeilen-Schalter da.
+
+## 133. 24.10.2026: 1.0.115 – Effektclip in der Kachel wie ein Suno-Video
+
+Caspar_D: „Effektclip-Videos bleiben klein, während echte Suno-Videos in der Vorschau aufzoomen und breiter als das
+Feld werden dürfen“ – „genau so“. In der Kachel (.bild, nicht Bühne) rechnet die Malfläche jetzt mit voller
+Kachelhöhe, die Breite folgt dem Bild (`canvas.tbs-clip.ueberbreit`: top 0, left 50 %, height 100 %, width auto,
+Schatten, Leuchtrand beim laufenden Titel), Kachel/Karte bekommen `zeigtVideo`, `bewegtEinpassen()` rückt am Rand
+ein; clipAus nimmt es zurück. Gemessen PC 1280: Kachel 194×259, Clip 259×259. Modul, CSS und Haus in einem Commit;
+Stempel tbs-modul.js/tbs.css ?v=1.0.115.

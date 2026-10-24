@@ -11762,13 +11762,19 @@ function zeichneFrame(t,roh){
       m.grund={art:seite.art,nr:seite.nr};
       const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
         /* Die Leinwand liegt ganz im Kasten (object-fit: contain): so gross, dass das eingepasste Bild volle Schaerfe hat; lange Seite hoechstens 960 px. */
-        const sk=Math.min(kW*dpr/bw, kH*dpr/bh); let W=Math.round(bw*sk), H=Math.round(bh*sk);
+        /* IN DER KACHEL WIE EIN SUNO-VIDEO (Caspar_D, 24.10.2026: „Effektclip-Videos bleiben klein, waehrend echte
+           Suno-Videos in der Vorschau aufzoomen und breiter als das Feld werden duerfen“): dort volle Hoehe der Kachel,
+           die Breite folgt dem Bild und darf ueberstehen - wie video.bewegt. Auf der Buehne bleibt es eingepasst. */
+        const kachel=kasten.classList.contains('bild');
+        const sk=kachel?(kH*dpr/bh):Math.min(kW*dpr/bw, kH*dpr/bh); let W=Math.round(bw*sk), H=Math.round(bh*sk);
         /* AUF DER BUEHNE MIT TEXT 1440 STATT 960 (Nacht 25.09.2026): Bildeffekte verzeihen das Hochziehen auf den
            Retina-Schirm, Buchstabenkanten nicht. Nur dort, nur mit Titel oder Karaoke in der Kette - die Kacheln
            der Liste bleiben bei 960. */
         const textDa=Array.isArray(m.STAPEL)&&m.STAPEL.some(x=>x&&(x.typ==='titel'||x.typ==='karaoke')&&x.an);
         const deckel=((kasten.classList.contains('bart')&&textDa)?1440:960)/Math.max(W,H); if(deckel<1){ W=Math.round(W*deckel); H=Math.round(H*deckel); } W=Math.max(1,W); H=Math.max(1,H);
         [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht,m.oherk].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true; clipMelden(kasten,'da');
+        if(kachel){ m.canvas.classList.add('ueberbreit'); kasten.classList.add('zeigtVideo'); const karte=kasten.closest('.karte'); if(karte) karte.classList.add('zeigtVideo');
+          if(typeof bewegtEinpassen==='function') bewegtEinpassen(m.canvas); }
         /* Auf der Buehne liegt unter der Leinwand das Standbild (img.motiv, cover.jpg); es wird verdeckt, solange der
            Maler malt - sonst schaut es neben einer schmaleren Quelle heraus. Den Rahmen der Buehne ruehrt der Maler nicht an. */
         try{ if(kasten.classList.contains('bart')){ const mo=kasten.querySelector('img.motiv'); if(mo){ m.motiv=mo; mo.style.visibility='hidden'; } } }catch(e){} };
@@ -11776,7 +11782,8 @@ function zeichneFrame(t,roh){
       m.bild=quelleBauen(seite,fertig,fehler); });
     if(!clipRaf) clipRaf=requestAnimationFrame(clipTick); }
   function clipAus(ziel){ const kasten=kastenVon(ziel); if(!kasten) return; const cv=kasten.querySelector('canvas.tbs-clip'); if(!cv) return; cv.remove(); const i=clips.findIndex(m=>m.canvas===cv);
-    if(i>=0){ const m=clips[i]; quelleWeg(m.bild); vorbFilterWeg(m.VORB); clips.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; clipMelden(kasten,'weg'); } }
+    if(i>=0){ const m=clips[i]; quelleWeg(m.bild); vorbFilterWeg(m.VORB); clips.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; clipMelden(kasten,'weg'); }
+    if(cv.classList.contains('ueberbreit') && !kasten.querySelector('video.bewegt')){ kasten.classList.remove('zeigtVideo'); const karte=kasten.closest('.karte'); if(karte) karte.classList.remove('zeigtVideo'); } }
   /* DER KASTEN ERFAEHRT, WENN SEIN CLIP KOMMT ODER GEHT (24.09.2026). Die Buehne hoert darauf und fragt clipMalt -
      ohne diese Meldung wuesste sie bei stehendem Player nicht, dass die Karaoke-Zeile inzwischen aus dem Effektclip
      kommt (oder nicht mehr). Ein DOM-Ereignis, das nach oben steigt; wer es nicht braucht, hoert es nicht. */

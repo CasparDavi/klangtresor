@@ -173,6 +173,11 @@
    ganz im Kasten (object-fit: contain), nichts ragt heraus, nichts wird beschnitten. Auf der Kachel bleibt rundum
    die unscharfe Fuellung der kachel.jpg sichtbar, auf der Buehne die .fuellung - genau wie beim Standbild. */
 .bild canvas.tbs-clip, .bart canvas.tbs-clip, .capartclip canvas.tbs-clip{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
+/* In der Kachel wie ein Suno-Video (video.bewegt im Haus): volle Hoehe, eigene Breite, darf ueberstehen, mit Schatten;
+   bewegtEinpassen() rueckt es am Fensterrand ein. */
+.bild canvas.tbs-clip.ueberbreit{inset:auto;top:0;left:50%;width:auto;height:100%;transform:translateX(-50%);border-radius:10px;box-shadow:0 12px 44px rgba(0,0,0,.75)}
+.bild.laeuft.zeigtVideo canvas.tbs-clip.ueberbreit{outline:2px solid var(--akzent);outline-offset:2px;animation:einblenden .35s ease both, pulsVideo 1.9s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.bild.laeuft.zeigtVideo canvas.tbs-clip.ueberbreit{animation:none}}
 /* Knoepfe brechen nicht um; Abspiel-Knopf als Pille im Kopf */
 #tbs .tbs-reihe button, #tbs .tbs-mini, #tbs .tbs-seg button{white-space:nowrap}
 #tbs-kopf #tbs-spiel{width:auto;height:28px;border-radius:999px;padding:0 12px;font-size:12px;white-space:nowrap;margin-right:6px}
