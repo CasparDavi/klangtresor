@@ -9664,3 +9664,9 @@ dem Handy, die PC-Fassung bleibt, wie sie ist (geprüft: am Rechner kein html.ha
   Chrome-Nachbau farbig; Gerät/Browser und Bildschirmfoto erbeten. Schaum rechnet auf dem Handy (Worker, Cache je
   Gerät in IndexedDB, je Seitenverhältnis) und rechnet im Hintergrund alle Maße vor (`schaumVorrechnen`) – Vorschlag:
   auf dem Handy abschalten (sofort) bzw. Server rechnet und liefert (Umbau, Skizze).
+
+## 122. 24.10.2026: 1.0.104 – Handy: Lupe und Trichter als Paar (Tufte)
+
+Caspar_D: „Edward Tufte sagte, was zusammengehört, hat geringere Abstände … der Trichter wirkt zu dominant, am besten
+nur Outlines“. Lupe und Trichter je 32 px breit, 2 px Abstand zueinander; quer 18 px Abstand zum Namen und zu den
+Pillen. Trichter nur Umriss (Strich 2 wie die Lupe; vorher füllte `.ico{fill:currentColor}` die Form).
