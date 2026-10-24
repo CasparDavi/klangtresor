@@ -12,7 +12,10 @@
   'use strict';
 
   const SPRACHE_MERK = 'klangtresor-sprache';
-  const SPRACHE_ANFANG = 'de';
+  /* Wer nichts gewaehlt hat und keine Systemsprache mitbringt, die wir sprechen, bekommt Englisch (Caspar_D,
+     24.10.2026: „ob index.html tatsaechlich die Systemsprache uebernimmt bzw. auf Englisch zurueckfaellt“ - sie fiel auf
+     Deutsch zurueck und las die Systemsprache gar nicht). */
+  const SPRACHE_ANFANG = 'en';
   const SPRACHEN = ['de', 'en', 'ru'];
 
   const WOERTER = {
@@ -4144,7 +4147,12 @@
       if (s && WOERTER[s]) return s;
       if (url) { localStorage.setItem(SPRACHE_MERK, url); return url; }
     } catch (e) {}
-    return url || SPRACHE_ANFANG;
+    /* Die Sprache des Geraets (navigator.languages, in Vorzugsreihenfolge) - fuer jeden Aufruf ohne Starter: Handy,
+       QR-Code, fremder Browser. Nicht gemerkt: stellt man das Geraet um, folgt die Seite. */
+    let geraet = null;
+    try { geraet = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''])
+      .map(l => String(l).slice(0, 2).toLowerCase()).find(l => WOERTER[l]) || null; } catch (e) {}
+    return url || geraet || SPRACHE_ANFANG;
   }
 
   let sprache = spracheLesen();

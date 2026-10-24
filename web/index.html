@@ -4945,7 +4945,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
 <script src="/ui-sprache-ru.js?v=13"></script>
-<script src="/ui-sprache.js?v=25"></script>
+<script src="/ui-sprache.js?v=26"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
@@ -17630,7 +17630,10 @@ async function profilHandyFuellen(){
   let d = null; try { d = await (await fetch('/api/adressen', { cache: 'no-store' })).json(); } catch (e) {}
   const liste = (d && d.adressen) || [];
   if (!liste.length){ el.innerHTML = `<p class="handyhinweis">${esc(t('handy.adr.keine'))}</p>`; return; }
-  const erste = liste[0], rest = liste.slice(1);
+  /* Der Code traegt die Zahl (Caspar_D, 24.10.2026: „der QR-Code sollte lieber die IP ausliefern, damit es garantiert
+     funktioniert“): Namen loest nicht jedes Handy und jedes Netz auf, die Zahl schon. Die Namen bleiben als
+     Ausweichweg darunter stehen. */
+  const erste = liste.find(a => a.art === 'ip') || liste[0], rest = liste.filter(a => a !== erste);
   const art = (a) => a.art === 'name' ? t('handy.adr.art.name') : a.art === 'bonjour' ? t('handy.adr.art.bonjour') : t('handy.adr.art.ip', { schnitt: a.schnitt || '' });
   el.dataset.gefuellt = '1';
   el.innerHTML = `<div class="handyblock">

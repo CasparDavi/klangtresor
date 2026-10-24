@@ -9741,3 +9741,11 @@ dauerhaft auf einer eigenen Ebene (`will-change:transform`), Klassenwechsel im I
 wurden nicht nachgemalt. Jetzt `will-change` nur während der Geste (Klasse `zieht`), und nach dem Setzen der Schwelle
 einmal angestoßen (translateZ(0) für ein Bild). Schaum-Prüffälle (t4 hoch, Fall 6) unverändert bestanden.
 **Am iPhone zu bestätigen.**
+
+## 131. 24.10.2026: 1.0.113 – QR mit Zahl, Gerätesprache mit Englisch als Rückfall
+
+- **QR-Code trägt die Zahl** (Caspar_D: „damit es garantiert funktioniert“): in „Aufs Handy“ steht die erste IP groß
+  und im Code, die Namen (imac.fritz.box, imac.local) darunter als Ausweichweg.
+- **Sprache:** index.html las die Gerätesprache gar nicht und fiel auf Deutsch zurück. Jetzt: eigene Wahl >
+  ?sprache= vom Starter > navigator.languages (de/en/ru, nicht gemerkt) > Englisch. Geprüft mit headless Chrome:
+  ru→ru, de→de, en→en, fr→en, fr + ?sprache=ru → ru.
