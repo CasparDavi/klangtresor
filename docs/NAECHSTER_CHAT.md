@@ -9653,3 +9653,14 @@ dem Handy, die PC-Fassung bleibt, wie sie ist (geprüft: am Rechner kein html.ha
   gespeichert und am Rechner gleich. Wechselt der Titel bei offenem Blatt, zieht es nach. Der Ton lief schon vorher
   bei jedem Titelwechsel durch die Klangbearbeitung (Titel-EQ), es gibt also keinen neuen Tonweg auf dem Handy.
 - Geprüft mit Finger-Ziehen: Regler → Filter im Tonweg → gespeichert; Neutral setzt alles auf 0.
+
+## 121. 24.10.2026: 1.0.103 – Handy: Kopfzeile ohne Kreise
+
+- Caspar_D: „die grossen runden Schalter sind höher … am besten die Kreise weg lassen“. Lupe und Filter-Trichter
+  ohne Rand und Grund, 40×28 px (Tippfeld bleibt breit), Kopfzeile 28 px statt 40 px – so hoch wie der Name (26 px).
+  Gefiltert: Trichter in Akzentfarbe mit Zahl-Plakette.
+- „Nichts gefunden“ auf dem Handy über die ganze Rasterbreite (stand in Spalte 1 von 3).
+- **Offen (Caspar_D gefragt):** Klangschaum auf dem Handy ohne Farben (Bilder ungezoomt absichtlich aus) – im
+  Chrome-Nachbau farbig; Gerät/Browser und Bildschirmfoto erbeten. Schaum rechnet auf dem Handy (Worker, Cache je
+  Gerät in IndexedDB, je Seitenverhältnis) und rechnet im Hintergrund alle Maße vor (`schaumVorrechnen`) – Vorschlag:
+  auf dem Handy abschalten (sofort) bzw. Server rechnet und liefert (Umbau, Skizze).

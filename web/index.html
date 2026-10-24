@@ -2287,9 +2287,11 @@ html.handy header{padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-to
 html.handy .kopfzeile{gap:8px;flex-wrap:nowrap}
 html.handy h1{font-size:17px}
 html.handy .suchfeld{display:none}
-html.handy #suchlupe{display:flex;align-items:center;justify-content:center;margin-left:auto;width:40px;height:40px;border-radius:50%;
-  border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);position:relative}
-html.handy #suchlupe.aktiv::after{content:'';position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--akzent)}
+/* Kopfzeile ohne Kreise (Caspar_D, 24.10.2026: „die grossen runden Schalter sind höher … am besten die Kreise weg
+   lassen“): nur die Symbole, nicht hoeher als der Name. Das Tippfeld bleibt 40 px breit. */
+html.handy #suchlupe{display:flex;align-items:center;justify-content:center;margin-left:auto;width:40px;height:28px;padding:0;
+  border:0;background:none;color:var(--text);position:relative}
+html.handy #suchlupe.aktiv::after{content:'';position:absolute;top:0;right:6px;width:8px;height:8px;border-radius:50%;background:var(--akzent)}
 html.handy.suche-offen .kopfzeile > :not(.suchfeld){display:none!important}
 html.handy.suche-offen .suchfeld{display:flex;flex:1 1 auto}
 html.handy .suchfeld #suche{font-size:16px}
@@ -2301,14 +2303,16 @@ html.handy .register .reg{flex:0 0 auto;border:1px solid var(--rand);border-radi
   background:var(--flaeche2);font-size:14px}
 html.handy .register .reg.an{border:2px solid var(--akzent);padding:6px 13px;color:var(--text)}
 html.handy .register .regler,html.handy .register > .sprachewahl{display:none}
-html.handy #filterpille{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;padding:0;border-radius:50%;
-  position:relative;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);font:inherit;cursor:pointer}
+html.handy #filterpille{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:28px;padding:0;
+  position:relative;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}
 html.handy #filterpille .ico{width:20px;height:20px}
-html.handy #filterpille.aktiv{border:2px solid var(--akzent);color:var(--akzent)}
+html.handy #filterpille.aktiv{color:var(--akzent)}
 html.handy #filterpille b{display:none}
 html.handy #filterpille.aktiv b{display:block;position:absolute;top:-6px;right:-8px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;
   background:var(--akzent);color:#0c0c0d;font-size:11px;font-weight:700;line-height:18px;text-align:center}
 html.handy[data-reg="karte"] #filterpille{display:none}
+/* „Nichts gefunden“ ueber die ganze Breite statt in die erste der drei Spalten gequetscht */
+html.handy #raster > .leer{grid-column:1/-1}
 html.handy .filter{display:none}
 html.handy.filter-offen .filter:not([hidden]){display:flex;position:fixed;left:0;right:0;bottom:0;z-index:80;flex-direction:column;
   align-items:stretch;gap:10px;margin:0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));background:var(--bg);
