@@ -9676,3 +9676,8 @@ Pillen. Trichter nur Umriss (Strich 2 wie die Lupe; vorher füllte `.ico{fill:cu
 Caspar_D: Paar weiter vom Namen weg, Strichdicken angleichen. Die Lupe wurde in Schriftgröße (~16 px) gezeichnet, der
 Trichter in 20 px – gleiche Strichzahl wirkte darum verschieden. Jetzt beide 20 px, Strich 1,8. Quer: Name → Paar
 46 px, im Paar 14 px, Paar → Pillen 48 px.
+
+## 124. 24.10.2026: 1.0.106 – Handy ohne „Bestand aktualisieren“
+
+Caspar_D: „der rote Datendownload-Knopf kann aus der Handyversion raus“. #morgenknopf auf dem Handy ausgeblendet
+(display:none); am Rechner unverändert (geprüft).

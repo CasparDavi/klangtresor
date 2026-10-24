@@ -2317,6 +2317,8 @@ html.handy #filterpille.aktiv b{display:block;position:absolute;top:-6px;right:-
 html.handy[data-reg="karte"] #filterpille{display:none}
 /* „Nichts gefunden“ ueber die ganze Breite statt in die erste der drei Spalten gequetscht */
 html.handy #raster > .leer{grid-column:1/-1}
+/* „Bestand aktualisieren“ (Morgenroutine) gehoert an den Rechner, auf dem das Archiv liegt - nicht aufs Handy (Caspar_D, 24.10.2026) */
+html.handy #morgenknopf{display:none!important}
 html.handy .filter{display:none}
 html.handy.filter-offen .filter:not([hidden]){display:flex;position:fixed;left:0;right:0;bottom:0;z-index:80;flex-direction:column;
   align-items:stretch;gap:10px;margin:0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));background:var(--bg);
