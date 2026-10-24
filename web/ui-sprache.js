@@ -52,6 +52,13 @@
     ["handy.mehr.schleife", "Schleife", "Loop"],
     ["handy.mehr.details", "Details", "Details"],
     ["handy.mehr.bewegtbild", "Bewegtbild", "Motion art"],
+    ["handy.eq.fuss", "gilt für diesen Titel – am Rechner ebenso", "applies to this title – on the computer too"],
+    ["handy.eq.loudness", "Loudness", "Loudness"],
+    ["handy.eq.nacht", "Nacht", "Night"],
+    ["handy.eq.sammlung", "Sammlung", "Collection"],
+    ["handy.eq.stil", "Stilgruppe", "Style group"],
+    ["handy.eq.album", "Album", "Album"],
+    ["handy.eq.hoehen", "Höhen", "Treble"],
     ['sprache.wahl', 'Sprache', 'Language'],
 
     ['kopf.marke', 'Version, Urheber, Mitstreiter', 'Version, author, contributors'],

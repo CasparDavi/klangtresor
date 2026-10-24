@@ -9641,3 +9641,15 @@ Caspar_D: keine zweizeiligen Knopfreihen; „nur zurück play vorwärts und dann
 - **Analyse und Tonstudio auf dem Handy entfernt** (Caspar_D: A) – ihre Seiten sind nicht für den kleinen Schirm.
   Schlüssel handy.mehr.an/aus, handy.jetzt.studio/details/laut gelöscht.
 - **Nächster Wunsch:** einfacher EQ aufs Handy – nur die acht Regler mit Voreinstellungen. Erst Skizze.
+
+## 120. 24.10.2026: 1.0.102 – Handy: EQ mit acht Reglern und Voreinstellungen
+
+Caspar_D: „den simple EQ zugänglich machen, also nur die acht Regler mit Presets“, „der Knopf heißt EQ“; alles nur auf
+dem Handy, die PC-Fassung bleibt, wie sie ist (geprüft: am Rechner kein html.handy, #eqblatt/#mehrblatt/#bmehr aus).
+- Blatt „Mehr“ → Ziel **EQ** → Blatt #eqblatt (`eqBlattAuf`): Voreinstellungen als Pillen (Neutral, Loudness, Bass +,
+  Höhen +, Stimme frei, Nacht, dahinter Sammlung/Stilgruppe/Album), gewählt in Coverfarbe; nicht verfügbare grau, ein
+  Tipp sagt den Grund (aus `studioPresetsPruefen`). Darunter acht senkrechte Regler ±12 dB mit Zahl darüber.
+- Keine eigene Technik: `eqGains`, `studioPreset()`, `eqAnwenden()`, `eqMerken()` (PUT /api/eq/<id>), also je Titel
+  gespeichert und am Rechner gleich. Wechselt der Titel bei offenem Blatt, zieht es nach. Der Ton lief schon vorher
+  bei jedem Titelwechsel durch die Klangbearbeitung (Titel-EQ), es gibt also keinen neuen Tonweg auf dem Handy.
+- Geprüft mit Finger-Ziehen: Regler → Filter im Tonweg → gespeichert; Neutral setzt alles auf 0.

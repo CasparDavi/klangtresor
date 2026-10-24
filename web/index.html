@@ -2516,6 +2516,28 @@ html.handy.mehr-offen #mehrblatt{display:flex;flex-direction:column;position:fix
 #mehrblatt .mziel{display:flex;flex-direction:column;align-items:center;gap:5px;min-height:60px;justify-content:center;font-size:13px;color:var(--text)}
 #mehrblatt .mziel .ico{width:24px;height:24px}
 #mehrblatt [hidden]{display:none}
+
+/* EQ-Blatt (Handy): Voreinstellungen als waagrecht scrollende Pillen, darunter acht senkrechte Regler. Gewaehlt und
+   Daumen in der Akzentfarbe des Covers; was die Messdaten nicht hergeben, steht grau da und sagt beim Tipp warum. */
+#eqblatt{display:none}
+html.handy.eq-offen #mehrgrund{display:block;position:fixed;inset:0;z-index:74;background:rgba(0,0,0,.5)}
+html.handy.eq-offen #eqblatt{display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:0;z-index:75;max-height:86dvh;overflow:auto;
+  overscroll-behavior:contain;background:var(--flaeche);color:var(--text);border-top:1px solid var(--rand);border-radius:16px 16px 0 0;
+  padding:10px 16px calc(14px + env(safe-area-inset-bottom))}
+#eqblatt .mkopf{display:flex;align-items:center;justify-content:space-between;min-height:40px;margin-bottom:6px}
+#eqblatt .eqpillen{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px}
+#eqblatt .eqpillen::-webkit-scrollbar{display:none}
+#eqblatt .eqpillen button{flex:0 0 auto;border:1px solid var(--rand);border-radius:999px;padding:7px 13px;background:var(--flaeche2);
+  color:var(--text);font:inherit;font-size:14px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+#eqblatt .eqpillen button.an{background:var(--akzent);border-color:var(--akzent);color:var(--bg)}
+#eqblatt .eqpillen button.gesperrt{color:var(--schwach);opacity:.55}
+#eqblatt .eqregler{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;height:210px}
+#eqblatt .eqband{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:0}
+#eqblatt .eqband b{font-weight:400;font-size:12px;font-variant-numeric:tabular-nums;color:var(--text)}
+#eqblatt .eqband span{font-size:11px;color:var(--schwach);white-space:nowrap}
+#eqblatt .eqband input{flex:1;min-height:0;width:34px;writing-mode:vertical-lr;direction:rtl;accent-color:var(--akzent);touch-action:none}
+#eqblatt .eqfuss{font-size:12px;color:var(--schwach);margin-top:8px}
+html.handy.quer #eqblatt .eqregler{height:150px}
 </style>
 </head>
 <body>
@@ -4831,9 +4853,19 @@ h3 .infoknopf .ico{width:14px;height:14px}
   <div class="mziele">
     <button type="button" class="mziel" data-tu="karaoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg><span data-i18n="player.karaoke">Karaoke</span></button>
     <button type="button" class="mziel" data-tu="text"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg><span data-i18n="handy.jetzt.text">Text</span></button>
+    <button type="button" class="mziel" data-tu="eq"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 4v16M12 4v16M18 4v16"/><circle cx="6" cy="14" r="2.2" fill="currentColor"/><circle cx="12" cy="8" r="2.2" fill="currentColor"/><circle cx="18" cy="15" r="2.2" fill="currentColor"/></svg><span>EQ</span></button>
     <button type="button" class="mziel" data-tu="details"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-info"/></svg><span data-i18n="handy.mehr.details">Details</span></button>
     <button type="button" class="mziel" data-tu="pip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pip"/></svg><span data-i18n="handy.mehr.bewegtbild">Bewegtbild</span></button>
   </div>
+</div>
+<!-- EQ AUF DEM HANDY (24.10.2026, Caspar_D: „den simple EQ zugänglich machen, also nur die acht Regler mit Presets“;
+     „der Knopf heisst EQ“). Dieselben acht Baender und Voreinstellungen wie im Tonstudio, gespeichert je Titel wie dort -
+     eqGains, studioPreset(), eqAnwenden(), eqMerken(). Kerbe, Parametrik, Hall und Kompressor bleiben dem Rechner. -->
+<div id="eqblatt" role="dialog" aria-modal="true">
+  <div class="mkopf"><b>EQ</b><button type="button" class="knopf" id="eqzu" data-i18n="handy.fertig">Fertig</button></div>
+  <div class="eqpillen" id="eqpillen"></div>
+  <div class="eqregler" id="eqregler"></div>
+  <div class="eqfuss" data-i18n="handy.eq.fuss">gilt für diesen Titel</div>
 </div>
 <audio id="audio" crossorigin="anonymous"></audio>
 <video id="pipfilm" muted loop playsinline></video>
@@ -4895,8 +4927,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=10"></script>
-<script src="/ui-sprache.js?v=22"></script>
+<script src="/ui-sprache-ru.js?v=11"></script>
+<script src="/ui-sprache.js?v=23"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
@@ -30870,7 +30902,43 @@ function mehrStand(){
 function mehrAuf(von){ mehrVon = von; mehrStand(); document.documentElement.classList.add('mehr-offen'); }
 function mehrZu(){ document.documentElement.classList.remove('mehr-offen'); mehrPunkte(); }
 $('mzu').onclick = mehrZu;
-$('mehrgrund').onclick = mehrZu;
+$('mehrgrund').onclick = () => { mehrZu(); eqBlattZu(); };
+/* ---- EQ-Blatt (Handy) ---- */
+const EQ_HANDY_PILLEN = [['neutral', 'studio.start.neutral'], ['loudness', 'handy.eq.loudness'], ['bass', 'studio.ghetto.bass'],
+  ['hoehen', 'studio.ghetto.hoehen'], ['stimme', 'studio.ghetto.stimme'], ['nacht', 'handy.eq.nacht'],
+  ['sammlung', 'handy.eq.sammlung'], ['gruppe', 'handy.eq.stil'], ['playlist', 'handy.eq.album']];
+const eqZahl = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + String(Math.abs(Math.round(v * 2) / 2)).replace('.', ',');
+function eqBlattZeigen(){
+  const d = $('studiopreset'), jetzt = d ? d.value : 'frei';
+  $('eqpillen').innerHTML = EQ_HANDY_PILLEN.map(([w, k]) => {
+    const o = d && d.querySelector(`option[value="${w}"]`), grund = o && o.disabled ? (o.textContent.split(' — ')[1] || '') : '';
+    return `<button type="button" data-p="${w}" class="${w === jetzt ? 'an' : ''}${grund ? ' gesperrt' : ''}"${grund ? ` data-grund="${esc(grund)}"` : ''}>${esc(t(k))}</button>`;
+  }).join('');
+  const r = $('eqregler');
+  if (!r.children.length) r.innerHTML = EQ_NAMEN.map((n, i) => `<label class="eqband"><b></b><input type="range" min="-12" max="12" step="0.5" data-i="${i}" aria-label="${n}"><span>${i === 7 ? t('handy.eq.hoehen') : n}</span></label>`).join('');
+  [...r.querySelectorAll('input')].forEach((inp, i) => { const v = +eqGains[i] || 0; if (document.activeElement !== inp) inp.value = v; inp.previousElementSibling.textContent = eqZahl(v); });
+}
+function eqBlattZu(){ document.documentElement.classList.remove('eq-offen'); clearInterval(eqBlattUhr); }
+let eqBlattUhr = 0, eqBlattFuer = null;
+/* Wechselt der Titel bei offenem Blatt, zieht es nach - die Regler gehoeren immer dem laufenden Titel. */
+function eqBlattAuf(){
+  eqBlattFuer = aktuellId; studioPresetsPruefen(); eqPresetAnzeigen(); eqBlattZeigen(); document.documentElement.classList.add('eq-offen');
+  clearInterval(eqBlattUhr);
+  eqBlattUhr = setInterval(() => { if (aktuellId !== eqBlattFuer){ eqBlattFuer = aktuellId; studioPresetsPruefen(); eqPresetAnzeigen(); eqBlattZeigen(); } }, 500);
+}
+$('eqzu').onclick = eqBlattZu;
+$('eqpillen').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-p]'); if (!b) return;
+  if (b.dataset.grund){ kurzMeldung(b.dataset.grund); return; }
+  await studioPreset(b.dataset.p); eqBlattZeigen();
+});
+$('eqregler').addEventListener('input', (e) => {
+  const inp = e.target.closest('input[data-i]'); if (!inp) return;
+  eqGains[+inp.dataset.i] = +inp.value; eqAnwenden(); eqMerken(); eqPresetAnzeigen();
+  inp.previousElementSibling.textContent = eqZahl(+inp.value);
+  const d = $('studiopreset'), jetzt = d ? d.value : 'frei';
+  $('eqpillen').querySelectorAll('button').forEach(x => x.classList.toggle('an', x.dataset.p === jetzt));
+});
 $('mlaut').oninput = () => { const r = $('lautstaerke'); r.value = $('mlaut').value; r.dispatchEvent(new Event('input', { bubbles: true })); };
 $('mehrblatt').addEventListener('click', (e) => {
   const z = e.target.closest('[data-tu]'); if (!z) return;
@@ -30879,6 +30947,7 @@ $('mehrblatt').addEventListener('click', (e) => {
   else if (tu === 'karaoke' || tu === 'text'){ weg(); pmodiWaehlen(tu === 'text' ? 'lyrics' : 'karaoke'); return; }
   else if (tu === 'details'){ const id = aktuellId; weg(); if (id) detailAuf(id); return; }
   else if (tu === 'pip'){ mehrZu(); pipUmschalten(); return; }
+  else if (tu === 'eq'){ mehrZu(); eqBlattAuf(); return; }
   mehrStand();
 });
 /* Wischen: waagrecht auf dem Bild wechselt Titelbild/Bewegtbild, senkrecht nach unten schliesst. Der Regler und die
