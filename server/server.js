@@ -571,6 +571,11 @@ const MORGEN_SCHRITTE = [
      Bestand; rechnet immer alles neu, weil Whisper-Eintraege und Texte
      sich aendern koennen. */
   { id: 'whisper-lyrik', schluessel: 'whisper', name: 'Bereinigte Lyrik — Liedtext gegen die Whisper-Marken abgleichen', befehl: ['bin/lyrik.js', '--tun'] },
+  /* DIE NEUEN ZEITMARKEN NOCH HEUTE IN DEN KATALOG (24.10.2026). Whisper laeuft nach dem Katalogbau - neue Wort-Zeitmarken
+     kamen deshalb erst beim naechsten Morgenlauf an, bis dahin blieb Karaoke grau (so am 20.10. bei „KlangTresor").
+     aufbereiten.js laeuft beliebig oft und laesst ohne neue Rohdaten alles stehen (geprueft: 340 Titel, 827
+     Verlaufspunkte, 275 mit Zeitmarken - vorher wie nachher); rund 30 Sekunden. */
+  { id: 'whisper-katalog', schluessel: 'whisper', name: 'Neue Zeitmarken in den Katalog übernehmen', befehl: ['bin/aufbereiten.js'] },
   /* Musikstil (Discogs-EffNet, lokal per onnxruntime-node): Embedding,
      Stil, Genre, Stimmung, Instrumente je Song - Grundlage der Karte.
      VOR Whisper waere schneller (6 s je Song), aber hinter Whisper ist
@@ -773,7 +778,16 @@ function fortschritt() {
   for (let i = 0; i < morgen.schritt; i++) fertig += gewichte[i];
   const laufend = gewichte[morgen.schritt];
   const vergangen = morgen.schrittSeit ? Date.now() - morgen.schrittSeit : 0;
-  const anteilLaufend = laufend > 0 ? Math.min(0.95, vergangen / laufend) : 0;
+  /* ZAEHLT DER SCHRITT SELBST MIT, gilt seine Zahl (24.10.2026): whisper.js schreibt „[12/40] Titel … läuft".
+     Nach der Uhr allein stand der Balken beim ersten Whisper-Lauf eine halbe Stunde still - ohne gelernte Dauer
+     ist der Zeitanteil 0. Genommen wird das Groessere von beidem; die Obergrenze 0,95 bleibt. */
+  let gezaehlt = 0;
+  for (const z of (morgen.zeilen || []).slice(-6).reverse()) {
+    if (String(z).startsWith('▸ ')) break;          /* Kopf des laufenden Schritts: davor zaehlte ein anderer */
+    const m = /\[(\d+)\/(\d+)\]/.exec(z);
+    if (m && +m[2] > 0) { gezaehlt = (+m[1] - 1) / +m[2]; break; }
+  }
+  const anteilLaufend = Math.min(0.95, Math.max(laufend > 0 ? vergangen / laufend : 0, gezaehlt));
   const anteil = (fertig + laufend * anteilLaufend) / gesamt;
   const rest = kennt ? Math.max(0, gesamt - fertig - Math.min(vergangen, laufend * 0.95)) : null;
   return { anteil, rest, kalibriert: kennt };

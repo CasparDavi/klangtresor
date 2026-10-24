@@ -604,6 +604,8 @@
     ['profil.kuriosa', 'Kuriosa', 'Curios'],
     ['profil.karussell.vor', 'vorige', 'previous'],
     ['profil.karussell.weiter', 'nächste', 'next'],
+    /* Zu wenig Daten ist kein Fehler: kein Neustart-Rat, sondern wann es sich fuellt (24.10.2026). */
+    ['profil.karussell.wenig', 'noch zu wenig Daten: {fehler}. Das füllt sich von selbst, wenn dein Archiv wächst — „Bestand aktualisieren“ holt neue Titel, der Morgenlauf misst sie.', 'not enough data yet: {fehler}. It fills itself as your archive grows — “Update the library” fetches new titles, the morning run measures them.'],
     ['profil.karussell.nicht', 'nicht berechenbar: {fehler}. Lade die Seite neu; bleibt es so, starte KlangTresor neu.', 'cannot be computed: {fehler}. Reload the page; if it stays like this, restart KlangTresor.'],
 
     ['profil.laengen', 'Titellängen', 'Title lengths'],
@@ -826,7 +828,7 @@
     ['studio.titel', 'KlangTresor Tonstudio', 'KlangTresor Sound Studio'],
     ['studio.ziehen', 'Am Titel ziehen verschiebt das Fenster · Doppelklick stellt es zurück', 'Drag the title to move the window · double-click resets it'],
     ['studio.ab.titel', 'Kurzer Klick wechselt · Alt-Klick öffnet die Liste', 'Short click switches · Alt-click opens the list'],
-    ['studio.ab.eq', 'EQ Output', 'EQ output'],
+    ['studio.ab.eq', 'EQ-Ausgang', 'EQ output'],
     ['studio.ab.orig', 'Original', 'Original'],
     ['studio.quelle.titel', 'Tonquelle — WAV ist verlustfrei; ein Equalizer hebt sonst MP3-Artefakte mit an', 'Audio source — WAV is lossless; otherwise an equaliser also lifts MP3 artefacts'],
     ['studio.quelle.mp3', 'Quelle: MP3', 'Source: MP3'],
@@ -4067,6 +4069,9 @@
     ['player.anschluss.einblendung', 'Einblendung', 'fade-in'],
 
     /* Textversatz messen (Latenz), Kuriositäten */
+    ['pip.fehler', 'Das Bild-im-Bild-Fenster ging nicht auf ({grund}). Bild-im-Bild können Chrome, Edge und Safari; in Firefox stattdessen die Bühne öffnen. Sonst: Seite neu laden und noch einmal klicken.', 'The picture-in-picture window did not open ({grund}). Chrome, Edge and Safari can do picture-in-picture; in Firefox open the Stage instead. Otherwise reload the page and click again.'],
+    ['player.latenz.nichts.weg', 'Nichts gehört: Die Messung braucht Lautsprecher und ein freies Mikrofon — mit Kopfhörern geht es nicht. Lautsprecher lauter stellen und noch einmal messen.', 'Heard nothing: the measurement needs speakers and an unobstructed microphone — it does not work with headphones. Turn the speakers up and measure again.'],
+    ['player.latenz.fehler.weg', 'Die Messung ging nicht ({grund}). Meist fehlt die Erlaubnis fürs Mikrofon: in der Adresszeile auf das Schloss klicken, Mikrofon erlauben und noch einmal messen.', 'The measurement failed ({grund}). Usually microphone permission is missing: click the padlock in the address bar, allow the microphone and measure again.'],
     ['player.latenz.mikro', 'Mikrofon…', 'Microphone…'],
     ['player.latenz.messe', 'messe…', 'measuring…'],
     ['player.latenz.nichts', 'nichts gehört', 'heard nothing'],

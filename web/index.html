@@ -3236,6 +3236,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
    in voller Groesse, die Aufforderung darunter fett. Das ist kein
    Kleingedrucktes, sondern die Entscheidung, die hier getroffen wird.
    (Caspar_D, 19.08.2026: "das muss dominanter sein") */
+#kurzmeldung{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);z-index:9000;max-width:min(560px,calc(100vw - 32px));
+  padding:10px 14px;border-radius:10px;background:#161618;border:1px solid #f97b14;color:#ececed;font-size:12.5px;
+  line-height:1.5;box-shadow:0 10px 40px rgba(0,0,0,.55);cursor:pointer}
+#kurzmeldung[hidden]{display:none!important}
 /* DER LESEZEICHEN-KASTEN: ERST AUFFAELLIG, DANN RUHIG (24.10.2026). Bis dahin stand er fest im
    Okkultationsrot (#e13b12 auf #2f0509, Caspar_D 25.08.2026). Tarja: zu rot, es sieht jedesmal nach einem
    Fehler aus. Caspar_D: auffaellig, aber nur, bis das Lesezeichen eingerichtet ist - dann das Hausorange
@@ -3287,7 +3291,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <div id="studiokopf" title="Am Titel ziehen verschiebt das Fenster · Doppelklick stellt es zurück" data-i18n-title="studio.ziehen">
       <h3 id="studiotitel" data-i18n="studio.titel">KlangTresor Tonstudio</h3>
       <select id="studioab" title="Kurzer Klick wechselt · Alt-Klick öffnet die Liste" data-i18n-title="studio.ab.titel">
-        <option value="eq" data-i18n="studio.ab.eq">EQ Output</option>
+        <option value="eq" data-i18n="studio.ab.eq">EQ-Ausgang</option>
         <option value="orig" data-i18n="studio.ab.orig">Original</option>
       </select>
       <select id="studioquelle" onchange="tonSetzen(this.value)"
@@ -4566,10 +4570,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=3"></script>
-<script src="/ui-sprache.js?v=15"></script>
+<script src="/ui-sprache-ru.js?v=4"></script>
+<script src="/ui-sprache.js?v=16"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
-<script src="/tbs-modul.js?v=1.0.88"></script>
+<script src="/tbs-modul.js?v=1.0.95"></script>
 <script>
 // =============================================================
 //  Zustand
@@ -4741,6 +4745,16 @@ async function start(){
    bin/uebernehmen.js --ordner, ueber /api/downloads. Weggeklickt bleibt
    es fuer diese Sitzung weg; beim naechsten Laden kommt es wieder,
    solange kein Ton da ist. */
+/* EINE KURZE MELDUNG MIT AUSWEG (24.10.2026). Bis dahin scheiterten Bild-im-Bild und die Latenzmessung
+   still oder mit zwei Woertern ("ging nicht"), der Grund stand nur in der Konsole (Hausregel 25a: jede
+   Meldung nennt, was man tun kann). Unten ueber dem Player, verschwindet nach 12 s oder per Klick. */
+function kurzMeldung(text){
+  let m = $('kurzmeldung');
+  if (!m){ m = document.createElement('div'); m.id = 'kurzmeldung'; m.setAttribute('role', 'status');
+           m.onclick = () => { m.hidden = true; }; document.body.appendChild(m); }
+  m.textContent = text; m.hidden = false;
+  clearTimeout(kurzMeldung.uhr); kurzMeldung.uhr = setTimeout(() => { m.hidden = true; }, 12000);
+}
 function tonHinweis(){
   if (!alle.length) return;
   if (katalogInfo && katalogInfo.eingefroren) return;
@@ -13791,7 +13805,7 @@ async function pipUmschalten(){
     if (!audio.paused && v.paused){ pipEigen = 'play'; await v.play(); }
     await v.requestPictureInPicture();
     pipFolgen();
-  } catch (e) { console.log('Bildfenster:', e.message); pipEntladen(); }
+  } catch (e) { console.log('Bildfenster:', e.message); pipEntladen(); kurzMeldung(t('pip.fehler', { grund: e.message })); }
   pmodiAufbauen();
 }
 /* Play und Pause aus dem Fenster gehen an die Musik. Eine Pause wird erst nach 150 ms
@@ -15260,7 +15274,7 @@ function karussell(kennung, titel, seiten){
     st.textContent = ' · ' + seiten[i].titel;
     punkte.innerHTML = seiten.map((_, k) => `<i class="${k === i ? 'an' : ''}"></i>`).join('');
     [...punkte.children].forEach((p, k) => p.onclick = () => { i = k; zeigen(); });
-    if (!gebaut.has(i)){ try { gebaut.set(i, seiten[i].bau()); } catch (e) { const f = document.createElement('div'); f.className = 'fussnote'; f.textContent = t('profil.karussell.nicht', { fehler: e.message }); gebaut.set(i, f); } }
+    if (!gebaut.has(i)){ try { gebaut.set(i, seiten[i].bau()); } catch (e) { const f = document.createElement('div'); f.className = 'fussnote'; f.textContent = t(e && e.wenig ? 'profil.karussell.wenig' : 'profil.karussell.nicht', { fehler: e.message }); gebaut.set(i, f); } }
     buehne.innerHTML = ''; buehne.appendChild(gebaut.get(i));
   };
   zurueck.onclick = () => { i = (i + seiten.length - 1) % seiten.length; zeigen(); };
@@ -15458,7 +15472,7 @@ function kuriosSeiten(eigene){
            Stoss. */
         const z = mitDatum.map(s => ({ t: +new Date(s.erstellt), s }))
                           .filter(x => !isNaN(x.t)).sort((a, b) => a.t - b.t);
-        if (z.length < 3) throw new Error(window.t('profil.kurios.f.datum'));
+        if (z.length < 3) throw Object.assign(new Error(window.t('profil.kurios.f.datum')), { wenig: true });
         let best = { n: 0, i: 0, j: 0 };
         for (let i = 0, j = 0; i < z.length; i++){
           while (z[i].t - z[j].t > 3600000) j++;
@@ -15484,7 +15498,7 @@ function kuriosSeiten(eigene){
            Stunde waere Zufall. */
         const st = Array(24).fill(0); let n = 0;
         for (const s of mitDatum){ const d = new Date(s.erstellt); if (isNaN(d)) continue; st[d.getHours()]++; n++; }
-        if (!n) throw new Error(window.t('profil.kurios.f.zeit'));
+        if (!n) throw Object.assign(new Error(window.t('profil.kurios.f.zeit')), { wenig: true });
         let leer = { n: Infinity, ab: 0 };
         for (let a = 0; a < 24; a++){
           let sum = 0; for (let k = 0; k < 6; k++) sum += st[(a + k) % 24];
@@ -15507,7 +15521,7 @@ function kuriosSeiten(eigene){
         const mit = eigene.filter(s => s.hatLyrics && s.lyricsWorte > 0 && s.dauer > 30)
                           .map(s => ({ s, d: s.lyricsWorte / (s.dauer / 60) }))
                           .sort((a, b) => b.d - a.d);
-        if (mit.length < 5) throw new Error(window.t('profil.kurios.f.text'));
+        if (mit.length < 5) throw Object.assign(new Error(window.t('profil.kurios.f.text')), { wenig: true });
         const m = mit[Math.floor(mit.length / 2)];
         const box = document.createElement('div');
         box.appendChild(satz(t('profil.kurios.dichte.satz', { n: Math.round(m.d) })));
@@ -15541,7 +15555,7 @@ function kuriosSeiten(eigene){
            wie schmal die Auswahl ist. Warum sie schmal ist, steht
            ausdruecklich nicht da - das waere Deutung. */
         const mit = eigene.filter(s => s.analyse && s.analyse.tonart && s.analyse.tonart.grund);
-        if (mit.length < 12) throw new Error(window.t('profil.kurios.f.tonart'));
+        if (mit.length < 12) throw Object.assign(new Error(window.t('profil.kurios.f.tonart')), { wenig: true });
         const z = new Map();
         /* Der Analyse-Index fuehrt Grundton und Tongeschlecht getrennt
            (grund, art) und kennt kein fertiges Namensfeld - bei 55 von
@@ -29168,6 +29182,7 @@ async function latenzMessen(){
 
     if (bestI < 0 || deutlich < 4){
       sagen(t('player.latenz.nichts'));
+      kurzMeldung(t('player.latenz.nichts.weg'));
       console.warn('Latenzmessung: kein Chirp gefunden (Deutlichkeit '
         + deutlich.toFixed(1) + '). Lautsprecher an? Mikrofon frei? Bei Kopfhörern geht es nicht.');
     } else {
@@ -29177,6 +29192,7 @@ async function latenzMessen(){
     }
   } catch (e){
     sagen(t('player.latenz.fehler'));
+    kurzMeldung(t('player.latenz.fehler.weg', { grund: e.message }));
     console.warn('Latenzmessung fehlgeschlagen:', e.message);
   } finally {
     /* Die Musik zurueck an ihre Stelle - erst die Quelle, dann die

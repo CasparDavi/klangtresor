@@ -72,10 +72,14 @@ function satzFuellen(satz,v){
     satz = teile.length===3 ? (n===0?teile[0]:n===1?teile[1]:teile[2]) : (n===1?teile[0]:teile[1]); }
   return satz.replace(/\{(\w+)\}/g,(_,k)=>v[k]!=null?String(v[k]):'');
 }
-function sag(k,de,v){
+function sagRoh(k,de,v){
   if(istEn()){ const W=window.WOERTER; if(W&&W.de&&W.en&&W.de[k]===de){ const f=fremdSatz(W,k,v); if(f!=null) return f; } }
   return satzFuellen(de,v);
 }
+/* Was sag() ausgab, mit Herkunft - damit ein Sprachwechsel eine schon gezeigte Statuszeile neu setzen kann (24.10.2026:
+   sie wechselte sonst erst mit der naechsten Meldung). */
+const SAG_HER=new Map();
+function sag(k,de,v){ const aus=sagRoh(k,de,v); if(SAG_HER.size>4000) SAG_HER.clear(); SAG_HER.set(aus,{k,de,v}); return aus; }
 let SPRACH_INDEX=null;   /* deutscher Wortlaut -> Schluessel, nur ec.*; einmal gebaut, WOERTER aendert sich nicht mehr */
 function sagNach(de,v,vorrang){   /* vorrang: ein Schluessel, der vor dem Wortlaut gilt, wenn derselbe deutsche Text zwei Dinge meint (Schatten: Effekt / Regler) */
   if(!istEn()||typeof de!=='string') return v?satzFuellen(de,v):de;
@@ -9033,7 +9037,8 @@ function zeichneFrame(t,roh){
     if(r&&r.tiefeWirkt&&r.tiefeWirkt!=='alles') e.tiefeVerdeckung='zone';
     return e; }
   function presetSetzen(arr,alt,fassung){ STAPEL=arr.map(r=>effektAusRezept(r,alt,fassung)).filter(Boolean); renderStapel(); }
-  function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
+  let pStatZuletzt='';
+  function pStat(x){ pStatZuletzt=x; const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   /* ---- VIDEOEXPORT (Caspar_D, 10.09.2026: "ein 10 sec videoexport aus unseren effektclips, damit man
      das in suno benutzen kann"). Seitenverhaeltnis der Quelle, stumm, bis zehn Sekunden im Takt des Lieds (taktLage),
      das Hauszeichen unten rechts, MP4 ins Download-Verzeichnis. Aufgenommen wird von einem EIGENEN
@@ -11844,6 +11849,7 @@ function zeichneFrame(t,roh){
     if(!offen) return;
     if(DATA){ const u=$('#tbs-unter'); if(u) u.textContent=(DATA.schlaege.length?sag('ec.loop.schlaege_n','{n} Schläge',{n:DATA.schlaege.length}):sag('ec.loop.keine_schlagerkennung','keine Schlagerkennung'))+' · '+Math.round(DATA.dauer)+' s'; }
     quellenUI(); renderStapel(); vorbStand(); if(stufeOffen==='Vorb') vorbRender(); fussStand(); vollStand(); schleifeUI();
+    { const h=pStatZuletzt&&SAG_HER.get(pStatZuletzt); if(h) pStat(sag(h.k,h.de,h.v)); }   /* die Statuszeile wechselt gleich mit */
   }
   return { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt, spracheNachziehen };
 })();

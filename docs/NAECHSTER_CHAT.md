@@ -9508,3 +9508,25 @@ Hausorange statt Rot, danach ein normaler Kasten. Ob eingerichtet, prüft `/api/
 Daten, die nur das Lesezeichen bringt (Caspar_Ds Vorschlag): `kontingent.json`, `liker-verlauf.ndjson`,
 `beobachter-verlauf.ndjson` oder ein privater Titel im Katalog. `morgenAuf()` setzt `.auffaellig`, im Zweifel an.
 Beide Fassungen fest (nicht songfarbig). Sandkasten: Bestandskopie → ruhig; ohne diese Daten → orange.
+
+## 113. 24.10.2026: 1.0.95 – die kleinen Fehler aus §106, vorläufige Entscheidungen bestätigt
+
+Caspar_D bestätigt die vorläufigen Entscheidungen (Bänder mit Frequenz, Urteil „gekappt“, „Mikrofon überschreit“) und
+„EQ-Ausgang“ statt „EQ Output“ im Deutschen (studio.ab.eq).
+- **Kurzmeldung mit Ausweg** (`kurzMeldung()` in index.html, unten über dem Player, 12 s): Bild-im-Bild scheiterte stumm →
+  `pip.fehler`; Latenzmessung sagte nur „nichts gehört / ging nicht“ → `player.latenz.nichts.weg` / `.fehler.weg`.
+- **Kuriositäten:** zu wenig Daten (`wenig: true`) bekommt `profil.karussell.wenig` statt des Neustart-Rats.
+- **Effektclip-Statuszeile** (pStat) wechselt die Sprache sofort: `sag()` merkt sich die Herkunft (SAG_HER).
+- **Morgen-Fortschritt:** zählt ein Schritt selbst („[n/m]“, Whisper), gilt das Größere aus Zahl und Uhr.
+- **Morgenlauf:** neuer Schritt `whisper-katalog` hinter der bereinigten Lyrik baut den Katalog noch einmal – neue
+  Zeitmarken stehen am selben Morgen drin. Geprüft: aufbereiten.js ohne Rohdaten lässt den Katalog unverändert
+  (340 Titel, 827 Verlaufspunkte, 275 mit Zeitmarken). Beschreibung in MORGENSCHRITTE.json (Caspar_Ds Redaktion – gegenlesen).
+- Neue RU-Texte von Claude → für Henry (Teil 3).
+
+**Wiedervorlage:**
+- Henry fragen, ob und wie sie genannt werden möchte. Sie steht schon öffentlich drin (Release-Notiz 1.0.90,
+  docs/ru/henry-2026-10-22/, docs/ru/PRAVILA.md, Kopf von ui-sprache-ru.js); Caspar_D hat A/B (neutralisieren bis zur
+  Antwort / stehen lassen) noch nicht entschieden.
+- **Nächster Brocken (Caspar_D):** Handy-Oberfläche. Technisch läuft es im Heimnetz schon (Server auf 0.0.0.0:8788,
+  viewport gesetzt), aber das UI ist zu groß. Ziele: Hoch- und Querformat, Bildschirmteilung mit dem Fernseher soll gut
+  aussehen, Tablets gehen wie sie sind, Handys „couch-tauglich“ – vor allem Musik hören. Erst Skizze, dann Bau.

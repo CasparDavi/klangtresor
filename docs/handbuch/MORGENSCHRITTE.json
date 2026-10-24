@@ -66,6 +66,12 @@
     "kurzergebnis_muster": "→ <n> Titel bereinigt, <n> zurückgestellt (unter 60 % Deckung). | → Nichts zu bereinigen, kein neuer Whisper-Lauf."
   },
   {
+    "schluessel": "whisper",
+    "name": "Neue Zeitmarken in den Katalog übernehmen",
+    "was": "Baut den Katalog noch einmal, damit die Wort-Zeitmarken, die Whisper eben gerechnet hat, gleich heute im Katalog stehen – sonst liefe der mitlaufende Text erst nach dem nächsten Morgenlauf. Neue Daten von Suno holt dieser Schritt nicht.",
+    "kurzergebnis_muster": "→ Katalog mit den neuen Zeitmarken neu gebaut."
+  },
+  {
     "schluessel": "musikstil",
     "name": "Musikstil vermessen — Klang, Genre, Stimmung",
     "was": "Ermittelt für jeden Titel ohne Eintrag, dessen Audio da ist, wie er klingt: die fünf wahrscheinlichsten Stile, Genres, Stimmungen und Instrumente sowie einen Klang-Fingerabdruck, aus dem der Klangraum seine Anordnung rechnet. Das dauert etwa 10 bis 20 Sekunden je Titel; die Modelle dafür liegen nach dem einmaligen Holen im Archiv, KlangTresor fragt dafür keinen fremden Dienst.",
