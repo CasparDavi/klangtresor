@@ -9548,3 +9548,21 @@ Plan und Entscheidungen: Gedächtnis „klangtresor-handy-ui“ (Skizze abgenomm
 - Werkzeug für Handybilder: scratchpad/handybild/bild.mjs (headless Chrome, Touch + pointer:coarse nachgebildet;
   bild2.mjs mit MAUS=1 für Rechner). Die Vorschau im App-Browser malt im Querformat nicht als Touchgerät.
 - **Weiter:** Schritt 2 (Mini-Player, „Jetzt läuft“), 3 (Quer, Fernseher, Bühne), 4 (Räume), Startbildschirm/QR/Hostname.
+
+## 115. 24.10.2026: 1.0.97 – Handyansicht, Schritt 2 (Mini-Player, „Jetzt läuft“)
+
+- **Mini-Player** (nur `html.handy`): eine Reihe – Bild, Titel mit Zeit, Pause, Weiter; die Fortschrittslinie oben 3 px,
+  nur Anzeige (`pointer-events:none`; ein Finger am Rand traf sie sonst und sprang im Lied). Die ganze Leiste außer den
+  Knöpfen öffnet „Jetzt läuft“ (Bild und Titel auch). Die ältere Regel `@media (max-width:520px)` (zweireihiges Raster)
+  wird für `html.handy` überschrieben.
+- **„Jetzt läuft“ (#jetzt, z-index 58 unter der Bühne):** abgedunkeltes Cover als Grund, Titelbild groß, Wisch nach links
+  → Bewegtbild (lädt erst dann, läuft stumm mit dem Ton, nach rechts entladen), Wisch nach unten oder Chevron schließt.
+  Regler springt erst beim Loslassen (Merker fällt auch bei pointerup/touchend, sonst fror er ein). 5 Knöpfe
+  (Zufall, Zurück, Spielen, Weiter, Schleife), darunter Karaoke, Text, Lautstärke (senkrechter Regler über dem Knopf,
+  steuert #lautstaerke), „Mehr“ (Details, Analyse, Tonstudio, Bewegtbild rauslösen). Kein eigener Zustand: Takt 250 ms
+  gleicht mit #audio und den Player-Knöpfen ab. Quer: Bild links, Bedienung rechts.
+- **Geprüft** vom Testagenten mit echten Touch-Ereignissen (CDP), hoch 390×760 und quer 844×360, Tablet/Rechner
+  unverändert. Sandkasten mit Prüftönen (WAV/MP3) und Bewegtbildern der 10 neuesten.
+- **Nebenbefund (alt, nicht vom Umbau):** Tablet 768 px breit – im Player ist der Titel 0 px breit, „0:00 /“ bricht um.
+- **Weiter:** Schritt 3 – Bühne auf dem Handy: Pult ist überladen (Auswahlfelder, EQ, Versatz laufen rechts hinaus);
+  schlankes Pult, Vollbild, Karaoke; „Jetzt läuft“ quer mit mitlaufendem Text.

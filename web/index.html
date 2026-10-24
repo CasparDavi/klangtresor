@@ -2326,6 +2326,69 @@ html.handy.quer .register{flex:1 1 auto;margin-top:0;min-width:0}
 html.handy.quer #suchlupe{margin-left:0}
 html.handy.quer.suche-offen .kopfzeile{flex:1 1 auto}
 html.handy.quer.suche-offen .register{display:none}
+
+/* HANDYANSICHT, Schritt 2 (24.10.2026): der Player wird zum MINI-PLAYER (Titelbild, Titel, Zeit, Pause, Weiter; die
+   Leiste oben als duenne Linie - wie in Tarjas KlangDroid), ein Tipp darauf oeffnet „Jetzt laeuft“ (#jetzt). */
+html.handy{--player-h:66px}
+/* Die Linie zeigt nur: Ein Finger am oberen Rand traf sie per Trefferkorrektur und sprang im Lied (Testagent 24.10.).
+   Springen geht im Blatt ueber den grossen Regler. */
+html.handy #leiste{position:absolute;left:0;right:0;top:0;height:3px;margin:0;border-radius:0;pointer-events:none}
+/* Die aeltere Schmalschirm-Regel (max-width:520px) legt die .preihe als zweireihiges Raster an; auf dem Handy wieder
+   EINE Reihe: Bild, Titel mit Zeit darunter, Pause, Weiter. */
+html.handy .preihe{display:flex;grid-template-areas:none;gap:10px;padding:10px 6px 8px 10px;height:100%;box-sizing:border-box}
+html.handy .pinfo{display:block;flex:1;min-width:0}
+html.handy #pzeit{display:block;font-size:12px;text-align:left}
+html.handy #pbild{width:46px;height:46px}
+html.handy .pinfo b{font-size:15px}
+html.handy #pzahl,html.handy #psongeq,html.handy .pextra,html.handy .laut,html.handy .ptrenn,html.handy .pmodi,
+html.handy .psteuer button:first-child{display:none!important}
+html.handy .pknoepfe{display:flex!important;flex:0 0 auto;margin:0}
+html.handy .psteuer{display:flex;gap:4px;order:0}
+html.handy .psteuer button{width:46px;height:46px}
+#jetzt{display:none}
+html.handy #jetzt.auf{display:flex;position:fixed;inset:0;z-index:58;flex-direction:column;align-items:stretch;gap:14px;
+  padding:calc(10px + env(safe-area-inset-top)) 22px calc(18px + env(safe-area-inset-bottom));background:#0c0c0d;color:var(--text);
+  overflow:hidden;touch-action:none}
+#jetzt .jgrund{position:absolute;inset:-40px;background-size:cover;background-position:center;opacity:.38;filter:blur(30px) saturate(1.2);z-index:-1}
+#jetzt .jgrund::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#0c0c0d55,#0c0c0dee 70%)}
+#jetzt .jkopf{display:flex;align-items:center;justify-content:space-between;min-height:44px}
+#jetzt .jkopf span{color:var(--schwach);font-size:13px;letter-spacing:.04em}
+#jetzt button{background:none;border:0;color:var(--text);cursor:pointer;font:inherit;-webkit-tap-highlight-color:transparent}
+#jetzt .jrund{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+#jetzt .jrund .ico{width:24px;height:24px}
+#jetzt .jbuehne{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
+#jetzt .jbuehne img,#jetzt .jbuehne video{max-width:100%;max-height:100%;aspect-ratio:3/4;object-fit:cover;border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);transition:opacity .25s ease}
+#jetzt .jbuehne video{position:absolute;opacity:0;pointer-events:none}
+#jetzt.film .jbuehne video{opacity:1}
+#jetzt.film .jbuehne img{opacity:0}
+#jetzt .jpunkte{position:absolute;bottom:-14px;left:0;right:0;display:flex;justify-content:center;gap:6px}
+#jetzt .jpunkte i{width:6px;height:6px;border-radius:50%;background:#ffffff55}
+#jetzt .jpunkte i.an{background:#fff}
+#jetzt .jtitel{font-size:20px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#jetzt .jmeta{color:var(--schwach);font-size:13px;margin-top:2px}
+#jetzt .jzeit{display:flex;justify-content:space-between;color:var(--schwach);font-size:12px;font-variant-numeric:tabular-nums}
+#jetzt input[type=range].jlauf{width:100%;margin:0;height:28px;accent-color:var(--akzent)}
+#jetzt .jsteuer{display:flex;align-items:center;justify-content:space-between}
+#jetzt .jsteuer .an{color:var(--akzent)}
+#jetzt .jgross{width:74px;height:74px;border-radius:50%;background:var(--text)!important;color:#0c0c0d!important}
+#jetzt .jgross .ico{width:34px;height:34px}
+#jetzt .jmodi{display:flex;align-items:center;justify-content:space-around;position:relative}
+#jetzt .jmodi button{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:60px;min-height:52px;font-size:11px;color:var(--schwach)}
+#jetzt .jmodi button .ico{width:22px;height:22px;color:var(--text)}
+#jetzt .jlaut{position:absolute;bottom:58px;width:52px;height:190px;border-radius:26px;background:#1c1c1f;border:1px solid var(--rand);
+  display:none;align-items:center;justify-content:center}
+#jetzt .jlaut.auf{display:flex}
+#jetzt .jlaut input{writing-mode:vertical-lr;direction:rtl;width:28px;height:160px;accent-color:var(--akzent)}
+#jetzt .jmehr{position:absolute;right:0;bottom:58px;min-width:220px;border-radius:14px;background:#1c1c1f;border:1px solid var(--rand);
+  display:none;flex-direction:column;padding:6px}
+#jetzt .jmehr.auf{display:flex}
+#jetzt .jmehr button{flex-direction:row;justify-content:flex-start;gap:12px;min-height:46px;padding:0 12px;font-size:15px;color:var(--text);border-radius:10px}
+html.handy.quer #jetzt.auf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-rows:auto 1fr auto auto auto;column-gap:26px;row-gap:8px}
+html.handy.quer #jetzt .jkopf{grid-column:1/-1}
+html.handy.quer #jetzt .jbuehne{grid-row:2/6;grid-column:1}
+html.handy.quer #jetzt .jinfo,html.handy.quer #jetzt .jlaufbox,html.handy.quer #jetzt .jsteuer,html.handy.quer #jetzt .jmodi{grid-column:2}
+html.handy.quer #jetzt .jgross{width:60px;height:60px}
 </style>
 </head>
 <body>
@@ -4601,6 +4664,38 @@ h3 .infoknopf .ico{width:14px;height:14px}
      "access-control-allow-origin: *", also funktioniert es.
      Für die eigenen Dateien ist es wirkungslos, die kommen vom
      selben Ursprung. -->
+<!-- „Jetzt laeuft“ (Handyansicht, 24.10.2026) - gefuellt und bedient von jetztAuf()/jetztTakt(). -->
+<div id="jetzt" role="dialog" aria-modal="true">
+  <div class="jgrund"></div>
+  <div class="jkopf">
+    <button class="jrund" id="jzu" data-i18n-aria="handy.jetzt.zu" aria-label="Schließen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <span data-i18n="handy.jetzt">Jetzt läuft</span>
+    <span style="width:46px"></span>
+  </div>
+  <div class="jbuehne" id="jbuehne"><img id="jbild" alt=""><video id="jfilm" muted loop playsinline preload="none"></video><div class="jpunkte" id="jpunkte" hidden><i class="an"></i><i></i></div></div>
+  <div class="jinfo"><div class="jtitel" id="jtitel"></div><div class="jmeta" id="jmeta"></div></div>
+  <div class="jlaufbox"><input type="range" class="jlauf" id="jlauf" min="0" max="1000" step="1" value="0" data-i18n-aria="handy.jetzt.stelle" aria-label="Stelle im Titel"><div class="jzeit"><span id="jzeitA">0:00</span><span id="jzeitB">0:00</span></div></div>
+  <div class="jsteuer">
+    <button class="jrund" id="jmisch" data-i18n-aria="player.zufall" aria-label="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
+    <button class="jrund" id="jzurueck" data-i18n-aria="player.zurueck" aria-label="Zurück"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-prev"/></svg></button>
+    <button class="jrund jgross" id="jspiel" data-i18n-aria="player.abspielen" aria-label="Abspielen"></button>
+    <button class="jrund" id="jweiter" data-i18n-aria="player.weiter" aria-label="Weiter"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-next"/></svg></button>
+    <button class="jrund" id="jschleife" data-i18n-aria="player.schleife" aria-label="Schleife"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
+  </div>
+  <div class="jmodi">
+    <button id="jkaraoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg><span data-i18n="player.karaoke">Karaoke</span></button>
+    <button id="jtext"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg><span data-i18n="handy.jetzt.text">Text</span></button>
+    <button id="jlautknopf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg><span data-i18n="handy.jetzt.laut">Lautstärke</span></button>
+    <button id="jmehrknopf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg><span data-i18n="handy.jetzt.mehr">Mehr</span></button>
+    <div class="jlaut" id="jlaut"><input type="range" id="jlautregler" min="0" max="100" step="1" value="100" data-i18n-aria="player.laut" aria-label="Lautstärke"></div>
+    <div class="jmehr" id="jmehr">
+      <button id="jdetails"><span data-i18n="handy.jetzt.details">Details zum Titel</span></button>
+      <button id="janalyse"><span data-i18n="player.analyse">Titel-Analyse</span></button>
+      <button id="jstudio"><span data-i18n="handy.jetzt.studio">Tonstudio</span></button>
+      <button id="jpip" hidden><span data-i18n="player.pip">Bewegtbild rauslösen</span></button>
+    </div>
+  </div>
+</div>
 <audio id="audio" crossorigin="anonymous"></audio>
 <video id="pipfilm" muted loop playsinline></video>
 <!-- Das zweite Deck fuer den ANSCHLUSS (Caspar_D, 23.08.2026): waehrend der
@@ -4661,8 +4756,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=5"></script>
-<script src="/ui-sprache.js?v=17"></script>
+<script src="/ui-sprache-ru.js?v=6"></script>
+<script src="/ui-sprache.js?v=18"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.95"></script>
 <script>
@@ -30317,13 +30412,110 @@ $('leiste').onclick = (e)=>{
    Aufteilung folgt dem, was man anklickt - das Bild führt zur
    Bildansicht, der Text zur Textansicht. Der Knopf in .psteuer bleibt
    daneben stehen: Er ist der auffindbare Weg, das Bild der kurze. */
-$('pbild').onclick = () => { if (aktuellId) buehneAuf(aktuellId); };
+
+/* ================================================================
+   „JETZT LAEUFT“ - HANDYANSICHT, Schritt 2 (24.10.2026)
+   Ein Vollbildblatt ueber allem ausser der Buehne. Es haelt keinen eigenen Zustand: Alles kommt aus dem einen
+   <audio> und den Knoepfen des Players (Hausregel: eine Audioquelle). Ein Takt alle 250 ms gleicht ab, solange es
+   offen ist. Gross steht das TITELBILD; Wischen nach links zeigt das Bewegtbild, das erst dann geladen wird
+   (Caspar_D: Titelbild, Wischgeste zum Bewegtbild). Wischen nach unten schliesst. Lautstaerke: ein Symbol, das
+   einen senkrechten Regler aufklappt; es steuert denselben Regler wie der grosse Player.
+   ================================================================ */
+let jetztUhr = 0, jetztFilm = false, jetztZieht = false;
+const jz = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+function jetztAuf(){
+  if (!aktuellId) return;
+  $('jetzt').classList.add('auf'); document.documentElement.classList.add('jetzt-offen');
+  jetztFilmSetzen(false); jetztFuellen(); clearInterval(jetztUhr); jetztUhr = setInterval(jetztTakt, 250); jetztTakt();
+}
+function jetztZu(){
+  $('jetzt').classList.remove('auf'); document.documentElement.classList.remove('jetzt-offen');
+  clearInterval(jetztUhr); jetztUhr = 0; jetztFilmSetzen(false); $('jlaut').classList.remove('auf'); $('jmehr').classList.remove('auf');
+}
+let jetztFuer = null;
+function jetztFuellen(){
+  const s = aktuellId && song(aktuellId); if (!s) return;
+  jetztFuer = s.id;
+  const bild = artworkBild(s.id);
+  $('jbild').src = bild; $('jetzt').querySelector('.jgrund').style.backgroundImage = 'url("' + bild + '")';
+  $('jtitel').textContent = s.titel || '';
+  const teile = [s.erstellt ? new Date(s.erstellt).toLocaleDateString(localeTag(), { day: 'numeric', month: 'short', year: 'numeric' }) : '', s.modell || ''].filter(Boolean);
+  $('jmeta').textContent = teile.join(' · ');
+  const film = hatBewegtbild(s);
+  $('jpunkte').hidden = !film; $('jpip').hidden = !film || !(document.pictureInPictureEnabled);
+  if (!film) jetztFilmSetzen(false);
+  else if (jetztFilm) { const v = $('jfilm'), u = artworkVideo(s.id); if (v.dataset.src !== u){ v.dataset.src = u; v.src = u; } }
+}
+function jetztFilmSetzen(an){
+  const s = aktuellId && song(aktuellId), v = $('jfilm');
+  jetztFilm = !!(an && s && hatBewegtbild(s));
+  $('jetzt').classList.toggle('film', jetztFilm);
+  const p = $('jpunkte').children; if (p.length === 2){ p[0].classList.toggle('an', !jetztFilm); p[1].classList.toggle('an', jetztFilm); }
+  if (jetztFilm){ const u = artworkVideo(s.id); if (v.dataset.src !== u){ v.dataset.src = u; v.src = u; } if (!audio.paused) v.play().catch(() => {}); }
+  else if (v.dataset.src){ v.pause(); v.removeAttribute('src'); v.dataset.src = ''; v.load(); }   /* Decoder frei, kein Datenverbrauch */
+}
+function jetztTakt(){
+  if (!$('jetzt').classList.contains('auf')) return;
+  if (aktuellId !== jetztFuer) jetztFuellen();
+  const d = audio.duration || 0, pos = audio.currentTime || 0;
+  if (!jetztZieht){ $('jlauf').value = d ? Math.round(pos / d * 1000) : 0; $('jzeitA').textContent = jz(pos); }
+  $('jzeitB').textContent = jz(d);
+  const laeuft = !audio.paused;
+  $('jspiel').innerHTML = SYM(laeuft ? 'pause' : 'play');
+  $('jspiel').setAttribute('aria-label', t(laeuft ? 'player.pause' : 'player.abspielen'));
+  $('jmisch').classList.toggle('an', $('mischknopf').classList.contains('an'));
+  $('jschleife').classList.toggle('an', $('schleifknopf').classList.contains('an'));
+  const v = $('jfilm'); if (jetztFilm && v.src){ if (laeuft && v.paused) v.play().catch(() => {}); else if (!laeuft && !v.paused) v.pause(); }
+  $('jlautregler').value = $('lautstaerke').value;
+}
+$('jzu').onclick = jetztZu;
+$('jspiel').onclick = () => umschalten();
+$('jzurueck').onclick = () => vor(-1);
+$('jweiter').onclick = () => vor(1);
+$('jmisch').onclick = () => mischen();
+$('jschleife').onclick = () => schleifen();
+/* Die Stelle springt erst beim Loslassen (wie in KlangDroid): beim Ziehen nur die Zeit mitzeigen. */
+$('jlauf').oninput = () => { jetztZieht = true; if (audio.duration) $('jzeitA').textContent = jz($('jlauf').value / 1000 * audio.duration); };
+$('jlauf').onchange = () => { if (audio.duration) audio.currentTime = $('jlauf').value / 1000 * audio.duration; jetztZieht = false; };
+/* Zurueck auf den Ausgangswert gezogen, feuert kein change - der Merker faellt darum auch beim Loslassen. */
+for (const ev of ['pointerup', 'pointercancel', 'touchend', 'touchcancel']) $('jlauf').addEventListener(ev, () => setTimeout(() => { jetztZieht = false; }, 0));
+$('jkaraoke').onclick = () => { jetztZu(); pmodiWaehlen('karaoke'); };
+$('jtext').onclick = () => { jetztZu(); pmodiWaehlen('lyrics'); };
+$('jlautknopf').onclick = (e) => { e.stopPropagation(); $('jmehr').classList.remove('auf');
+  const k = $('jlautknopf'), l = $('jlaut'); l.style.left = (k.offsetLeft + k.offsetWidth / 2 - 26) + 'px'; l.classList.toggle('auf'); };
+$('jlautregler').oninput = () => { const r = $('lautstaerke'); r.value = $('jlautregler').value; r.dispatchEvent(new Event('input', { bubbles: true })); };
+$('jmehrknopf').onclick = (e) => { e.stopPropagation(); $('jlaut').classList.remove('auf'); $('jmehr').classList.toggle('auf'); };
+$('jdetails').onclick = () => { const id = aktuellId; jetztZu(); if (id) detailAuf(id); };
+$('janalyse').onclick = () => { jetztZu(); pmodiWaehlen('analyzer'); };
+$('jstudio').onclick = () => { jetztZu(); studioAuf(); };
+$('jpip').onclick = () => { $('jmehr').classList.remove('auf'); pipUmschalten(); };
+$('jetzt').addEventListener('click', (e) => { if (!e.target.closest('.jlaut,#jlautknopf')) $('jlaut').classList.remove('auf');
+  if (!e.target.closest('.jmehr,#jmehrknopf')) $('jmehr').classList.remove('auf'); });
+/* Wischen: waagrecht auf dem Bild wechselt Titelbild/Bewegtbild, senkrecht nach unten schliesst. Der Regler und die
+   Knoepfe sind ausgenommen - dort ist Ziehen Bedienung, kein Wischen. */
+{ let x0 = null, y0 = 0, t0 = 0;
+  const jt = $('jetzt');
+  jt.addEventListener('touchstart', (e) => { if (e.target.closest('input,button,.jmehr,.jlaut')) { x0 = null; return; }
+    const p = e.touches[0]; x0 = p.clientX; y0 = p.clientY; t0 = Date.now(); }, { passive: true });
+  jt.addEventListener('touchend', (e) => { if (x0 === null) return; const p = e.changedTouches[0];
+    const dx = p.clientX - x0, dy = p.clientY - y0; x0 = null; if (Date.now() - t0 > 900) return;
+    if (dy > 90 && Math.abs(dy) > Math.abs(dx) * 1.4) { jetztZu(); return; }
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4 && e.target.closest('#jbuehne')) jetztFilmSetzen(dx < 0); }, { passive: true });
+  /* Und ohne Finger (Maus im schmalen Fenster): Tipp aufs Bild wechselt ebenso. */
+  $('jbuehne').addEventListener('click', () => { const s = aktuellId && song(aktuellId); if (s && hatBewegtbild(s) && !('ontouchstart' in window)) jetztFilmSetzen(!jetztFilm); });
+}
+$('pbild').onclick = () => { if (!aktuellId) return; if (window.istHandy && istHandy()) jetztAuf(); else buehneAuf(aktuellId); };
+/* Wie in KlangDroid: auf dem Handy ist die ganze Leiste ein Ziel - ausser den Knoepfen und der Fortschrittslinie. */
+$('player').addEventListener('click', (e) => { if (!(window.istHandy && istHandy()) || !aktuellId) return;
+  if (e.target.closest('button,input,#leiste,#pbild,.pinfo')) return; jetztAuf(); });
 /* In der engen Form gehoert der Zahlenbereich dem Aufklapper - ein Klick darauf soll aufklappen,
    nicht in die Detailansicht springen. In der breiten Form fuehren Daumen und Blase ins
    Reaktionsfenster (.zk, Capture-Horcher weiter oben); der Rest wie Titel und Zeit in die Details. */
 document.querySelector('.pinfo').onclick = (e) => {
   if (e.target.closest && (e.target.closest('#pzahl.eng') || e.target.closest('.zk[data-rk]'))) return;
-  if (aktuellId) detailAuf(aktuellId); };
+  if (!aktuellId) return;
+  if (window.istHandy && istHandy()) { jetztAuf(); return; }   /* Handy: der Mini-Player oeffnet „Jetzt laeuft“ */
+  detailAuf(aktuellId); };
 
 // Doppelklick auf eine Karte öffnet die Details statt zu spielen
 document.addEventListener('dblclick', (e)=>{
