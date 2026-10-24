@@ -9500,3 +9500,11 @@ ausgenommene docs/-Dateien – beim Umbau der Hilfen bereinigen.
 - **Henry Teil 2:** `~/Downloads/klangtresor-ru-teil2-2026-10-23.xlsx` (827 Zeilen: 4 Oberflächentexte zur MP3-Messung +
   alle Texte aus bin/texte/*.json, Schlüssel = deutscher Satz) und Begleittext `KlangTresor-Henry-Teil2.txt`.
   Rückläufer: Spalte Russian → bin/texte/*.json bzw. web/ui-sprache-ru.js.
+
+## 112. 24.10.2026: 1.0.94 – Lesezeichen-Kasten im Morgenfenster: orange, bis eingerichtet; danach ruhig
+
+Tarja: der rote Kasten sieht jedesmal nach Fehler aus. Caspar_D: auffällig nur, bis das Lesezeichen eingerichtet ist –
+Hausorange statt Rot, danach ein normaler Kasten. Ob eingerichtet, prüft `/api/morgen/ernte-stand` (`jeGeliefert`) an
+Daten, die nur das Lesezeichen bringt (Caspar_Ds Vorschlag): `kontingent.json`, `liker-verlauf.ndjson`,
+`beobachter-verlauf.ndjson` oder ein privater Titel im Katalog. `morgenAuf()` setzt `.auffaellig`, im Zweifel an.
+Beide Fassungen fest (nicht songfarbig). Sandkasten: Bestandskopie → ruhig; ohne diese Daten → orange.

@@ -2455,13 +2455,21 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
   /* Wie frisch ist die juengste Lesezeichen-Ernte? Fuer den Kopf der
      Gruppe „mit Login" in der Auswahlliste. */
   if (p === '/api/morgen/ernte-stand') {
+    /* jeGeliefert: war das Lesezeichen schon einmal da? Nachgesehen an Daten, die NUR mit Anmeldung zu haben
+       sind (Caspar_D, 24.10.2026: „kann man nicht einfach schauen, ob typische Daten im Archiv liegen"):
+       der Download-Stand aus Sunos Abrechnung, wer geherzt hat, wer folgt, private Titel. Daran haengt, ob
+       der Lesezeichen-Kasten im Morgenfenster auffaellig orange oder ruhig steht. */
+    const lib = (f) => { try { return fs.statSync(path.join(WURZEL, 'library', f)).size > 0; } catch (e) { return false; } };
+    const kat = katalogHolen();
+    const jeGeliefert = ['kontingent.json', 'liker-verlauf.ndjson', 'beobachter-verlauf.ndjson'].some(lib)
+      || !!(kat && Object.values(kat.songs || {}).some((x) => x && x.oeffentlich === false && !x.fremd));
     try {
       const ordner = path.join(WURZEL, 'library', 'roh');
       const ernten = fs.readdirSync(ordner).filter(f => /^profil-.*\.json$/.test(f)).sort();
-      if (!ernten.length) return jsonAntwort(res, { vorhanden: false });
+      if (!ernten.length) return jsonAntwort(res, { vorhanden: false, jeGeliefert });
       const mt = fs.statSync(path.join(ordner, ernten[ernten.length - 1])).mtimeMs;
-      return jsonAntwort(res, { vorhanden: true, minuten: Math.round((Date.now() - mt) / 60000), datei: ernten[ernten.length - 1] });
-    } catch (e) { return jsonAntwort(res, { vorhanden: false }); }
+      return jsonAntwort(res, { vorhanden: true, jeGeliefert: true, minuten: Math.round((Date.now() - mt) / 60000), datei: ernten[ernten.length - 1] });
+    } catch (e) { return jsonAntwort(res, { vorhanden: false, jeGeliefert }); }
   }
 
   if (p === '/api/morgen/stand') return jsonAntwort(res, morgenStand());

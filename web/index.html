@@ -3236,45 +3236,26 @@ h3 .infoknopf .ico{width:14px;height:14px}
    in voller Groesse, die Aufforderung darunter fett. Das ist kein
    Kleingedrucktes, sondern die Entscheidung, die hier getroffen wird.
    (Caspar_D, 19.08.2026: "das muss dominanter sein") */
-/* FEST ROT, NICHT MITWANDERND (Caspar_D, 25.08.2026: "bitte den
-   Hintergrund des Kastens ... fest rot machen, momentan schreibt die
-   variable Akzentfarbe den Hintergrund neu, so dass der die Farbe mit
-   jedem Song wechselt").
-
-   Die untere Schicht stand auf var(--flaeche), und die setzt uiFaerben()
-   bei jedem Songwechsel auf die Flaechenfarbe des Covers - der Kasten war
-   mal blaeulich, mal olivgruen. Das passte nicht zu seinem Rand, der schon
-   immer im Marken-Rot steht, und es liess den Hinweis wie einen Teil des
-   gerade laufenden Songs aussehen statt wie eine Ansage des Programms.
-   Jetzt ein eigener, dunkler Rotton - er gehoert zum Rand, nicht zum
-   Cover. Text #9a9aa0 darauf sind 6,7:1. */
-/* DAS OKKULTATIONSROT (Caspar_D, 25.08.2026). Vorher stand hier
-   var(--flaeche) mit sechs Prozent Marken-Rot darueber - also gar kein
-   eigenes Rot, sondern die Flaechenfarbe des laufenden Songs. Der Kasten
-   wechselte damit bei jedem Songwechsel die Farbe, und das laesst einen
-   Systemhinweis wie einen Teil des Songs aussehen.
-
-   Fest wird nun genau der Ton, der dabei gefiel: die Flaechenfarbe von
-   "Okkultation" (#240302) mit demselben Sechs-Prozent-Schleier ergibt
-   #2f0509 - ein tiefes, fast schwarzes Rot. Entscheidend ist seine WAERME:
-   Farbton 29 Grad. Ein aus dem Marken-Rot #e31c79 abgeleiteter Ton laege
-   bei 348 Grad und damit auf der magenta-Seite - derselbe Helligkeitswert,
-   aber sichtbar kuehler. Deshalb kommt auch der Verlauf aus Okkultations
-   Akzent #e13b12 und nicht aus dem Marken-Rot, und der Rand zieht mit:
-   zwei verschiedene Rot in einem Kasten beissen sich.
-
-   Text auf dem Grund 11:1, am hellsten Punkt des Verlaufs noch 6,9:1. */
-#morgenlesezeichen{margin-top:20px;padding:16px 18px;border:1px solid #e13b12;border-radius:10px;
-  background:linear-gradient(180deg,#e13b1259,#e13b1220 55%),#2f0509;
-  font-size:12.5px;color:#e3d2cb;line-height:1.55}
+/* DER LESEZEICHEN-KASTEN: ERST AUFFAELLIG, DANN RUHIG (24.10.2026). Bis dahin stand er fest im
+   Okkultationsrot (#e13b12 auf #2f0509, Caspar_D 25.08.2026). Tarja: zu rot, es sieht jedesmal nach einem
+   Fehler aus. Caspar_D: auffaellig, aber nur, bis das Lesezeichen eingerichtet ist - dann das Hausorange
+   statt Rot, danach ein normaler, ruhiger Kasten. Ob es eingerichtet ist, sagt /api/morgen/ernte-stand
+   (jeGeliefert: Daten, die nur das Lesezeichen bringt, liegen im Archiv); morgenAuf() setzt .auffaellig.
+   Beide Fassungen bleiben FEST, nicht mit der Songfarbe wandernd: var(--flaeche) wechselt mit jedem Cover,
+   und dann saehe die Ansage des Programms aus wie ein Teil des laufenden Songs (25.08.2026). */
+#morgenlesezeichen{margin-top:20px;padding:16px 18px;border:1px solid #333336;border-radius:10px;
+  background:#161618;font-size:12.5px;color:#c9c9cd;line-height:1.55}
+#morgenlesezeichen.auffaellig{border-color:#f97b14;
+  background:linear-gradient(180deg,#f97b1438,#f97b1412 55%),#1c1208;color:#ecdcca}
 #morgenlesezeichen summary{cursor:pointer;color:var(--text);font-weight:700;list-style:none;
   font-size:15px;letter-spacing:.01em}
 #morgenlesezeichen .lzgross{font-size:14px;font-weight:600;color:var(--text);margin:10px 0 6px}
 #morgenlesezeichen summary::before{content:'▸ ';color:#8b8b90}
 #morgenlesezeichen[open] summary::before{content:'▾ '}
 #morgenlesezeichen p{margin:8px 0 0}
-#morgenlesezeichen .leise{color:#a89189;font-size:11.5px}
-#morgenlesezeichen code{font:11.5px ui-monospace,Menlo,monospace;color:#f0e2db}
+#morgenlesezeichen .leise{color:#8b8b90;font-size:11.5px}
+#morgenlesezeichen.auffaellig .leise{color:#b8a58f}
+#morgenlesezeichen code{font:11.5px ui-monospace,Menlo,monospace;color:#ececed}
 #morgenlesezeichen .lz{display:flex;gap:8px;align-items:center;margin-top:6px;
   background:#161618;border:1px solid #333336;border-radius:8px;padding:8px 10px}
 #morgenlesezeichen .lz code{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -20953,6 +20934,10 @@ async function morgenAuf(frisch){
   $('morgenlzcode').textContent = morgenLzAdresse();
   /* Offen, bis man es einmal zugeklappt hat. */
   const lz = $('morgenlesezeichen');
+  /* Auffaellig (Hausorange), bis das Lesezeichen einmal geliefert hat - danach ruhig. Im Zweifel auffaellig. */
+  lz.classList.add('auffaellig');
+  fetch('/api/morgen/ernte-stand', { cache: 'no-store' }).then((r) => r.json())
+    .then((e) => { if (e && e.jeGeliefert) lz.classList.remove('auffaellig'); }).catch(() => {});
   lz.open = localStorage.getItem('mysuno-lz-zu') !== '1';
   lz.ontoggle = () => { try { localStorage.setItem('mysuno-lz-zu', lz.open ? '0' : '1'); } catch(e){} };
   $('morgenleiste').style.display = 'none';
