@@ -3245,3 +3245,23 @@ nur, was bei einem fremden Archiv falsch liefe, plus Hygiene. Kein Datenschutzth
    einmal als PDF mit Apples Engine prüfen (headless `Page.printToPDF` + `sips`, `pdfimages -list` zeigt seitengroße Rasterebenen).
    Gleiche Bauart wie die Tünche: Filter/Masken auf großen Flächen. Vorschlag damals: 1–3 und 5 als kleines Release, 7 als Prüfung
    mit höchstens 2 min je Vorlage.
+
+**Bildverlauf: geänderte Titelbilder von Suno abgleichen, nichts überschreiben** (Caspar_D, 25.10.2026, entschieden: B + A)
+Anlass: „Ich, Thiel v2" – bei Suno nachträglich ein anderes Bild gesetzt, kam nicht rüber. `bin/laden.js` holt ein
+`cover.jpg` nur, wenn es fehlt (Kommentar dort: „richtig für Titelbilder der Songs"); der Katalog kennt die neue Adresse
+(`bildUrl`), die Datei bleibt alt. Fürs Profilbild gibt es den Adressvergleich schon (30.09.2026). Grundsatz: KlangTresor ist
+ein Archiv – nichts wird gelöscht.
+1. **Kein Eingriff in den Morgenlauf (B):** ein Knopf in „Details zum Titel": „Titelbild von Suno abgleichen". Lädt Sunos
+   aktuelles Bild, vergleicht mit `cover.jpg`; gleich → „Ist schon aktuell", sonst Wechsel nach 2.
+2. **Verlauf statt Überschreiben:** das bisherige Bild wandert unverändert nach `songs/<id>/verlauf/cover-<datum>.jpg`,
+   `songs/<id>/verlauf.json` hält je Eintrag Datei, Herkunft (Suno-Adresse), geholt am, abgelöst am. Kachel, Titelbild-
+   Zuschnitt, Tiefenkarte, Farben werden aus dem neuen Original nur neu gerechnet (ableitbar, nicht archiviert).
+3. **Herkunft merken:** ab dem ersten Abgleich die Quelladresse je Titel; weicht `bildUrl` später ab, zeigt die Detailseite
+   von sich aus „Suno hat ein neues Titelbild" – ohne zu laden. Für Altbestand erst nach dem ersten Abgleich bekannt.
+4. **Sichtbar:** in den Details ein Streifen „Frühere Titelbilder (n)" mit Vorschaubild und Datum; Tipp zeigt groß.
+5. **Wieder einsetzen (A):** ein früheres Bild kann man wieder einsetzen – es wird zum eigenen Bild (`eigen.jpg`, über den
+   vorhandenen Weg von `bin/eigen-artwork.js`), Sunos Fassung bleibt im Verlauf.
+6. **Später dieselbe Mechanik** für `artwork.mp4` und `eigen.jpg`. Erst Titelbilder, bewähren lassen.
+Vor dem Bau: Skizze von Knopf und Streifen zeigen. Eingriff in den Datenfluss (Dateien im Archiv) – im Sandkasten bauen.
+Nebenbefund: bei „Ich, Thiel v2" liegt seit 24.10. 15:55 ein `eigen.jpg` mit dem neuen Motiv (andere Datei als Sunos); die
+Kachel im Raster zeigt noch das alte `cover.jpg` vom 20.10.
