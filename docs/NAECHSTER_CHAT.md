@@ -9769,3 +9769,13 @@ Kachelhöhe, die Breite folgt dem Bild (`canvas.tbs-clip.ueberbreit`: top 0, lef
 Schatten, Leuchtrand beim laufenden Titel), Kachel/Karte bekommen `zeigtVideo`, `bewegtEinpassen()` rückt am Rand
 ein; clipAus nimmt es zurück. Gemessen PC 1280: Kachel 194×259, Clip 259×259. Modul, CSS und Haus in einem Commit;
 Stempel tbs-modul.js/tbs.css ?v=1.0.115.
+
+## 134. 25.10.2026: 1.0.116 – Henrys Russisch, Schlussdurchgang
+
+- `~/Downloads/ui-sprache-en-ru-final (1).xlsx` + drei Protokolle (Schluss 1502–2499 und Querabgleich, „Bibliothek
+  aktualisieren“, EQ). 157 Texte geändert, danach alle 3 867 gleich ihrer Spalte Russian; Platzhalter/Tags/Plural
+  geprüft. Protokolle und LIESMICH: `docs/ru/henry-2026-10-25/`.
+- 42 neuere Texte (Handy-Ansicht u. a.) kennt ihre Tabelle nicht – KI-Russisch, für die nächste Runde vormerken.
+- Henry: auf das grammatische Geschlecht achten. Geprüft: `wer.tarja` steht weiblich („Добавила … создала …
+  решилась“), Casto männlich, Ich-Form des Autors männlich, unbekannte Nutzer „поставил(а)“. Als Regel in
+  `docs/ru/PRAVILA.md` Abschnitt Ж festgeschrieben.
