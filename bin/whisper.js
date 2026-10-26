@@ -274,10 +274,20 @@ function rechnen(s, tmp) {
       };
     };
     const o = zaehl(oben);
+    /* RUSSISCH (Caspar_D, 26.10.2026: „kann Whisper auch Russisch erkennen, momentan macht er es nicht“). Die Zaehlung
+       oben kennt nur lateinische Woerter; kyrillische fielen heraus, beide Zaehler standen auf 0, und bei Gleichstand
+       gewann Deutsch. „KlangTresor – Снег по кнопке“ bekam so „-l de“ und Whisper erfand „Untertitelung des ZDF“.
+       Jetzt: ueberwiegen in der oberen Haelfte kyrillische Buchstaben die lateinischen, heisst es Russisch. */
+    const buchstaben = (txt) => ({ kyr: (txt.match(/[\u0400-\u04FF]/g) || []).length, lat: (txt.match(/[a-zäöüß]/gi) || []).length });
+    const b = buchstaben(oben.replace(/\[[^\]]*\]/g, ''));   /* [Intro], [Verse] - Sunos Abschnittsmarken sind englisch */
     /* Ist die obere Haelfte eindeutig, entscheidet sie. Ist sie es
        nicht (zu kurz, zu wenig Signalwoerter), das ganze Feld. */
     const g = (o.de + o.en >= 6) ? o : zaehl(s.lyrics);
-    sprache = g.de >= g.en ? 'de' : 'en';
+    if (b.kyr > b.lat) sprache = 'ru';
+    /* Weder Deutsch noch Englisch erkennbar (andere Sprache, kaum Text): Whisper entscheidet selbst, statt dass ein
+       Gleichstand 0 : 0 still Deutsch ergibt. */
+    else if (g.de + g.en < 3) sprache = 'auto';
+    else sprache = g.de >= g.en ? 'de' : 'en';
   }
   const aus = path.join(tmp, s.id);
   /* -dtw + -nfa (20.08.2026): Die Standard-Zeitmarken (Segment-

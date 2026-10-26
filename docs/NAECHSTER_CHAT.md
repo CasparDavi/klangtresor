@@ -9779,3 +9779,13 @@ Stempel tbs-modul.js/tbs.css ?v=1.0.115.
 - Henry: auf das grammatische Geschlecht achten. Geprüft: `wer.tarja` steht weiblich („Добавила … создала …
   решилась“), Casto männlich, Ich-Form des Autors männlich, unbekannte Nutzer „поставил(а)“. Als Regel in
   `docs/ru/PRAVILA.md` Abschnitt Ж festgeschrieben.
+
+## 135. 26.10.2026: 1.0.117 – Whisper erkennt russische Lieder
+
+Caspar_D: „kann Whisper auch Russisch erkennen, momentan macht er es nicht“. Das Modell (large-v3) kann es; bin/whisper.js
+gab ihm aber die Sprache vor und kannte nur de/en (Signalwörter, kyrillische Buchstaben fielen heraus → 0 : 0 → „de“).
+„KlangTresor – Снег по кнопке“ bekam „-l de“, Whisper erfand „Untertitelung des ZDF für funk, 2017“. Neu: überwiegen in
+der oberen Hälfte (ohne [Abschnittsmarken]) kyrillische Buchstaben → „ru“; kaum de/en-Signalwörter → „auto“ statt still
+„de“; sonst wie bisher. Gegenprobe alte/neue Entscheidung an den 10 neuesten + dem russischen Titel: 9/10 gleich, nur
+der russische wechselt auf ru. Nicht über den ganzen Bestand geprüft (ob „auto“ irgendwo ein bisheriges „de“ ersetzt).
+Das russische Lied muss einmal neu: `node bin/whisper.js f3f3f9b8-4116-4025-8643-faff6b860fdd` (Caspar_D fragen).
