@@ -2559,6 +2559,12 @@ html.handy .profilsprache .sprachewahl button{min-height:36px;min-width:52px;fon
 /* Handy: das Profil ist keine Suche - etwas Abstand zum Paar Lupe/Trichter (Tufte) */
 html.handy #ich{margin-left:12px}
 #ichersatz[hidden]{display:none}
+
+/* Details: Rueckzug bei Suno und „Aus dem Tresor nehmen“ (26.10.2026) */
+#detail .chip.zurueck{border-color:var(--schwach);color:var(--schwach)}
+#detail .ablegen{border-top:1px solid var(--rand);padding-top:14px;margin-top:8px}
+#detail .ablegen .fussnote{margin-top:6px;color:var(--schwach);font-size:12px;line-height:1.5}
+#detail .ablegen .chip.ja{border-color:var(--akzent);color:var(--text)}
 </style>
 </head>
 <body>
@@ -4937,8 +4943,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=14"></script>
-<script src="/ui-sprache.js?v=26"></script>
+<script src="/ui-sprache-ru.js?v=15"></script>
+<script src="/ui-sprache.js?v=27"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -15394,6 +15400,7 @@ async function detailAuf(id){
             <span class="chip zk" data-rk="${s.id}">${SYM('herz')}${s.likes||0}</span>
             <span class="chip zk" data-rk="${s.id}" data-rk-ziel="blase">${SYM('blase')}${s.kommentare||0}</span>
             ${s.istRemix ? '<span class="chip">Remix</span>':''}
+            ${s.zurueckgezogen ? `<span class="chip zurueck" title="${esc(t('detail.zurueckgezogen.titel'))}">${esc(t('detail.zurueckgezogen', { datum: s.zurueckgezogen }))}</span>`:''}
           </div>
           <div class="chips">${tags.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
           <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
@@ -15418,8 +15425,30 @@ async function detailAuf(id){
          </p></div>`:''}
       ${(s.zaehlerVerlauf&&s.zaehlerVerlauf.length>1) ? `<div class="block"><h3>${t('detail.entwicklung')}</h3>
          <pre class="text">${s.zaehlerVerlauf.map(v=>t('detail.verlauf', { stand: v.stand, plays: v.plays, likes: v.likes, kommentare: v.kommentare })).join('\n')}</pre></div>`:''}
+      ${archivEingefroren() ? '' : `<div class="block ablegen" id="dablegen">
+         <button type="button" class="chip" data-tu="frage">${t('detail.ablegen')}</button>
+         <p class="fussnote">${t('detail.ablegen.text')}</p></div>`}
     </div>`;
 
+  /* AUS DEM TRESOR NEHMEN (26.10.2026): erst fragen - im Fenster, nicht mit dem hellen Systemdialog -, dann ablegen.
+     Gelöscht wird nichts; der Server legt den Ordner nach library/abgelegt/. */
+  { const box = $('dablegen');
+    if (box) box.onclick = async (e) => {
+      const b = e.target.closest('button[data-tu]'); if (!b) return;
+      if (b.dataset.tu === 'frage'){
+        box.innerHTML = `<p>${esc(t('detail.ablegen.frage', { titel: s.titel }))}</p>`
+          + `<p style="display:flex;gap:8px;margin-top:8px"><button type="button" class="chip ja" data-tu="ja">${t('detail.ablegen.ja')}</button>`
+          + `<button type="button" class="chip" data-tu="nein">${t('detail.ablegen.nein')}</button></p>`;
+        return; }
+      if (b.dataset.tu === 'nein'){ detailAuf(id); return; }
+      if (b.dataset.tu === 'ja'){
+        b.disabled = true;
+        let a = null; try { a = await (await fetch('/api/ablegen/' + id, { method: 'POST' })).json(); } catch (x) { a = { ok: false, grund: x.message }; }
+        if (!a || !a.ok){ box.innerHTML = `<p class="fussnote">${esc(t('detail.ablegen.fehler', { grund: (a && a.grund) || '?' }))}</p>`; return; }
+        detailZu(); await katalogNachladen();
+        kurzMeldung(t('detail.ablegen.fertig', { titel: s.titel, ordner: a.ordner || 'abgelegt/' }));
+      }
+    }; }
   $('detail').classList.add('auf');
   /* Derselbe Kasten zeigt Song UND Autor. Das Titelbild im Ruecken
      gehoert nur der Autorenseite, also hier wieder abraeumen. */

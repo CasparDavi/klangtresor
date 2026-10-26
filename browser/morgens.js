@@ -1123,7 +1123,13 @@
     const t0 = await tokenHolen();
     if (t0){
       const H0 = { Authorization: 'Bearer ' + t0 };
-      const priv = (daheim.songs||[]).filter(a => !a.oeffentlich && !a.fremd && !songs.has(a.id));
+      /* AUCH ZURUECKGEZOGENE (Caspar_D, 26.10.2026: ein Titel war kurz oeffentlich, wurde bei Suno wieder privat - im
+         Tresor stand er weiter als oeffentlich). Gefragt wurde nur, was der Katalog fuer privat hielt; ein frueher
+         oeffentlicher Titel, der in der Liste fehlt, blieb ungefragt. Jetzt jeder eigene Titel, der nicht in der
+         oeffentlichen Liste steht - die frueher oeffentlichen aber nur, wenn die Liste vollstaendig kam (sonst fragte
+         eine abgebrochene Liste hunderte Titel einzeln nach). */
+      const listeVoll = gesamt != null && songs.size >= gesamt;
+      const priv = (daheim.songs||[]).filter(a => !a.fremd && !songs.has(a.id) && (!a.oeffentlich || listeVoll));
       /* Die letzte Suno-Anfrage war die letzte Albumseite - ohne diese
          Pause folgte der erste /api/clip unmittelbar darauf. */
       if (priv.length) await pause();

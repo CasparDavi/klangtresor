@@ -9789,3 +9789,19 @@ der oberen Hälfte (ohne [Abschnittsmarken]) kyrillische Buchstaben → „ru“
 „de“; sonst wie bisher. Gegenprobe alte/neue Entscheidung an den 10 neuesten + dem russischen Titel: 9/10 gleich, nur
 der russische wechselt auf ru. Nicht über den ganzen Bestand geprüft (ob „auto“ irgendwo ein bisheriges „de“ ersetzt).
 Das russische Lied muss einmal neu: `node bin/whisper.js f3f3f9b8-4116-4025-8643-faff6b860fdd` (Caspar_D fragen).
+
+## 136. 26.10.2026: 1.0.118 – Zurückgezogene Titel erkennen, „Aus dem Tresor nehmen“
+
+Caspar_D: Titel kurz öffentlich, bei Suno zurückgezogen, neu gemacht – „wie werde ich den temporär öffentlichen Song
+aus dem KlangTresor los“. Entscheidung B: ehrlicher Status + Ablegen (Ablage-Liste im Profil und Ersatz-Hinweis später).
+- **Status:** Das Lesezeichen (browser/morgens.js) fragte einzeln nur Titel nach, die der Katalog für privat hielt; ein
+  zurückgezogener blieb „öffentlich“. Jetzt jeder eigene Titel, der nicht in der öffentlichen Liste steht – die früher
+  öffentlichen nur bei vollständiger Liste (normal 0 Mehranfragen). bin/aufbereiten.js vermerkt `zurueckgezogen`
+  (Datum, fällt weg, sobald wieder öffentlich); Details zeigen „Bei Suno zurückgezogen · Datum“.
+- **Ablegen:** Details → „Aus dem Tresor nehmen“ (Rückfrage im Fenster, kein heller Systemdialog). POST /api/ablegen/<id>:
+  songs/<id>/ → library/abgelegt/<id>/ samt katalogeintrag.json, Eintrag in library/abgelegt.json; der Server blendet
+  abgelegte Titel beim Laden aus (katalogHolen), aufbereiten.js nimmt sie nicht wieder auf, /api/stand meldet die
+  Änderung an offene Seiten. Erster Bau schrieb den 52-MB-Katalog neu: 20 s Stillstand – verworfen; jetzt 0,5 s.
+  Im Sandkasten geprüft (3 Titel abgelegt, Index 337, aufbereiten.js 337, Dateien vollständig in der Ablage).
+- Alte Rusalka (`d2872229…`, bei Suno privat) legt Caspar_D selbst ab; ihr Status wird beim nächsten Morgenlauf ehrlich.
+- Offen (später): Ablage-Liste im Profil mit „Zurückholen“, Ersatz-Hinweis bei ähnlichem Titel.

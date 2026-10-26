@@ -341,10 +341,18 @@ try {
   if (n) console.log(T('{n} Titel sind laut Lesezeichen bei Suno freigeschaltet.', { n }));
 } catch (e) {}
 
+/* ABGELEGTE TITEL (Caspar_D, 26.10.2026: „wie werde ich den temporär öffentlichen Song aus dem KlangTresor los“).
+   Was in library/abgelegt.json steht, hat jemand mit „Aus dem Tresor nehmen“ abgelegt: Der Titel kommt nicht wieder
+   in den Katalog, auch wenn eine Ernte ihn noch liefert. Seine Dateien liegen unter library/abgelegt/<id>/ -
+   geloescht wird nichts. */
+let abgelegt = {};
+try { abgelegt = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'abgelegt.json'), 'utf8')) || {}; } catch (e) {}
 const songs = { ...altSongs };
+for (const id of Object.keys(abgelegt)) delete songs[id];
 let neu = 0, aktualisiert = 0;
 
 for (const roh of eingang.values()) {
+  if (abgelegt[roh.id]) continue;
   const s = normalisieren(roh);
   s.veroeffentlicht = profilIds.has(s.id) || s.oeffentlich;
 
@@ -414,6 +422,12 @@ for (const roh of eingang.values()) {
   // (playlists-*.json) und wird weiter unten neu gesetzt. Fehlt die
   // Datei, bliebe sie ohne dieses Übernehmen bei jedem Lauf weg.
   if (vorher && vorher.playlists) { s.playlists = vorher.playlists; }
+
+  /* ZURUECKGEZOGEN: war oeffentlich, ist es laut frischer Ernte nicht mehr. Das Datum bleibt, bis der Titel wieder
+     oeffentlich wird - der Katalog luegt dann nicht mehr „oeffentlich“, und die Details sagen, seit wann. */
+  if (s.oeffentlich) delete s.zurueckgezogen;
+  else if (vorher && vorher.zurueckgezogen) s.zurueckgezogen = vorher.zurueckgezogen;
+  else if (vorher && vorher.oeffentlich) s.zurueckgezogen = heute;
 
   songs[s.id] = s;
   if (vorher) aktualisiert++; else neu++;
