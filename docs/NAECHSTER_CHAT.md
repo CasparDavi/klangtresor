@@ -9822,3 +9822,12 @@ Möglichkeit im Profil, Listenmitglieder komplett zu löschen“.
 - Sandkasten: ablegen/Liste/zurück/löschen über die Schnittstelle, aufbereiten.js mit nachgestellter Ernte „wieder
   öffentlich“ (zurückgeholt), Gegenprobe abgelegt + privat (bleibt im Katalog, unsichtbar).
 - Offen: „bei Suno gelöscht → automatisch ablegen“ (erst klären, wie Suno gelöschte Titel meldet). Wischen auf der Bühne (Handy).
+
+## 138. 27.10.2026: 1.0.120 – Handy: Wischen auf der Bühne wechselt Titelbild/Bewegtbild
+
+Caspar_D: „auf der Bühne wäre ein Streichen nach links gut, um Standbild und Bewegtbild zu schalten“ – dieselbe Geste wie
+in „Jetzt läuft“, nur Handy. Auf dem Handy entscheidet die Bühne erst beim Loslassen: waagrecht über 60 px (und 1,4×
+mehr als senkrecht) → `buehneWischen` (links Bewegtbild, rechts Titelbild, über `bildSetzen`); kaum bewegt → Tipp wie
+bisher (Pult zeigen/nehmen); sonst gescrollt → nichts. Keine Zeitgrenze: quer mit Bewegtbild + Karaoke kam der Finger
+im Test >0,9 s verspätet an. Zwei Punkte oben (#bpunkte, nur mit Bewegtbild, kurz nach dem Wischen und bei offenem
+Pult); die PC-Bewegtbildleiste im Bild ist auf dem Handy aus. Fingertest hoch/quer: links/rechts/Tipp/ohne Bewegtbild.

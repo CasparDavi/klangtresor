@@ -2574,6 +2574,16 @@ html.handy #ich{margin-left:12px}
 #profilablage .ak{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 #profilablage .ablagefrage{color:var(--schwach);font-size:13px}
 #profilablage .chip.ja{border-color:var(--akzent);color:var(--text)}
+
+/* Buehne auf dem Handy: Wischen statt der Bewegtbild-Leiste im Bild; zwei Punkte zeigen Titelbild | Bewegtbild,
+   kurz nach dem Wischen und solange das Pult offen ist (27.10.2026). */
+#bpunkte{display:none}
+html.handy #buehne.hatfilm:not(.text-analyzer) #bpunkte{display:flex;position:absolute;left:50%;transform:translateX(-50%);
+  top:calc(30px + env(safe-area-inset-top));z-index:7;gap:7px;opacity:0;transition:opacity .3s ease;pointer-events:none}
+html.handy #buehne.hatfilm.pultAuf #bpunkte,html.handy #buehne.hatfilm.punktezeigen #bpunkte{opacity:1}
+#bpunkte i{width:7px;height:7px;border-radius:50%;background:#ffffff66}
+#bpunkte i.an{background:#fff}
+html.handy .bart #bbewegt{display:none!important}
 </style>
 </head>
 <body>
@@ -4707,6 +4717,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
   <!-- Karaokeband. Liegt über der Fläche, nicht daneben - deshalb
        außerhalb von .bwrap. -->
   <div id="bkaraoke"></div>
+  <!-- Handy: wo man beim Wischen steht - Titelbild | Bewegtbild (buehnePunkte) -->
+  <div id="bpunkte" aria-hidden="true"><i class="an"></i><i></i></div>
   <!-- Fühlbereich am unteren Rand: Zeiger hinein, Schublade fährt aus. -->
   <div id="bzone"></div>
   <!-- Der Fortschritt liegt AUSSERHALB der Schublade und bleibt immer
@@ -20274,15 +20286,45 @@ $('buehne').addEventListener('mousemove', (e) => {
 /* Handy (Schritt 3, 24.10.2026): Ein zweiter Tipp auf die freie Flaeche nimmt es gleich wieder weg - wer vom Sofa aus
    liest, will den Text frei haben. Und ein Tipp IM Pult laesst den Knopf nicht fokussiert stehen: pultVerbergen()
    schont ein Pult mit Fokus (sonst rutscht der Regler unter der Maus weg) - mit dem Finger blieb es darum fuer immer. */
+/* WISCHEN WECHSELT DAS BILD (Handy, 27.10.2026, Caspar_D: „auf der Buehne waere ein Streichen nach links gut, um
+   Standbild und Bewegtbild zu schalten“ - dieselbe Geste wie in „Jetzt laeuft“). Auf dem Handy entscheidet sich darum
+   erst beim Loslassen, was gemeint war: waagrecht gewischt -> Bild wechseln (links Bewegtbild, rechts Titelbild);
+   kaum bewegt -> Tipp (Pult zeigen bzw. nehmen); sonst gescrollt (Text) -> nichts. Tablet und Rechner wie bisher. */
+let bWisch = null;
 $('buehne').addEventListener('touchstart', (e) => {
+  const handy = window.istHandy && istHandy();
+  if (handy && bText !== 'analyzer' && !$('bpult').contains(e.target) && !e.target.closest('#bzu,#bvoll')){
+    const p = e.touches[0]; bWisch = { x: p.clientX, y: p.clientY, t: Date.now(), n: e.touches.length }; return; }
   if (bText === 'lyrics') return;
   if ($('bpult').contains(e.target) || e.target.closest('#bzu,#bvoll')) return;
-  if (window.istHandy && istHandy() && $('buehne').classList.contains('pultAuf') && bText !== 'analyzer'){
-    if (document.activeElement && $('bpult').contains(document.activeElement)) document.activeElement.blur();
-    pultVerbergen(); return;
-  }
   pultZeigen(4000);
 }, { passive: true });
+$('buehne').addEventListener('touchend', (e) => {
+  const w = bWisch; bWisch = null; if (!w || w.n > 1) return;
+  const p = e.changedTouches[0], dx = p.clientX - w.x, dy = p.clientY - w.y;
+  /* Keine Zeitgrenze: Quer mit Bewegtbild und Karaoke kam der Finger im Test mit ueber 0,9 s Verspaetung an und wurde
+     verworfen - ein langsames waagrechtes Ziehen ist ebenso gemeint. Es zaehlen Weg und Richtung. */
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4){ buehneWischen(dx < 0); return; }
+  if (Math.abs(dx) > 12 || Math.abs(dy) > 12) return;
+  if (bText === 'lyrics') return;
+  if ($('buehne').classList.contains('pultAuf')){
+    if (document.activeElement && $('bpult').contains(document.activeElement)) document.activeElement.blur();
+    pultVerbergen();
+  } else pultZeigen(4000);
+}, { passive: true });
+function buehneWischen(nachLinks){
+  if (!bSong || !hatBewegtbild(bSong)) return;                /* ohne Bewegtbild gibt es nichts zu wechseln */
+  const ziel = nachLinks ? 'video' : 'artwork';
+  if ((bBild === 'video') !== (ziel === 'video')) bildSetzen(ziel);
+  buehnePunkte(true);
+}
+let bPunkteUhr = 0;
+function buehnePunkte(kurz){
+  const b = $('buehne'), film = !!(bSong && hatBewegtbild(bSong)), pk = $('bpunkte');
+  b.classList.toggle('hatfilm', film);
+  if (pk && pk.children.length === 2){ pk.children[0].classList.toggle('an', bBild !== 'video'); pk.children[1].classList.toggle('an', bBild === 'video'); }
+  if (kurz){ b.classList.add('punktezeigen'); clearTimeout(bPunkteUhr); bPunkteUhr = setTimeout(() => b.classList.remove('punktezeigen'), 1600); }
+}
 $('bpult').addEventListener('touchend', () => {
   if (bText === 'lyrics' || bText === 'analyzer') return;
   pultZeigen(4000);    /* jede Bedienung haelt das Pult weitere 4 s; pultVerbergen nimmt danach den Fokus mit */
@@ -23090,6 +23132,7 @@ function markenWaehlen(q){
 }
 
 function bedienungAufbauen(){
+  if (typeof buehnePunkte === 'function') buehnePunkte(false);
   const wahl = (id, fn, eintraege, titel) =>
     `<select id="${id}" title="${titel}" onchange="${fn}(this.value)">`
     + eintraege.map(([w, name, aus]) =>
