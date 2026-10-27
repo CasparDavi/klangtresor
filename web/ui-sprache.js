@@ -308,6 +308,7 @@
     ['karte.schiff', 'Sound-Schiff', 'Sound Ship'],
     ['karte.matrix', 'Musik-Matrix', 'Music Matrix'],
     ['karte.rabe', 'Rabe', 'Raven'],
+    ['karte.mars', 'Marsianer', 'Martian'],
     ['karte.name.titel', 'Der Name auf dem Rumpf. Vorbelegt mit dem Sunohandle — anklicken und überschreiben. Leeren stellt den Handle wieder her.', 'The name on the hull. Pre-filled with the Suno handle — click and overwrite. Clearing restores the handle.'],
     ['karte.namenlos', 'namenlos', 'unnamed'],
     ['karte.kennung', 'Kennung {k}', 'Call sign {k}'],
@@ -325,6 +326,8 @@
     ['karte.gestalt.kubus.titel', 'Die Musik-Matrix fliegt: jeder verlassene Stern verlischt in einer Supernova', 'The Music Matrix flies: every star left behind goes out in a supernova'],
     ['karte.gestalt.rabe', 'Rabe', 'Raven'],
     ['karte.gestalt.rabe.titel', 'Der Rabe fliegt', 'The raven flies'],
+    ['karte.gestalt.mars', 'Marsianer', 'Martian'],
+    ['karte.gestalt.mars.titel', 'Der Marsianer fliegt in seiner Untertasse – die ganze Oberfläche steht in Orange', 'The Martian flies in his saucer – the whole interface turns orange'],
     ['karte.gestalt.wahl', 'Wer fliegt: das Schiff, der Kubus (jeder verlassene Stern verlischt in einer Supernova) oder der Rabe', 'Who flies: the ship, the cube (every star left behind goes out in a supernova) or the raven'],
     ['karte.flugart', 'Flugart', 'Flight mode'],
     ['karte.flugart.wahl', 'Flugart des Sound-Schiffs', 'Flight mode of the Sound Ship'],
@@ -341,6 +344,7 @@
     ['karte.kurz.orbit', 'Orbiter', 'Orbiter'],
     ['karte.kurz.kubus', 'Kubus', 'Cube'],
     ['karte.kurz.rabe', 'Rabe', 'Raven'],
+    ['karte.kurz.mars', 'Marsianer', 'Martian'],
     ['karte.fuss', '{raum}: die geclusterten Suno-Titel als Sterne. Jeder Stern stellt einen Titel dar. {naehe}: Die Karte wurde per {verfahren} {woher} gerechnet, lokal auf diesem Rechner. {fehlen}{gruppen} Messwerte aus der eigenen Analyse. Stand {stand}.', '{raum}: clustered Suno titles as stars. Each star is a title. {naehe}: The map was computed via {verfahren} {woher}, locally on this machine. {fehlen}{gruppen} Measurements from our own analysis. As of {stand}.'],
     ['karte.naehe.klang', 'Nähe bedeutet ähnlicher Klang', 'Closeness means similar sound'],
     ['karte.naehe.geschichten', 'Nähe bedeutet: handelt von Ähnlichem', 'Closeness means: about similar things'],
@@ -2590,6 +2594,7 @@
     ['karte.palette.glut', 'Sonnenglut', 'Sun glow'],
     ['karte.palette.borg', 'Kubus', 'Cube'],
     ['karte.palette.rabe', 'Rabe', 'Raven'],
+    ['karte.palette.mars', 'Marsianer', 'Martian'],
     /* Ende Runde 2 */
 
     /* Effektclip-Studio (ec.*, 17.10.2026): web/tbs-modul.js. Der deutsche Satz steht dort zugleich im Code (sag(k, deutsch) -
@@ -4051,6 +4056,7 @@
     ['karte.farbe.gestalt', '{wer} fliegt in eigenen Farben – die freie Wahl gilt wieder mit dem Schiff.', '{wer} flies in its own colours – free choice returns with the ship.'],
     ['karte.farbe.kubus', 'Der Kubus', 'The cube'],
     ['karte.farbe.rabe', 'Der Rabe', 'The raven'],
+    ['karte.farbe.mars', 'Der Marsianer', 'The Martian'],
     ['karte.leer', 'Noch kein Klang-Raum — der Morgenlauf „Musikstil und Musik-Karte“ rechnet ihn.', 'No Sound Space yet — the Morning Routine step “Music style and music map” computes it.'],
     ['karte.sternbild.tipp', 'Sternbild {name} ({art}) — erklärt {p} % der Gruppentrennung, markiert „{gruppe}“; {n} Titel', 'Constellation {name} ({art}) — explains {p} % of the group separation, marks “{gruppe}”; {n} titles'],
     ['karte.loch.tipp', '{name} — Massezentrum der Gruppe; Klick hebt sie hervor. Jet = Hauptachse ({p} % der Ausdehnung)', '{name} — centre of mass of the group; a click highlights it. Jet = main axis ({p} % of the extent)'],

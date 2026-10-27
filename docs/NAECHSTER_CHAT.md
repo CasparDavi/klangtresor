@@ -9831,3 +9831,18 @@ mehr als senkrecht) → `buehneWischen` (links Bewegtbild, rechts Titelbild, üb
 bisher (Pult zeigen/nehmen); sonst gescrollt → nichts. Keine Zeitgrenze: quer mit Bewegtbild + Karaoke kam der Finger
 im Test >0,9 s verspätet an. Zwei Punkte oben (#bpunkte, nur mit Bewegtbild, kurz nach dem Wischen und bei offenem
 Pult); die PC-Bewegtbildleiste im Bild ist auf dem Handy aus. Fingertest hoch/quer: links/rechts/Tipp/ohne Bewegtbild.
+
+## 139. 27.10.2026: 1.0.121 – Marsianer: vierte Gestalt, Oberfläche ganz in Orange
+
+Caspar_D (für das Feature-Dokument): „ein festes oranges Farbschema wie das Rabenlila … Marsianer wäre orangelastig“;
+Palette: „Orange dominiert, dazu ein bis zwei Begleiter wie Dunkelrot und Sandgelb, so wie beim Raben Pink und Blau“.
+- **Töner verallgemeinert:** `TOENER` (index.html, vor dem Kubus) hält je Gestalt Akzent, Flächen, Schleier, Bahnfarbe;
+  `uiFaerben` färbt bei Eintrag alles in diesem Ton, `toenerAnwenden()` ersetzt `rabenmagieAnwenden()`, CSS-Klasse
+  `html.toener` mit `--schleier`/`--schleier2` statt `.rabenmagie` mit festem Violett. Rabe unverändert (#b44dff).
+- **Marsianer** (`gestalt = 'mars'`): Palette `mars` (Orange, Dunkelrot, Sandgelb, Rost …), Akzent #ff7a1a, Figur
+  `marsZeichnen` – fliegende Untertasse, neigt sich in die Fahrt, Lichterkranz läuft um, Kuppel mit Marsianer (Fühler),
+  Glut darunter. Flugbahn und Zielmarke im Marsianer-Orange. Wörter DE/EN/RU (`karte.*.mars`).
+- Geprüft im Sandkasten: Werke, Klangraum (nah), Klangschaum in Orange; Wechsel Rabe → Schiff → Marsianer → Kubus färbt
+  und entfärbt sauber.
+- Weiter: Feature-Dokument `docs/features/` (noch nicht eingecheckt) – Bauliste dort: Rollbalken unsichtbar, Bilder in
+  drei Sprachen, Format folgt Kachel, keine textlastigen/angeschnittenen Bilder, Zimmerwand fürs Plakat.

@@ -1399,12 +1399,13 @@ pre.text{white-space:pre-wrap;word-wrap:break-word;font:inherit;line-height:1.7}
    zurueck, damit die Coverfarbe nicht gegen den Schleier anleuchtet.
    Gilt nur fuer die WEICHGEZEICHNETEN Cover im Hintergrund - das
    scharfe Motiv vorn bleibt unangetastet. */
-html.rabenmagie #bhintergrund{filter:blur(60px) saturate(.7) brightness(var(--bhelle,.42))}
-html.rabenmagie #buehne::before{content:'';position:absolute;inset:0;z-index:1;
-  background:rgba(126,58,214,.24);pointer-events:none}
-html.rabenmagie .bart .fuellung{filter:blur(38px) saturate(.7)}
-html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
-  background:rgba(126,58,214,.22);pointer-events:none}
+/* Seit dem Marsianer (27.10.2026) allgemein: html.toener plus die Schleierfarbe der Gestalt (TOENER). */
+html.toener #bhintergrund{filter:blur(60px) saturate(.7) brightness(var(--bhelle,.42))}
+html.toener #buehne::before{content:'';position:absolute;inset:0;z-index:1;
+  background:var(--schleier);pointer-events:none}
+html.toener .bart .fuellung{filter:blur(38px) saturate(.7)}
+html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
+  background:var(--schleier2);pointer-events:none}
 
 .bwrap{position:relative;z-index:2;height:100%;display:flex;gap:clamp(20px,4vw,64px);
   padding:clamp(20px,3.5vw,52px);
@@ -4964,8 +4965,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=16"></script>
-<script src="/ui-sprache.js?v=28"></script>
+<script src="/ui-sprache-ru.js?v=17"></script>
+<script src="/ui-sprache.js?v=29"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -8468,11 +8469,15 @@ const KLANGRAUM_PALETTEN = [
   { id: 'mond', get name(){ return window.t('karte.palette.mond'); }, f: ['#9ff3ff', '#a9c8ff', '#efe0c2', '#20d4e8', '#7fb2e6', '#d8f6ff', '#c9b48f', '#5fe0d0'] },
   { id: 'glut', get name(){ return window.t('karte.palette.glut'); }, f: ['#ff5a48', '#ffb03a', '#ff6fa8', '#ffe07a', '#d9456e', '#ff8a52', '#f0c38f', '#c7372f'] },
   { id: 'borg', get name(){ return window.t('karte.palette.borg'); }, gestalt: 'kubus', f: ['#39ff6a', '#18b85c', '#a8ff3e', '#0e8f6e', '#62dca0', '#d4ff8f', '#2fe6bd', '#7aa83a'] },
+  /* Der Marsianer (Caspar_D, 27.10.2026: „Orange dominiert, dazu ein bis zwei Begleiter wie Dunkelrot und Sandgelb, so wie
+     beim Raben Pink und Blau dabei sind"). Die ersten vier tragen die Stilgruppen: Orange, Dunkelrot, Sandgelb, Rost -
+     unterscheidbar ueber Ton UND Helligkeit, nicht vier Orangetoene nebeneinander. */
+  { id: 'mars', get name(){ return window.t('karte.palette.mars'); }, gestalt: 'mars', f: ['#ff7a1a', '#a3201c', '#e8c27a', '#c2531d', '#ffa04d', '#6e1414', '#f4dcae', '#d9662b'] },
   { id: 'rabe', get name(){ return window.t('karte.palette.rabe'); }, gestalt: 'rabe', f: ['#b05cd6', '#ff5fb3', '#5a6cff', '#e590ff', '#7d3cff', '#ff9ad8', '#4fa3ff', '#c9a8ff'] },
 ];
 let klangraumPalette = (() => { try { const id = localStorage.getItem('mysuno-klangraum-farben');
   return KLANGRAUM_PALETTEN.some(p => p.id === id && !p.gestalt) ? id : 'nebel'; } catch (e) { return 'nebel'; } })();
-let klangraumPaletteGestalt = null;      /* 'borg' oder 'rabe', solange Kubus oder Rabe sie angeschaltet haben */
+let klangraumPaletteGestalt = null;      /* 'borg', 'rabe' oder 'mars', solange Kubus, Rabe oder Marsianer sie angeschaltet haben */
 const klangraumPal = () => KLANGRAUM_PALETTEN.find(p => p.id === (klangraumPaletteGestalt || klangraumPalette)) || KLANGRAUM_PALETTEN[0];
 let NEBEL = klangraumPal().f;
 const karteFarbe = (nr) => NEBEL[nr % NEBEL.length];
@@ -8490,7 +8495,7 @@ function klangraumFarbenWaehlen(id){
 }
 function klangraumFarbwahlHtml(){
   const chips = (p) => p.f.slice(0, 6).map(c => `<i style="background:${c}"></i>`).join(''), p = klangraumPal();
-  if (p.gestalt) return `<button type="button" class="fw-knopf" disabled title="${esc(t('karte.farbe.gestalt', { wer: t(p.gestalt === 'kubus' ? 'karte.farbe.kubus' : 'karte.farbe.rabe') }))}">${chips(p)}<span>${p.name}</span></button>`;
+  if (p.gestalt) return `<button type="button" class="fw-knopf" disabled title="${esc(t('karte.farbe.gestalt', { wer: t('karte.farbe.' + p.gestalt) }))}">${chips(p)}<span>${p.name}</span></button>`;
   return `<button type="button" class="fw-knopf" onclick="this.parentElement.classList.toggle('auf')">${chips(p)}<span>${p.name}</span><b>▾</b></button>`
     + '<span class="fw-liste">' + KLANGRAUM_PALETTEN.filter(q => !q.gestalt).map(q => `<button type="button" class="fw-wahl${q.id === p.id ? ' an' : ''}" onclick="klangraumFarbenWaehlen('${q.id}')">${chips(q)}<span>${q.name}</span></button>`).join('') + '</span>';
 }
@@ -11478,7 +11483,7 @@ function kartePanelHtml(){
   /* Kurzfassung des Zustands fuer die geschlossene Lade */
   const kurz = [karteDim === '3d' ? '3D' : '2D', karteVerf === 'umap' ? 'UMAP' : 'NMDS',
     schiffArt === 'direkt' ? t('karte.kurz.direkt') : schiffArt === 'warp' ? t('karte.kurz.warp') : t('karte.kurz.orbit'),
-    reise ? t('karte.kurz.reise') : null, probeflug ? t('karte.kurz.probeflug') : null, gestalt !== 'schiff' ? (kubus ? t('karte.kurz.kubus') : t('karte.kurz.rabe')) : null,
+    reise ? t('karte.kurz.reise') : null, probeflug ? t('karte.kurz.probeflug') : null, gestalt !== 'schiff' ? t('karte.kurz.' + gestalt) : null,
     Object.entries(karteArten).filter(([, v]) => v).map(([k]) => k === 'Instrument' ? t('karte.art.instrument') : k === 'Genre' ? t('karte.art.genre') : k === 'Stimmung' ? t('karte.art.stimmung') : k).join(', ') || null,
     karteNebel ? t('karte.nebel') : null, karteBahn ? t('karte.flugbahn') : null, karteLoecher ? t('karte.attraktoren') : null, karteLinien ? t('karte.sternbilder') : null].filter(Boolean).join(' · ');
   const zeile = (titel, inhalt) => `<div class="pzeile"><span class="ptitel">${titel}</span><span class="pinhalt">${inhalt}</span></div>`;
@@ -11524,7 +11529,7 @@ function kartePanelHtml(){
        ohne einen zweiten Zustand, den man verlieren kann.
        Bei der Matrix steht die abgeleitete Kennung dahinter, sonst
        wuesste man nicht, woher ihr Buchstabe kommt. */
-    zeile(kubus ? t('karte.matrix') : gestalt === 'rabe' ? t('karte.rabe') : t('karte.schiff'),
+    zeile(kubus ? t('karte.matrix') : gestalt === 'rabe' ? t('karte.rabe') : gestalt === 'mars' ? t('karte.mars') : t('karte.schiff'),
       `<span class="namensfeld" title="${t('karte.name.titel')}">` +
         `<input id="schiffname" value="${esc(schiffName())}" maxlength="20" spellcheck="false"` +
           ` size="${Math.max(6, schiffName().length + 1)}"` +
@@ -11540,7 +11545,8 @@ function kartePanelHtml(){
     wahlZeile(t('karte.gestalt'), wahlHtml('gestalt', [
       { id: 'schiff', name: t('karte.gestalt.schiff'), title: t('karte.gestalt.schiff.titel') },
       { id: 'kubus', name: t('karte.gestalt.kubus'), title: t('karte.gestalt.kubus.titel') },
-      { id: 'rabe', name: t('karte.gestalt.rabe'), title: t('karte.gestalt.rabe.titel') }], gestalt, { titel: t('karte.gestalt.wahl') })) +
+      { id: 'rabe', name: t('karte.gestalt.rabe'), title: t('karte.gestalt.rabe.titel') },
+      { id: 'mars', name: t('karte.gestalt.mars'), title: t('karte.gestalt.mars.titel') }], gestalt, { titel: t('karte.gestalt.wahl') })) +
     wahlZeile(t('karte.flugart'), wahlHtml('flugart', [
       { id: 'direkt', name: t('karte.flugart.direkt'), title: t('karte.flugart.direkt.titel') },
       { id: 'orbit', name: t('karte.flugart.orbit'), title: t('karte.flugart.orbit.titel') },
@@ -11589,7 +11595,7 @@ wahlTun.gestalt = (wert) => {
   if (vorher === 'kubus' && !kubus){ assimiliert.clear(); if (raumK()) karteHimmel(raumK()); }
   if (vorher === 'rabe' && gestalt !== 'rabe' && typeof rabeWolkeLeeren === 'function') rabeWolkeLeeren();
   if (vorher === 'rabe' && gestalt !== 'rabe' && karteSchiffFrame) karteSchiffFrame.rabenFunken = null;
-  if (typeof rabenmagieAnwenden === 'function') rabenmagieAnwenden();
+  if (typeof toenerAnwenden === 'function') toenerAnwenden();
   klangraumGestaltFarben();
   karteZeichnen();
 };
@@ -12014,6 +12020,66 @@ function nebelMalen(g, x, y, R, t, dichte, enge){
    Ueberschreibbar zur Laufzeit ueber window.__spur - so laesst sich das
    ohne Neuladen nachstellen, ohne dass ein Regler im Bedienfeld landet. */
 const SPUR_DECK = 2, SPUR_FETZ = 3;
+
+/* DER TOENER (Caspar_D, 25.08.2026 beim Raben: „ein alles-über-Töner, keine andere Akzentfarbe kommt mehr durch"; am
+   27.10.2026 verallgemeinert fuer den Marsianer, „ein festes oranges Farbschema wie das Rabenlila"). Jede Gestalt mit Eintrag
+   hier faerbt die ganze Oberflaeche in ihrem Ton, egal welcher Titel laeuft: Flaechen, Akzent, Schleier ueber den
+   Hintergrund-Covern, Flugbahn und Zielmarke im Klangraum. Ohne Eintrag (Schiff, Kubus) gilt die Coverfarbe. */
+const TOENER = {
+  rabe: { akzent: '#b44dff', akzent2: '#8a63c8', bg: '#0d0a12', flaeche: '#191323',
+          schleier: 'rgba(126,58,214,.24)', schleier2: 'rgba(126,58,214,.22)', bahn: '180,77,255', schimmer: 'rgba(242,220,255,0.26)' },
+  mars: { akzent: '#ff7a1a', akzent2: '#c2531d', bg: '#110a06', flaeche: '#21140c',
+          schleier: 'rgba(214,92,22,.22)', schleier2: 'rgba(214,92,22,.20)', bahn: '255,122,26', schimmer: 'rgba(255,232,205,0.26)' },
+};
+
+/* DER MARSIANER (27.10.2026): eine fliegende Untertasse in der Aufsicht von schraeg oben. Wie der Kubus dreht sie sich
+   nicht in die Flugrichtung - eine Untertasse hat keinen Bug -, sie neigt sich nur ein wenig hinein. Unter ihr der orange
+   Zugstrahl, am Rand ein Lichterkranz, der umlaeuft (schneller mit Schub), oben die Glaskuppel mit dem Marsianer darin.
+   Farben aus TOENER.mars, nie die Akzentfarbe des Titels. detail: 0 = fern (nur Scheibe und Glut), 1 = nah. */
+function marsZeichnen(g, P, sc, jetzt, ang, glut, schub, detail = 1){
+  const T = TOENER.mars, s = Math.max(0.6, sc);
+  g.save(); g.translate(P[0], P[1]); g.scale(s, s);
+  g.rotate(Math.cos(ang) * 0.12 * (0.3 + 0.7 * schub));              /* in die Fahrt geneigt, im Orbit fast waagrecht */
+  const atem = 0.75 + 0.25 * Math.sin(jetzt / 260);
+  /* Glut unter der Scheibe - mit Schub heller, bei Ankunft (glut) gross */
+  g.globalCompositeOperation = 'lighter';
+  const rg = 9 + 5 * schub + 12 * glut;
+  const gl = g.createRadialGradient(0, 2, 0, 0, 2, rg);
+  gl.addColorStop(0, `rgba(${T.bahn},${(0.55 * atem + 0.35 * glut).toFixed(2)})`); gl.addColorStop(1, `rgba(${T.bahn},0)`);
+  g.fillStyle = gl; g.beginPath(); g.ellipse(0, 2, rg, rg * 0.55, 0, 0, 2 * Math.PI); g.fill();
+  g.globalCompositeOperation = 'source-over';
+  /* Scheibe: Metall, unten dunkler */
+  const sb = g.createLinearGradient(0, -3, 0, 3);
+  sb.addColorStop(0, '#e9e2d8'); sb.addColorStop(0.5, '#a89c8e'); sb.addColorStop(1, '#4a3f36');
+  g.fillStyle = sb; g.strokeStyle = '#2a201a'; g.lineWidth = 0.35;
+  g.beginPath(); g.ellipse(0, 0, 9, 2.8, 0, 0, 2 * Math.PI); g.fill(); g.stroke();
+  /* Lichterkranz: acht Lampen, eine laeuft um */
+  const lauf = (jetzt / (schub > 0 ? 90 : 220)) % 8;
+  for (let i = 0; i < 8; i++){
+    const w = i / 8 * 2 * Math.PI, x = Math.cos(w) * 7.4, y = Math.sin(w) * 1.9 + 0.4;
+    if (y < 0 && detail < 0.3) continue;                               /* fern: nur die vordere Haelfte */
+    const an = Math.abs(i - lauf) < 1 || Math.abs(i - lauf) > 7;
+    g.fillStyle = an ? '#fff1d6' : (i % 2 ? T.akzent : '#e8c27a');
+    g.globalAlpha = y < 0 ? 0.45 : 1;
+    g.beginPath(); g.arc(x, y, an ? 0.75 : 0.5, 0, 2 * Math.PI); g.fill();
+  }
+  g.globalAlpha = 1;
+  /* Kuppel */
+  const ku = g.createLinearGradient(0, -6, 0, -1);
+  ku.addColorStop(0, 'rgba(255,214,170,0.75)'); ku.addColorStop(1, 'rgba(255,140,60,0.35)');
+  g.fillStyle = ku; g.strokeStyle = 'rgba(255,232,205,0.6)'; g.lineWidth = 0.3;
+  g.beginPath(); g.ellipse(0, -1.2, 3.6, 4.2, 0, Math.PI, 2 * Math.PI); g.closePath(); g.fill(); g.stroke();
+  if (detail > 0.35){
+    /* Der Marsianer: Kopf mit zwei Fuehlern, im Kuppelglas */
+    g.fillStyle = '#5a1a10';
+    g.beginPath(); g.ellipse(0, -2.6, 1.15, 1.25, 0, 0, 2 * Math.PI); g.fill();
+    g.strokeStyle = '#5a1a10'; g.lineWidth = 0.28;
+    for (const sg of [-1, 1]){ g.beginPath(); g.moveTo(sg * 0.5, -3.6); g.lineTo(sg * 1.1, -4.6); g.stroke();
+      g.fillStyle = T.akzent; g.beginPath(); g.arc(sg * 1.1, -4.7, 0.3, 0, 2 * Math.PI); g.fill(); g.fillStyle = '#5a1a10'; }
+    g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.ellipse(-1.4, -3.6, 0.6, 0.35, -0.5, 0, 2 * Math.PI); g.fill();
+  }
+  g.restore();
+}
 
 /* DER KUBUS
 
@@ -12496,17 +12562,17 @@ function zwillinge(p){
    eine Wortgrenze - 'mysuno-kubus'. Beide Altwerte zaehlen. */
 let gestalt = (() => { try {
   const g = localStorage.getItem('mysuno-gestalt');
-  if (g === 'schiff' || g === 'kubus' || g === 'rabe') return g;
+  if (g === 'schiff' || g === 'kubus' || g === 'rabe' || g === 'mars') return g;
   if (localStorage.getItem('mysuno-kubus') === 'an') return 'kubus';
   if (localStorage.getItem('mysuno-borg')  === 'an') return 'kubus';
   return 'schiff';
 } catch (e) { return 'schiff'; } })();
 let kubus = gestalt === 'kubus';
-/* Der gemerkte Rabe faerbt schon beim Start - nicht erst beim ersten
+/* Rabe oder Marsianer faerben schon beim Start - nicht erst beim ersten
    Song (uiFaerben ist als Funktionsdeklaration gehoben; aktuellId gibt
-   es hier noch nicht, darum direkt statt ueber rabenmagieAnwenden). */
-document.documentElement.classList.toggle('rabenmagie', gestalt === 'rabe');
-if (gestalt === 'rabe' && typeof uiFaerben === 'function') uiFaerben(null);
+   es hier noch nicht, darum direkt statt ueber toenerAnwenden). */
+document.documentElement.classList.toggle('toener', !!TOENER[gestalt]);
+if (TOENER[gestalt] && typeof uiFaerben === 'function') uiFaerben(null);
 klangraumGestaltFarben();                 /* Kubus und Rabe bringen ihre Palette schon beim Start mit */
 const assimiliert = new Set();          // Song-IDs, die schon verloschen sind
 let supernovae = [];                    // { id, t0 }
@@ -12736,7 +12802,8 @@ function karteSchiffFrame(){
       g.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
     }
     /* staerker sichtbar (Caspar_D, 22.08.): weicher Leuchtsaum unter einer kraeftigen Linie */
-    if (gestalt === 'rabe'){
+    if (TOENER[gestalt]){
+      const tb = TOENER[gestalt].bahn;
       /* Die Rabenbahn schimmert VIOLETT (Caspar_D, 25.08.2026: "gib dem
          Raben eine schimmernde Flugbahn in violett ... keine Akzentfarbe
          beim Raben, nie"). Dieselbe Fuenf-Lagen-Bauweise wie beim Kubus,
@@ -12744,10 +12811,10 @@ function karteSchiffFrame(){
          weisse Lage - das Schimmern. */
       g.globalCompositeOperation = 'lighter';
       for (const [br, dk] of [[19,0.035],[13,0.045],[8,0.060],[4,0.085],[1.4,0.20]]){
-        g.strokeStyle = `rgba(180,77,255,${dk})`;
+        g.strokeStyle = `rgba(${tb},${dk})`;
         g.lineWidth = br; g.stroke();
       }
-      g.strokeStyle = 'rgba(242,220,255,0.26)';
+      g.strokeStyle = TOENER[gestalt].schimmer;
       g.lineWidth = 0.7; g.stroke();
       g.globalCompositeOperation = 'source-over';
     } else if (kubus){
@@ -12838,6 +12905,7 @@ function karteSchiffFrame(){
       rabeZeichnen(g, P, sc, jetzt, ang, glut, schub); return;
     }
     if (kubus){ wuerfelZeichnen(g, P, sc, jetzt, ang, glut, schub); return; }
+    if (gestalt === 'mars'){ marsZeichnen(g, P, sc, jetzt, ang, glut, schub, detail); return; }
 
     g.save(); g.translate(P[0], P[1]); g.rotate(ang); g.scale(sc, sc);
     const flack = 0.75 + 0.25 * Math.sin(jetzt / 45) * Math.sin(jetzt / 31);
@@ -12894,7 +12962,7 @@ function karteSchiffFrame(){
     g.beginPath(); g.moveTo(P[0] + 5, P[1] - 5); g.lineTo(lx - 3, ly + 3); g.stroke();
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
     g.font = '600 9px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = 'rgba(255,255,255,0.6)';
-    g.fillText(kubus ? 'MUSIK-MATRIX' : gestalt === 'rabe' ? 'RABE' : 'SOUND-SCHIFF', lx, ly - 6);
+    g.fillText(kubus ? 'MUSIK-MATRIX' : gestalt === 'rabe' ? 'RABE' : gestalt === 'mars' ? 'MARSIANER' : 'SOUND-SCHIFF', lx, ly - 6);
     g.font = '600 12px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = '#fff';
     /* Assimiliert traegt das Schiff keinen Namen mehr, sondern eine
        Kennung - so wie Picard zu Locutus wurde (Caspar_D, 25.08.2026). */
@@ -12908,7 +12976,7 @@ function karteSchiffFrame(){
     return [h00*P0[0] + h10*M0[0] + h01*P1[0] + h11*M1[0], h00*P0[1] + h10*M0[1] + h01*P1[1] + h11*M1[1]]; };
   /* Beim Raben NIE die Akzentfarbe (Caspar_D, 25.08.2026) - auch die
      Zielmarke traegt sein Violett. */
-  const zielmarke = (B) => { g.strokeStyle = gestalt === 'rabe' ? '#b44dff' : akz; g.lineWidth = 1; g.globalAlpha = 0.7; g.beginPath(); g.arc(B[0], B[1], 7, 0, 2 * Math.PI); g.stroke(); g.globalAlpha = 1; };
+  const zielmarke = (B) => { g.strokeStyle = TOENER[gestalt] ? TOENER[gestalt].akzent : akz; g.lineWidth = 1; g.globalAlpha = 0.7; g.beginPath(); g.arc(B[0], B[1], 7, 0, 2 * Math.PI); g.stroke(); g.globalAlpha = 1; };
   const mmss = (t) => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
 
   /* Songwechsel erkennen: im Warp-Modus startet hier der Sprung */
@@ -15140,17 +15208,21 @@ function uiFaerben(s){
      Violett - egal, welcher Song laeuft. Die Toene sind seine eigenen
      (rabe.js): der Akzent #b44dff, die Flaechen sein violettstichiges
      Dunkel. Der Schleier auf den Hintergrund-Covern haengt an der
-     Klasse .rabenmagie im CSS; geschaltet wird beides von
-     rabenmagieAnwenden(). */
-  if (gestalt === 'rabe'){
-    w.setProperty('--bg',       '#0d0a12');
-    w.setProperty('--flaeche',  '#191323');
-    w.setProperty('--flaeche2', 'color-mix(in srgb, #191323 82%, #b44dff)');
-    w.setProperty('--rand',     'color-mix(in srgb, #191323 62%, #b44dff)');
-    w.setProperty('--akzent',   '#b44dff');
-    w.setProperty('--akzent2',  '#8a63c8');
-    w.setProperty('--titel-a',  '#b44dff');
-    w.setProperty('--titel-b',  '#8a63c8');
+     Klasse .toener im CSS; geschaltet wird beides von
+     toenerAnwenden(). Seit dem 27.10.2026 fuer jede Gestalt mit
+     Eintrag in TOENER (Rabe violett, Marsianer orange). */
+  const tn = TOENER[gestalt];
+  if (tn){
+    w.setProperty('--bg',       tn.bg);
+    w.setProperty('--flaeche',  tn.flaeche);
+    w.setProperty('--flaeche2', `color-mix(in srgb, ${tn.flaeche} 82%, ${tn.akzent})`);
+    w.setProperty('--rand',     `color-mix(in srgb, ${tn.flaeche} 62%, ${tn.akzent})`);
+    w.setProperty('--akzent',   tn.akzent);
+    w.setProperty('--akzent2',  tn.akzent2);
+    w.setProperty('--titel-a',  tn.akzent);
+    w.setProperty('--titel-b',  tn.akzent2);
+    w.setProperty('--schleier', tn.schleier);
+    w.setProperty('--schleier2', tn.schleier2);
     return;
   }
   const f = s && s.farben;
@@ -15198,8 +15270,8 @@ function uiFaerben(s){
    die Farbvariablen fuer alles andere. Wird beim Gestaltwechsel und
    beim Start gerufen; faellt der Rabe weg, holt uiFaerben die Farben
    des laufenden Songs zurueck. */
-function rabenmagieAnwenden(){
-  document.documentElement.classList.toggle('rabenmagie', gestalt === 'rabe');
+function toenerAnwenden(){
+  document.documentElement.classList.toggle('toener', !!TOENER[gestalt]);
   uiFaerben(typeof aktuellId !== 'undefined' && aktuellId && typeof song === 'function' ? song(aktuellId) : null);
 }
 
