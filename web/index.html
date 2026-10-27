@@ -9263,7 +9263,9 @@ function schaumSichtbar(an){
   if (an) { const k = $('karte'); if (k) k.classList.remove('leiste'); }    /* die schmale Leiste gehoert dem Klangraum (ladenLeiste) */
   if (an && schiffLauf){ cancelAnimationFrame(schiffLauf); schiffLauf = 0; }
 }
-let schaumFarbeAnteil = (() => { try { const v = parseFloat(localStorage.getItem('mysuno-schaum-farbe')); return isFinite(v) ? v : 100; } catch (e) { return 100; } })();
+/* Grundeinstellung 70 % (Caspar_D, 27.10.2026: „im Schaum immer 70 % der Farbregler … auch neue Grundeinstellung“) - die Cover
+   kommen durch, die Gruppenfarbe bleibt lesbar. Wer den Regler einmal bewegt hat, behaelt seinen Wert. */
+let schaumFarbeAnteil = (() => { try { const v = parseFloat(localStorage.getItem('mysuno-schaum-farbe')); return isFinite(v) ? v : 70; } catch (e) { return 70; } })();
 function schaumFarbeSetzen(v){
   schaumFarbeAnteil = Math.max(0, Math.min(100, +v || 0));
   try { localStorage.setItem('mysuno-schaum-farbe', String(schaumFarbeAnteil)); } catch (e) {}

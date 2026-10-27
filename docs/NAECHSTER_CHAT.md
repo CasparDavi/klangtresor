@@ -9846,3 +9846,8 @@ Palette: „Orange dominiert, dazu ein bis zwei Begleiter wie Dunkelrot und Sand
   und entfärbt sauber.
 - Weiter: Feature-Dokument `docs/features/` (noch nicht eingecheckt) – Bauliste dort: Rollbalken unsichtbar, Bilder in
   drei Sprachen, Format folgt Kachel, keine textlastigen/angeschnittenen Bilder, Zimmerwand fürs Plakat.
+
+## 140. 27.10.2026: 1.0.122 – Farbe über den Covern im Schaum: Grundeinstellung 70 %
+
+Caspar_D: „im Schaum immer 70 % der Farbregler … auch neue Grundeinstellung“. `schaumFarbeAnteil` fällt ohne gemerkten
+Wert auf 70 statt 100; ein einmal bewegter Regler behält seinen Wert (localStorage `mysuno-schaum-farbe`).
