@@ -505,6 +505,19 @@ const MORGEN_TEXTE = (() => {
   } catch (e) { console.warn('MORGENSCHRITTE.json nicht lesbar: ' + e.message); }
   return m;
 })();
+/* DIE MORGENSCHRITTE IN DER SPRACHE DES FENSTERS (Caspar_D, 27.10.2026: "pass den server an, keine kopfstaende").
+   Das Deutsch bleibt MORGENSCHRITTE.json; Englisch und Russisch stehen daneben in MORGENSCHRITTE-uebersetzt.json,
+   nach der ID des Schritts (die ID aendert sich nie, der Name darf es). Uebersetzt wird beim Ausliefern
+   (/api/morgen/stand?spr=en), nicht im Laufzustand - der bleibt deutsch wie das Protokoll. Fehlt eine Uebersetzung,
+   steht der deutsche Satz. Die Kurzergebnisse der Schritte kommen aus den Skripten und bleiben vorerst deutsch. */
+const MORGEN_UEBERSETZT = (() => {
+  try { return JSON.parse(fs.readFileSync(path.join(WURZEL, 'docs', 'handbuch', 'MORGENSCHRITTE-uebersetzt.json'), 'utf8')); }
+  catch (e) { console.warn('MORGENSCHRITTE-uebersetzt.json nicht lesbar: ' + e.message); return {}; }
+})();
+function morgenUebersetzt(a, spr) {
+  const u = a && (MORGEN_UEBERSETZT[a.id] || {})[spr];
+  return u ? { ...a, name: u.name || a.name, was: u.was || a.was } : a;
+}
 /* PFLICHT: bricht der Schritt ab, bricht der Lauf ab - wie die
    Auswahlliste (MORGEN_KREUZE in web/index.html) es traegt: 'katalog'
    ist die Grundlage fuer alles andere. Alle anderen werden bei einem
@@ -1213,11 +1226,12 @@ function rohZeitmarken() {
   }
   return hat;
 }
-function morgenStand() {
+function morgenStand(spr) {
+  const jetzt = morgen.schritt >= 0 ? ((morgen.folge||[])[morgen.schritt]||null) : null;
   return {
     laeuft:  morgen.laeuft,
     schritt: morgen.schritt,
-    name:    morgen.schritt >= 0 ? ((morgen.folge||[])[morgen.schritt]||{}).name : null,
+    name:    jetzt ? morgenUebersetzt(jetzt, spr).name : null,
     von:     (morgen.folge||[]).length,
     seit:    morgen.seit,
     fehler:  morgen.fehler,
@@ -1225,7 +1239,7 @@ function morgenStand() {
     art:     morgen.art,
     datensaetze: morgen.datensaetze,
     fortschritt: fortschritt(),
-    schritte: morgenAbschnitte(),
+    schritte: morgenAbschnitte().map(a => morgenUebersetzt(a, spr)),
     /* Beim Sammeln die ganze Ausgabe - sie IST der Vergleich, den der
        Knopf zeigen soll. Beim langen Lauf nur der Schwanz. */
     zeilen:  morgen.laeuft || morgen.folge === undefined
@@ -2503,7 +2517,7 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
     } catch (e) { return jsonAntwort(res, { vorhanden: false, jeGeliefert }); }
   }
 
-  if (p === '/api/morgen/stand') return jsonAntwort(res, morgenStand());
+  if (p === '/api/morgen/stand') return jsonAntwort(res, morgenStand(u.searchParams.get('spr')));
 
   /* ================================================================
      TON VOM LESEZEICHEN ENTGEGENNEHMEN

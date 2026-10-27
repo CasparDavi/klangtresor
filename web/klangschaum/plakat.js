@@ -27,6 +27,10 @@ const anz = (n) => typeof gruppenAnzeige === 'function' ? gruppenAnzeige(n) : n;
 /* Maß und Gliederung mitten in der Unterzeile: im Englischen klein („area by plays · grouped by kind of reaction"), im Deutschen wie benannt */
 const sprJetzt = () => typeof window.sprache === 'function' ? window.sprache() : 'de';
 const imSatz = (w) => sprJetzt() !== 'de' && w ? w[0].toLowerCase() + w.slice(1) : w;   /* Englisch und Russisch: mitten im Satz klein */
+/* „Fläche nach Kommentare" (Caspar_D, 27.10.2026, am gedruckten Plakat): nach „nach" steht im Deutschen der Dativ. Die Maße
+   sind Plurale auf -e, die ein -n brauchen; alle anderen Namen bleiben, wie sie sind. */
+const DATIV = { 'Abrufe': 'Abrufen', 'Kommentare': 'Kommentaren', 'Herzen + Kommentare': 'Herzen + Kommentaren' };
+const nachMass = (w) => sprJetzt() === 'de' ? (DATIV[w] || w) : imSatz(w);
 const FORMATE = [
   { id: 'A3', name: 'A3', w: 297, h: 420 }, { id: 'A2', name: 'A2', w: 420, h: 594 },
   { id: 'A1', name: 'A1', w: 594, h: 841 }, { id: 'A0', name: 'A0', w: 841, h: 1189 },
@@ -933,7 +937,7 @@ function kopfUnterVorschlag(a = aktuell){
   /* Bilderschau: die Transformation gehört zur Fläche, in der Schreibweise des Panels („Fläche ∝ √Abrufe"). Titel: die Auswahl des
      Filters oben wie in der Legende („257 von 330 Titeln · gefiltert: Öffentlich"), solange das Plakat genau sie zeigt; sonst die Zahl
      auf dem Plakat mit dem Filterteil */
-  return [menge ? menge + titelZusatz(a) : person ? sag('plakat.personen', { n }) : titelZahl(n, a), a.art === 'bild' && a.t ? a.t.kurzMit(imSatz(a.m.name)) : sag('plakat.flaeche_nach', { mass: imSatz(a.m.name) }),
+  return [menge ? menge + titelZusatz(a) : person ? sag('plakat.personen', { n }) : titelZahl(n, a), a.art === 'bild' && a.t ? a.t.kurzMit(imSatz(a.m.name)) : sag('plakat.flaeche_nach', { mass: nachMass(a.m.name) }),
           sag('plakat.gegliedert', { glied: imSatz(a.gl.name.replace(/:.*$/, '')) }), monat].join(' · ');
 }
 

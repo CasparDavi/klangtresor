@@ -9861,3 +9861,24 @@ Einrichtung und Aktualisieren); Texte in bin/texte/server.json: „KlangTresor l
 „KlangTresor auf http://…“ bleibt in jeder Sprache deutsch – die Startskripte auf dem Stick lesen sie (Schnittstelle).
 Geprüft im Sandkasten mit KT_SPRACHE=de/en/ru. Lehre: server.js beendet sich bei geänderter Datei selbst und verlässt
 sich auf die Schleife im Startskript – ein Sandkasten ohne Startskript bleibt danach aus.
+
+## 142. 27.10.2026: 1.0.124 – Bühne folgt dem Töner, Morgenschritte in EN/RU, vier kleine Bildfehler
+
+Gefunden an den Bildern des Feature-Dokuments (docs/features), behoben in einem Zug:
+- **Bühne folgt dem Töner.** `buehneAuf()` setzte `--bakzent` immer aus dem Cover – unter dem Marsianer standen Regler
+  und Fortschritt grün. Neu `buehneToener()`: bei aktivem Töner dessen Akzent, sonst wieder die Coverfarbe; auch
+  `toenerAnwenden()` ruft es, damit ein Wechsel bei offener Bühne sofort greift. Grund und Schrift bleiben aus dem Cover.
+- **Etikett „Karaoke (Whisper)“** stand neben der gewählten bereinigten Lyrik: es richtete sich nach der Hauptspur des
+  Titels statt nach `bSpurJetzt()`. `markenWaehlen()` baut die Leiste jetzt mit neu.
+- **„Fläche nach Kommentare“** auf Plakaten: plakat.js setzt im Deutschen den Dativ (Abrufen, Kommentaren,
+  Herzen + Kommentaren), Englisch/Russisch unverändert.
+- **Schiffsetikett im Klanghimmel** war fest deutsch („MARSIANER“ auch im englischen Himmel): jetzt aus
+  karte.schiff/matrix/rabe/mars, großgeschrieben.
+- **Kompressor:** „ein · dB“ / „ein · Amplitude“ rücken 14 px vom Dreieck der Spitze weg. Offen bleibt die Überlagerung
+  der Etiketten „≈ Stilgruppe“ / „≈ Lautheit heute“ mit Kurve und Hilfslinien.
+- **Morgenschritte in EN/RU** (Caspar_D: „pass den server an, keine kopfstände“): Deutsch bleibt
+  docs/handbuch/MORGENSCHRITTE.json, Übersetzungen in docs/handbuch/MORGENSCHRITTE-uebersetzt.json nach Schritt-ID
+  (RU maschinell, RU*). Der Server übersetzt beim Ausliefern: `/api/morgen/stand?spr=en|ru`; der Laufzustand bleibt
+  deutsch. Kurzergebnisse der Schritte kommen aus den Skripten und sind noch deutsch.
+Geprüft im Sandkasten (8803): Akzent #ff7a1a mit Marsianer, Coverfarbe ohne Töner; Etikett je Spur; Morgenfenster EN;
+keine Konsolenfehler.

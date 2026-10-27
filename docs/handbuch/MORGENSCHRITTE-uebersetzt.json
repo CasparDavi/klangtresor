@@ -1,0 +1,212 @@
+{
+ "gesundheit": {
+  "en": {
+   "name": "Check connections — do the Suno addresses answer?",
+   "was": "Queries every Suno address the morning run takes data from: the Suno site, your author profile, the comments on a song and the stores that hold title pictures and moving pictures. Each address gets a green tick or a red cross; anything that answers differently since the last run is noted. Suno has blocked the audio addresses since 03.09.2026; they are only watched, so it shows as soon as they answer again. The result is saved and compared on the next run."
+  },
+  "ru": {
+   "name": "Проверка связи — отвечают ли адреса Suno?",
+   "was": "Опрашивает каждый адрес Suno, с которого утренний прогон берёт данные: сайт Suno, твой авторский профиль, комментарии к песне и хранилища титульных картинок и видеообложек. Каждый адрес получает зелёную галочку или красный крестик; то, что отвечает иначе, чем в прошлый раз, отмечается. Аудиоадреса Suno блокирует с 03.09.2026, за ними только наблюдают, чтобы заметить, когда они снова ответят. Результат сохраняется и при следующем прогоне используется для сравнения."
+  }
+ },
+ "katalog": {
+  "en": {
+   "name": "Rebuild the KlangTresor catalogue — merge all data transfers, extend the history of plays, hearts and comments",
+   "was": "Reads all transfers from the raw folder and merges them with the existing catalogue: new songs are added, data for known songs is completed where needed, and each song's history of plays, hearts and comments is extended; songs by other authors are left out. Also runs without a new data set over the whole collection and then only maintains (word timestamps from Whisper, albums). The previous catalogue is backed up before writing; processed data sets are then removed from the raw folder, an unusable album data set stays there, marked."
+  },
+  "ru": {
+   "name": "Пересобрать каталог KlangTresor — объединить все переносы данных, продолжить историю прослушиваний, сердец и комментариев",
+   "was": "Читает все переносы из папки исходных данных и объединяет их с существующим каталогом: новые песни добавляются, данные известных при необходимости дополняются, для каждой песни продолжается история прослушиваний, сердец и комментариев; песни чужих авторов не учитываются. Работает и без нового набора данных по всему собранию и тогда только поддерживает (пословные метки времени Whisper, альбомы). Перед записью прежний каталог сохраняется; обработанные наборы затем удаляются из папки, непригодный набор альбомов остаётся там с пометкой."
+  }
+ },
+ "kommentare": {
+  "en": {
+   "name": "Save new comments from Suno",
+   "was": "Fetches the comments on your songs from Suno, without signing in. Normally only for songs whose comment count is higher than in the saved data; once every three days for all songs with comments, so edited texts and hearts on comments come along too. For new comments it also asks for replies and appends each new state to the saved data; deleted comments stay there."
+  },
+  "ru": {
+   "name": "Сохранить новые комментарии из Suno",
+   "was": "Забирает из Suno комментарии к твоим песням, без входа в аккаунт. Обычно только для песен, у которых счётчик комментариев выше, чем в сохранённых данных; раз в три дня — для всех песен с комментариями, чтобы подтянуть изменённые тексты и сердца на комментариях. К новым комментариям дополнительно запрашивает ответы и добавляет каждое новое состояние к сохранённым данным; удалённые комментарии там остаются."
+  }
+ },
+ "medien-uebernehmen": {
+  "en": {
+   "name": "Take over downloaded audio files",
+   "was": "Searches your downloads folder for audio files you got from Suno via “Unlock & Download”; if you keep downloads elsewhere, name that folder once by hand with node bin/uebernehmen.js --ordner <folder> --tun, after which KlangTresor knows the place and searches it on every run. Recognises the song by the Suno signature in the file header, not by the file name, and files MP3 and WAV with their song in the archive; every copy is checked for size and signature. Anything already in the archive, without a signature, not belonging to a song in the catalogue or in another format (M4A) stays where it is; the reason is in the log. If songs in the catalogue lack their audio file and the folders hold nothing, the log says where it looked."
+  },
+  "ru": {
+   "name": "Забрать скачанные аудиофайлы",
+   "was": "Ищет в папке загрузок аудиофайлы, полученные в Suno через «Unlock & Download»; кто хранит загрузки в другом месте, один раз указывает папку вручную: node bin/uebernehmen.js --ordner <папка> --tun, после чего KlangTresor знает это место и просматривает его при каждом прогоне. Узнаёт песню по подписи Suno в заголовке файла, а не по имени, и кладёт MP3 и WAV к их песне в архив; каждая копия проверяется по размеру и подписи. То, что уже есть в архиве, не имеет подписи, не относится ни к одной песне каталога или имеет другой формат (M4A), остаётся на месте; причина — в журнале. Если у песен каталога нет аудиофайла, а в папках ничего не нашлось, в журнале указано, где искали."
+  }
+ },
+ "medien-laden": {
+  "en": {
+   "name": "Load media (MP3, title pictures, moving pictures), compute depth maps and find faces",
+   "was": "Fetches missing audio and visual data for all songs in the catalogue: title picture, moving picture, plus your profile picture and the album pictures. MP3 is on the list too but has not arrived since 03.09.2026, because Suno blocks the addresses. Then every song without a tile gets its picture for the works overview, and every title picture without colours yields the colours for the KlangTresor interface, written to the catalogue. Finally every new title picture gets its depth map (for the spatial effects), and title pictures and avatars are searched for faces and lettering, so foam and poster place the pictures well in their cells."
+  },
+  "ru": {
+   "name": "Загрузить медиа (MP3, титульные картинки, видеообложки), рассчитать карты глубины и найти лица",
+   "was": "Подгружает для всех песен каталога недостающие аудио- и видеоданные: титульную картинку, видеообложку, а также твой аватар и обложки альбомов. MP3 тоже в списке, но с 03.09.2026 не приходит, потому что Suno блокирует адреса. Затем для каждой песни без плитки создаётся картинка для обзора работ, а из каждой титульной картинки без цветов извлекаются цвета для интерфейса KlangTresor и записываются в каталог. Наконец, каждая новая титульная картинка получает карту глубины (для пространственных эффектов), а в титульных картинках и аватарах ищутся лица и надписи, чтобы пена и плакат правильно размещали изображения в ячейках."
+  }
+ },
+ "analyse-rechnen": {
+  "en": {
+   "name": "Compute the sound analysis for new songs",
+   "was": "Works out waveform, loudness and stereo width plus the spectrogram images for every song without measurements, from the WAV (or the MP3 instead); several songs are analysed at once, one core stays free for the interface. Anything already complete is skipped; nothing is written until all parts of a song are done, so an interruption leaves nothing half-finished. The measurements take about 12 MB per song."
+  },
+  "ru": {
+   "name": "Рассчитать звуковой анализ новых песен",
+   "was": "Для каждой песни без измерений получает из WAV (или вместо него из MP3) форму волны, громкость и ширину стерео, а также изображения спектрограмм; несколько песен анализируются одновременно, одно ядро остаётся свободным для интерфейса. Полностью готовое пропускается; запись идёт лишь тогда, когда готовы все части песни, чтобы прерывание не оставило ничего наполовину. Измерения занимают около 12 МБ на песню."
+  }
+ },
+ "analyse-index": {
+  "en": {
+   "name": "Summarise measurements for sorting and filtering",
+   "was": "Summarises the key values from the measurements of all songs — loudness, dynamics, peak level, stereo width and duration, plus the key from our own key detection — each time anew for the whole collection. The works overview can then be sorted and filtered by these values without reading the large measurement files."
+  },
+  "ru": {
+   "name": "Свести измерения для сортировки и фильтров",
+   "was": "Сводит из измерений всех песен ключевые значения — громкость, динамику, пиковый уровень, ширину стерео и длительность, а также тональность из собственного определения — каждый раз заново для всего собрания. Так обзор работ можно сортировать и фильтровать по этим значениям, не читая большие файлы измерений."
+  }
+ },
+ "analyse-eqprofil": {
+  "en": {
+   "name": "Update the sound profile and loudness distribution",
+   "was": "For every song without a sound profile, works out from the measurements how much energy sits in eight frequency bands and how loud which share of the song is. Plus the average over all songs, the tonal colour of the collection. The sound studio uses both for the equaliser and its starting values."
+  },
+  "ru": {
+   "name": "Обновить звуковой профиль и распределение громкости",
+   "was": "Для каждой песни без звукового профиля определяет по измерениям, сколько энергии приходится на восемь частотных полос и насколько громка каждая доля песни. Плюс среднее по всем песням — тембр собрания. Звуковая студия использует оба значения для эквалайзера и начальных настроек."
+  }
+ },
+ "analyse-stoerfrequenz": {
+  "en": {
+   "name": "Find interfering frequencies — standing tones for the notch filter in the sound studio",
+   "was": "Searches every song not yet checked whose audio is present for standing tones — hum, whistle, a resonance that stands across the whole song. Anything found then appears in the sound studio as a suggestion for the notch filter; nothing is filtered on its own. The result for each song is saved, even when it is clean."
+  },
+  "ru": {
+   "name": "Найти мешающие частоты — стоячие тоны для режекторного фильтра в звуковой студии",
+   "was": "Проверяет каждую ещё не проверенную песню с аудио на стоячие тоны — гул, свист, резонанс, стоящий на протяжении всей песни. Найденное затем предлагается в звуковой студии для режекторного фильтра; само ничего не фильтруется. Результат по каждой песне сохраняется, даже если она чистая."
+  }
+ },
+ "whisper-zeitmarken": {
+  "en": {
+   "name": "Sing-along text: word timestamps with Whisper for new songs",
+   "was": "Works out the time of every word from the singing for each of your own songs with lyrics that Whisper has not yet processed, so the stage can run the text along — also for songs that carry Suno's own timestamps, because Suno mishears and Whisper assigns more reliably. The lyrics from the catalogue help with listening. Nature sounds of the focus walk, suite pieces I to IV and songs without text are left out. Where Suno supplied timestamps they are kept; the Whisper timestamps sit alongside, selectable on the stage. Every finished song is saved at once; the timestamps reach the stage with the next catalogue build. Computing takes about one and a half times a song's playing time."
+  },
+  "ru": {
+   "name": "Бегущий текст: пословные метки времени Whisper для новых песен",
+   "was": "Для каждой своей песни с текстом, которую Whisper ещё не обработал, определяет по пению время каждого слова, чтобы сцена могла показывать бегущий текст — и для песен с собственными метками Suno, потому что Suno ослышивается, а Whisper сопоставляет надёжнее. Текст из каталога помогает при распознавании. Природные звуки фокус-прогулки, сюитные пьесы I–IV и песни без текста не обрабатываются. Где Suno дал метки, они сохраняются; метки Whisper стоят рядом, их можно выбрать на сцене. Каждая готовая песня сразу сохраняется; на сцену метки попадают при следующей сборке каталога. Расчёт длится примерно в полтора раза дольше самой песни."
+  }
+ },
+ "whisper-lyrik": {
+  "en": {
+   "name": "Cleaned lyrics — match the written lyrics against the Whisper marks",
+   "was": "For every song with lyrics and Whisper marks, matches the written text against what was heard (Needleman-Wunsch, one letter of distance allowed) and keeps only what is sung: stage directions in square brackets, preambles, dedications and second language versions drop out, and Whisper's acoustic mishearings are corrected from the original. Songs where less than 60 % of the text is covered — Japanese script against transliteration, Low German, other voices — are set aside and named. Always recomputes the whole collection, in two seconds."
+  },
+  "ru": {
+   "name": "Очищенный текст — сверить текст песни с метками Whisper",
+   "was": "Для каждой песни с текстом и метками Whisper сверяет написанный текст с услышанным (Нидлман — Вунш, допускается расхождение в одну букву) и оставляет только то, что поётся: ремарки в квадратных скобках, вступления, посвящения и вторые языковые версии отпадают, а акустические ошибки Whisper исправляются по оригиналу. Песни, где покрыто меньше 60 % текста — японское письмо против транслитерации, нижненемецкий, чужие голоса, — откладываются и называются. Всегда пересчитывает всё собрание, за две секунды."
+  }
+ },
+ "whisper-katalog": {
+  "en": {
+   "name": "Take new timestamps into the catalogue",
+   "was": "Builds the catalogue once more, so the word timestamps Whisper has just computed are in the catalogue today — otherwise the sing-along text would only arrive after the next morning run. This step fetches no new data from Suno."
+  },
+  "ru": {
+   "name": "Перенести новые метки времени в каталог",
+   "was": "Ещё раз собирает каталог, чтобы только что рассчитанные Whisper пословные метки попали в каталог уже сегодня — иначе бегущий текст появился бы лишь после следующего утреннего прогона. Новых данных из Suno этот шаг не забирает."
+  }
+ },
+ "musikstil-vermessen": {
+  "en": {
+   "name": "Measure musical style — sound, genre, mood",
+   "was": "Works out how it sounds for every song without an entry whose audio is present: the five most likely styles, genres, moods and instruments, plus a sound fingerprint from which the sound space computes its layout. This takes about 10 to 20 seconds per song; the models for it sit in the archive after fetching them once, and KlangTresor asks no outside service."
+  },
+  "ru": {
+   "name": "Измерить музыкальный стиль — звучание, жанр, настроение",
+   "was": "Для каждой песни без записи, у которой есть аудио, определяет, как она звучит: пять наиболее вероятных стилей, жанров, настроений и инструментов, а также звуковой отпечаток, по которому звуковое пространство рассчитывает расположение. Это занимает около 10–20 секунд на песню; модели после однократной загрузки лежат в архиве, KlangTresor не обращается ни к какому стороннему сервису."
+  }
+ },
+ "musikstil-klangraum": {
+  "en": {
+   "name": "Redraw the sound space",
+   "was": "Redraws the sound space completely each time, from the sound fingerprints of all measured songs: groups of similar-sounding songs with plain names, each song's place on the map and its eight nearest neighbours. Plus, for each group, the average measurements and the sound profile for the sound studio's starting values."
+  },
+  "ru": {
+   "name": "Перерисовать звуковое пространство",
+   "was": "Каждый раз заново рисует звуковое пространство по звуковым отпечаткам всех измеренных песен: группы похоже звучащих песен с понятными названиями, место каждой песни на карте и её восемь ближайших соседей. А также для каждой группы средние измерения и звуковой профиль для начальных настроек звуковой студии."
+  }
+ },
+ "geschichten-textabdruck": {
+  "en": {
+   "name": "Story space: text fingerprint for new songs",
+   "was": "Reads the text of each song, strips stage directions in square brackets and appended translations, and works out a text fingerprint from what is sung, by which closeness in the story space is measured. Where ten condensed keywords exist for a song, it takes these instead of the whole text. Only new or changed texts are computed, songs without text are left out; earlier fingerprints are kept."
+  },
+  "ru": {
+   "name": "Пространство историй: текстовый отпечаток новых песен",
+   "was": "Читает текст каждой песни, убирает ремарки в квадратных скобках и приложенные переводы и получает из спетого текстовый отпечаток, по которому измеряется близость в пространстве историй. Где для песни есть десять сжатых ключевых слов, берёт их вместо всего текста. Рассчитываются только новые или изменённые тексты, песни без текста не обрабатываются; прежние отпечатки сохраняются."
+  }
+ },
+ "geschichten-wortschatz": {
+  "en": {
+   "name": "Story space: vocabulary for naming the regions",
+   "was": "Collects the condensed keywords of all songs as the collection's vocabulary and works out the same text fingerprint as for the songs for every word still missing. Regions in the story space can then be named with words from your own songs. Words that have vanished from the collection drop out."
+  },
+  "ru": {
+   "name": "Пространство историй: словарь для названий областей",
+   "was": "Собирает сжатые ключевые слова всех песен как словарь собрания и для каждого недостающего слова рассчитывает такой же текстовый отпечаток, как для песен. Так области в пространстве историй можно называть словами из твоих собственных песен. Слова, исчезнувшие из собрания, отпадают."
+  }
+ },
+ "geschichten-zeichnen": {
+  "en": {
+   "name": "Redraw the story space (only if open)",
+   "was": "Arranges all songs with text anew by their text fingerprint: groups that deal with similar things, each song's place in the story space and a name for each region from words of your songs. Always recomputes the whole collection, but only when the space is open; a space set aside stays closed, the morning run opens nothing on its own."
+  },
+  "ru": {
+   "name": "Перерисовать пространство историй (только если открыто)",
+   "was": "Заново располагает все песни с текстом по их текстовому отпечатку: группы о похожем, место каждой песни в пространстве историй и название каждой области из слов твоих песен. Всегда пересчитывает всё собрание, но только если пространство открыто; отложенное пространство остаётся закрытым, утренний прогон сам ничего не открывает."
+  }
+ },
+ "geschichten-einordnung": {
+  "en": {
+   "name": "Story space: classification by subject, stance and tone",
+   "was": "Gives every song in the story space three classifications: what it is about (subject, say love or machine), how it speaks (stance, say confession or accusation) and in which tone (say tender or defiant). Applies to all songs with text, always anew; each group also gets its most frequent classification. The first time, a reference scale from the collection as it stood is frozen, so later classifications stay comparable."
+  },
+  "ru": {
+   "name": "Пространство историй: классификация по сюжету, позиции и тону",
+   "was": "Даёт каждой песне в пространстве историй три характеристики: о чём она (сюжет, например любовь или машина), как говорит (позиция, например признание или обвинение) и каким тоном (например нежно или упрямо). Относится ко всем песням с текстом, всегда заново; каждая группа получает свою самую частую характеристику. В первый раз замораживается эталонная шкала по тогдашнему собранию, чтобы последующие оценки оставались сравнимыми."
+  }
+ },
+ "nachbarn-profile": {
+  "en": {
+   "name": "Neighbourhood: fetch the newcomers' profiles",
+   "was": "Looks through the saved comments, hearts and watchers for everyone who appears there, and for each one still missing fetches the public figures of their Suno profile: number of songs, plays, hearts, watchers, watching. One request after another, with a pause in between; if Suno slows down, the step stops at once and fetches the rest on the next run. The big refresh of all profiles stays the button in your community."
+  },
+  "ru": {
+   "name": "Соседство: загрузить профили новых",
+   "was": "Ищет в сохранённых комментариях, сердцах и подписчиках всех, кто там встречается, и для каждого недостающего загружает публичные цифры его профиля Suno: число песен, прослушивания, сердца, подписчики, подписки. Запросы по одному, с паузой между ними; если Suno притормаживает, шаг сразу останавливается и забирает остальное при следующем прогоне. Большое обновление всех профилей остаётся кнопкой в твоём сообществе."
+  }
+ },
+ "nachbarn-hirsch": {
+  "en": {
+   "name": "Neighbourhood: compute the newcomers' Hirsch factors",
+   "was": "For every neighbour with own songs who has no value yet, works out the Hirsch factor: the largest number h for which h of their songs have at least h hearts. For this it fetches their songs page by page from Suno, sorted by hearts, and stops as soon as no further page can raise the value; at most twenty pages per person. That gives your own Hirsch factor a yardstick."
+  },
+  "ru": {
+   "name": "Соседство: рассчитать фактор Хирша новых",
+   "was": "Для каждого соседа с собственными песнями, у которого ещё нет значения, рассчитывает фактор Хирша: наибольшее число h, при котором у h его песен не меньше h сердец. Для этого постранично забирает его песни из Suno, отсортированные по сердцам, и останавливается, как только следующая страница уже не может поднять значение; не больше двадцати страниц на человека. Так твой собственный фактор Хирша получает мерило."
+  }
+ },
+ "aufraeumen": {
+  "en": {
+   "name": "Housekeeping on the drive — Apple sidecar files and loose git objects",
+   "was": "Clears away two kinds of clutter that arise unavoidably on this drive. First the Apple sidecar files: macOS stamps every written file with an extended attribute, exFAT cannot store that, so macOS puts a small companion file next to each file. Because a block here is a whole megabyte, each of them takes a megabyte. They also disturb version control, which has once tried to read such a companion file as a pack file. Second the loose objects of version control: every check-in creates small single files, and these too take a megabyte each. They are packed together once enough have collected, and then the archive's checksum is verified. Only companion files are touched, and only inside the project folder; links pointing outside are not followed."
+  },
+  "ru": {
+   "name": "Уборка на носителе — служебные файлы Apple и разрозненные объекты git",
+   "was": "Убирает два вида балласта, неизбежно возникающих на этом носителе. Во-первых, служебные файлы Apple: macOS помечает каждый записанный файл расширенным атрибутом, exFAT не умеет его хранить, поэтому macOS кладёт рядом с каждым файлом маленький сопроводительный файл. Поскольку блок здесь — целый мегабайт, каждый такой файл занимает мегабайт. Кроме того, они мешают системе контроля версий, которая однажды пыталась прочитать такой файл как файл пакета. Во-вторых, разрозненные объекты контроля версий: каждый коммит создаёт мелкие отдельные файлы, и они тоже занимают по мегабайту. Когда их набирается достаточно, они упаковываются вместе, после чего проверяется контрольная сумма архива. Затрагиваются только сопроводительные файлы и только внутри папки проекта; ссылкам наружу не следуют."
+  }
+ }
+}

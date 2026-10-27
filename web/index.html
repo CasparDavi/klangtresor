@@ -6068,14 +6068,15 @@ function kompKurveZeichnen(){
         inhalt += `<text x="${L2 - 8}" y="${(nachY(db) + 4).toFixed(1)}" font-size="12" fill="#8b8b90" text-anchor="end">${db}</text>`
                 + `<text x="${nachX(db).toFixed(1)}" y="${H - 8}" font-size="12" fill="#8b8b90" text-anchor="middle">${db}</text>`;
       }
-      inhalt += `<text x="${W - R3}" y="${H - 8 - 16}" font-size="12" fill="#6c6c72" text-anchor="end">${window.t('komp.achse.ein_db')}</text>`;
+      /* 14 px Abstand: am Achsenende steht das Dreieck der Spitze - es lag auf den letzten Buchstaben (27.10.2026) */
+      inhalt += `<text x="${W - R3 - 14}" y="${H - 8 - 16}" font-size="12" fill="#6c6c72" text-anchor="end">${window.t('komp.achse.ein_db')}</text>`;
     } else {
       for (const [t2, txt] of [[1, '1'], [0.5, '½'], [0, '0']]){
         const db = t2 > 0 ? 20 * Math.log10(t2) : -60;
         inhalt += `<text x="${L2 - 8}" y="${(nachY(db) + 4).toFixed(1)}" font-size="12" fill="#8b8b90" text-anchor="end">${txt}</text>`
                 + `<text x="${nachX(db).toFixed(1)}" y="${H - 8}" font-size="12" fill="#8b8b90" text-anchor="middle">${txt}</text>`;
       }
-      inhalt += `<text x="${W - R3}" y="${H - 8 - 16}" font-size="12" fill="#6c6c72" text-anchor="end">${window.t('komp.achse.ein_amp')}</text>`;
+      inhalt += `<text x="${W - R3 - 14}" y="${H - 8 - 16}" font-size="12" fill="#6c6c72" text-anchor="end">${window.t('komp.achse.ein_amp')}</text>`;
     }
     inhalt += `<line x1="${nachX(von).toFixed(1)}" y1="${nachY(von).toFixed(1)}" x2="${nachX(0).toFixed(1)}" y2="${nachY(0).toFixed(1)}" stroke="#ffffff" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>`;
     /* Die Kurve: dicht gesampelt - im linearen Bild wird die
@@ -12964,7 +12965,8 @@ function karteSchiffFrame(){
     g.beginPath(); g.moveTo(P[0] + 5, P[1] - 5); g.lineTo(lx - 3, ly + 3); g.stroke();
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
     g.font = '600 9px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = 'rgba(255,255,255,0.6)';
-    g.fillText(kubus ? 'MUSIK-MATRIX' : gestalt === 'rabe' ? 'RABE' : gestalt === 'mars' ? 'MARSIANER' : 'SOUND-SCHIFF', lx, ly - 6);
+    /* Das Etikett in der Sprache der Oberflaeche (stand bis 27.10.2026 fest auf Deutsch, auch im englischen Himmel) */
+    g.fillText(window.t(kubus ? 'karte.matrix' : gestalt === 'rabe' ? 'karte.rabe' : gestalt === 'mars' ? 'karte.mars' : 'karte.schiff').toLocaleUpperCase(), lx, ly - 6);
     g.font = '600 12px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = '#fff';
     /* Assimiliert traegt das Schiff keinen Namen mehr, sondern eine
        Kennung - so wie Picard zu Locutus wurde (Caspar_D, 25.08.2026). */
@@ -15275,6 +15277,21 @@ function uiFaerben(s){
 function toenerAnwenden(){
   document.documentElement.classList.toggle('toener', !!TOENER[gestalt]);
   uiFaerben(typeof aktuellId !== 'undefined' && aktuellId && typeof song === 'function' ? song(aktuellId) : null);
+  buehneToener();
+}
+/* DIE BUEHNE FOLGT DEM TOENER (Caspar_D, 27.10.2026, am Bild der Rusalka-Buehne: Regler und Fortschritt standen gruen,
+   obwohl der Marsianer die ganze Oberflaeche orange faerbt). buehneAuf() setzte den Akzent immer aus dem Cover. Bei
+   aktivem Toener gilt dessen Akzent auch hier - Grund und Schrift bleiben aus dem Cover, die sind auf Kontrast gemessen.
+   Ohne Toener zurueck auf die Coverfarbe; ohne Cover-Palette (fremde Songs) bleibt der Akzent leer wie bisher. */
+function buehneToener(){
+  /* try: beim Start ruft toenerAnwenden() hier herein, bevor die Buehnenvariablen weiter unten angelegt sind
+     (let im Zwischenzustand wirft schon beim Lesen) - dann gibt es auch noch keine Buehne zu faerben. */
+  let b = null, f = null;
+  try { b = $('buehne'); f = bFarben; } catch (e) { return; }
+  if (!b) return;
+  const tn = TOENER[gestalt];
+  if (tn){ b.style.setProperty('--bakzent', tn.akzent); b.style.setProperty('--bakzent2', tn.akzent2); }
+  else if (f){ b.style.setProperty('--bakzent', f.akzent); b.style.setProperty('--bakzent2', f.akzent2 || f.akzent); }
 }
 
 /**
@@ -21779,7 +21796,7 @@ async function morgenKnopfPruefen(){
   const k = $('morgenknopf'); if (!k) return;
   if (archivEingefroren()) return;          /* kein Lauf, den es zu bewachen gaebe */
   let s = null;
-  try { s = await (await fetch('/api/morgen/stand')).json(); } catch (e) {}
+  try { s = await (await fetch('/api/morgen/stand?spr=' + (typeof window.sprache === 'function' ? window.sprache() : 'de'))).json(); } catch (e) {}
   const laeuft = !!(s && s.laeuft);
   k.classList.toggle('laeuft', laeuft);
   k.title = laeuft
@@ -21795,7 +21812,7 @@ async function morgenKnopfPruefen(){
 /** Fragt den Stand ab, bis nichts mehr läuft. */
 async function morgenSchauen(nachSammeln){
   let s;
-  try { s = await (await fetch('/api/morgen/stand')).json(); }
+  try { s = await (await fetch('/api/morgen/stand?spr=' + (typeof window.sprache === 'function' ? window.sprache() : 'de'))).json(); }
   catch (e){ return; }
   /* Lauf zu Ende: sofort nachsehen, was sich geaendert hat, statt auf
      den naechsten 60-Sekunden-Takt zu warten (AKTUELL BLEIBEN). */
@@ -23203,6 +23220,7 @@ function markenWaehlen(q){
   localStorage.setItem('mysuno-marken', q);
   buehnenTextAufbauen();
   textEbeneAnwenden();
+  bedienungAufbauen();   /* das Etikett des Textfelds nennt die laufende Spur - es muss mitwechseln */
 }
 
 function bedienungAufbauen(){
@@ -23234,7 +23252,9 @@ function bedienungAufbauen(){
   const text = [['aus', t('buehne.text.aus')],
                 /* Woher die Zeitmarken stammen, steht dran: Sunos Ausrichtung
                    kennt den Text, Whisper hat nur gehoert (bin/whisper.js). */
-                ['karaoke', karaokeMoeglich ? (bSong.worteQuelle === 'whisper' ? t('buehne.karaoke.whisper') : t('player.karaoke')) : t('buehne.karaoke.keine'), !karaokeMoeglich],
+                /* Das Etikett nennt die Spur, die WIRKLICH laeuft (bSpurJetzt), nicht die Hauptspur des Titels - sonst stand
+                   "Karaoke (Whisper)" neben der gewaehlten bereinigten Lyrik (Caspar_D, 27.10.2026). */
+                ['karaoke', karaokeMoeglich ? (bSpurJetzt() === 'wh' ? t('buehne.karaoke.whisper') : t('player.karaoke')) : t('buehne.karaoke.keine'), !karaokeMoeglich],
                 ['lyrics', bSong && bSong.lyricsQuelle === 'whisper' ? t('buehne.lyrics.whisper') : t('player.lyrics')],
                 ['analyzer', analyseMoeglich ? t('player.analyse') : t('buehne.analyse.nicht'), !analyseMoeglich]];
   text.jetzt = bText;
@@ -23649,6 +23669,7 @@ async function buehneAuf(id){
     b.style.setProperty('--bleise',  bFarben.textLeise);
     b.style.setProperty('--bakzent',  bFarben.akzent);
     b.style.setProperty('--bakzent2', bFarben.akzent2 || bFarben.akzent);
+    buehneToener();
     b.style.background = bFarben.grund;
     /* Und jetzt nachmessen, statt zu hoffen: soviel Licht wegnehmen,
        dass hinter der Schrift bei jedem Cover dasselbe Dunkel steht. */
