@@ -9903,3 +9903,10 @@ Geprueft: frischer Ordner auf dem Intel-Mac – gebaut und 3,1 GB geladen in 5,5
 Stems im Sandkasten – Rusalka 3,3 min, Nur Melanin 2,6 min, dann Zeitgrenze, Rest „am naechsten Morgen";
 toene.js 48 s (Rusalka d-Moll). Linux nur am Paket geprueft (whisper-cli mit RUNPATH $ORIGIN), nicht ausgefuehrt.
 Offen: auf dem Mac verlangt ffmpeg weiter „brew install ffmpeg" – derselbe Fehlertyp, steht auf der Bauliste.
+
+## §144 Plakat-Untertitel russisch ohne Beugungsfehler (1.0.126)
+
+„площадь по {mass}" ergab „по прослушивания", „группировка по звучание" – die Namen stehen im Nominativ.
+Statt einer Kasus-Tabelle wie im Deutschen (DATIV in plakat.js) jetzt „площадь: {mass}" und „группировка: {glied}";
+das bleibt für jeden Namen richtig. Geprueft am Papierplakat im Sandkasten.
+Notiert, nicht gebaut: die Hitparade (Profil) beschriftet die Wochen auch russisch mit „KW".
