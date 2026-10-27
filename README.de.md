@@ -2,12 +2,16 @@
 
 **Deutsch** · [English](README.md) · [Русский](README.ru.md)
 
+<a href="https://caspardavi.github.io/klangtresor/features/?lang=de"><img src="docs/features/img/readme-de.jpg" alt="KlangTresor — Deine Suno-Musik. Bei dir." width="100%"></a>
+
+**[Was KlangTresor kann → Feature-Seite](https://caspardavi.github.io/klangtresor/features/?lang=de)**
+
 *Ein Tresor für die eigene Musik — was drin liegt, gehört dir, und den
 Schlüssel hast nur du.*
 
 **Ein lokales Archiv der eigenen [Suno](https://suno.com)-Songs** — mit
 Lyrics, Prompts, Artworks, Playlists und Metadaten. Dazu eine Website,
-die im Heimnetz läuft und auf iPhone und iPad im Safari funktioniert.
+die im Heimnetz läuft und auf jedem Bildschirm mit Browser spielt.
 
 Dahinter steckt ein Werkzeugkasten, der aus den eigenen Stücken liest,
 was sich messen lässt: Lautheit nach EBU R128, Tonart aus dem Bass,
