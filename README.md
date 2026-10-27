@@ -340,7 +340,7 @@ by `node bin/wiederherstellen.js`, without any sign-in.
 **It does not bring back two things, though:** the WAV originals
 (`node bin/wav.js` — **out of service since 3 Sep 2026**, the route via
 `cdn1.suno.ai` is closed, see `docs/suno/AUDIO-BEZUG.md`) and the
-instrument tracks (`node bin/stems.js`, around four minutes per song).
+instrument tracks (the morning run recomputes them, at most half an hour per morning, newest first).
 Anyone who wants to keep those should back up `library/songs/` as well —
 though that then amounts to dozens of gigabytes.
 

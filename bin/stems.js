@@ -9,6 +9,7 @@
  *   node bin/stems.js --anzahl 5        fuenf beliebige ohne Stems
  *   node bin/stems.js --neu             auch neu rechnen, was schon da ist
  *   node bin/stems.js --still           ohne Lebenszeichen je Abschnitt
+ *   node bin/stems.js --bis-minuten 30  hoechstens 30 min, neueste zuerst (Morgenlauf)
  *   node bin/stems.js --liste <datei>   diese Reihenfolge (eine ID je Zeile),
  *                                       danach alles Uebrige
  *
@@ -77,6 +78,12 @@ const neueste = zahl('--neueste');
 const listeArg = (() => { const i = args.indexOf('--liste');
   return i >= 0 && args[i+1] ? args[i+1] : null; })();
 const anzahl  = zahl('--anzahl');
+/* --bis-minuten N: nach N Minuten keinen neuen Titel mehr anfangen (der laufende wird fertig), neueste
+   Titel zuerst. Der Morgenlauf setzt das (Caspar_D, 27.10.2026: "instrumentspuren ... waere fehlerhaft,
+   wenn man es anstossen muss") - wie bei Whisper: bei hunderten offenen Titeln, rund vier Minuten je
+   Titel auf einer CPU, waere der Morgen sonst tagelang belegt. Der Rest folgt am naechsten Morgen. */
+const bisMs = args.includes('--bis-minuten') ? +args[args.indexOf('--bis-minuten') + 1] * 60000 : Infinity;
+const losMs = Date.now();
 const nur     = args.find(a => /^[0-9a-f-]{30,}$/i.test(a)) || null;
 
 /* ---- Modellmasse (aus der Referenz-Inferenz) ------------------------- */
@@ -242,6 +249,8 @@ async function trennen(sitzung, quelle, zielOrdner, name) {
                        - (rang.has(b.id) ? rang.get(b.id) : 1e9));
     console.log('  Reihenfolge aus ' + listeArg + ': ' + rang.size + ' Songs zuerst');
   }
+  if (bisMs < Infinity && !listeArg)
+    liste.sort((a, b) => String(b.erstellt || '').localeCompare(String(a.erstellt || '')));
   if (anzahl) liste = liste.slice(0, anzahl);
 
   if (!liste.length) { console.log('  Stems: nichts zu tun.'); return; }
@@ -267,6 +276,11 @@ async function trennen(sitzung, quelle, zielOrdner, name) {
 
   let i = 0;
   for (const s of liste) {
+    if (Date.now() - losMs > bisMs) {
+      console.log('  Zeitgrenze von ' + Math.round(bisMs / 60000) + ' min erreicht — '
+        + (liste.length - i) + ' Lied(er) folgen am nächsten Morgen.');
+      break;
+    }
     i++;
     const ordner = path.join(SONGS, s.id, 'stems');
     const kopf = '  [' + i + '/' + liste.length + '] ' + (s.titel || s.id).slice(0, 34);

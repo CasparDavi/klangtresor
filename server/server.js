@@ -525,6 +525,8 @@ function morgenUebersetzt(a, spr) {
    "pflicht-Schritte brechen ab, andere werden rot"). */
 /* Wie lange Whisper je Morgenlauf rechnen darf, in Minuten - siehe den Schritt whisper-zeitmarken. */
 const WHISPER_MINUTEN_JE_MORGEN = 30;
+/* Wie lange die Instrumentspuren je Morgenlauf rechnen duerfen, in Minuten - siehe den Schritt stems-trennen. */
+const STEMS_MINUTEN_JE_MORGEN = 30;
 const MORGEN_SCHRITTE = [
   /* ZUERST DIE VERBINDUNGEN. Caspar_D, 29.08.2026: "Es darf nicht
      passieren, dass unbemerkt Links sterben und still Daten deswegen
@@ -555,6 +557,21 @@ const MORGEN_SCHRITTE = [
       const fertig = new Set(analyseListe());
       return Object.values(k.songs || {}).filter(s => !s.fremd && !fertig.has(s.id)).length;
     } },
+  /* INSTRUMENTSPUREN IM MORGENLAUF (Caspar_D, 27.10.2026: "waere fehlerhaft, wenn man es anstossen muss").
+     Bis 1.0.124 stand bin/stems.js in keinem Schritt - das Modell holte die Einrichtung, das Trennen musste
+     man per Befehl starten, und Tonart und Stimmumfang (bin/toene.js, braucht die Spuren) fehlten damit
+     ueberall. Wie Whisper mit Zeitgrenze, neueste Titel zuerst; rund vier Minuten je Titel auf einer CPU.
+     VOR dem Index, damit Sortieren und Filtern die Tonart gleich kennen. */
+  { id: 'stems-trennen', schluessel: 'stems', kaffee: true, name: 'Instrumentspuren trennen — sechs Spuren je neuem Titel',
+    befehl: ['bin/stems.js', '--still', '--bis-minuten', String(STEMS_MINUTEN_JE_MORGEN)],
+    obergrenzeMs: (STEMS_MINUTEN_JE_MORGEN + 10) * 60000,
+    einheiten: () => {
+      const k = katalogHolen(); if (!k) return 0;
+      return Object.values(k.songs || {}).filter(s => !s.fremd
+        && fs.existsSync(path.join(WURZEL, 'library', 'songs', s.id, 'audio.wav'))
+        && !fs.existsSync(path.join(WURZEL, 'library', 'songs', s.id, 'stems', 'piano.flac'))).length;
+    } },
+  { id: 'stems-toene', schluessel: 'stems', name: 'Tonart und Stimmumfang aus den Instrumentspuren', befehl: ['bin/toene.js', '--still'] },
   { id: 'analyse-index', schluessel: 'analyse', name: 'Messwerte für Sortieren und Filtern zusammenfassen', befehl: ['bin/analyse-index.js'] },
   /* Klangprofil + Lautheitshistogramm je Song (fuer Tonstudio-Decke,
      Presets und die Kennlinien-Gebirge) - rechnet nur Fehlendes nach. */
@@ -582,6 +599,10 @@ const MORGEN_SCHRITTE = [
   /* HOECHSTENS WHISPER_MINUTEN_JE_MORGEN je Lauf (Lutz, 23.10.2026: rund 900 offene Titel auf einer CPU
      blockierten den Morgen tagelang). whisper.js faengt danach keinen neuen Titel mehr an; der Rest folgt
      am naechsten Morgen. obergrenzeMs deckelt die Schaetzung im Morgenfenster mit derselben Grenze. */
+  /* WHISPER NACHHOLEN (27.10.2026): bestehende Installationen bekamen Whisper nie - die Einrichtung laeuft nur
+     einmal, das Aktualisieren holt keine Modelle. Ist alles da, ist der Schritt in einer Sekunde durch; sonst
+     holt er Programm und Modell (3,1 GB) - ohne Rueckfragen, einen Apple-Dialog oeffnet nur das Einrichten. */
+  { id: 'whisper-holen', schluessel: 'whisper', name: 'Whisper bereitstellen — Programm und Modell, falls sie fehlen', befehl: ['bin/whisper-holen.js', '--still'] },
   { id: 'whisper-zeitmarken', schluessel: 'whisper', kaffee: true, name: 'Mitlaufender Text: Wort-Zeitmarken mit Whisper für neue Titel',
     befehl: ['bin/whisper.js', '--still', '--alle', '--bis-minuten', String(WHISPER_MINUTEN_JE_MORGEN)],
     obergrenzeMs: (WHISPER_MINUTEN_JE_MORGEN + 10) * 60000,

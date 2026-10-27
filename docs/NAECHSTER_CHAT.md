@@ -9882,3 +9882,24 @@ Gefunden an den Bildern des Feature-Dokuments (docs/features), behoben in einem 
   deutsch. Kurzergebnisse der Schritte kommen aus den Skripten und sind noch deutsch.
 Geprüft im Sandkasten (8803): Akzent #ff7a1a mit Marsianer, Coverfarbe ohne Töner; Etikett je Spur; Morgenfenster EN;
 keine Konsolenfehler.
+
+## 143. 27.10.2026: 1.0.125 – Whisper und Instrumentspuren ohne Handgriff
+
+Anlass: Die Sachprüfung des Feature-Dokuments fand zwei Versprechen, die die App nicht hielt. Caspar_D: „wenn die
+installation funktioniert, muss nichts von hand eingerichtet werden, ansonsten waere das ein installationsfehler" und
+„instrumentspuren dito, waere fehlerhaft, wenn man es anstossen muss".
+- **Whisper holt die Einrichtung jetzt selbst** (neu bin/whisper-holen.js, Schritt 11 in bin/einrichten.js): Windows und
+  Linux bekommen das fertige whisper.cpp v1.9.2 nach werkzeug/whisper/, auf dem Mac wird es gebaut (Quelltext und
+  tragbares cmake im Zwischenordner auf der Systemplatte, ohne geteilte Bibliotheken; Intel ohne Metal, Apple Silicon
+  mit). Fehlen Apples Entwicklerwerkzeuge, oeffnet das Einrichten Apples Dialog und wartet. Modell large-v3 (3,1 GB)
+  im Strom nach library/modelle/, mit Fortsetzen. Adressen in quellen.txt. Bestehende Installationen holen es im
+  Morgenlauf nach (Schritt whisper-holen vor den Zeitmarken, --still: kein Dialog, nur Bericht).
+- **Instrumentspuren im Morgenlauf** (Schritte stems-trennen und stems-toene vor analyse-index, eigenes Haekchen):
+  bin/stems.js mit --bis-minuten 30, neueste zuerst; danach bin/toene.js fuer Tonart und Stimmumfang.
+- Anleitungen START-HIER/HERE/RU, README de/en/ru, EINRICHTUNG-TEXTE nachgezogen; MORGENSCHRITTE.json um drei
+  Eintraege, Uebersetzungen nach ID.
+Geprueft: frischer Ordner auf dem Intel-Mac – gebaut und 3,1 GB geladen in 5,5 min, 30 s Rusalka wortgetreu erkannt
+(der Refrain ist russisch: „Иди ко мне"); Windows 10 (Parallels) – Paket geholt, whisper-cli.exe startet;
+Stems im Sandkasten – Rusalka 3,3 min, Nur Melanin 2,6 min, dann Zeitgrenze, Rest „am naechsten Morgen";
+toene.js 48 s (Rusalka d-Moll). Linux nur am Paket geprueft (whisper-cli mit RUNPATH $ORIGIN), nicht ausgefuehrt.
+Offen: auf dem Mac verlangt ffmpeg weiter „brew install ffmpeg" – derselbe Fehlertyp, steht auf der Bauliste.

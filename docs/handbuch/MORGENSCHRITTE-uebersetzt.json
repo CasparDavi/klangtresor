@@ -208,5 +208,35 @@
    "name": "Уборка на носителе — служебные файлы Apple и разрозненные объекты git",
    "was": "Убирает два вида балласта, неизбежно возникающих на этом носителе. Во-первых, служебные файлы Apple: macOS помечает каждый записанный файл расширенным атрибутом, exFAT не умеет его хранить, поэтому macOS кладёт рядом с каждым файлом маленький сопроводительный файл. Поскольку блок здесь — целый мегабайт, каждый такой файл занимает мегабайт. Кроме того, они мешают системе контроля версий, которая однажды пыталась прочитать такой файл как файл пакета. Во-вторых, разрозненные объекты контроля версий: каждый коммит создаёт мелкие отдельные файлы, и они тоже занимают по мегабайту. Когда их набирается достаточно, они упаковываются вместе, после чего проверяется контрольная сумма архива. Затрагиваются только сопроводительные файлы и только внутри папки проекта; ссылкам наружу не следуют."
   }
+ },
+ "stems-trennen": {
+  "en": {
+   "name": "Separate instrument tracks — six tracks per new song",
+   "was": "Splits every song whose WAV is present and that has no tracks yet into six instrument tracks: drums, bass, vocals, guitar, piano and the rest. Computed on your own computer, without any outside service, on half the cores so the computer stays usable. At most half an hour per morning, newest songs first; the rest follows on the next mornings. The tracks take about 80 MB per song."
+  },
+  "ru": {
+   "name": "Разделить инструментальные дорожки — шесть дорожек для каждой новой песни",
+   "was": "Разделяет каждую песню, у которой есть WAV и ещё нет дорожек, на шесть инструментальных дорожек: ударные, бас, вокал, гитара, фортепиано и остальное. Расчёт идёт на твоём компьютере, без сторонних сервисов, на половине ядер, чтобы компьютер оставался пригодным для работы. Не дольше получаса за утро, сначала новые песни; остальное — в следующие утра. Дорожки занимают около 80 МБ на песню."
+  }
+ },
+ "stems-toene": {
+  "en": {
+   "name": "Key and vocal range from the instrument tracks",
+   "was": "For every song with instrument tracks and no entry yet, works out the lowest and highest note from the vocal track and the key from the other tracks. The overview can then be sorted and filtered by key and vocal range."
+  },
+  "ru": {
+   "name": "Тональность и диапазон голоса по инструментальным дорожкам",
+   "was": "Для каждой песни с инструментальными дорожками, у которой ещё нет записи, определяет по вокальной дорожке самую низкую и самую высокую ноту, а по остальным дорожкам — тональность. Так обзор можно сортировать и фильтровать по тональности и диапазону голоса."
+  }
+ },
+ "whisper-holen": {
+  "en": {
+   "name": "Provide Whisper — program and model, if missing",
+   "was": "Checks whether Whisper is ready on this computer and fetches what is missing: the program (ready-made for Windows and Linux, built here on the Mac) and the large-v3 model of 3.1 GB. If both are there, the step takes a second. If the download breaks off, the next run continues where it stopped."
+  },
+  "ru": {
+   "name": "Подготовить Whisper — программу и модель, если их нет",
+   "was": "Проверяет, готов ли Whisper на этом компьютере, и догружает недостающее: программу (готовую для Windows и Linux, на Mac она собирается здесь) и модель large-v3 размером 3,1 ГБ. Если всё на месте, шаг занимает секунду. Если загрузка прервётся, следующий прогон продолжит с того же места."
+  }
  }
 }

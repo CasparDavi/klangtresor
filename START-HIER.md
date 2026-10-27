@@ -472,36 +472,29 @@ Suno).
 
 ---
 
-## Karaoke-Zeitmarken mit Whisper (optional)
+## Karaoke-Zeitmarken mit Whisper
 
 Sunos eigene Wort-Zeitmarken kommen über das Lesezeichen. Für Songs,
 die keine haben (oder als zweite Spur), rechnet das Programm sie mit
-[whisper.cpp](https://github.com/ggml-org/whisper.cpp) selbst — das
-musst du einmal bauen und dem Programm sagen, wo es liegt:
+[whisper.cpp](https://github.com/ggml-org/whisper.cpp) selbst. **Das
+richtet die Einrichtung ein** (`bin/whisper-holen.js`): unter Windows und
+Linux das fertige Programm, auf dem Mac wird es gebaut — macOS fragt
+dafür einmal nach seinen Entwicklerwerkzeugen —, dazu das Modell
+large-v3 (3,1 GB). Bestehende Installationen holen es im nächsten
+Morgenlauf nach; bricht der Download ab, geht es an derselben Stelle
+weiter.
 
-```bash
-git clone https://github.com/ggml-org/whisper.cpp
-cd whisper.cpp && cmake -B build -DGGML_CUDA=1 && cmake --build build -j
-sh ./models/download-ggml-model.sh large-v3
-```
-
-(`-DGGML_CUDA=1` nur mit NVIDIA-Karte — dann läuft ein Song in
-Sekunden statt Minuten; ohne Karte weglassen.) Dann vor dem Start:
+Nur wer eine NVIDIA-Karte nutzen will (ein Song in Sekunden statt
+Minuten), baut sich whisper.cpp mit `-DGGML_CUDA=1` selbst und sagt dem
+Programm vor dem Start, wo es liegt:
 
 ```bash
 export WHISPER_CLI=/pfad/zu/whisper.cpp/build/bin/whisper-cli
 export WHISPER_MODELL=/pfad/zu/whisper.cpp/models/ggml-large-v3.bin
 ```
 
-Unter Windows (PowerShell) stattdessen:
-
-```powershell
-$env:WHISPER_CLI="C:\pfad\zu\whisper.cpp\build\bin\Release\whisper-cli.exe"
-$env:WHISPER_MODELL="C:\pfad\zu\whisper.cpp\models\ggml-large-v3.bin"
-```
-
-Fehlt Whisper, überspringt der rote Knopf den Schritt mit einer
-Meldung — alles andere läuft trotzdem.
+Fehlt Whisper trotzdem, überspringt der rote Knopf den Schritt mit einer
+Meldung — alles andere läuft weiter.
 
 ---
 

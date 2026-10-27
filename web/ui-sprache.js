@@ -524,6 +524,8 @@
     ['morgen.kreuz.katalog.text', 'Alle Ernten und Ergebnisse in den Katalog — die Grundlage für alles andere.', 'All harvests and results into the catalogue — the basis for everything else.'],
     ['morgen.kreuz.analyse', 'Titel analysieren', 'Analyse titles'],
     ['morgen.kreuz.analyse.text', 'BPM, Tonart, Lautheit, Bandprofil, Histogramm, Suchindex.', 'BPM, key, loudness, band profile, histogram, search index.'],
+    ['morgen.kreuz.stems', 'Instrumentspuren, Tonart und Stimmumfang', 'Instrument tracks, key and vocal range'],
+    ['morgen.kreuz.stems.text', 'Neue Titel mit WAV, neueste zuerst, höchstens eine halbe Stunde je Morgen. Etwa 4 Minuten je Titel; der Mac bleibt dabei wach.', 'New songs with a WAV, newest first, at most half an hour per morning. About 4 minutes per song; the Mac stays awake.'],
     ['morgen.kreuz.whisper', 'Karaoke-Zeitanker mit Whisper', 'Karaoke time anchors with Whisper'],
     ['morgen.kreuz.whisper.text', 'Nur neue Titel mit Text, danach Lyrics-Abgleich. Etwa 3 Minuten je Titel; der Mac bleibt dabei wach.', 'New titles with lyrics only, then lyric alignment. About 3 minutes per title; the Mac stays awake.'],
     ['morgen.kreuz.musikstil', 'Musikstil und Musik-Karte', 'Music style and music map'],

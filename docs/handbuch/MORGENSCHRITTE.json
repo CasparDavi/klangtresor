@@ -36,6 +36,18 @@
     "kurzergebnis_muster": "→ <n> Titel analysiert, <n> übersprungen (ohne Audio). | → Alle <n> Titel haben schon Messdaten, nichts zu tun."
   },
   {
+    "schluessel": "stems",
+    "name": "Instrumentspuren trennen — sechs Spuren je neuem Titel",
+    "was": "Zerlegt jeden Titel, dessen WAV da ist und der noch keine Spuren hat, in sechs Instrumentspuren: Schlagzeug, Bass, Gesang, Gitarre, Klavier und den Rest. Gerechnet wird auf dem eigenen Rechner, ohne fremden Dienst, mit der Hälfte der Kerne, damit der Rechner bedienbar bleibt. Höchstens eine halbe Stunde je Morgen, neueste Titel zuerst; der Rest folgt an den nächsten Morgen. Die Spuren belegen rund 80 MB je Titel.",
+    "kurzergebnis_muster": "✓ 7 Titel getrennt · 31 folgen"
+  },
+  {
+    "schluessel": "stems",
+    "name": "Tonart und Stimmumfang aus den Instrumentspuren",
+    "was": "Bestimmt für jeden Titel mit Instrumentspuren, der noch keinen Eintrag hat, aus der Gesangsspur den tiefsten und höchsten Ton und aus den übrigen Spuren die Tonart. Damit lässt sich die Übersicht nach Tonart und Stimmumfang sortieren und filtern.",
+    "kurzergebnis_muster": "✓ 7 Titel bestimmt"
+  },
+  {
     "schluessel": "analyse",
     "name": "Messwerte für Sortieren und Filtern zusammenfassen",
     "was": "Fasst aus den Messdaten aller Titel die Kennwerte zusammen — Lautheit, Dynamik, Spitzenpegel, Stereobreite und Dauer, dazu die Tonart aus der eigenen Tonartbestimmung — jedes Mal für den ganzen Bestand neu. Damit lässt sich die Übersicht mit den Werken nach diesen Werten sortieren und filtern, ohne dass die großen Messdateien gelesen werden müssen.",
@@ -52,6 +64,12 @@
     "name": "Störfrequenzen suchen — stehende Töne für den Kerbfilter im Tonstudio",
     "was": "Durchsucht jeden Titel, der noch nicht geprüft wurde und dessen Audio da ist, nach stehenden Tönen — Brummen, Pfeifen, eine Resonanz, die über den ganzen Titel hinweg steht. Was gefunden wird, steht danach im Tonstudio als Vorschlag für den Kerbfilter; gefiltert wird nichts von selbst. Das Ergebnis je Titel wird gesichert, auch wenn er sauber ist.",
     "kurzergebnis_muster": "→ <n> Titel geprüft, <n> mit stehenden Tönen. | → Alle Titel mit Audio sind schon geprüft, nichts zu tun."
+  },
+  {
+    "schluessel": "whisper",
+    "name": "Whisper bereitstellen — Programm und Modell, falls sie fehlen",
+    "was": "Prüft, ob Whisper auf diesem Rechner bereitsteht, und holt nach, was fehlt: das Programm (fertig für Windows und Linux, auf dem Mac hier gebaut) und das Modell large-v3 mit 3,1 GB. Ist beides da, ist der Schritt in einer Sekunde durch. Bricht das Laden ab, macht der nächste Lauf an derselben Stelle weiter.",
+    "kurzergebnis_muster": "✓ Whisper bereit"
   },
   {
     "schluessel": "whisper",

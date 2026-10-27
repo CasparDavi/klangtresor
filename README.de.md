@@ -338,7 +338,7 @@ Alles Übrige — Medien, Artworks, Kacheln, Paletten, Analysen — baut
 **Zwei Dinge holt es aber nicht zurück:** die WAV-Originale
 (`node bin/wav.js` — **seit dem 03.09.2026 außer Betrieb**, der Weg über
 `cdn1.suno.ai` ist zu, siehe `docs/suno/AUDIO-BEZUG.md`) und die
-Instrumentspuren (`node bin/stems.js`, rund vier Minuten je Song). Wer
+Instrumentspuren (die rechnet der Morgenlauf neu, höchstens eine halbe Stunde je Morgen, neueste zuerst). Wer
 die behalten will, sichert `library/songs/` gleich mit — das sind dann
 allerdings zig Gigabyte.
 

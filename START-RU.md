@@ -474,36 +474,29 @@ node bin/karte.js
 
 ---
 
-## Временные метки караоке с Whisper (по желанию)
+## Временные метки караоке с Whisper
 
-Собственные временные метки слов Suno приходят через закладку. Для треков,
-у которых их нет (или как вторую дорожку), программа рассчитывает их сама с помощью
-[whisper.cpp](https://github.com/ggml-org/whisper.cpp) — его нужно
-один раз собрать и сообщить программе, где он лежит:
+Собственные временные метки слов Suno приходят через закладку. Для
+треков, у которых их нет (или как вторую дорожку), программа
+рассчитывает их сама с помощью
+[whisper.cpp](https://github.com/ggml-org/whisper.cpp). **Его
+устанавливает настройка** (`bin/whisper-holen.js`): на Windows и Linux —
+готовая программа, на Mac она собирается — macOS один раз спросит про
+инструменты разработчика, — плюс модель large-v3 (3,1 ГБ). Уже
+установленные копии догружают его при следующем утреннем прогоне; если
+загрузка прервётся, она продолжится с того же места.
+
+Только тот, кто хочет использовать видеокарту NVIDIA (песня за секунды
+вместо минут), собирает whisper.cpp сам с `-DGGML_CUDA=1` и перед
+запуском указывает программе, где он лежит:
 
 ```bash
-git clone https://github.com/ggml-org/whisper.cpp
-cd whisper.cpp && cmake -B build -DGGML_CUDA=1 && cmake --build build -j
-sh ./models/download-ggml-model.sh large-v3
+export WHISPER_CLI=/путь/к/whisper.cpp/build/bin/whisper-cli
+export WHISPER_MODELL=/путь/к/whisper.cpp/models/ggml-large-v3.bin
 ```
 
-(`-DGGML_CUDA=1` только с картой NVIDIA — тогда трек обрабатывается за
-секунды, а не за минуты; без карты опустите.) Затем перед запуском:
-
-```bash
-export WHISPER_CLI=/pfad/zu/whisper.cpp/build/bin/whisper-cli
-export WHISPER_MODELL=/pfad/zu/whisper.cpp/models/ggml-large-v3.bin
-```
-
-В Windows (PowerShell) вместо этого:
-
-```powershell
-$env:WHISPER_CLI="C:\pfad\zu\whisper.cpp\build\bin\Release\whisper-cli.exe"
-$env:WHISPER_MODELL="C:\pfad\zu\whisper.cpp\models\ggml-large-v3.bin"
-```
-
-Если Whisper нет, красная кнопка пропускает этот этап с сообщением —
-всё остальное работает.
+Если Whisper всё же нет, красная кнопка пропускает шаг с сообщением —
+всё остальное продолжает работать.
 
 ---
 

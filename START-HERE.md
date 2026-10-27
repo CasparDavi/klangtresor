@@ -471,36 +471,28 @@ Suno).
 
 ---
 
-## Karaoke timestamps with Whisper (optional)
+## Karaoke timestamps with Whisper
 
-Suno's own word timestamps come via the bookmark. For songs
-that have none (or as a second track), the program computes them with
-[whisper.cpp](https://github.com/ggml-org/whisper.cpp) itself — you have to
-build that once and tell the program where it lives:
+Suno's own word timestamps come via the bookmark. For songs that have
+none (or as a second track), the program computes them itself with
+[whisper.cpp](https://github.com/ggml-org/whisper.cpp). **The setup
+installs it** (`bin/whisper-holen.js`): the ready-made program on Windows
+and Linux; on the Mac it is built — macOS asks once for its developer
+tools — plus the large-v3 model (3.1 GB). Existing installations fetch it
+on the next morning run; if the download breaks off, it continues where
+it stopped.
+
+Only if you want to use an NVIDIA card (a song in seconds instead of
+minutes) do you build whisper.cpp yourself with `-DGGML_CUDA=1` and tell
+the program where it is before starting:
 
 ```bash
-git clone https://github.com/ggml-org/whisper.cpp
-cd whisper.cpp && cmake -B build -DGGML_CUDA=1 && cmake --build build -j
-sh ./models/download-ggml-model.sh large-v3
+export WHISPER_CLI=/path/to/whisper.cpp/build/bin/whisper-cli
+export WHISPER_MODELL=/path/to/whisper.cpp/models/ggml-large-v3.bin
 ```
 
-(`-DGGML_CUDA=1` only with an NVIDIA card — then a song runs in
-seconds instead of minutes; leave it out without a card.) Then, before starting:
-
-```bash
-export WHISPER_CLI=/pfad/zu/whisper.cpp/build/bin/whisper-cli
-export WHISPER_MODELL=/pfad/zu/whisper.cpp/models/ggml-large-v3.bin
-```
-
-On Windows (PowerShell) instead:
-
-```powershell
-$env:WHISPER_CLI="C:\pfad\zu\whisper.cpp\build\bin\Release\whisper-cli.exe"
-$env:WHISPER_MODELL="C:\pfad\zu\whisper.cpp\models\ggml-large-v3.bin"
-```
-
-If Whisper is missing, the red button skips the step with a
-message — everything else runs anyway.
+If Whisper is still missing, the red button skips the step with a
+message — everything else keeps working.
 
 ---
 

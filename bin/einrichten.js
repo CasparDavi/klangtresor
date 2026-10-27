@@ -148,7 +148,7 @@ const boese = (t) => { schreib('     ' + BOESE('[x] ') + '  ' + t); merken('boes
 const tut = (t) => { schreib('     ' + MARKE('->  ') + '  ' + t); merken('tut', t); };
 
 let SCHRITT = 0;
-const SCHRITTE = 10;
+const SCHRITTE = 11;
 /* Die Liste links steht von Anfang an da - man soll sehen, was kommt,
    nicht erst, was schon war. Die Namen hier sind dieselben, die
    schritt() spaeter als "kurz" setzt. */
@@ -1650,6 +1650,19 @@ open -a Terminal ${JSON.stringify(starter)}
   } else {
     const { da, von } = require('./modelle-holen.js').bestand();
     gut(T('Modelle sind da.')); zeile('modelle', T('KI-Modelle'), T('{da} von {von} sind da', { da, von }), da >= von ? 'fertig' : 'wink'); insLager('modelle', modelle);
+  }
+
+  /* ================================================================
+     WHISPER (27.10.2026). Bis 1.0.124 holte die Einrichtung Whisper nicht - START-HIER.md schickte jeden durch
+     git clone und cmake. Caspar_D: „wenn die installation funktioniert, muss nichts von hand eingerichtet werden".
+     bin/whisper-holen.js holt das fertige Programm (Windows, Linux) oder baut es (macOS) und laedt large-v3. */
+  schritt('Whisper', T('Whisper: Programm und Modell für den mitlaufenden Liedtext — rund 3,1 GB'),
+    T('Whisper hört jeden Titel und setzt jedes Wort auf seine Zeit, damit die Bühne den Liedtext Wort für Wort mitlaufen lässt — auch dort, wo Suno keine eigenen Zeitmarken liefert oder sich verhört. Es rechnet auf deinem Rechner, nichts verlässt ihn. Das Modell large-v3 ist 3,1 GB groß; auf dem Mac wird das Programm hier gebaut, dafür fragt macOS einmal nach seinen Entwicklerwerkzeugen.'));
+  matt(T('Für den mitlaufenden Liedtext. Klappt das nicht, läuft alles andere trotzdem.'));
+  if (!await laeuft(process.execPath, [path.join('bin', 'whisper-holen.js')])) {
+    const w = await wieWeiter(T('Whisper einrichten'), T('Ohne Whisper läuft der Liedtext mit Sunos eigenen Zeitmarken — sonst fehlt nichts.'));
+    if (w === 'schluss') { wiederkommen(); schluss(0); }
+    if (w === 'wieder') await laeuft(process.execPath, [path.join('bin', 'whisper-holen.js')]);
   }
 
   /* ================================================================

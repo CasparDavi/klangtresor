@@ -99,8 +99,7 @@ es sich handelt.
   *(kein eigenes Werkzeug wie ffmpeg, sondern Teile von KlangTresor selbst: Bildverkleinerung,
   Klangraum-Rechenkern, Datenbankfreie Suche u. a.)*
 - KI-Modelle zur Klanganalyse und Stemextraktion — 11 von 11 im Zwischenlager dieses Rechners,
-  werden kopiert (550 MB). *Nicht dabei: Whisper (Text-Zeitmarken) — das gehört zum Haus und
-  wird separat gehalten; „Untertiteloptimierung" wäre hier falsch.*
+  werden kopiert (550 MB). *Whisper (Text-Zeitmarken) hat seit 1.0.125 einen eigenen Schritt danach (bin/whisper-holen.js).*
 - Port 8788 für den Server, der lokal den KlangTresor im Browser darstellt — frei
 
 **Summe:** Zu holen: rund 340 MB. Dauer: ein paar Minuten bis ca. 30 min für alles bei
