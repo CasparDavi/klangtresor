@@ -160,26 +160,47 @@ footer{margin:40px 0 0;color:var(--leise);font-size:13px}
 }
 @media (pointer:coarse){.sprache button{min-height:44px;min-width:44px}}
 @media print{
+  /* Druck (Caspar_D, 28.10.2026): A4, ein Satzspiegel mit Rand zum Atmen; Schrift auf zwei Dritteln der Breite,
+     Bilder ueber die ganze Satzbreite. Dieselbe Seite, nur anders gesetzt. Der Rand liegt als Innenabstand auf main
+     und wiederholt sich je Seite (clone), damit er schwarz bleibt statt weiss wie ein @page-Rand. */
   @page{size:A4;margin:0}
   html,body{background:#000}
-  body{font-size:10.5pt}
-  main{padding:10mm;box-decoration-break:clone;-webkit-box-decoration-break:clone}
-  .k.w4,.k.w5,.k.w6,.k.w7,.k.w8{grid-column:span 6!important}
-  .k.w12{grid-column:span 12!important}
-  .abschnitt .kopf{break-inside:avoid;break-after:avoid}
-  .abschnitt .kopf h2{break-after:avoid}
-  footer{break-before:avoid}
+  body{font-size:10.5pt;line-height:1.45}
+  main{max-width:none;padding:18mm 20mm 16mm;box-decoration-break:clone;-webkit-box-decoration-break:clone}
   .sprache,.plus,.overlay{display:none!important}
-  .k,.grenzen{break-inside:avoid}
-  .abschnitt{margin-top:40px;break-before:auto}
-  .held{padding:20px 0}
-  /* SF Mono (variabel) verliert im PDF einzelne Zeichen (das m): im Druck Menlo */
-  .konsole pre{font-family:Menlo,Consolas,monospace}
-  /* Verlaufsschrift (background-clip:text) druckt Chrome als volle Flaeche: im Druck einfarbig */
-  .held h1{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--akzent)}
-  .k .druck{display:block;margin:10px 0 0;padding:0 0 0 16px;color:var(--leise);font-size:9.5pt}
-  .k .druck li{margin:0 0 4px}
+  /* Kopf */
+  .held{padding:0 0 6mm;text-align:left}
+  .held h1{font-size:30pt;background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--akzent)}
+  .held .spruch{font-size:20pt}
+  .held p{font-size:12pt;max-width:66.6%;margin:0 0 6mm}
+  .held .bild{aspect-ratio:21/9;border-radius:3mm}
+  /* Abschnitte: Ueberschrift beginnt eine neue Seite nur, wenn sie sonst allein unten stuende */
+  .abschnitt{margin:12mm 0 0;break-before:auto}
+  .abschnitt>.kopf{max-width:66.6%;margin:0 0 6mm;break-inside:avoid;break-after:avoid}
+  .abschnitt>.kopf .augenbraue{font-size:10pt}
+  .abschnitt>.kopf h2{font-size:24pt}
+  .abschnitt>.kopf p{font-size:12pt}
+  /* Kacheln untereinander, ohne Kachelflaeche: Text, darunter das Bild */
+  .raster{display:block}
+  .k,.k.quer,.k:not(.quer){display:block;background:none;border-radius:0;overflow:visible;margin:0 0 9mm;break-inside:avoid}
+  .k .text,.k.oben .text,.k.quer .text{max-width:66.6%;padding:0 0 3.5mm}
+  .k .klein{font-size:9.5pt;margin:0 0 1mm}
+  .k h3{font-size:15pt;margin:0 0 1.5mm}
+  .k p{font-size:10.5pt}
+  .k .zahl{font-size:22pt;margin:3mm 0 0}
+  .k .druck{display:block;margin:2.5mm 0 0;padding:0 0 0 4mm;color:var(--leise);font-size:9.5pt}
+  .k .druck li{margin:0 0 1mm}
   .k .druck b{color:var(--text)}
+  /* Bilder: volle Satzbreite in ihrem eigenen Format; hohe Bilder hoechstens 110 mm hoch, damit Text und Bild meist zu zweit auf eine Seite passen */
+  .k .bild,.k.oben > .bild,.k.w4 .bild,.k.w12 .bild{aspect-ratio:auto!important;margin:0;border-radius:3mm;background:none;display:block}
+  .k.oben > .bild::after{display:none}
+  .k .bild img,.k .bild video{width:100%;height:auto;max-height:110mm;width:auto;max-width:100%;object-fit:contain;object-position:left top;border-radius:3mm}
+  .k .bild.trip,.k .bild.geraete{aspect-ratio:21/11!important}
+  .k .bild.konsole{min-height:0;margin:0;max-width:66.6%;border-radius:2mm;border:1px solid #2c2c30}
+  .konsole pre{font-family:Menlo,Consolas,monospace;font-size:8.5pt}
+  .filterliste,.schaubild{padding:0;max-width:100%}
+  .grenzen{margin:12mm 0 0;break-inside:avoid}
+  footer{break-before:avoid}
 }
 </style>
 <link rel="icon" href="data:,">
@@ -455,7 +476,7 @@ const S = {
  stern:{en:'',de:'',ru:'* Русский текст — машинный перевод, ещё не проверенный носителем языка.'}
 };
 
-const BV = '65';   // Bildstand: hochzählen, wenn Bilder ersetzt werden (sonst zeigt der Browser alte)
+const BV = '66';   // Bildstand: hochzählen, wenn Bilder ersetzt werden (sonst zeigt der Browser alte)
 const BILDER = Object.fromEntries(['titel','morgenlauf','buehne','visualisierung',
   'klangschaum','plakat','sichern','leser','tablet','fernseher','laptop'].map(id => [id, `img/${id}.webp?v=${BV}`]));
 BILDER.effektclip = 'img/okkult-clip.mp4?v=' + BV;
@@ -523,7 +544,7 @@ BILDER.schaubild = { schaubild: {
          ru:['Громкость по EBU R128','Тональность и вокальный диапазон','Шесть инструментальных дорожек','Тайминг слов с Whisper','Карты глубины обложек','<i>Пространство звука и звуковая пена</i>'] } } };
 BILDER.morgenlauf = { sprachen: { de: `img/morgenlauf-de.webp?v=${BV}`, en: `img/morgenlauf-en.webp?v=${BV}` } };   /* Szene von Caspar_D (KI) */   /* Szene von Caspar_D (KI), die drei Aufnahmen perspektivisch eingesetzt */
 /* Russische Aufnahmen, wo es sie gibt (Text im Bild); sonst faellt Russisch auf Englisch zurueck */
-for (const [k, d] of [['gemein','gemein'],['profil','hitstrom'],['papier','papier'],['papierdetail','papier-detail'],['uebersicht','uebersicht'],['morgenlauf','morgenlauf']]) BILDER[k].sprachen.ru = `img/${d}-ru.webp?v=${BV}`;
+for (const [k, d] of [['gemein','gemein'],['skizze','skizze'],['profil','hitstrom'],['papier','papier'],['papierdetail','papier-detail'],['uebersicht','uebersicht'],['morgenlauf','morgenlauf']]) BILDER[k].sprachen.ru = `img/${d}-ru.webp?v=${BV}`;
 const FORMAT = { klangschaum: '2360/1327', fernseher: '3/2', sichern: '1672/941', abend: '3/2', handys: '2438/852', zimmer: '2360/1588', papier: '4000/2862', papierdetail: '1180/1129', skizze: '1180/1756', vorlagen: '4/1', profil: '2360/677', groupie: '1180/826', nachbar: '1180/826', gemein: '2360/775', klangraum: '2360/1109', messdaten: '1560/1024', eq: '980/656', glockenstuhl: '1380/648', kompressor: '1180/335', boombox: '1180/335', uebersicht: '1920/1400', leser: '3/2', morgenlauf: '1607/979', buehne: '1/1', visualisierung: '1/1' };   /* Kacheln, deren Bild ein eigenes Seitenverhaeltnis hat */
 BILDER.abend = `img/abend.webp?v=${BV}`;
 BILDER.fernseher = { sprachen: { de: `img/tanz-de.webp?v=${BV}`, en: `img/tanz-en.webp?v=${BV}` } };
