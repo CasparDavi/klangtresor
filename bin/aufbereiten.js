@@ -341,18 +341,25 @@ try {
   if (n) console.log(T('{n} Titel sind laut Lesezeichen bei Suno freigeschaltet.', { n }));
 } catch (e) {}
 
-/* ABGELEGTE TITEL (Caspar_D, 26.10.2026: „wie werde ich den temporär öffentlichen Song aus dem KlangTresor los“).
-   Was in library/abgelegt.json steht, hat jemand mit „Aus dem Tresor nehmen“ abgelegt: Der Titel kommt nicht wieder
-   in den Katalog, auch wenn eine Ernte ihn noch liefert. Seine Dateien liegen unter library/abgelegt/<id>/ -
-   geloescht wird nichts. */
-let abgelegt = {};
-try { abgelegt = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'abgelegt.json'), 'utf8')) || {}; } catch (e) {}
+/* ABLAGE (Caspar_D, 26./27.10.2026). library/abgelegt.json: ausgeblendet - der Eintrag bleibt im Katalog, der Server
+   blendet ihn aus. Steht ein abgelegter Titel bei Suno OEFFENTLICH, kommt er zurueck („oeffentlich bei Suno schlaegt
+   Ablage“ - was Caspar_D bei Suno entscheidet, pflanzt sich fort). library/geloescht.json: endgueltig geloescht im
+   Profil - nie wieder aufnehmen. */
+const ABLAGE_F = path.join(WURZEL, 'library', 'abgelegt.json'), GELOESCHT_F = path.join(WURZEL, 'library', 'geloescht.json');
+const listeLesen = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')) || {}; } catch (e) { return {}; } };
+const abgelegt = listeLesen(ABLAGE_F), geloescht = listeLesen(GELOESCHT_F);
+{ const zurueck = Object.keys(abgelegt).filter(id => profilIds.has(id));
+  if (zurueck.length) {
+    for (const id of zurueck) delete abgelegt[id];
+    fs.writeFileSync(ABLAGE_F, JSON.stringify(abgelegt, null, 1));
+    console.log('  ' + T('Wieder öffentlich bei Suno, aus der Ablage zurückgeholt: {n}', { n: zurueck.length }));
+  } }
 const songs = { ...altSongs };
-for (const id of Object.keys(abgelegt)) delete songs[id];
+for (const id of Object.keys(geloescht)) delete songs[id];
 let neu = 0, aktualisiert = 0;
 
 for (const roh of eingang.values()) {
-  if (abgelegt[roh.id]) continue;
+  if (geloescht[roh.id]) continue;
   const s = normalisieren(roh);
   s.veroeffentlicht = profilIds.has(s.id) || s.oeffentlich;
 

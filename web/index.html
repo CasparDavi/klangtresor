@@ -2565,6 +2565,15 @@ html.handy #ich{margin-left:12px}
 #detail .ablegen{border-top:1px solid var(--rand);padding-top:14px;margin-top:8px}
 #detail .ablegen .fussnote{margin-top:6px;color:var(--schwach);font-size:12px;line-height:1.5}
 #detail .ablegen .chip.ja{border-color:var(--akzent);color:var(--text)}
+
+/* Abgelegte Titel im Profil (27.10.2026) */
+#profilablage .ablageliste{display:flex;flex-direction:column;margin-top:8px}
+#profilablage .ablagezeile{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--rand)}
+#profilablage .at{flex:1 1 220px;min-width:0;color:var(--text)}
+#profilablage .ad{color:var(--schwach);font-size:12px}
+#profilablage .ak{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#profilablage .ablagefrage{color:var(--schwach);font-size:13px}
+#profilablage .chip.ja{border-color:var(--akzent);color:var(--text)}
 </style>
 </head>
 <body>
@@ -4943,8 +4952,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=15"></script>
-<script src="/ui-sprache.js?v=27"></script>
+<script src="/ui-sprache-ru.js?v=16"></script>
+<script src="/ui-sprache.js?v=28"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -15431,7 +15440,7 @@ async function detailAuf(id){
     </div>`;
 
   /* AUS DEM TRESOR NEHMEN (26.10.2026): erst fragen - im Fenster, nicht mit dem hellen Systemdialog -, dann ablegen.
-     Gelöscht wird nichts; der Server legt den Ordner nach library/abgelegt/. */
+     Gelöscht wird nichts: der Titel bekommt nur das Merkmal „abgelegt“ und ist im Profil wiederzufinden. */
   { const box = $('dablegen');
     if (box) box.onclick = async (e) => {
       const b = e.target.closest('button[data-tu]'); if (!b) return;
@@ -15446,7 +15455,7 @@ async function detailAuf(id){
         let a = null; try { a = await (await fetch('/api/ablegen/' + id, { method: 'POST' })).json(); } catch (x) { a = { ok: false, grund: x.message }; }
         if (!a || !a.ok){ box.innerHTML = `<p class="fussnote">${esc(t('detail.ablegen.fehler', { grund: (a && a.grund) || '?' }))}</p>`; return; }
         detailZu(); await katalogNachladen();
-        kurzMeldung(t('detail.ablegen.fertig', { titel: s.titel, ordner: a.ordner || 'abgelegt/' }));
+        kurzMeldung(t('detail.ablegen.fertig', { titel: s.titel }));
       }
     }; }
   $('detail').classList.add('auf');
@@ -17640,6 +17649,37 @@ function profilRegister(welches){
   if (welches === 'handy') profilHandyFuellen();
 }
 
+/* ---- ABGELEGTE TITEL IM PROFIL (27.10.2026) -----------------------------------
+   Caspar_D: „Merkmalsvergabe mit der Moeglichkeit im Profil, Listenmitglieder komplett zu loeschen“. Erscheint nur, wenn
+   etwas abgelegt ist. Zurueckholen nimmt das Merkmal weg; Endgueltig loeschen entfernt die Dateien und setzt den Titel
+   auf die Nie-wieder-Liste - beides mit Rueckfrage im Fenster. */
+async function profilAblageFuellen(){
+  const el = $('profilablage'); if (!el || archivEingefroren()) return;
+  let d = null; try { d = await (await fetch('/api/ablage', { cache: 'no-store' })).json(); } catch (e) { return; }
+  const l = (d && d.titel) || [];
+  el.hidden = !l.length; if (!l.length) return;
+  const datum = (x) => x ? new Date(x).toLocaleDateString(localeTag()) : '–';
+  el.innerHTML = `<h3>${esc(t('ablage.titel', { n: l.length }))}</h3><p class="fussnote">${esc(t('ablage.text'))}</p>`
+    + `<div class="ablageliste">${l.map(e => `<div class="ablagezeile" data-id="${e.id}">`
+      + `<span class="at">${esc(e.titel || e.id)}</span><span class="ad">${esc(t('ablage.daten', { erstellt: datum(e.erstellt), abgelegt: datum(e.abgelegt) }))}</span>`
+      + `<span class="ak"><button type="button" class="chip" data-tu="zurueck">${t('ablage.zurueck')}</button>`
+      + `<button type="button" class="chip" data-tu="frage">${t('ablage.loeschen')}</button></span></div>`).join('')}</div>`;
+  el.onclick = async (ev) => {
+    const b = ev.target.closest('button[data-tu]'); if (!b) return;
+    const z = b.closest('.ablagezeile'), id = z && z.dataset.id; if (!id) return;
+    if (b.dataset.tu === 'frage'){
+      z.querySelector('.ak').innerHTML = `<span class="ablagefrage">${esc(t('ablage.frage'))}</span>`
+        + `<button type="button" class="chip ja" data-tu="loeschen">${t('ablage.loeschen.ja')}</button>`
+        + `<button type="button" class="chip" data-tu="nein">${t('detail.ablegen.nein')}</button>`;
+      return; }
+    if (b.dataset.tu === 'nein'){ profilAblageFuellen(); return; }
+    b.disabled = true;
+    let a = null; try { a = await (await fetch(`/api/ablage/${id}/${b.dataset.tu}`, { method: 'POST' })).json(); } catch (x) { a = { ok: false, grund: x.message }; }
+    if (!a || !a.ok){ kurzMeldung(t('detail.ablegen.fehler', { grund: (a && a.grund) || '?' })); profilAblageFuellen(); return; }
+    await katalogNachladen(); profilAblageFuellen();
+  };
+}
+
 /* ---- AUFS HANDY (24.10.2026) -------------------------------------------------
    Caspar_D: KlangTresor soll den Namen des Rechners nennen statt der Zahl, mit QR-Code. Die Zahl (192.168.…)
    vergibt der Router und kann sich aendern; der Name bleibt. Der Server liefert die Adressen in der Reihenfolge,
@@ -18957,6 +18997,7 @@ function profilAuf(){
 
 ${t('profil.urheber.suno')}</pre>
       </div>
+      <div class="block" id="profilablage" hidden></div><!-- fuellt profilAblageFuellen() -->
       </div><!-- /Register: Meine Daten -->
 
       <div class="pregfeld" data-preg="community" hidden>
@@ -18995,6 +19036,7 @@ ${t('profil.urheber.suno')}</pre>
   _nachbarnGebaut = false;
   { let r = 'daten'; try { r = localStorage.getItem('profilRegister') || 'daten'; } catch (e) {}
     profilRegister(r === 'community' ? 'community' : r === 'handy' ? 'handy' : (r === 'export' && !archivEingefroren()) ? 'export' : 'daten'); }
+  profilAblageFuellen();
   profilCommunityFuellen();
   if (!archivEingefroren()) profilExportFuellen();
 }

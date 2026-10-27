@@ -122,16 +122,23 @@ function eingefrorenVorhanden() {
 /* Abgelegte Titel (POST /api/ablegen) blendet der Server beim Laden aus - den grossen Katalog deswegen neu zu
    schreiben, hiess 52 MB packen: 20 s, in denen der Server stand, auch fuer Musik auf dem Handy (gemessen 26.10.2026).
    Der naechste Lauf von bin/aufbereiten.js laesst sie dann ohnehin weg. */
+/* ABLAGE ALS MERKMAL (Caspar_D, 27.10.2026: „ich folge deiner Merkmalsvergabe mit der Moeglichkeit im Profil,
+   Listenmitglieder komplett zu loeschen“). library/abgelegt.json: ausgeblendet, Dateien bleiben in songs/<id>/;
+   library/geloescht.json: endgueltig geloescht, kommt nie wieder. Beide blendet der Server hier aus. */
 const ABGELEGT = path.join(WURZEL, 'library', 'abgelegt.json');
+const GELOESCHT = path.join(WURZEL, 'library', 'geloescht.json');
+const listeLesen = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')) || {}; } catch (e) { return {}; } };
+const listeSchreiben = (f, l) => fs.writeFileSync(f, JSON.stringify(l, null, 1));
+const mtimeOder0 = (f) => { try { return fs.statSync(f).mtimeMs; } catch (e) { return 0; } };
 let abgelegtStand = 0;
 function katalogHolen() {
-  let m = 0, ma = 0;
+  let m = 0;
   try { m = fs.statSync(K.KATALOG).mtimeMs; } catch (e) { return null; }
-  try { ma = fs.statSync(ABGELEGT).mtimeMs; } catch (e) {}
+  const ma = mtimeOder0(ABGELEGT) + mtimeOder0(GELOESCHT);
   if (!katalog || m !== stand || ma !== abgelegtStand) {
     katalog = K.lesen();
     stand   = m; abgelegtStand = ma;
-    if (katalog && ma) { try { for (const id of Object.keys(JSON.parse(fs.readFileSync(ABGELEGT, 'utf8')) || {})) delete katalog.songs[id]; } catch (e) {} }
+    if (katalog) for (const id of [...Object.keys(listeLesen(ABGELEGT)), ...Object.keys(listeLesen(GELOESCHT))]) delete katalog.songs[id];
     schlankeListe = katalog
       ? Object.values(katalog.songs)
           .map(K.schlank)
@@ -2987,7 +2994,7 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
                                   mt(path.join(WURZEL, 'library', 'community-profile.json')),
                                   mt(path.join(WURZEL, 'library', 'community-hirsch.json')));
     /* + abgelegt.json: legt jemand am Rechner einen Titel ab, laden auch offene Handys den Katalog nach */
-    return jsonAntwort(res, { katalog: mt(K.KATALOG) + mt(ABGELEGT), gemeinschaft, laeuft: !!(morgen && morgen.laeuft) });
+    return jsonAntwort(res, { katalog: mt(K.KATALOG) + mt(ABGELEGT) + mt(GELOESCHT), gemeinschaft, laeuft: !!(morgen && morgen.laeuft) });
   }
 
   /* DER ZAEHLERVERLAUF ALLER TITEL auf einmal (fuer den „Hitstrom aller Wochen" im Profil, web/hitstrom.js) - einzeln steht
@@ -4029,30 +4036,40 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     try { return jsonAntwort(res, JSON.parse(fs.readFileSync(f, 'utf8'))); }
     catch (e) { return jsonAntwort(res, {}); }
   }
-  /* AUS DEM TRESOR NEHMEN (Caspar_D, 26.10.2026: ein Titel war kurz oeffentlich, wurde zurueckgezogen und neu gemacht -
-     „wie werde ich den temporaer oeffentlichen Song aus dem KlangTresor los“). Nichts wird geloescht, es ist ein Archiv:
-     Der Ordner songs/<id>/ wandert nach library/abgelegt/<id>/, daneben der Katalogeintrag als katalogeintrag.json;
-     library/abgelegt.json merkt den Titel: der Server blendet ihn sofort aus (katalogHolen), bin/aufbereiten.js nimmt
-     ihn nicht wieder auf. Die Seite laedt den Katalog danach nach. */
+  /* AUS DEM TRESOR NEHMEN (Caspar_D, 26.10.2026: ein Titel war kurz oeffentlich, wurde zurueckgezogen und neu gemacht).
+     Seit 27.10.2026 ein Merkmal statt Ordnerumzug: der Titel kommt in library/abgelegt.json, seine Dateien bleiben in
+     songs/<id>/, der Server blendet ihn aus (katalogHolen). Steht er bei Suno oeffentlich, holt bin/aufbereiten.js ihn
+     beim naechsten Lauf zurueck („oeffentlich bei Suno schlaegt Ablage“). Im Profil: Liste, Zurueckholen, Loeschen. */
+  if (p === '/api/ablage' && req.method === 'GET') {
+    const l = listeLesen(ABGELEGT);
+    return jsonAntwort(res, { titel: Object.entries(l).map(([id, e]) => ({ id, ...e }))
+      .sort((x, y) => String(y.abgelegt).localeCompare(String(x.abgelegt))) });
+  }
   if (p.startsWith('/api/ablegen/') && req.method === 'POST') {
     const id = p.slice('/api/ablegen/'.length);
     if (!/^[0-9a-f-]{36}$/.test(id)) { res.writeHead(400); return res.end(); }
-    try {
-      const kd = katalogHolen(); const s = kd && kd.songs && kd.songs[id];
-      if (!s) return jsonAntwort(res, { ok: false, grund: 'unbekannt' }, 404);
-      const ablage = path.join(WURZEL, 'library', 'abgelegt'); fs.mkdirSync(ablage, { recursive: true });
-      let ziel = path.join(ablage, id);
-      if (fs.existsSync(ziel)) ziel = path.join(ablage, id + '-' + Date.now());
-      const quelle = path.join(WURZEL, 'library', 'songs', id);
-      if (fs.existsSync(quelle)) fs.renameSync(quelle, ziel); else fs.mkdirSync(ziel, { recursive: true });
-      fs.writeFileSync(path.join(ziel, 'katalogeintrag.json'), JSON.stringify(s, null, 1));
-      const lf = path.join(WURZEL, 'library', 'abgelegt.json');
-      let liste = {}; try { liste = JSON.parse(fs.readFileSync(lf, 'utf8')) || {}; } catch (e) {}
-      liste[id] = { titel: s.titel || '', erstellt: s.erstellt || null, abgelegt: new Date().toISOString(), ordner: path.relative(path.join(WURZEL, 'library'), ziel) };
-      fs.writeFileSync(lf, JSON.stringify(liste, null, 1));   /* katalogHolen sieht die neue Zeit und blendet ihn aus */
-      return jsonAntwort(res, { ok: true, ordner: liste[id].ordner });
-    } catch (e) { return jsonAntwort(res, { ok: false, grund: e.message }, 500); }
+    const kd = katalogHolen(); const s = kd && kd.songs && kd.songs[id];
+    if (!s) return jsonAntwort(res, { ok: false, grund: 'unbekannt' }, 404);
+    const l = listeLesen(ABGELEGT);
+    l[id] = { titel: s.titel || '', erstellt: s.erstellt || null, oeffentlich: !!s.oeffentlich, abgelegt: new Date().toISOString() };
+    listeSchreiben(ABGELEGT, l);
+    return jsonAntwort(res, { ok: true });
   }
+  { const m = p.match(/^\/api\/ablage\/([0-9a-f-]{36})\/(zurueck|loeschen)$/);
+    if (m && req.method === 'POST') {
+      const [, id, was] = m, l = listeLesen(ABGELEGT);
+      if (!l[id]) return jsonAntwort(res, { ok: false, grund: 'nicht abgelegt' }, 404);
+      const e = l[id]; delete l[id];
+      if (was === 'loeschen') {
+        /* Endgueltig: Ordner weg, Eintrag auf die Nie-wieder-Liste - der Morgenlauf holt ihn nicht zurueck. */
+        try { fs.rmSync(path.join(WURZEL, 'library', 'songs', id), { recursive: true, force: true }); }
+        catch (x) { return jsonAntwort(res, { ok: false, grund: x.message }, 500); }
+        const g = listeLesen(GELOESCHT); g[id] = { titel: e.titel, erstellt: e.erstellt, geloescht: new Date().toISOString() };
+        listeSchreiben(GELOESCHT, g);
+      }
+      listeSchreiben(ABGELEGT, l);
+      return jsonAntwort(res, { ok: true });
+    } }
 
   if (p.startsWith('/api/instrumental/') && req.method === 'PUT') {
     const id = p.slice('/api/instrumental/'.length);

@@ -1318,5 +1318,9 @@
  "kleiner": {
   "en": "smaller",
   "ru": "меньше"
+ },
+ "Wieder öffentlich bei Suno, aus der Ablage zurückgeholt: {n}": {
+  "en": "Public on Suno again, brought back from storage: {n}",
+  "ru": "Снова опубликованы в Suno, возвращены из отложенных: {n}"
  }
 }

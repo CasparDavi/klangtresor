@@ -222,7 +222,12 @@ async function ladeDatei(url, ziel) {
     process.exit(1);
   }
 
-  let liste = Object.values(katalog.songs)
+  /* Abgelegte und endgueltig geloeschte Titel (library/abgelegt.json, geloescht.json) bekommen keine Medien mehr -
+     sonst holte der Lauf den Ordner eines im Profil geloeschten Titels gleich wieder (27.10.2026). */
+  const ausgeblendet = new Set();
+  for (const f of ['abgelegt.json', 'geloescht.json'])
+    try { Object.keys(JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', f), 'utf8')) || {}).forEach(id => ausgeblendet.add(id)); } catch (e) {}
+  let liste = Object.values(katalog.songs).filter(s => !ausgeblendet.has(s.id))
     .sort((a, b) => (b.erstellt || '').localeCompare(a.erstellt || ''));
 
   if (NUR_OEFF)  liste = liste.filter(s => s.veroeffentlicht);

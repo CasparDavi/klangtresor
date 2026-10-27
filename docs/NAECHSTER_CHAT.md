@@ -9805,3 +9805,20 @@ aus dem KlangTresor los“. Entscheidung B: ehrlicher Status + Ablegen (Ablage-L
   Im Sandkasten geprüft (3 Titel abgelegt, Index 337, aufbereiten.js 337, Dateien vollständig in der Ablage).
 - Alte Rusalka (`d2872229…`, bei Suno privat) legt Caspar_D selbst ab; ihr Status wird beim nächsten Morgenlauf ehrlich.
 - Offen (später): Ablage-Liste im Profil mit „Zurückholen“, Ersatz-Hinweis bei ähnlichem Titel.
+
+## 137. 27.10.2026: 1.0.119 – Ablage als Merkmal, Liste im Profil, öffentlich bei Suno holt zurück
+
+Caspar_D: Komplexität minimal, „ich will Sachen nur einmal machen“, Filter nicht aufblähen; „Merkmalsvergabe mit der
+Möglichkeit im Profil, Listenmitglieder komplett zu löschen“.
+- **Merkmal statt Ordnerumzug:** `library/abgelegt.json` (ausgeblendet, Dateien bleiben in songs/<id>/, Katalogeintrag
+  bleibt) und `library/geloescht.json` (endgültig, nie wieder). Server blendet beide aus (katalogHolen, /api/stand),
+  laden.js holt für beide keine Medien, aufbereiten.js lässt gelöschte weg.
+- **Öffentlich bei Suno schlägt Ablage:** Steht ein abgelegter Titel in der öffentlichen Ernte, nimmt aufbereiten.js ihn
+  aus der Ablage („Wieder öffentlich bei Suno, aus der Ablage zurückgeholt: n“). Bei Suno löschen statt im Tresor
+  ablegen ist der vorgesehene Weg für öffentliche Titel; ein abgelegter öffentlicher Titel kommt am nächsten Morgen zurück.
+- **Profil, Register „Meine Daten“:** Block „Abgelegt (n)“ (nur wenn etwas abgelegt ist) mit Zurückholen und Endgültig
+  löschen (Rückfrage im Fenster). Endpunkte GET /api/ablage, POST /api/ablegen/<id>, POST /api/ablage/<id>/zurueck|loeschen.
+- Filter Öffentlich/Privat/Alle unverändert; „zurückgezogen“ ist privat, nur ein Vermerk in den Details.
+- Sandkasten: ablegen/Liste/zurück/löschen über die Schnittstelle, aufbereiten.js mit nachgestellter Ernte „wieder
+  öffentlich“ (zurückgeholt), Gegenprobe abgelegt + privat (bleibt im Katalog, unsichtbar).
+- Offen: „bei Suno gelöscht → automatisch ablegen“ (erst klären, wie Suno gelöschte Titel meldet). Wischen auf der Bühne (Handy).
