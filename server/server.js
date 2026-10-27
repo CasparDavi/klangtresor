@@ -18,6 +18,9 @@ const os   = require('node:os');
 const K    = require('../bin/katalog.js');
 const { Behaelter, INDEX: BEHAELTER_INDEX } = require('../bin/behaelter.js');
 const { standHolen: fassungStand } = require('../bin/aktualisieren.js');
+/* Konsolentexte in der Sprache des Systems (bin/sprache.js, Uebersetzungen in bin/texte/server.json). Die Zeile
+   "KlangTresor auf http://..." bleibt woertlich deutsch: die Startskripte auf dem Stick lesen sie. */
+const { T: TK } = require('../bin/sprache.js');
 
 /* Argumente (Caspar_D, 09.09.2026): fuer den Archiv-Export auf den
    USB-Stick. Die Startskripte dort rufen
@@ -144,7 +147,7 @@ function katalogHolen() {
           .map(K.schlank)
           .sort((a, b) => (b.erstellt || '').localeCompare(a.erstellt || ''))
       : null;
-    console.log(`  Katalog geladen: ${schlankeListe ? schlankeListe.length : 0} Songs`);
+    console.log('  ' + TK('Katalog geladen: {n} Songs', { n: schlankeListe ? schlankeListe.length : 0 }));
   }
   return katalog;
 }
@@ -4709,31 +4712,31 @@ server.on('error', (e) => {
 });
 
 server.on('listening', () => {
-  console.log('\n  KlangTresor läuft\n');
+  console.log('\n  ' + TK('KlangTresor läuft') + '\n');
   /* Diese Zeile lesen die Startskripte auf dem Stick - Wortlaut ist
      Schnittstelle, nicht Schmuck. */
   console.log(`  KlangTresor auf http://localhost:${PORT}`);
-  if (EINGEFROREN) console.log('  Eingefroren: nur lesen, nichts wird geholt oder gespeichert.');
+  if (EINGEFROREN) console.log('  ' + TK('Eingefroren: nur lesen, nichts wird geholt oder gespeichert.'));
   /* Hier stand "Auf diesem Mac" - was auf einem Windows-Rechner schlicht
      falsch ist und beim Einrichten sofort auffaellt (27.08.2026). Das
      Haus ist am Mac gewachsen, aber es laeuft nicht nur dort. */
-  const hier = process.platform === 'darwin' ? 'Auf diesem Mac'
-             : process.platform === 'win32'  ? 'Auf diesem PC'
-             : 'Auf diesem Rechner';
+  const hier = process.platform === 'darwin' ? TK('Auf diesem Mac')
+             : process.platform === 'win32'  ? TK('Auf diesem PC')
+             : TK('Auf diesem Rechner');
   console.log(`  ${hier}:  http://localhost:${PORT}`);
 
   // Alle Netzwerkadressen zeigen - ein Rechner hängt oft in mehreren Netzen
   for (const [name, liste] of Object.entries(os.networkInterfaces())) {
     for (const n of liste || []) {
       if (n.family === 'IPv4' && !n.internal) {
-        console.log(`  Im Heimnetz (${name}):  http://${n.address}:${PORT}`);
+        console.log(`  ${TK('Im Heimnetz ({name})', { name })}:  http://${n.address}:${PORT}`);
       }
     }
   }
 
   const k = katalogHolen();
-  if (k) console.log(`\n  ${schlankeListe.length} Songs im Katalog.`);
+  if (k) console.log('\n  ' + TK('{n} Songs im Katalog.', { n: schlankeListe.length }));
   else   console.log('\n  Achtung: Katalog fehlt - erst "node bin/aufbereiten.js" laufen lassen.');
-  console.log('\n  Beenden mit Strg+C\n');
+  console.log('\n  ' + TK('Beenden mit Strg+C') + '\n');
 });
 server.listen(PORT, '0.0.0.0');

@@ -9851,3 +9851,13 @@ Palette: „Orange dominiert, dazu ein bis zwei Begleiter wie Dunkelrot und Sand
 
 Caspar_D: „im Schaum immer 70 % der Farbregler … auch neue Grundeinstellung“. `schaumFarbeAnteil` fällt ohne gemerkten
 Wert auf 70 statt 100; ein einmal bewegter Regler behält seinen Wert (localStorage `mysuno-schaum-farbe`).
+
+## 141. 27.10.2026: 1.0.123 – Startmeldung des Servers in DE/EN/RU
+
+Caspar_D (Feature-Dokument, Rechner-Kachel mit Konsole): „kannst du die Sprache anpassbar darstellen“ – ehrlich geht das nur,
+wenn der Server selbst übersetzt. server.js nimmt `T` aus bin/sprache.js (Sprache des Systems bzw. KT_SPRACHE, wie
+Einrichtung und Aktualisieren); Texte in bin/texte/server.json: „KlangTresor läuft“, „Auf diesem Mac/PC/Rechner“,
+„Im Heimnetz (…)“, „Katalog geladen“, „… Songs im Katalog.“, „Beenden mit Strg+C“, „Eingefroren …“. Die Zeile
+„KlangTresor auf http://…“ bleibt in jeder Sprache deutsch – die Startskripte auf dem Stick lesen sie (Schnittstelle).
+Geprüft im Sandkasten mit KT_SPRACHE=de/en/ru. Lehre: server.js beendet sich bei geänderter Datei selbst und verlässt
+sich auf die Schleife im Startskript – ein Sandkasten ohne Startskript bleibt danach aus.

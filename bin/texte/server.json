@@ -1,0 +1,11 @@
+{
+  "KlangTresor läuft": { "en": "KlangTresor is running", "ru": "KlangTresor работает" },
+  "Eingefroren: nur lesen, nichts wird geholt oder gespeichert.": { "en": "Frozen: read only, nothing is fetched or saved.", "ru": "Заморожено: только чтение, ничего не загружается и не сохраняется." },
+  "Auf diesem Mac": { "en": "On this Mac", "ru": "На этом Mac" },
+  "Auf diesem PC": { "en": "On this PC", "ru": "На этом ПК" },
+  "Auf diesem Rechner": { "en": "On this computer", "ru": "На этом компьютере" },
+  "Im Heimnetz ({name})": { "en": "In the home network ({name})", "ru": "В домашней сети ({name})" },
+  "{n} Songs im Katalog.": { "en": "{n} songs in the catalogue.", "ru": "Песен в каталоге: {n}." },
+  "Katalog geladen: {n} Songs": { "en": "Catalogue loaded: {n} songs", "ru": "Каталог загружен: песен — {n}" },
+  "Beenden mit Strg+C": { "en": "Quit with Ctrl+C", "ru": "Выход: Ctrl+C" }
+}
