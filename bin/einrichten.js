@@ -1591,8 +1591,12 @@ open -a Terminal ${JSON.stringify(starter)}
      gross node_modules geworden ist. 19 Pakete und rund 240 MB sind die
      Sollwerte aus package-lock.json (gemessen 13.09.2026). Das ist ein
      echter Balken, kein geschaetzter. */
+  /* SCHON FERTIG? Die Setup.exe fuer Windows bringt node_modules mit, gebaut aus genau dieser package-lock.json. Liegt
+     jedes Paket in seiner Fassung da (bin/pakete.js abweichungen), waere npm hier nur Wartezeit und ein Gang ins Netz
+     fuer nichts. Nachgesehen wird trotzdem - nicht geglaubt, dass ein Installer da war. */
+  const paketeFertig = require('./pakete.js').abweichungen().length === 0;
   const NM = path.join(WURZEL, 'node_modules');
-  const paketBlick = setInterval(() => {
+  const paketBlick = paketeFertig ? null : setInterval(() => {
     let zahl = 0, bytes = 0;
     try {
       for (const d of fs.readdirSync(NM)) {
@@ -1606,8 +1610,8 @@ open -a Terminal ${JSON.stringify(starter)}
     lauf({ was: T('Pakete werden geladen und eingerichtet'), n: zahl, von: 19, bytes, gesamt: 240 * 1048576,
       hinweis: T('Zwischendurch ist es still: Manche Bausteine holen nach dem Laden noch eigene Teile nach. Das dauert, sieht aber nur nach Stillstand aus.') });
   }, 3000);
-  const paketeGut = await npmLaufen(['install', '--no-fund', '--no-audit']);
-  clearInterval(paketBlick); lauf(null);
+  const paketeGut = paketeFertig || await npmLaufen(['install', '--no-fund', '--no-audit']);
+  if (paketBlick) { clearInterval(paketBlick); lauf(null); }
   if (!paketeGut) {
     /* Kein „ueberspringen" hier: ohne die Pakete startet der Server
        nicht, die Wahl fuehrte also in eine Sackgasse. */
@@ -1622,7 +1626,8 @@ open -a Terminal ${JSON.stringify(starter)}
       if (!await npmLaufen(['install', '--no-fund', '--no-audit'])) { wiederkommen(); schluss(1); }
       gut(T('Pakete sind da.')); zeile('pakete', T('Pakete'), T('19 Pakete geholt'));
     } else { wiederkommen(); schluss(1); }
-  } else { gut(T('Pakete sind da.')); zeile('pakete', T('Pakete'), T('19 Pakete geholt')); }
+  } else if (paketeFertig) { gut(T('Pakete sind da.')); zeile('pakete', T('Pakete'), T('liegen vollständig da, in der richtigen Fassung — nichts zu holen')); }
+  else { gut(T('Pakete sind da.')); zeile('pakete', T('Pakete'), T('19 Pakete geholt')); }
   /* NACHSEHEN STATT GLAUBEN: npm kann mit Erfolg enden und trotzdem ein Paket nicht hinlegen (Lutz,
      23.10.2026, umap-js). Was dann fehlt, holt bin/pakete.js einzeln nach - ohne fremde
      Installationsskripte, an denen ein volles npm install scheitert und alles zurueckrollt. */

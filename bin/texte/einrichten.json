@@ -1654,5 +1654,9 @@
  "Ordner der KI-Modelle": {
   "en": "AI model folder",
   "ru": "Папка ИИ-моделей"
+ },
+ "liegen vollständig da, in der richtigen Fassung — nichts zu holen": {
+  "en": "all here, in the right version — nothing to fetch",
+  "ru": "все на месте, в нужной версии — загружать нечего"
  }
 }

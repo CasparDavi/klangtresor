@@ -97,7 +97,24 @@ function nachholen(sag = (t) => console.log(t)) {
 }
 
 /* brauche(name) holte fuer karte.js ein fehlendes Paket still nach - bis 28.10.2026; seither sagt es bin/fehlt.js. */
-module.exports = { fehlende, nachholen };
+/* Liegt GENAU das, was package-lock.json verlangt - jedes Paket, auch die mitgezogenen, in seiner Fassung? Gibt die
+   Abweichungen zurueck (leer = alles stimmt). Fuer die Einrichtung: liegt node_modules schon fertig da (die Setup.exe
+   bringt es mit), braucht sie npm nicht - weder Netz noch Wartezeit. Ein Paket, das nur fuer ein anderes System
+   gedacht ist (optional), darf fehlen. */
+function abweichungen() {
+  const lock = lesen('package-lock.json');
+  if (!lock || !lock.packages) return ['package-lock.json'];
+  const aus = [];
+  for (const [ort, soll] of Object.entries(lock.packages)) {
+    if (!ort.startsWith('node_modules/')) continue;
+    const p = lesen(path.join(ort, 'package.json'));
+    if (!p) { if (!soll.optional) aus.push(ort.slice(13)); continue; }
+    if (p.version !== soll.version) aus.push(ort.slice(13) + ' ' + p.version + ' statt ' + soll.version);
+  }
+  return aus;
+}
+
+module.exports = { fehlende, nachholen, abweichungen };
 
 if (require.main === module) {
   const fehlt = fehlende();
