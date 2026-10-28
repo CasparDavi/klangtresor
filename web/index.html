@@ -19794,7 +19794,10 @@ const BILDRATE = 24;
    20.08.2026: "lokal sollte wav als Basisformat dienen, aber
    umschaltbar") - spielen() faellt je Song still auf MP3 zurueck,
    wenn kein WAV da ist. Wer einmal umschaltet, bleibt bei seiner Wahl. */
-let bTon = localStorage.getItem('mysuno-ton') || 'wav';
+/* AUF DEM HANDY MP3 (Caspar_D, 28.10.2026: „ja, mach das“): dort geht der Ton meist ueber AirPlay, das ohnehin
+   komprimiert, und die WAV brauchte achtmal so viel WLAN - bei schwachem Empfang riss der Ton ab. Wer im Profil
+   umschaltet, behaelt seine Wahl. */
+let bTon = localStorage.getItem('mysuno-ton') || (window.istHandy && istHandy() ? 'mp3' : 'wav');
 
 /* WELCHE TONDATEI GILT (Tarja über Caspar_D, 27.08.2026: eigene MP3s,
    "die das vorhandene nicht ersetzen aber überstimmen").
