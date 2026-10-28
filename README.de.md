@@ -15,10 +15,7 @@ die im Heimnetz läuft und auf jedem Bildschirm mit Browser spielt.
 
 <br>
 
-<table>
-<tr><td width="50%" valign="bottom" align="right"><a href="https://caspardavi.github.io/klangtresor/features/?lang=de"><img src="docs/features/img/geraete-de.webp" alt="Jeder Bildschirm zu Hause: Laptop, Tablet, Handy" width="100%"></a><br><sub>Jeder Bildschirm zu Hause: Laptop, Tablet, Handy</sub></td><td width="50%" valign="bottom" align="left"><a href="https://caspardavi.github.io/klangtresor/features/?lang=de"><img src="docs/features/img/glockenstuhl-de.webp" alt="Ein echtes Studio im Browser" width="100%"></a><br><sub>Ein echtes Studio im Browser</sub></td></tr>
-<tr><td width="50%" valign="top" align="right"><a href="https://caspardavi.github.io/klangtresor/features/?lang=de"><img src="docs/features/img/himmel-de.webp" alt="Klangraum: jeder Titel ein Stern, sortiert nach Klang" width="100%"></a><br><sub>Klangraum: jeder Titel ein Stern, sortiert nach Klang</sub></td><td width="50%" valign="top" align="left"><a href="https://caspardavi.github.io/klangtresor/features/?lang=de"><img src="docs/features/img/buehne-de.webp" alt="Die Bühne: der Liedtext Wort für Wort" width="100%"></a><br><sub>Die Bühne: der Liedtext Wort für Wort</sub></td></tr>
-</table>
+<a href="https://caspardavi.github.io/klangtresor/features/?lang=de"><img src="docs/features/img/readme-quartett-de.jpg" alt="Jeder Bildschirm zu Hause, ein echtes Studio im Browser, Klangraum, die Bühne" width="100%"></a>
 
 <br>
 
