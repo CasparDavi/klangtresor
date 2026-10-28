@@ -3,7 +3,7 @@
    Imperativ-Zählung an bekannten Enden. Dazu: Kondensat-Vokabular je Gruppe. */
 'use strict';
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
-const REPO = '/Volumes/Extreme_SSD/Entwicklung/SunoArchive';
+const REPO = path.resolve(__dirname, '..', '..');   /* relativ: der Ordnername darf sich aendern (28.10.2026) */
 const { ohneRegie } = require(path.join(REPO, 'bin/geschichten.js'));
 
 const katalog = JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(REPO, 'library/katalog.json.gz'))));

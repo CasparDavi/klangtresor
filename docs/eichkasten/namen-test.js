@@ -4,7 +4,7 @@
    neue Ortsnamen. Nutzt den Wortvektoren-Cache. */
 'use strict';
 const fs = require('fs'), zlib = require('zlib');
-const REPO = '/Volumes/Extreme_SSD/Entwicklung/SunoArchive';
+const REPO = require('path').resolve(__dirname, '..', '..');   /* relativ: der Ordnername darf sich aendern (28.10.2026) */
 const alt = JSON.parse(fs.readFileSync(__dirname + '/karte-geschichten.json.vor-schritt2'));
 const kondJson = JSON.parse(fs.readFileSync(REPO + '/library/kondensate/kondensate.json')).lieder;
 const gesch = JSON.parse(fs.readFileSync(REPO + '/library/geschichten.json')).songs;

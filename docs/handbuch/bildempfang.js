@@ -55,7 +55,7 @@
      schreiben nichts.)
 */
 const http = require('http'), fs = require('fs'), path = require('path');
-const ZIEL = '/Volumes/Extreme_SSD/Entwicklung/SunoArchive/docs/handbuch/bilder';
+const ZIEL = path.join(__dirname, 'bilder');   /* relativ (28.10.2026) */
 http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', '*');

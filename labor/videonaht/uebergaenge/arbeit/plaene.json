@@ -6,7 +6,7 @@
   "neunte": "abbremsen",
   "i": 71,
   "j": 167,
-  "src": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/library/songs/c734cf5d-e8d0-4989-b5e4-e97bb12493fe/artwork.mp4",
+  "src": "/Volumes/Extreme_SSD/Entwicklung/KlangTresor/library/songs/c734cf5d-e8d0-4989-b5e4-e97bb12493fe/artwork.mp4",
   "th": 418,
   "T": 2.696629999999999,
   "D": 1.2,
@@ -68,7 +68,7 @@
    "pixel",
    "abbremsen"
   ],
-  "norm": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/labor/videonaht/uebergaenge/arbeit/dopamier-norm.nut",
+  "norm": "/Volumes/Extreme_SSD/Entwicklung/KlangTresor/labor/videonaht/uebergaenge/arbeit/dopamier-norm.nut",
   "bremse": {
    "c": 1.2499999998977198,
    "Bf": 12,
@@ -85,7 +85,7 @@
   "neunte": "lumawisch",
   "i": 119,
   "j": 215,
-  "src": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/library/songs/b1ff440c-1695-4b31-96ee-f99fe07a976d/artwork.mp4",
+  "src": "/Volumes/Extreme_SSD/Entwicklung/KlangTresor/library/songs/b1ff440c-1695-4b31-96ee-f99fe07a976d/artwork.mp4",
   "th": 310,
   "T": 1.7778999999999883,
   "D": 0.8889499999999941,
@@ -147,7 +147,7 @@
    "pixel",
    "lumawisch"
   ],
-  "norm": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/labor/videonaht/uebergaenge/arbeit/lenore-norm.nut",
+  "norm": "/Volumes/Extreme_SSD/Entwicklung/KlangTresor/labor/videonaht/uebergaenge/arbeit/lenore-norm.nut",
   "n": 7
  },
  {
@@ -157,7 +157,7 @@
   "neunte": "weiss",
   "i": 0,
   "j": 96,
-  "src": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/library/songs/73bf9ab3-9a9e-49c8-a604-b713db4c8813/artwork.mp4",
+  "src": "/Volumes/Extreme_SSD/Entwicklung/KlangTresor/library/songs/73bf9ab3-9a9e-49c8-a604-b713db4c8813/artwork.mp4",
   "th": 356,
   "T": 1.6003099999999897,
   "D": 0.8001549999999948,
@@ -219,7 +219,7 @@
    "pixel",
    "weiss"
   ],
-  "norm": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/labor/videonaht/uebergaenge/arbeit/erlkoenig-norm.nut",
+  "norm": "/Volumes/Extreme_SSD/Entwicklung/KlangTresor/labor/videonaht/uebergaenge/arbeit/erlkoenig-norm.nut",
   "n": 7
  },
  {
@@ -229,7 +229,7 @@
   "neunte": "abbremsen",
   "i": 107,
   "j": 215,
-  "src": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/library/songs/89ef9f63-c885-4fe5-b082-8e2bf9513c4d/artwork.sprung.mp4",
+  "src": "/Volumes/Extreme_SSD/Entwicklung/KlangTresor/library/songs/89ef9f63-c885-4fe5-b082-8e2bf9513c4d/artwork.sprung.mp4",
   "th": 240,
   "T": 1.6447200000000066,
   "D": 0.8223600000000033,
@@ -291,7 +291,7 @@
    "pixel",
    "abbremsen"
   ],
-  "norm": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/labor/videonaht/uebergaenge/arbeit/glut-norm.nut",
+  "norm": "/Volumes/Extreme_SSD/Entwicklung/KlangTresor/labor/videonaht/uebergaenge/arbeit/glut-norm.nut",
   "bremse": {
    "c": 1.1334745762100848,
    "Bf": 8,

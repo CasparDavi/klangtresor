@@ -16,7 +16,7 @@ const HIER = __dirname;
 /* Die Aufgabe steht in bin/kondensat-prompt.js und NUR dort - sonst laufen
    die Fassungen auseinander und der Modellvergleich misst am Ende den
    Unterschied der Prompts mit. Begruendung je Regel: docs/KONDENSAT-REGELN.md */
-const { FASSUNG, einzeln } = require('/Volumes/Extreme_SSD/Entwicklung/SunoArchive/bin/kondensat-prompt.js');
+const { FASSUNG, einzeln } = require(path.resolve(__dirname, '..', '..', 'bin', 'kondensat-prompt.js'));
 
 /* Ollama antwortet auf einen Rutsch (stream:false). Ein Denkmodell wie
    deepseek-r1 stellt seine Ueberlegung in <think>-Klammern voran - die

@@ -2,7 +2,7 @@
 # Kachelvideos der Uebergaenge (Laborprobe, nicht Hausbestand).
 import json, gzip, math, os, shutil, statistics, subprocess, sys, urllib.parse
 
-ROOT = '/Volumes/Extreme_SSD/Entwicklung/SunoArchive'
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))  # relativ (28.10.2026)
 LAB = ROOT + '/labor/videonaht'
 OUT = LAB + '/uebergaenge'
 ARB = OUT + '/arbeit'

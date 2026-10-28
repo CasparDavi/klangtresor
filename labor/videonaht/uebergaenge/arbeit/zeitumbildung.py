@@ -23,7 +23,7 @@
 import json, math, os, shutil, subprocess, sys, time, urllib.parse
 
 T0 = time.time()
-ROOT = '/Volumes/Extreme_SSD/Entwicklung/SunoArchive'
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))  # relativ (28.10.2026)
 LAB = ROOT + '/labor/videonaht'
 OUT = LAB + '/uebergaenge'
 ARB = OUT + '/arbeit'

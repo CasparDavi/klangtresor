@@ -5,8 +5,10 @@
 Das Projekt hieß bis zum 24.08.2026 **MySuno** und heißt jetzt
 **KlangTresor**; es steht seit dem 25.08. öffentlich unter
 [github.com/CasparDavi/klangtresor](https://github.com/CasparDavi/klangtresor)
-unter MIT-Lizenz. Der Ordner auf der Platte heißt weiterhin
-`SunoArchive` — das stört nichts, kein Skript nimmt einen Namen an.
+unter MIT-Lizenz. Der Ordner auf der Platte hieß bis zum 28.10.2026
+`SunoArchive` und heißt seither `KlangTresor` (Entwicklung/KlangTresor);
+das Programm nimmt keinen Ordnernamen an, die Labor- und Eichskripte rechnen
+seither relativ. Der Server läuft von dort über bin/starten.js.
 Die alte git-Historie ist **nicht** mitgegangen: Sie liegt hier als
 `.git-alt-20260824/` und als Bundle in `../SunoArchive-privat/`.
 
