@@ -9,7 +9,7 @@ const S = {
   p:{en:'Suno makes the songs. KlangTresor keeps them, plays them, measures them and shows them, on every screen in your home.',
      de:'Suno macht die Titel. KlangTresor bewahrt sie, spielt sie, vermisst sie und zeigt sie, auf jedem Bildschirm in deinem Zuhause.',
      ru:'Suno создаёт песни. KlangTresor хранит их, играет, измеряет и показывает — на любом экране в твоём доме.'},
-  mehr:{en:'More',de:'Mehr',ru:'Подробнее'}, zu:{en:'Close',de:'Schließen',ru:'Закрыть'},
+  mehr:{en:'More',de:'Mehr',ru:'Подробнее'}, zu:{en:'Close',de:'Schließen',ru:'Закрыть'}, abspielen:{en:'Play',de:'Abspielen',ru:'Воспроизвести'},
   pdf:{en:'The brochure as PDF',de:'Die Broschüre als PDF',ru:'Брошюра в PDF'},
   platz:{en:'Picture follows',de:'Bild folgt',ru:'Изображение будет'}
  },
@@ -163,6 +163,7 @@ const S = {
  {augenbraue:{en:'Your work as a picture',de:'Dein ganzes Werk als Bild',ru:'Всё творчество — одной картиной'},
   h:{en:'Your whole work. One picture.',de:'Dein ganzes Werk. Ein Bild.',ru:'Всё творчество. Одна картина.'},
   p:{en:'As a picture wall with a timeline, or as a foam with a catalogue of works. As a PDF for the print shop.',de:'Als Bilderschau mit Zeitleiste oder als Schaum mit Werkverzeichnis. Als PDF für die Druckerei.',ru:'Как стена картин со шкалой времени или как пена с каталогом работ. В PDF для типографии.'},
+  fahrt:['papier','papierdetail'], fahrtArt:'zoom', fahrtNach:'skizze',   // Feature-Seite: das Plakat bleibt stehen, das Scrollen zoomt in die Ecke
   kacheln:[
   {id:'klangschaum',w:12,oben:true,klein:{en:'Sound foam, picture wall',de:'Klangschaum, Bilderschau',ru:'Звуковая пена, стена картин'},
    h:{en:'Every song a cell.',de:'Jeder Titel eine Zelle.',ru:'Каждая песня — ячейка.'},
@@ -170,7 +171,7 @@ const S = {
    d:{en:['<b>Grouped by album, genre or space</b>, coloured by group.','<b>Every song keeps its true area.</b> Zoom in until the smallest cell can be tapped.','<b>A tap plays the song.</b>'],
       de:['<b>Gegliedert nach Album, Genre oder Klanggruppe</b>, gefärbt nach Gruppe.','<b>Jeder Titel behält seine wahre Fläche.</b> Heranzoomen, bis auch die kleinste Zelle antippbar ist.','<b>Ein Tipp spielt den Titel.</b>'],
       ru:['<b>Группировка по альбому, жанру или пространству</b>, цвет — по группе.','<b>Каждая песня сохраняет истинную площадь.</b> Приблизь — и даже самую маленькую ячейку можно нажать.','<b>Касание запускает песню.</b>']}},
-  {id:'zimmer',w:7,oben:true,klein:{en:'Poster studio',de:'Plakat-Studio',ru:'Студия плакатов'},
+  {id:'zimmer',w:7,wFahrt:8,oben:true,klein:{en:'Poster studio',de:'Plakat-Studio',ru:'Студия плакатов'},
    h:{en:'Print it. Hang it.',de:'Drucken. Aufhängen.',ru:'Напечатай. Повесь.'},
    p:{en:'A PDF export ready for the print shop, from A3 to 100 × 140 cm, free formats up to 3 m. Here the picture show on paper, 100 × 60 cm, with its timeline.',de:'Ein PDF-Export, fertig für die Druckerei, von A3 bis 100 × 140 cm, freie Formate bis 3 m. Hier die Bilderschau auf Papier, 100 × 60 cm, mit ihrer Zeitleiste.',ru:'Экспорт в PDF, готовый для типографии, — от A3 до 100 × 140 см, свободные форматы до 3 м. Здесь стена картин на бумаге, 100 × 60 см, со шкалой времени.'},
    d:{en:['<b>Vector text</b>, images at print resolution, bleed included.','<b>Edition and signature line</b> for a numbered print.'],de:['<b>Schrift als Vektor</b>, Bilder in Druckauflösung, Beschnitt inklusive.','<b>Auflage und Signaturlinie</b> für einen nummerierten Druck.'],ru:['<b>Текст в векторе</b>, изображения в печатном разрешении, с вылетами.','<b>Тираж и линия для подписи</b> — для нумерованного оттиска.']}},
@@ -194,6 +195,7 @@ const S = {
  {augenbraue:{en:'Create',de:'Gestalten',ru:'Создавать'},
   h:{en:'From cover to clip.',de:'Vom Cover zum Clip.',ru:'От обложки к клипу.'},
   p:{en:'With the effect clip studio, a still picture becomes a moving clip for Suno.',de:'Mit dem Effektclip-Studio wird aus einem stillen Bild ein bewegter Clip für Suno.',ru:'В студии эффект-клипов неподвижная картинка становится движущимся клипом для Suno.'},
+  fahrt:['okkultbild','okkulttiefe','effektclip'],   // Feature-Seite: eine stehende Kachel, das Scrollen führt durch die drei Stufen
   kacheln:[
   {id:'okkultbild',w:6,oben:true,klein:{en:'The picture',de:'Das Bild',ru:'Картинка'},
    h:{en:'A still cover.',de:'Ein stilles Titelbild.',ru:'Неподвижная обложка.'},
@@ -209,7 +211,7 @@ const S = {
    d:{en:['<b>A light mixing desk</b> drives spotlights, lasers and pulses from the beat.','<b>Ken Burns with parallax.</b>','<b>Export a 10-second loop</b> to upload to Suno as a moving cover.'],
       de:['<b>Ein Lichtmischpult</b> steuert Scheinwerfer, Laser und Pulse aus dem Takt.','<b>Ken Burns mit Parallaxe.</b>','<b>Als 10-Sekunden-Schleife sichern</b> und bei Suno als Bewegtbild hochladen.'],
       ru:['<b>Световой пульт</b> управляет прожекторами, лазерами и импульсами по ритму.','<b>Кен Бёрнс с параллаксом.</b>','<b>Сохрани 10-секундную петлю</b> и загрузи её в Suno как видеообложку.']}},
-  {id:'rezept',w:4,oben:true,klein:{en:'The recipe',de:'Das Rezept',ru:'Рецепт'},
+  {id:'rezept',w:4,wFahrt:12,oben:true,klein:{en:'The recipe',de:'Das Rezept',ru:'Рецепт'},
    h:{en:'Five effects.',de:'Fünf Effekte.',ru:'Пять эффектов.'},
    p:{en:'There are 35 studio effects with 309 settings in all.',de:'Es gibt 35 Studioeffekte mit insgesamt 309 Einstellungen.',ru:'В студии 35 эффектов, всего 309 настроек.'},
    d:{en:['<b>Saved with the song</b> and repainted at any time.'],de:['<b>Beim Titel gespeichert</b> und jederzeit neu gemalt.'],ru:['<b>Хранится вместе с песней</b> и перерисовывается в любой момент.']}},
@@ -278,12 +280,13 @@ const S = {
  stern:{en:'',de:'',ru:'* Русский текст — машинный перевод, ещё не проверенный носителем языка.'}
 };
 
-const BV = '66';   // Bildstand: hochzählen, wenn Bilder ersetzt werden (sonst zeigt der Browser alte)
+const BV = '67';   // Bildstand: hochzählen, wenn Bilder ersetzt werden (sonst zeigt der Browser alte)
 const BILDER = Object.fromEntries(['titel','morgenlauf','buehne','visualisierung',
   'klangschaum','plakat','sichern','leser','tablet','fernseher','laptop'].map(id => [id, `img/${id}.webp?v=${BV}`]));
 BILDER.effektclip = 'img/okkult-clip.mp4?v=' + BV;
 BILDER.okkultbild = `img/okkult-bild.webp?v=${BV}`;
 BILDER.okkulttiefe = `img/okkult-tiefe.webp?v=${BV}`;
+const POSTER = { effektclip: BILDER.okkultbild };   // Standbild, solange ein Video (noch) nicht läuft; erstes Bild des Clips = Cover
 BILDER.rezept = { liste: [
   { k:{en:'Flock',de:'Schwarm',ru:'Стая'}, w:{en:['Sixty dark birds, each dodging its neighbours, all following a wandering centre and respecting the depth map'],de:['Sechzig dunkle Vögel, jeder weicht seinen Nachbarn aus, alle folgen einer wandernden Mitte und beachten die Tiefenkarte'],ru:['Шестьдесят тёмных птиц: каждая уклоняется от соседей, все следуют за блуждающим центром и учитывают карту глубины']} },
   { k:{en:'Dust',de:'Staub',ru:'Пыль'}, w:{en:['240 bright motes rising, laid over the picture as light'],de:['240 helle Teilchen steigen auf, als Licht über das Bild gelegt'],ru:['240 светлых пылинок поднимаются вверх, наложены на картинку как свет']} },

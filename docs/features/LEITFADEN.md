@@ -104,6 +104,7 @@ Startpunkt, kein Gesetz: Ein neues Projekt prüft sie am Vorbild nach, statt sie
 | Kachel | Textteil oben (Augenbraue, Überschrift 24–32 px, ein Satz), Bildteil unten Kante an Kante |
 | Reihe | Überschriften auf einer Grundlinie (subgrid), Bildunterkanten fluchten (`w₁/f₁ = w₂/f₂`) |
 | Einzelheiten | „+“ rechts unten → Fenster **am Plus**, Kreuz an der Stelle des Plus, Hintergrund nur leicht gedimmt (≈ 38 %) |
+| Fahrten | Pinning sparsam: nur für dasselbe Bild in Stufen oder Ganzes → Detail; Überschrift steht mit, Fallback Einzelkacheln |
 | Bilder | in Anzeigebreite speichern, Lanczos + leichtes Schärfen, WebP; Cache-Zähler im Bildpfad |
 | Fuß | „Gut zu wissen“ (Grenzen ehrlich nennen), Projektadresse als Link |
 | Vorschau | Open Graph statisch (Crawler führen kein JavaScript aus), Bild 1280 × 640 |

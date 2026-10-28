@@ -44,10 +44,10 @@ main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
 .held .pdf{display:inline-block;margin:-22px 0 38px;color:var(--akzent);font-size:17px;font-weight:600;text-decoration:none}
 .held .pdf:hover{text-decoration:underline}
 .abschnitt{margin:120px 0 0}
-.abschnitt>.kopf{max-width:820px;margin:0 0 36px}
-.abschnitt>.kopf .augenbraue{font-size:17px;font-weight:600;color:var(--akzent);margin:0 0 8px}
-.abschnitt>.kopf h2{font-size:clamp(34px,5vw,56px);line-height:1.07;letter-spacing:-.01em;font-weight:700;margin:0 0 14px}
-.abschnitt>.kopf p{font-size:clamp(18px,2vw,21px);color:var(--leise);margin:0;font-weight:500}
+.abschnitt>.kopf,.fahrt .kopf{max-width:820px;margin:0 0 36px}
+.abschnitt>.kopf .augenbraue,.fahrt .kopf .augenbraue{font-size:17px;font-weight:600;color:var(--akzent);margin:0 0 8px}
+.abschnitt>.kopf h2,.fahrt .kopf h2{font-size:clamp(34px,5vw,56px);line-height:1.07;letter-spacing:-.01em;font-weight:700;margin:0 0 14px}
+.abschnitt>.kopf p,.fahrt .kopf p{font-size:clamp(18px,2vw,21px);color:var(--leise);margin:0;font-weight:500}
 .raster{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
 .k{position:relative;grid-column:span 6;background:var(--kachel);border-radius:28px;overflow:hidden;display:flex;flex-direction:column}
 .k.w12{grid-column:span 12}.k.w8{grid-column:span 8}.k.w4{grid-column:span 4}.k.w6{grid-column:span 6}.k.w5{grid-column:span 5}.k.w7{grid-column:span 7}
@@ -136,6 +136,41 @@ main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
 /* Leicht gedimmt; das Fenster geht am Plus auf, sein Kreuz liegt dort, wo das Plus war (Lage setzt lage()). */
 .overlay{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;overflow:auto}
 .overlay.auf{display:block}
+.abspielen{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;z-index:3;border:0;border-radius:50%;background:rgba(20,20,22,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--text);cursor:pointer;display:grid;place-items:center}
+.abspielen svg{width:28px;height:28px;margin-left:3px}
+.fahrt .fbild > .abspielen{inset:auto;left:50%;top:50%;width:64px;height:64px;display:grid}
+/* Fahrt (Scrollytelling): Die Kachel bleibt stehen, das Scrollen führt dasselbe Bild durch seine Stufen
+   (Cover → Tiefenkarte → Clip), danach scrollt die Seite weiter. Ohne Bewegungswunsch und im Druck: die Einzelkacheln. */
+.fahrt{display:none;grid-column:span 12;height:calc(var(--n) * 100svh)}
+@media screen and (prefers-reduced-motion:no-preference){.fahrt{display:block}.k.in-fahrt{display:none}.mit-fahrt>.kopf{display:none}
+  /* Steht eine Nachbarkachel nach der Fahrt allein, nimmt sie die volle Breite, ihre Liste läuft in Spalten. */
+  .k.fahrt-w12{grid-column:span 12}.k.fahrt-w8{grid-column:span 8}
+  /* Zimmer neben dem Skizzenbuch: etwas höher als sein Bild – seitlich anschneiden statt Streifen (Lampe links bleibt) */
+  .k.fahrt-w8 > .bild img{height:100%;object-fit:cover;object-position:30% 50%}.k.fahrt-w12 > .filterliste{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));column-gap:28px}}
+.fahrt .halt{position:sticky;top:64px}   /* top setzt fahren(): Kachel mittig unter der Sprachleiste; unten schließt sie bündig ab */
+.fahrt .buehne{position:relative;width:100%;display:flex;background:var(--kachel);border-radius:28px;overflow:hidden}
+.fahrt .ftext{flex:1;padding:30px 32px 26px;display:flex;flex-direction:column}
+.fahrt .schritte{font-size:15px;font-weight:600;color:var(--leise);margin:0 0 6px;padding-right:44px}
+.fahrt .schritte span{transition:color .3s;white-space:nowrap}
+.fahrt .schritte span.an{color:var(--akzent)}
+.fahrt .schritte i{font-style:normal;color:#55555a}
+.fahrt .stufen{display:grid}
+.fahrt .stufe{grid-area:1/1;opacity:0;transition:opacity .35s}
+.fahrt .stufe.an{opacity:1}
+.fahrt .stufe h3{font-size:clamp(24px,2.6vw,32px);line-height:1.12;letter-spacing:-.005em;font-weight:700;margin:0 0 10px}
+.fahrt .stufe p{margin:0;color:var(--leise);font-size:17px;font-weight:500}
+.fahrt .plus{top:18px;right:18px;bottom:auto}
+.fahrt .fbild{position:relative;flex:0 0 auto;width:min(64%,calc(var(--bildhoehe,600px) * var(--seite)));aspect-ratio:var(--seite);margin:3px;border-radius:25px;overflow:hidden;background:#000}
+.fahrt .fbild > *{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.fahrt .fbild .welt{overflow:hidden}
+.fahrt .welt img{position:absolute;display:block;max-width:none}
+.fahrt .welt .nah{opacity:0}
+.fahrt .fbild .linie{inset:auto;left:0;width:100%;height:2px;background:var(--akzent);box-shadow:0 0 12px var(--akzent);opacity:0}
+@media screen and (max-width:820px){
+  .fahrt .buehne{flex-direction:column}
+  .fahrt .ftext{padding:22px 22px 18px}
+  .fahrt .fbild{width:min(100% - 6px,calc(var(--bildhoehe,600px) * var(--seite)));align-self:center}
+}
 .fenster{position:absolute;max-width:640px;width:calc(100% - 32px);box-shadow:0 18px 60px rgba(0,0,0,.6),0 0 0 1px var(--linie);background:var(--kachel2);border-radius:28px;padding:48px 48px 40px}
 .fenster .klein{font-size:15px;font-weight:600;color:var(--akzent);margin:0 0 6px}
 .fenster h4{font-size:clamp(26px,3vw,36px);line-height:1.12;font-weight:700;margin:0 0 22px}
@@ -258,14 +293,14 @@ function bild(id, L){
       + `<div class="sl l">${g.von[L].join('<br>')}</div>`
       + `<div class="sm"><i></i><div class="knopf"><svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></div><i></i><b>${g.knopf[L]}</b></div>`
       + `<div class="sl r">${g.bei[L].join('<br>')}</div></div>`; }
-  if (q && q.liste) return `<div class="filterliste">${q.liste.map(g => `<p class="fk">${g.k[L]}</p><p class="fw">${g.w[L].join(' · ')}</p>`).join('')}</div>`;
+  if (q && q.liste) return `<div class="filterliste">${q.liste.map(g => `<div><p class="fk">${g.k[L]}</p><p class="fw">${g.w[L].join(' · ')}</p></div>`).join('')}</div>`;
   if (q && q.konsole) return `<div class="bild konsole"><div class="leiste"><i></i><i></i><i></i><span>KlangTresor</span></div><pre>${konsole(L).map(z => z.replace(/^  (KlangTresor (läuft|is running|работает))$/, '  <b>$1</b>').replace(/http:\/\/[^ ]+/g, '<u>$&</u>')).join('\n')}</pre></div>`;
   if (q && q.geraete){ const g = q.geraete;
     return `<div class="bild geraete"><div class="lap"><div class="schirm"><img src="${g.laptop}" alt=""></div><div class="fuss"></div></div>`
       + `<div class="tab"><img src="${g.tablet}" alt=""></div><div class="hand"><img src="${g.handy}" alt=""></div></div>`; }
   if (Array.isArray(q)) return `<div class="bild trip">${q.map(u => `<img src="${u}" alt="" loading="lazy">`).join('')}</div>`;
   if (!q) return `<div class="bild"><div class="platz">${S.kopf.platz[L]} · ${id}</div></div>`;
-  if (/\.mp4(\?|$)/.test(q)) return `<div class="bild"><video src="${q}" autoplay muted loop playsinline data-tempo="${TEMPO[id] || 1}" onloadedmetadata="this.defaultPlaybackRate=this.playbackRate=+this.dataset.tempo"></video></div>`;
+  if (/\.mp4(\?|$)/.test(q)) return `<div class="bild"><video src="${q}"${POSTER[id] ? ` poster="${POSTER[id]}"` : ''} autoplay muted loop playsinline data-tempo="${TEMPO[id] || 1}" onloadedmetadata="this.defaultPlaybackRate=this.playbackRate=+this.dataset.tempo"></video></div>`;
   return `<div class="bild"${FORMAT[id] ? ` style="aspect-ratio:${FORMAT[id]}"` : ''}><img src="${q}" alt="" loading="lazy"></div>`;
 }
 let L, KACHELN = {};
@@ -275,13 +310,16 @@ function bauen(){
   KACHELN = {};
   let h = `<section class="held"><h1><span class="rad" aria-hidden="true"></span>${S.kopf.marke[L]}</h1><p class="spruch">${S.kopf.h[L]}</p><p>${S.kopf.p[L]}</p><a class="pdf" href="KlangTresor-Broschuere-${L}.pdf">${S.kopf.pdf[L]} <span aria-hidden="true">↓</span></a>${bild('titel', L)}</section>`;
   for (const a of S.abschnitte){
-    h += `<section class="abschnitt"><div class="kopf"><p class="augenbraue">${a.augenbraue[L]}</p><h2>${a.h[L]}</h2><p>${a.p[L]}</p></div><div class="raster">`;
+    const kopf = `<div class="kopf"><p class="augenbraue">${a.augenbraue[L]}</p><h2>${a.h[L]}</h2><p>${a.p[L]}</p></div>`;
+    h += `<section class="abschnitt${a.fahrt ? ' mit-fahrt' : ''}">${kopf}<div class="raster">`;
+    if (a.fahrt && !a.fahrtNach) h += fahrt(a, kopf);
     for (const k of a.kacheln){
       KACHELN[k.id] = k;
       const zahl = k.zahl ? `<span class="zahl">${k.zahl.n}<small>${k.zahl.t[L]}</small></span>` : '';
-      h += `<article class="k w${k.w}${k.quer ? ' quer' : ''}${k.oben ? ' oben' : ''}" data-id="${k.id}"><div class="text"><p class="klein">${k.klein[L]}</p><h3>${k.h[L]}</h3><p>${k.p[L]}</p>${zahl}<ul class="druck">${k.d[L].map(x => `<li>${x}</li>`).join('')}</ul></div>
+      h += `<article class="k w${k.w}${k.quer ? ' quer' : ''}${k.oben ? ' oben' : ''}${a.fahrt && a.fahrt.includes(k.id) ? ' in-fahrt' : ''}${k.wFahrt ? ' fahrt-w' + k.wFahrt : ''}" data-id="${k.id}"><div class="text"><p class="klein">${k.klein[L]}</p><h3>${k.h[L]}</h3><p>${k.p[L]}</p>${zahl}<ul class="druck">${k.d[L].map(x => `<li>${x}</li>`).join('')}</ul></div>
         ${NUR_TEXT.has(k.id) ? '' : bild(k.id, L)}
         <button class="plus" data-k="${k.id}" aria-label="${S.kopf.mehr[L]}">${PLUS}</button></article>`;
+      if (a.fahrtNach === k.id) h += fahrt(a, kopf);
     }
     h += `</div></section>`;
   }
@@ -291,8 +329,96 @@ function bauen(){
   h += `<section class="grenzen"><h2>${S.grenzen.h[L]}</h2><ul>${S.grenzen.l[L].map(x => `<li>${x}</li>`).join('')}</ul></section>`;
   h += `<footer>${ghLink(S.fuss[L])}${S.stern[L] ? `<br>${S.stern[L]}` : ''}</footer>`;
   document.getElementById('seite').innerHTML = h;
-  einpassen();
+  einpassen(); fahrtMasse(); fahren();
+  document.querySelectorAll('#seite video[autoplay]').forEach(anstossen);
 }
+function fahrt(a, kopf){
+  const ks = a.fahrt.map(id => a.kacheln.find(k => k.id === id)), art = a.fahrtArt || 'wandel';
+  const q = id => bild(id, L).match(/src="([^"]+)"/)[1];   // Bildpfad wie in der Kachel, je Sprache
+  const medien = art === 'zoom'
+    ? `<div class="welt"><img class="ganz" src="${q(ks[0].id)}" alt=""><img class="nah" src="${q(ks[1].id)}" alt=""></div>`
+    : `<img src="${q(ks[0].id)}" alt=""><img src="${q(ks[1].id)}" alt=""><video src="${BILDER[ks[2].id]}" poster="${q(ks[0].id)}" muted loop playsinline preload="auto"></video><span class="linie"></span>`;
+  return `<div class="fahrt" data-art="${art}" data-ids="${a.fahrt.join(' ')}" style="--n:${ks.length + 0.4};--seite:${art === 'zoom' ? ZOOM.seite : 1180 / 982}"><div class="halt">${kopf}<div class="buehne">
+    <div class="ftext"><p class="schritte">${ks.map((k, i) => `<span data-i="${i}">${k.klein[L]}</span>`).join(' <i>·</i> ')}</p>
+      <div class="stufen">${ks.map((k, i) => `<div class="stufe" data-i="${i}"><h3>${k.h[L]}</h3><p>${k.p[L]}</p></div>`).join('')}</div></div>
+    <div class="fbild">${medien}</div>
+    <button class="plus" data-k="${ks[0].id}" aria-label="${S.kopf.mehr[L]}">${PLUS}</button></div></div></div>`;
+}
+// Wandel (Gestalten): Bild → Tiefenkarte wird von oben nach unten gewischt (beide Stufen Kante an Kante, man sieht, dass
+// sie aufeinanderliegen); Tiefenkarte → Clip wird überblendet, das Bild „erwacht“, der Clip läuft erst nach der Blende los.
+const WISCH = [[0.24, 0.40], [0.58, 0.74]];
+const UEBERGANG = ['wisch', 'blende'];
+// Zoom (Plakat): Lage des Ausschnitts im Plakat, als Anteil von Breite und Höhe. Gemessen per Kreuzkorrelation
+// (0,998, in DE/EN/RU gleich): x 0, y 1466, 1386 × 1326 von 4000 × 2862 Plakatpixeln.
+const ZOOM = { seite: 4000 / 2862, nah: { x: 0, y: 1466 / 2862, w: 1386 / 4000, h: 1326 / 2862 }, fahrt: [0.18, 0.78], blende: [0.62, 0.84] };
+const glatt = t => t * t * (3 - 2 * t);
+function fahren(){ document.querySelectorAll('.fahrt').forEach(fahre); }
+function fahre(f){
+  if (!f.offsetParent) return;
+  const r = f.getBoundingClientRect(), halt = f.querySelector('.halt');
+  const leiste = document.querySelector('.sprache').offsetHeight;
+  const rest = innerHeight - leiste - halt.offsetHeight;   // passt alles: mittig; sonst unten bündig, Überschrift ragt oben hinaus
+  const oben = Math.round(rest >= 24 ? leiste + rest / 2 : innerHeight - halt.offsetHeight - 12);   // ab hier steht die Kachel
+  halt.style.top = oben + 'px';
+  const p = Math.min(1, Math.max(0, (oben - r.top) / (r.height - halt.offsetHeight)));
+  const stufe = f.dataset.art === 'zoom' ? zoomen(f, p) : wandeln(f, p);
+  f.querySelectorAll('.schritte span, .stufe').forEach(e => e.classList.toggle('an', +e.dataset.i === stufe));
+  f.querySelector('.plus').dataset.k = f.dataset.ids.split(' ')[stufe];
+}
+function wandeln(f, p){
+  const ebenen = f.querySelectorAll('.fbild > img, .fbild > video'), linie = f.querySelector('.linie');
+  let stufe = 0, linieX = null;
+  WISCH.forEach(([a, b], i) => {
+    const w = Math.min(1, Math.max(0, (p - a) / (b - a)));
+    if (UEBERGANG[i] === 'blende') ebenen[i + 1].style.opacity = w.toFixed(3);
+    else ebenen[i + 1].style.clipPath = `inset(0 0 ${(100 - w * 100).toFixed(2)}% 0)`;
+    if (w > 0 && w < 1 && UEBERGANG[i] === 'wisch') linieX = w;
+    if (w >= 0.5) stufe = i + 1;
+  });
+  linie.style.opacity = linieX === null ? 0 : 1;
+  if (linieX !== null) linie.style.top = `calc(${(linieX * 100).toFixed(2)}% - 1px)`;
+  const v = ebenen[2];
+  if (p >= WISCH[1][1]) { if (v.paused && !v.dataset.steht) { v.currentTime = 0; anstossen(v); } }
+  else { if (!v.paused || v.currentTime) { v.pause(); v.currentTime = 0; } knopfWeg(v); }
+  return stufe;
+}
+// Kamera als Ausschnitt des Plakats (Anteile; der Rahmen hat das Seitenverhältnis des Plakats). Gezoomt wird geometrisch
+// um den Fixpunkt beider Ausschnitte, so wirkt die Fahrt gleichmäßig. Ziel: so breit wie der Ausschnitt, unten bündig mit ihm
+// (dort steht das Werkverzeichnis). Kurz vor dem Ziel blendet der hochaufgelöste Ausschnitt über.
+function zoomen(f, p){
+  const n = ZOOM.nah, [a, b] = ZOOM.fahrt, t = glatt(Math.min(1, Math.max(0, (p - a) / (b - a))));
+  const w1 = n.w, y1 = n.y + n.h - w1, fy = y1 / (1 - w1);   // Ziel (x 0, y1, w1) und Fixpunkt (0, fy)
+  const k = Math.pow(w1, t), y = fy * (1 - k);
+  const setze = (el, x0, y0, bw, bh) => { const s = el.style;
+    s.left = ((x0 - 0) / k * 100).toFixed(3) + '%'; s.top = ((y0 - y) / k * 100).toFixed(3) + '%';
+    s.width = (bw / k * 100).toFixed(3) + '%'; s.height = (bh / k * 100).toFixed(3) + '%'; };
+  setze(f.querySelector('.ganz'), 0, 0, 1, 1);
+  const nah = f.querySelector('.nah'); setze(nah, n.x, n.y, n.w, n.h);
+  nah.style.opacity = glatt(Math.min(1, Math.max(0, (p - ZOOM.blende[0]) / (ZOOM.blende[1] - ZOOM.blende[0])))).toFixed(3);
+  return t >= 0.5 ? 1 : 0;
+}
+// iPhones im Stromsparmodus spielen Videos nicht von selbst ab. Dann steht das Standbild da, mit einem Knopf; ein Tipp startet.
+function anstossen(v){
+  const p = v.play();
+  if (p) p.then(() => knopfWeg(v)).catch(() => {
+    v.dataset.steht = 1;
+    if (!v.parentElement.querySelector('.abspielen'))
+      v.insertAdjacentHTML('afterend', `<button class="abspielen" aria-label="${S.kopf.abspielen[L]}"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button>`);
+  });
+}
+function knopfWeg(v){ delete v.dataset.steht; v.parentElement.querySelector('.abspielen')?.remove(); }
+// Überschrift und Kachel stehen gemeinsam (der Abstand bleibt konstant). Das Bild richtet sich nach der Kachel allein;
+// ist der Schirm für beides zu niedrig, scrollt die Überschrift hinaus und die Kachel bleibt ganz sichtbar.
+function fahrtMasse(){ document.querySelectorAll('.fahrt').forEach(f => {
+  if (!f.offsetParent) return;
+  const leiste = document.querySelector('.sprache').offsetHeight;
+  const schmal = matchMedia('(max-width:820px)').matches;
+  const frei = innerHeight - leiste - 24 - 6 - (schmal ? f.querySelector('.ftext').offsetHeight : 0);
+  f.style.setProperty('--bildhoehe', Math.max(160, frei) + 'px');
+}); }
+let fahrtRuht = true;
+addEventListener('scroll', () => { if (fahrtRuht) { fahrtRuht = false; requestAnimationFrame(() => { fahrtRuht = true; fahren(); }); } }, { passive: true });
+addEventListener('resize', () => { fahrtMasse(); fahren(); });
 // Titel füllt die Spalte; die Servermeldung zeigt überall denselben Ausschnitt.
 function einpassen(){
   // Titel: füllt die Breite, wird aber nie breiter als die Spalte (Schriftbreite schwankt je Gerät).
@@ -331,6 +457,8 @@ addEventListener('resize', lage);
 function zu(){ document.getElementById('overlay').classList.remove('auf'); document.body.style.overflow = ''; }
 document.addEventListener('click', e => {
   const p = e.target.closest('.plus'); if (p) return auf(p.dataset.k, p);
+  const ab = e.target.closest('.abspielen');
+  if (ab){ const v = ab.parentElement.querySelector('video'); knopfWeg(v); v.play().catch(() => {}); return; }
   if (e.target.closest('.zu') || e.target.id === 'overlay') zu();
   const b = e.target.closest('.sprache button');
   if (b){ L = b.dataset.l; try { localStorage.setItem('kt-features-sprache', L); } catch(e){} bauen(); }

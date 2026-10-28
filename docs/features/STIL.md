@@ -92,6 +92,9 @@ auf dem dunklen Grund; es bekommt dieselbe Lichtstimmung wie das Zimmerbild.
   `sips -s format png -Z 4000`.
 - Papier-Ausschnitt: `crop=1405:1345:0:1445` aus dem 4000×2862-Raster (Zellen 44–62, Zeitleiste,
   Titel, Werkverzeichnis bis zur letzten Zeile).
+  **Nachgemessen 28.10.2026:** Der veröffentlichte Ausschnitt liegt im Plakat bei x 0, y 1466, 1386 × 1326
+  (Kreuzkorrelation 0,998, DE/EN/RU gleich). Mit diesen Werten rechnet die Zoom-Fahrt (`ZOOM` in `index.html`);
+  wer den Ausschnitt neu schneidet, misst neu, sonst springt das Bild beim Überblenden.
 - Skizzenbuch: `crop=1564:2304:0:0` aus 2807×4000 (Titel, Inspirazione, oberer Schaum).
 
 ## 8. Sprachen
@@ -121,3 +124,20 @@ auf dem dunklen Grund; es bekommt dieselbe Lichtstimmung wie das Zimmerbild.
 - Die Effekte heißen wie im Studio (`ec.effekt.*.name`, `ec.wahl.art.*`), je Sprache aus `web/ui-sprache*.js`.
 - **Halbe Geschwindigkeit** nicht über `playbackRate` (30 → 15 Bilder/s, ruckelt), sondern neu gerechnet:
   `minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1,setpts=2*PTS`, `-r 30 -crf 17`.
+
+## 11. Fahrten (Pinning, Abschnitte „Dein ganzes Werk“ und „Gestalten“)
+
+Eine Kachel bleibt samt Abschnittsüberschrift stehen, das Scrollen führt durch ihre Stufen, danach scrollt die Seite weiter.
+Nur wo es etwas zeigt, das Einzelkacheln nicht können: dasselbe Bild in mehreren Stufen, oder das Ganze und sein Detail.
+
+- **Daten** in `inhalt.js` am Abschnitt: `fahrt:[ids]`, `fahrtArt:'wandel'|'zoom'`, `fahrtNach:'<id>'` (Platz im Raster).
+  Die Texte sind die der Einzelkacheln; Kacheln, die danach allein stünden, bekommen `wFahrt` (Breite nur im Fahrt-Modus).
+- **Wandel** (Cover → Tiefenkarte → Clip): Bild → Tiefe wird **von oben nach unten gewischt** (beide Stufen Kante an Kante),
+  Tiefe → Clip wird **überblendet**; der Clip steht auf seinem ersten Bild und läuft erst los, wenn die Blende fertig ist.
+- **Zoom** (Plakat → Ecke): geometrisch um den Fixpunkt beider Ausschnitte, Ziel unten bündig mit dem Werkverzeichnis;
+  kurz vor dem Ziel blendet der hochaufgelöste Ausschnitt über.
+- **Abstände bleiben konstant:** Überschrift und Kachel stehen gemeinsam. Ist der Schirm zu niedrig, ragt die Überschrift
+  oben hinaus, die Kachel bleibt ganz sichtbar. Das Bild wird dafür nicht verkleinert.
+- **Ohne Bewegung** („Bewegung reduzieren“) und im Druck: die Einzelkacheln wie zuvor.
+- **Video:** iPhones im Stromsparmodus spielen nichts von selbst. Dann steht das Standbild (`POSTER`) mit Wiedergabe-Knopf.
+  Videos als H.264 `yuv420p`, Fernsehbereich, BT.709, `+faststart`.
