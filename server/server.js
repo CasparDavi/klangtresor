@@ -4086,6 +4086,17 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
       .catch(e => jsonAntwort(res, { fehler: e.message }, 500));
     return;
   }
+  /* DER MODELLORDNER (28.10.2026): „Ändern …" im Tab - das Ordnerfenster des Systems, dann nur merken, wo die Modelle
+     jetzt liegen (nichts wird verschoben). Nur am Rechner selbst; im Container kommt der Ordner aus docker/.env. */
+  if (p === '/api/system/modellordner' && req.method === 'POST') {
+    if (!vomRechnerSelbst(req)) return jsonAntwort(res, { ok: false, grund: 'nicht_lokal' }, 403);
+    if (!eigeneSeite(req)) return jsonAntwort(res, { ok: false, grund: 'fremde_seite' }, 403);
+    if (EINGEFROREN || IM_CONTAINER) return jsonAntwort(res, { ok: false, grund: IM_CONTAINER ? 'container' : 'eingefroren' }, 409);
+    const mo = require('../bin/modellordner.js');
+    const r = require('../bin/ordnerdialog.js').ordnerWaehlen(mo.modellOrdner(), 'Ordner der KI-Modelle');
+    if (!r.pfad) return jsonAntwort(res, { ok: false, grund: r.ging ? 'abgebrochen' : 'kein_fenster' });
+    return jsonAntwort(res, { ok: true, pfad: mo.modellOrdnerSetzen(r.pfad) });
+  }
   if (p === '/api/system/auftrag' && req.method === 'GET') return jsonAntwort(res, require('../bin/system.js').auftragStand() || {});
   /* HOLEN UND UPDATE (28.10.2026) - nur vom Rechner selbst: sonst koennte jedes Geraet im Heimnetz Programmcode
      nachladen lassen. Der Auftrag laeuft losgeloest (bin/auftrag.js) und ueberlebt den Neustart nach einem Update. */
@@ -4795,4 +4806,7 @@ server.on('listening', () => {
   else   console.log('\n  Achtung: Katalog fehlt - erst "node bin/aufbereiten.js" laufen lassen.');
   console.log('\n  ' + TK('Beenden mit Strg+C') + '\n');
 });
+/* DIE KI-MODELLE AN IHREN ORT (28.10.2026, bin/modellordner.js): bis dahin lagen sie in library/modelle/. Einmal beim
+   Start verschieben - sichtbar im Fenster, nie kopiert. Laeuft nach dem ersten Mal ins Leere (der alte Ordner ist weg). */
+if (!EINGEFROREN) { try { require('../bin/modellordner.js').umziehen((t) => console.log(t)); } catch (e) { console.log('  KI-Modelle: ' + e.message); } }
 server.listen(PORT, '0.0.0.0');

@@ -62,7 +62,7 @@ const { T } = require('./sprache.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
-const MODELL = path.join(WURZEL, 'library', 'modelle', 'depth-anything-v2-large-fp16.onnx');
+const MODELL = path.join(require('./modellordner.js').modellOrdner(), 'depth-anything-v2-large-fp16.onnx');   /* bin/modellordner.js */
 const BUCH   = path.join(WURZEL, 'library', 'tiefenkarten.json');
 
 /* DIE LANGE KANTE. Depth Anything V2 ist auf 518 trainiert, aber NICHT auf
@@ -292,7 +292,7 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
   /* Fehlt das Modell, ist die Einrichtung unvollstaendig - das wird gesagt und rot (bin/fehlt.js, 28.10.2026).
      Bis dahin hiess es „uebersprungen" und der Schritt blieb gruen. Medien und Kacheln bekommt man trotzdem:
      bin/wiederherstellen.js laeuft nach einem roten Teilschritt weiter. */
-  if (!fs.existsSync(MODELL)) require('./fehlt.js').fehlt(T('Tiefenkarten'), path.relative(WURZEL, MODELL));
+  if (!fs.existsSync(MODELL)) require('./fehlt.js').fehlt(T('Tiefenkarten'), MODELL);
   const ort = require('onnxruntime-node');
   const t0 = Date.now();
   const sitzung = await ort.InferenceSession.create(MODELL);

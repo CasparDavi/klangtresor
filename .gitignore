@@ -118,3 +118,5 @@ docs/features/img/tarja.webp
 docs/features/img/tarja-lila.webp
 docs/features/img/tanz-tarja.webp
 docs/features/img/auto-tarja.webp
+# KI-Modelle (bin/modellordner.js) - gehoeren zum Rechner, nicht zum Projekt
+/modelle/

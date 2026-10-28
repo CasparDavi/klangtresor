@@ -46,8 +46,8 @@ const K = require('./katalog.js');
 const { einbetterLaden } = require('./texte-einbetten.js');
 
 const WURZEL  = path.join(__dirname, '..');
-const MODELL  = path.join(WURZEL, 'library', 'modelle', 'paraphrase-multilingual-mpnet.onnx');
-const TOKEN   = path.join(WURZEL, 'library', 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json');
+const MODELL  = path.join(require('./modellordner.js').modellOrdner(), 'paraphrase-multilingual-mpnet.onnx');   /* bin/modellordner.js */
+const TOKEN   = path.join(require('./modellordner.js').modellOrdner(), 'paraphrase-multilingual-mpnet-tokenizer.json');
 const LIB     = path.join(WURZEL, 'library');
 const ZIEL    = path.join(LIB, 'geschichten.json');
 const MINDEST = 50;   /* Kuerzere "Texte" sind Platzhalter, keine Geschichte. */
@@ -171,7 +171,7 @@ if (require.main !== module) return;
 (async () => {
   /* Fehlt Modell oder Tokenizer, ist die Einrichtung unvollstaendig: laut und rot (bin/fehlt.js, 28.10.2026),
      nicht mehr „uebersprungen" mit Exit 0. Der Morgenlauf geht nach einem roten Schritt weiter. */
-  const fehlen = [MODELL, TOKEN].filter(d => !fs.existsSync(d)).map(d => path.relative(WURZEL, d));
+  const fehlen = [MODELL, TOKEN].filter(d => !fs.existsSync(d));
   if (fehlen.length) require('./fehlt.js').fehlt('Geschichten-Raum', fehlen);
 
   const katalog = K.lesen();

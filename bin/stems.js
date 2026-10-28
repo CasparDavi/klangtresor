@@ -51,7 +51,7 @@ const { spawnSync } = require('node:child_process');
 
 const WURZEL  = path.join(__dirname, '..');
 const SONGS   = path.join(WURZEL, 'library', 'songs');
-const MODELLE = path.join(WURZEL, 'library', 'modelle');
+const MODELLE = require('./modellordner.js').modellOrdner();   /* bin/modellordner.js */
 const MODELL  = path.join(MODELLE, 'htdemucs_6s.onnx');
 const args    = process.argv.slice(2);
 
@@ -223,7 +223,7 @@ async function trennen(sitzung, quelle, zielOrdner, name) {
 
 /* ---- Lauf ------------------------------------------------------------ */
 (async () => {
-  if (!fs.existsSync(MODELL)) require('./fehlt.js').fehlt('Instrumentspuren', 'library/modelle/htdemucs_6s.onnx');
+  if (!fs.existsSync(MODELL)) require('./fehlt.js').fehlt('Instrumentspuren', MODELL);
   const katalog = K.lesen();
   if (!katalog) { console.log('  Stems: noch kein Katalog — erst sammeln.'); return; }
 

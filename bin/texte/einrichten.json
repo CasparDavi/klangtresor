@@ -859,10 +859,6 @@
   "en": "{da} of {von} are here",
   "ru": "есть {da} из {von}"
  },
- "liegen auf diesem Rechner, werden kopiert (rund 1,2 GB)": {
-  "en": "are on this computer, will be copied (about 1.2 GB)",
-  "ru": "есть на этом компьютере, будут скопированы (около 1,2 ГБ)"
- },
  "{da} von {von} — der Rest wird geholt (rund 1,2 GB)": {
   "en": "{da} of {von} — the rest will be downloaded (about 1.2 GB)",
   "ru": "{da} из {von} — остальные будут загружены (около 1,2 ГБ)"
@@ -1074,10 +1070,6 @@
  "KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — {n} Dateien, rund 1,2 GB": {
   "en": "AI models: stem separation, music style, lyric understanding and depth — {n} files, about 1.2 GB",
   "ru": "Модели ИИ: разделение на дорожки, музыкальный стиль, понимание текста и глубина — файлов: {n}, около 1,2 ГБ"
- },
- "Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird einmal; auf diesem Rechner Gefundenes wird kopiert statt geladen. Drei Gruppen: Musikstil (hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).": {
-  "en": "They run later on your own computer: nothing leaves it for this. They are downloaded once; anything already found on this computer is copied instead. Three groups: music style (hears what a piece sounds like — genre, mood, instruments), stem separation (splits a song into vocals, drums, bass, guitar, piano and the rest), lyric understanding (turns lyrics into numbers so that similar ones sit together) and depth (estimates from an image what is in front and what is behind — so that light, haze and particles know the space in the cover image).",
-  "ru": "Позже они работают у вас, на вашем компьютере: ничего не покидает его. Загружаются один раз; найденное на этом компьютере копируется, а не загружается. Группы: музыкальный стиль (определяет, как звучит трек — жанр, настроение, инструменты), разделение на дорожки (раскладывает трек на вокал, ударные, бас, гитару, фортепиано и остальное), понимание текста (превращает тексты песен в числа, чтобы похожие оказывались рядом) и глубина (оценивает по изображению, что впереди, а что позади, — чтобы свет, дымка и частицы учитывали пространство обложки)."
  },
  "Stemtrennung, Musikstil, Textverständnis und Tiefe. Klappt das nicht, läuft alles andere trotzdem.": {
   "en": "Stem separation, music style, lyric understanding and depth. If this fails, everything else still works.",
@@ -1634,5 +1626,33 @@
  "Platz: {gb} GB frei — die Einrichtung braucht rund 4,7 GB.": {
   "en": "Space: {gb} GB free — the setup needs about 4.7 GB.",
   "ru": "Место: свободно {gb} ГБ — установке нужно около 4,7 ГБ."
+ },
+ "Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird einmal, in einen Ordner — deinen eigenen für KI-Modelle, wenn du einen hast, sonst in KlangTresors. Drei Gruppen: Musikstil (hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).": {
+  "en": "They run later on your own computer: nothing leaves it for this. They are downloaded once, into one folder — your own for AI models if you have one, otherwise KlangTresor's. Three groups: music style (hears what a piece sounds like — genre, mood, instruments), stem separation (splits a song into vocals, drums, bass, guitar, piano and the rest), lyric understanding (turns lyrics into numbers so that similar ones sit together) and depth (estimates from an image what is in front and what is behind — so that light, haze and particles know the space in the cover image).",
+  "ru": "Позже они работают у вас, на вашем компьютере: ничего не покидает его. Загружаются один раз, в одну папку — вашу собственную для ИИ-моделей, если она есть, иначе в папку KlangTresor. Группы: музыкальный стиль (определяет, как звучит трек — жанр, настроение, инструменты), разделение на дорожки (раскладывает трек на вокал, ударные, бас, гитару, фортепиано и остальное), понимание текста (превращает тексты песен в числа, чтобы похожие оказывались рядом) и глубина (оценивает по изображению, что впереди, а что позади, — чтобы свет, дымка и частицы учитывали пространство обложки)."
+ },
+ "Sammelst du KI-Modelle schon in einem eigenen Ordner? Dann kommen diese mit dorthin.": {
+  "en": "Do you already keep AI models in a folder of your own? Then these go there too.",
+  "ru": "Вы уже храните ИИ-модели в своей папке? Тогда эти тоже попадут туда."
+ },
+ "Sonst legt KlangTresor sie in seinen eigenen Ordner: {ordner}": {
+  "en": "Otherwise KlangTresor puts them in its own folder: {ordner}",
+  "ru": "Иначе KlangTresor положит их в свою папку: {ordner}"
+ },
+ "Eigenen Ordner für KI-Modelle wählen?": {
+  "en": "Choose your own folder for AI models?",
+  "ru": "Выбрать свою папку для ИИ-моделей?"
+ },
+ "Ordner für deine KI-Modelle": {
+  "en": "Folder for your AI models",
+  "ru": "Папка для ваших ИИ-моделей"
+ },
+ "KI-Modelle kommen nach {ordner}": {
+  "en": "AI models go to {ordner}",
+  "ru": "ИИ-модели будут в {ordner}"
+ },
+ "Ordner der KI-Modelle": {
+  "en": "AI model folder",
+  "ru": "Папка ИИ-моделей"
  }
 }

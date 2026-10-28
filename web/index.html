@@ -503,6 +503,7 @@ select:not([multiple]):not([size]){
 .systab .z.nein{color:#f9143c}
 .systab .z.offen{color:var(--schwach)}
 .systab .z.neu{color:#f97b14}
+.systab .sysort{margin-top:2px;font-size:13px;color:var(--schwach);overflow-wrap:anywhere}
 .systab .pille{font:inherit;font-size:13px;padding:4px 14px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;white-space:nowrap}
 .systab .pille:hover:not([disabled]){border-color:var(--akzent)}
 .systab .pille[disabled]{opacity:.45;cursor:default}
@@ -4996,8 +4997,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=20"></script>
-<script src="/ui-sprache.js?v=32"></script>
+<script src="/ui-sprache-ru.js?v=21"></script>
+<script src="/ui-sprache.js?v=33"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -17843,6 +17844,12 @@ function sysErgebnis(a){
     + (a.id === 'update' && gut ? `<button type="button" class="pille" onclick="location.reload()">${esc(t('system.neu_laden'))}</button>` : '')
     + `</div>`;
 }
+async function sysModellordner(){
+  let r = null;
+  try { r = await (await fetch('/api/system/modellordner', { method: 'POST' })).json(); } catch (e) {}
+  if (r && !r.ok && r.grund !== 'abgebrochen') kurzMeldung(t('system.ging_nicht', { grund: r.grund || '–' }));
+  profilSystemFuellen();
+}
 async function sysHolen(was){
   document.querySelectorAll('#profilsystem button[data-holen]').forEach(b => b.disabled = true);
   let r = null;
@@ -17899,6 +17906,12 @@ async function profilSystemFuellen(){
     h += zeile(w.da ? 'ok' : 'nein', name, rechts, unter);
   }
   h += `</div><div class="block"><h3>${esc(t('system.modelle'))}</h3>`;
+  /* DER EINE ORDNER (bin/modellordner.js): wo alle Modelle liegen, Whisper eingeschlossen. „Ändern …" merkt sich nur den
+     neuen Ort - wer den Ordner selbst verschoben hat, sagt KlangTresor hier, wo er jetzt ist. */
+  const mo = s.modellOrdner || {};
+  h += zeile(mo.da ? 'ok' : 'nein', `${esc(t('system.modellordner'))}<div class="sysort"><code>${esc(mo.pfad || '')}</code></div>`,
+    kann && !mo.container ? `<button type="button" class="pille"${laeuft ? ' disabled' : ''} onclick="sysModellordner()">${esc(t('system.aendern'))}</button>` : '',
+    mo.container ? esc(t('system.modellordner_container')) : '');
   for (const m of s.modelle)
     h += zeile(m.da ? 'ok' : 'nein', esc(t('system.m.' + m.id)),
       m.da ? sysGroesse(m.bytes) : (knopf(m.id, t('system.holen', { g: sysGroesse(m.bytes) })) || esc(t('system.fehlt_gross', { g: sysGroesse(m.bytes) }))));

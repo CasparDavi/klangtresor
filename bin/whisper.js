@@ -60,42 +60,28 @@ const K    = require('./katalog.js');
 const WURZEL  = path.join(__dirname, '..');
 const SONGS   = path.join(WURZEL, 'library', 'songs');
 const DATEI   = path.join(WURZEL, 'library', 'whisper.ndjson');
-/* WO WHISPER LIEGT. Gesucht wird der Reihe nach: die Umgebungsvariable, dann
-   Orte IM PROJEKT, dann der Suchpfad und die ueblichen Systemorte - und erst
-   zuletzt Caspar_Ds eigener Bauplatz. Vorher stand hier nur sein Mac-Pfad als
-   Vorgabe, und auf Tarjas Linux-Rechner fand das Skript darum nie etwas
-   (23.08.2026). */
-/* WINDOWS (Lutz, 23.10.2026): dort heisst das Programm whisper-cli.exe, gesucht wird mit `where` statt
-   `which`, und der Werkzeugordner des Pakets heisst werkzeug/ (wie fuer node und ffmpeg) - gesucht wurde
-   nur werkzeuge/, Caspar_Ds Bauplatz. Das fertige Windows-Paket von whisper.cpp legt das Programm unter
-   Release\ ab; werkzeug/whisper/ darf also das ausgepackte Paket so enthalten, wie es kommt. */
+/* WO WHISPER LIEGT - ZWEI ORTE, KEINE SUCHE (28.10.2026). Bis dahin wurde an acht Orten nach dem Programm und an zwoelf
+   nach dem Modell gesucht, dazu zwei Umgebungsvariablen - Ueberbleibsel von Caspar_Ds Handbau neben dem Projekt
+   (19.08.2026), von Tarjas Linux (23.08.) und Lutz' Windows (23.10.). Caspar_D: Whisper kommt in den einen Modellordner.
+     Programm  werkzeug/whisper/ (dort legt bin/whisper-holen.js es ab, unter Windows im Unterordner Release\),
+               sonst die Antwort des Systems: whisper-cli im Suchpfad (which/where) - so findet sich ein mit
+               Homebrew oder dem Paketverwalter installiertes, ohne dass gesucht wird.
+     Modell    im Modellordner (bin/modellordner.js) - large-v3, sonst large-v3-turbo oder medium.
+   bin/whisper-holen.js und bin/system.js fragen dieselbe Funktion (wo()). */
 const EXE = process.platform === 'win32' ? '.exe' : '';
-const WO_WERKZEUG = [
-  process.env.WHISPER_CLI,
-  path.join(WURZEL, 'library', 'modelle', 'whisper-cli' + EXE),
-  path.join(WURZEL, 'werkzeug', 'whisper', 'whisper-cli' + EXE),
-  path.join(WURZEL, 'werkzeug', 'whisper', 'Release', 'whisper-cli' + EXE),
-  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'whisper-cli' + EXE),
-  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'Release', 'whisper-cli' + EXE),
-  /* Eine Ebene UEBER dem Projekt. Wer sich whisper.cpp selbst baut,
-     legt es meist daneben statt hinein - es gehoert ja nicht dazu.
-     Relativ und nicht absolut: so greift es bei jedem, und niemandes
-     Plattenname steht im Quelltext. */
-  path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'whisper-cli' + EXE),
-  path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'Release', 'whisper-cli' + EXE),
-  ...(EXE ? [] : ['/usr/local/bin/whisper-cli', '/opt/homebrew/bin/whisper-cli', '/usr/bin/whisper-cli']),
-];
-/* Die Modelle in der Reihenfolge der Vorliebe: large-v3 rechnet am genauesten, large-v3-turbo ist auf
-   Rechnern ohne Grafikkarte um ein Vielfaches schneller (Lutz, 23.10.2026), medium ist der kleine Rest. */
 const MODELLNAMEN = ['ggml-large-v3.bin', 'ggml-large-v3-turbo.bin', 'ggml-medium.bin'];
-const MODELLORTE = [path.join(WURZEL, 'library', 'modelle'), path.join(WURZEL, 'werkzeug', 'whisper'),
-  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'modelle'), path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'modelle')];
-const WO_MODELL = [process.env.WHISPER_MODELL, ...MODELLNAMEN.flatMap((n) => MODELLORTE.map((o) => path.join(o, n)))];
-const daIst = (orte) => orte.find(o => o && fs.existsSync(o)) || null;
+const istDatei = (p) => { try { return fs.statSync(p).isFile(); } catch (e) { return false; } };
 const imPfad = (name) => { const r = spawnSync(EXE ? 'where' : 'which', [name], { encoding: 'utf8' });
   return r.status === 0 && (r.stdout || '').trim() ? r.stdout.trim().split(/\r?\n/)[0] : null; };
-const WERKZEUG = daIst(WO_WERKZEUG) || imPfad('whisper-cli') || WO_WERKZEUG[1];
-const MODELL   = daIst(WO_MODELL) || WO_MODELL[1];
+function wo() {
+  const zu = path.join(WURZEL, 'werkzeug', 'whisper');
+  const programm = [path.join(zu, 'whisper-cli' + EXE), path.join(zu, 'Release', 'whisper-cli' + EXE)].find(istDatei) || imPfad('whisper-cli');
+  const mo = require('./modellordner.js').modellOrdner();
+  const modell = MODELLNAMEN.map(n => path.join(mo, n)).find(p => { try { return fs.statSync(p).size > 100000000; } catch (e) { return false; } });
+  return { programm: programm || null, modell: modell || null, modellOrdner: mo };
+}
+if (require.main !== module) { module.exports = { wo, MODELLNAMEN }; return; }
+const { programm: WERKZEUG, modell: MODELL } = wo();
 /* DIE DTW-VORGABE GEHOERT ZUM MODELL. Fest stand hier large.v3 - mit dem Turbo- oder medium-Modell
    rechnet whisper-cli dann die Wortzeiten mit den Aufmerksamkeitskoepfen eines ANDEREN Modells, und sie
    werden falsch (Lutz, 23.10.2026). Der Name kommt aus der Datei: ggml-large-v3-turbo.bin -> large.v3.turbo,

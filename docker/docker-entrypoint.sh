@@ -4,7 +4,7 @@
 set -e
 cd /app
 mkdir -p library/roh library/songs library/playlistbilder \
-         library/analyse library/modelle library/export
+         library/analyse library/export modelle
 
 # HIER WURDE BIS 28.10.2026 IM HINTERGRUND NACHGELADEN: die KI-Modelle und - im CUDA-Image - das
 # Whisper-Modell (3,1 GB), neben dem schon laufenden Server, sichtbar nur im Container-Protokoll.

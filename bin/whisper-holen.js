@@ -39,7 +39,7 @@ const { T } = require('./sprache.js');
 const WURZEL = path.join(__dirname, '..');
 const WERKZEUG = path.join(WURZEL, 'werkzeug');
 const ZIEL = path.join(WERKZEUG, 'whisper');
-const MODELLE = path.join(WURZEL, 'library', 'modelle');
+const MODELLE = require('./modellordner.js').modellOrdner();   /* bin/modellordner.js - dort liegt auch Whisper */
 const args = process.argv.slice(2);
 const STILL = args.includes('--still');
 const NUR_PRUEFEN = args.includes('--pruefen');
@@ -65,26 +65,10 @@ const Q = (() => {
 })();
 const MODELL_NAME = 'ggml-large-v3.bin', MODELL_MIN = 3000000000;   /* 3 095 033 483 Bytes */
 
-/* DIESELBEN ORTE WIE bin/whisper.js - was dort gefunden wuerde, muss hier nicht geholt werden. */
-const PROGRAMM_ORTE = [
-  process.env.WHISPER_CLI,
-  path.join(WURZEL, 'library', 'modelle', 'whisper-cli' + EXE),
-  path.join(ZIEL, 'whisper-cli' + EXE),
-  path.join(ZIEL, 'Release', 'whisper-cli' + EXE),
-  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'whisper-cli' + EXE),
-  path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'Release', 'whisper-cli' + EXE),
-  path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'whisper-cli' + EXE),
-  path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'build', 'bin', 'Release', 'whisper-cli' + EXE),
-  ...(EXE ? [] : ['/usr/local/bin/whisper-cli', '/opt/homebrew/bin/whisper-cli', '/usr/bin/whisper-cli']),
-].filter(Boolean);
-const MODELL_ORTE = [process.env.WHISPER_MODELL, ...['ggml-large-v3.bin', 'ggml-large-v3-turbo.bin', 'ggml-medium.bin'].flatMap(n =>
-  [MODELLE, ZIEL, path.join(WURZEL, 'werkzeuge', 'whisper.cpp', 'modelle'), path.join(WURZEL, '..', 'werkzeuge', 'whisper.cpp', 'modelle')]
-    .map(o => path.join(o, n)))].filter(Boolean);
+/* DIESELBEN ZWEI ORTE WIE bin/whisper.js - dieselbe Funktion (wo()), nicht eine zweite Liste (28.10.2026). */
 const istDatei = (p) => { try { return fs.statSync(p).isFile(); } catch (e) { return false; } };
-const imPfad = () => { const r = spawnSync(EXE ? 'where' : 'which', ['whisper-cli'], { encoding: 'utf8' });
-  return r.status === 0 ? String(r.stdout).split(/\r?\n/)[0].trim() || null : null; };
-const programmDa = () => PROGRAMM_ORTE.find(istDatei) || imPfad();
-const modellDa = () => MODELL_ORTE.find(p => { try { return fs.statSync(p).size > 100000000; } catch (e) { return false; } });
+const programmDa = () => require('./whisper.js').wo().programm;
+const modellDa = () => require('./whisper.js').wo().modell;
 
 /* Fuer den Tab „System" (bin/system.js): dieselbe Suche wie hier und in bin/whisper.js, ohne etwas zu holen. */
 if (require.main !== module) { module.exports = { programmDa, modellDa }; return; }

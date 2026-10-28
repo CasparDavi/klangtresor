@@ -33,6 +33,10 @@ services:
     volumes:
       # Das Archiv bleibt auf der Platte, nicht im Image.
       - ../library:/app/library
+      # Die KI-Modelle (bin/modellordner.js): KlangTresor/modelle/ - oder ein eigener Ordner des Rechners, wenn
+      # docker/.env ihn nennt (KT_MODELLE=/pfad/zu/den/modellen). Liegen dort schon Whisper-Modelle anderer
+      # Programme, nutzt KlangTresor sie mit; kopiert wird nichts.
+      - ${KT_MODELLE:-../modelle}:/app/modelle
     healthcheck:
       test:
         [

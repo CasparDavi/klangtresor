@@ -113,22 +113,17 @@ function groessenZaehlen() {
   if (zaehltGerade || (groessen && Date.now() - groessenZeit < 600000)) return;
   zaehltGerade = true;
   (async () => {
-    const modelle = path.join(LIB, 'modelle');
-    const archiv = await ordnerGroesse(LIB, [modelle]);
-    /* PROGRAMM UND MODELLE = der ganze Programmordner ohne Archiv und ohne .git, dazu die Modelle - und Whisper, WO
-       IMMER es liegt. Bis zum 28.10.2026 zaehlten nur werkzeug/, node_modules/ und library/modelle/; auf Caspar_Ds
-       Rechner liegt Whisper (3,1 GB) aber neben dem Tresor, und der Tab zeigte 1,3 GB. Liegt Whisper im Ordner,
-       ist es oben schon gezaehlt und wird nicht doppelt genommen. */
-    let programm = (await ordnerGroesse(WURZEL, [LIB, path.join(WURZEL, '.git')])) + (await ordnerGroesse(modelle));
-    try {
-      const wh = require('./whisper-holen.js');
-      for (const f of [wh.programmDa(), wh.modellDa()]) {
-        if (!f) continue;
-        const echt = fs.realpathSync(f);
-        if (echt.startsWith(fs.realpathSync(WURZEL) + path.sep)) continue;
-        programm += fs.statSync(echt).size;
-      }
-    } catch (e) {}
+    const mo = require('./modellordner.js').modellOrdner(), alt = path.join(LIB, 'modelle');
+    const archiv = await ordnerGroesse(LIB, [alt]);
+    /* PROGRAMM UND MODELLE = der Programmordner ohne Archiv und ohne .git (darin KlangTresor/modelle, wenn die Modelle
+       dort liegen), dazu ein eigener Modellordner ausserhalb, noch nicht umgezogene Modelle in library/modelle/ und
+       ein Whisper-Programm aus dem Suchpfad. (Bis 28.10.2026 fehlte Whisper in der Summe: der Tab zeigte 1,3 statt
+       4,4 GB.) */
+    const echt = (p) => { try { return fs.realpathSync(p); } catch (e) { return p; } };
+    const innen = (p) => echt(p).startsWith(echt(WURZEL) + path.sep);
+    let programm = (await ordnerGroesse(WURZEL, [LIB, path.join(WURZEL, '.git')])) + (await ordnerGroesse(alt));
+    if (!innen(mo)) programm += await ordnerGroesse(mo);
+    try { const pr = require('./whisper.js').wo().programm; if (pr && !innen(pr)) programm += fs.statSync(echt(pr)).size; } catch (e) {}
     groessen = { archiv, programm }; groessenZeit = Date.now();
   })().catch(() => {}).finally(() => { zaehltGerade = false; });
 }
@@ -142,8 +137,10 @@ function platz() {
 
 async function stand(opt = {}) {
   const w = await werkzeuge(), m = modelle();
+  const mo = require('./modellordner.js');
   return {
     system: process.platform,
+    modellOrdner: { pfad: mo.modellOrdner(), eigen: mo.eigenerOrdner(), container: mo.imContainer(), da: fs.existsSync(mo.modellOrdner()) },
     werkzeuge: w, modelle: m, verbindungen: verbindungen(), platz: opt.ohnePlatz ? null : platz(),
     fehlt: w.filter(x => !x.da).length + m.filter(x => !x.da).length,
   };

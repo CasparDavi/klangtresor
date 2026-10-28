@@ -52,8 +52,8 @@ const { T } = require('./sprache.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
-const MODELL = path.join(WURZEL, 'library', 'modelle', 'scrfd_500m.onnx');
-const TEXTMODELL = path.join(WURZEL, 'library', 'modelle', 'text_detection_en_ppocrv3_2023may.onnx');
+const MODELL = path.join(require('./modellordner.js').modellOrdner(), 'scrfd_500m.onnx');   /* bin/modellordner.js */
+const TEXTMODELL = path.join(require('./modellordner.js').modellOrdner(), 'text_detection_en_ppocrv3_2023may.onnx');
 const AVATARE = path.join(WURZEL, 'library', 'avatare');
 const BUCH   = path.join(WURZEL, 'library', 'gesichter.json');
 const S = 640;                       /* Eingabe des Erkenners: das Bild eingepasst in 640×640, Rest schwarz */
@@ -199,7 +199,7 @@ if (require.main === module) (async () => {
   /* FEHLENDE MODELLE: LAUT UND ROT (28.10.2026). Hier wurden sie seit dem 07.10.2026 still nachgeholt - fuer
      Installationen, in denen sie nie ankamen. Seit der Regel „alles in der Einrichtung, nichts hinterher" holt sie
      nur noch die Einrichtung (nach einem Update startet bin/aktualisieren.js sie dafuer); hier wird es gesagt. */
-  const fehlen = [MODELL, TEXTMODELL].filter(f => !fs.existsSync(f)).map(f => path.relative(WURZEL, f));
+  const fehlen = [MODELL, TEXTMODELL].filter(f => !fs.existsSync(f));
   if (fehlen.length) require('./fehlt.js').fehlt(T('Gesichter'), fehlen);
   AUSWEIS.schrift = SCHRIFTAUSWEIS;
   const ort = require('onnxruntime-node');

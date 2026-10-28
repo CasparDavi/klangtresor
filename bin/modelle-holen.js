@@ -52,7 +52,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const melden = require('./melden.js');
 const { T } = require('./sprache.js');   /* Zahlen fuer die Einrichtungsseite */
-const ZIEL = path.join(__dirname, '..', 'library', 'modelle');
+const ZIEL = require('./modellordner.js').modellOrdner();   /* bin/modellordner.js - eigener Ordner des Nutzers oder KlangTresor/modelle */
 /* Fuer den Balken der Einrichtungsseite: welche Datei gerade laeuft,
    wie viel vor ihr schon lag, und wie viel es zusammen wird. */
 let NUMMER_JETZT = 0, GEHOLT_VORHER = 0, SOLL_GESAMT = 0;
@@ -321,7 +321,7 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL
   const { da, von } = bestand();
   melden.ausLauf();
   melden.zeile('modelle', T('KI-Modelle'), T('{da} von {von} sind da', { da, von }), da === von ? 'fertig' : 'wink');
-  console.log('  ' + T('Modelle: {geholt} geholt', { geholt }) + (NUR ? ' ' + T('(angefragt: {n})', { n: LISTE.length }) : '') + ', ' + T('{da} von {von} vorhanden', { da, von }) + ' → library/modelle/');
+  console.log('  ' + T('Modelle: {geholt} geholt', { geholt }) + (NUR ? ' ' + T('(angefragt: {n})', { n: LISTE.length }) : '') + ', ' + T('{da} von {von} vorhanden', { da, von }) + ' → ' + ZIEL);
   if (offen.length) {
     console.log('\n  ' + T('{n} Datei(en) kamen nicht an. Von Hand: im Browser öffnen, "Speichern unter" nach', { n: offen.length }) + `\n    ${ZIEL}\n  ` + T('mit genau diesem Dateinamen:'));
     for (const [n, u] of offen) { const z = (DATEIEN.find(d => d[0] === n) || [])[3];

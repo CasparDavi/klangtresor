@@ -1440,9 +1440,7 @@ open -a Terminal ${JSON.stringify(starter)}
        "13 von 13", waehrend die Liste laengst 15 Eintraege hatte - die Seite meldete fertig,
        obwohl SCRFD und PP-OCRv3 fehlten. */
     const { da: mDa, von: mVon } = require('./modelle-holen.js').bestand();
-    const mLager = !mDa && lagerHat('modelle');
     if (mDa >= mVon) zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} sind da', { da: mDa, von: mVon }));
-    else if (mLager) zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('liegen auf diesem Rechner, werden kopiert (rund 1,2 GB)'), 'laeuft');
     else zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} — der Rest wird geholt (rund 1,2 GB)', { da: mDa, von: mVon }), 'laeuft');
 
     const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= mVon || mLager ? 0 : 1200);
@@ -1641,17 +1639,31 @@ open -a Terminal ${JSON.stringify(starter)}
 
   /* ================================================================ */
   schritt(T('KI-Modelle'), T('KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — {n} Dateien, rund 1,2 GB', { n: require('./modelle-holen.js').DATEIEN.length }),
-    T('Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird einmal; auf diesem Rechner Gefundenes wird kopiert statt geladen. Drei Gruppen: Musikstil (hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).'));
+    T('Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird einmal, in einen Ordner — deinen eigenen für KI-Modelle, wenn du einen hast, sonst in KlangTresors. Drei Gruppen: Musikstil (hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).'));
   matt(T('Stemtrennung, Musikstil, Textverständnis und Tiefe. Klappt das nicht, läuft alles andere trotzdem.'));
-  const modelle = path.join(WURZEL, 'library', 'modelle');
-  if (!fs.existsSync(modelle) || !fs.readdirSync(modelle).length) ausLager('modelle', modelle);
+  /* DER EINE ORT FUER KI-MODELLE (Caspar_D, 28.10.2026: „wir fragen den Nutzer, ob er einen Ort für seine KI-Modelle
+     hat, da packen wir alle anderen dazu, gibt er nichts an, dann wandert alles unter KlangTresor/modelle").
+     Gefragt wird nur, solange es noch keinen Ort gibt - eine zweite Einrichtung fragt nicht noch einmal; aendern geht
+     im Profil → System. Bis dahin lagen die Modelle in library/modelle/ und zusaetzlich als Kopie in einem
+     „Zwischenlager" auf der Systemplatte - beides ist vorbei: umziehen() verschiebt die alten, kopiert wird nie. */
+  const mo = require('./modellordner.js');
+  if (!mo.eigenerOrdner() && !fs.existsSync(mo.VORGABE)) {
+    matt(T('Sammelst du KI-Modelle schon in einem eigenen Ordner? Dann kommen diese mit dorthin.'));
+    matt(T('Sonst legt KlangTresor sie in seinen eigenen Ordner: {ordner}', { ordner: mo.VORGABE }));
+    if (await jaNein(T('Eigenen Ordner für KI-Modelle wählen?'), 'n')) {
+      const o = await ordnerErfragen(T('Ordner für deine KI-Modelle'));
+      if (o) { mo.modellOrdnerSetzen(o); gut(T('KI-Modelle kommen nach {ordner}', { ordner: o })); }
+    }
+  }
+  mo.umziehen((t) => tut(t.trim()));
+  zeile('modellordner', T('Ordner der KI-Modelle'), mo.modellOrdner());
   if (!await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')])) {
     const w = await wieWeiter(T('Modelle holen'), T('Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.'));
     if (w === 'schluss') { wiederkommen(); schluss(0); }
     if (w === 'wieder') await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
   } else {
     const { da, von } = require('./modelle-holen.js').bestand();
-    gut(T('Modelle sind da.')); zeile('modelle', T('KI-Modelle'), T('{da} von {von} sind da', { da, von }), da >= von ? 'fertig' : 'wink'); insLager('modelle', modelle);
+    gut(T('Modelle sind da.')); zeile('modelle', T('KI-Modelle'), T('{da} von {von} sind da', { da, von }), da >= von ? 'fertig' : 'wink');
   }
 
   /* ================================================================

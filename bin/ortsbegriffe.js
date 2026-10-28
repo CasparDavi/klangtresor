@@ -90,14 +90,13 @@ async function wortvektorenAktualisieren() {
 
   if (fehlend.length) {
     /* Fehlt das Modell: laut und rot wie in bin/geschichten.js (bin/fehlt.js, 28.10.2026). */
-    const MODELL = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet.onnx');
-    const TOKEN = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json');
+    const MO = require('./modellordner.js').modellOrdner();   /* bin/modellordner.js */
+    const MODELL = path.join(MO, 'paraphrase-multilingual-mpnet.onnx');
+    const TOKEN = path.join(MO, 'paraphrase-multilingual-mpnet-tokenizer.json');
     if (!fs.existsSync(MODELL) || !fs.existsSync(TOKEN))
-      require('./fehlt.js').fehlt('Ortsbegriffe', [MODELL, TOKEN].filter(d => !fs.existsSync(d)).map(d => path.relative(path.join(LIB, '..'), d)));
+      require('./fehlt.js').fehlt('Ortsbegriffe', [MODELL, TOKEN].filter(d => !fs.existsSync(d)));
     const { einbetterLaden } = require('./texte-einbetten.js');
-    const e = await einbetterLaden(
-      path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet.onnx'),
-      path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json'));
+    const e = await einbetterLaden(MODELL, TOKEN);
     const t0 = Date.now();
     for (const w of fehlend) {
       const v = normiert(await e.einbetten(vok.anzeige.get(w)));

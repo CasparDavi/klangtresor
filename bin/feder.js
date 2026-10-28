@@ -103,7 +103,7 @@ const WURZEL = path.join(__dirname, '..');
 const LIB = path.join(WURZEL, 'library');
 const SONGS = path.join(LIB, 'songs');
 const MODELLNAME = 'informative-drawings.onnx';
-const MODELL = path.join(LIB, 'modelle', MODELLNAME);
+const MODELL = path.join(require('./modellordner.js').modellOrdner(), MODELLNAME);   /* bin/modellordner.js */
 const BUCH = path.join(LIB, 'feder.json');
 const GESICHTER = path.join(LIB, 'gesichter.json');
 const KACHELSTAND = path.join(LIB, 'kachel-stand.json');
@@ -417,7 +417,7 @@ if (require.main === module) (async () => {
     if (imBuch) try { buchSchreiben(imBuch); } catch (e) {}
     process.exit(sig === 'SIGINT' ? 130 : 143);
   });
-  if (!modellDa(true)) require('./fehlt.js').fehlt('Skizzenbuch (Federzeichnung)', path.relative(WURZEL, MODELL));
+  if (!modellDa(true)) require('./fehlt.js').fehlt('Skizzenbuch (Federzeichnung)', MODELL);
   const aw = ausweis(), buch = buchLesen();
   /* beide Abschnitte verfallen zusammen (siehe Kopf, Bildnisse); avatare nur anfassen, wo es ihn gibt */
   if (AUSWEISIDENT(buch.ausweis) !== AUSWEISIDENT(aw)) {

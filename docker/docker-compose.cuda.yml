@@ -19,7 +19,7 @@ services:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
       KLANG_CUDA: "1"
-      WHISPER_CLI: /usr/local/bin/whisper-cli
-      WHISPER_MODELL: /app/library/modelle/ggml-large-v3.bin
+      # whisper-cli liegt im Image unter /usr/local/bin (im Suchpfad), das Modell im Modellordner /app/modelle -
+      # bis 28.10.2026 standen hier WHISPER_CLI und WHISPER_MODELL; bin/whisper.js liest sie nicht mehr.
     healthcheck:
       start_period: 600s

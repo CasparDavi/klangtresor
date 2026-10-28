@@ -51,7 +51,7 @@ const { spawnSync } = require('node:child_process');
 
 const WURZEL  = path.join(__dirname, '..');
 const SONGS   = path.join(WURZEL, 'library', 'songs');
-const MODELLE = path.join(WURZEL, 'library', 'modelle');
+const MODELLE = require('./modellordner.js').modellOrdner();   /* bin/modellordner.js */
 const ZIEL    = path.join(WURZEL, 'library', 'klang.json');
 const args    = process.argv.slice(2);
 
@@ -278,7 +278,7 @@ async function vermessen(M, mp3) {
   const fehlt = ['discogs-effnet-bsdynamic-1.onnx', 'discogs-effnet-bs64-1.json', 'mtg_jamendo_genre-discogs-effnet-1.onnx', 'mtg_jamendo_genre-discogs-effnet-1.json',
     'mtg_jamendo_moodtheme-discogs-effnet-1.onnx', 'mtg_jamendo_moodtheme-discogs-effnet-1.json', 'mtg_jamendo_instrument-discogs-effnet-1.onnx', 'mtg_jamendo_instrument-discogs-effnet-1.json']
     .filter(n => !fs.existsSync(path.join(MODELLE, n)));
-  if (fehlt.length) require('./fehlt.js').fehlt('Musikstil', fehlt.map(n => 'library/modelle/' + n));
+  if (fehlt.length) require('./fehlt.js').fehlt('Musikstil', fehlt.map(n => path.join(MODELLE, n)));
 
   const t0 = Date.now();
   const M = await modelleLaden();

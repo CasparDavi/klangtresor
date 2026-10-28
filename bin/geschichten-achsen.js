@@ -45,8 +45,8 @@ const { einbetterLaden } = require('./texte-einbetten.js');
 
 const WURZEL = path.join(__dirname, '..');
 const LIB    = path.join(WURZEL, 'library');
-const MODELL = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet.onnx');
-const TOKEN  = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json');
+const MODELL = path.join(require('./modellordner.js').modellOrdner(), 'paraphrase-multilingual-mpnet.onnx');   /* bin/modellordner.js */
+const TOKEN  = path.join(require('./modellordner.js').modellOrdner(), 'paraphrase-multilingual-mpnet-tokenizer.json');
 
 /* ---- Die drei Achsen ---------------------------------------------- */
 const ACHSEN = {
@@ -89,7 +89,7 @@ const cos = (a, b) => { let p = 0; for (let i = 0; i < a.length; i++) p += a[i] 
 
 (async () => {
   /* Fehlt Modell oder Tokenizer: laut und rot wie in bin/geschichten.js (bin/fehlt.js, 28.10.2026). */
-  const fehlen = [MODELL, TOKEN].filter(d => !fs.existsSync(d)).map(d => path.relative(path.join(LIB, '..'), d));
+  const fehlen = [MODELL, TOKEN].filter(d => !fs.existsSync(d));
   if (fehlen.length) require('./fehlt.js').fehlt('Geschichten-Achsen', fehlen);
   const gesch = path.join(LIB, 'geschichten.json');
   if (!fs.existsSync(gesch)) { console.error('  library/geschichten.json fehlt — erst node bin/geschichten.js'); process.exit(1); }
