@@ -166,7 +166,8 @@ main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
 .fahrt .welt img{position:absolute;display:block;max-width:none}
 .fahrt .welt .nah{opacity:0}
 .fahrt .fbild .linie{inset:auto;left:0;width:100%;height:2px;background:var(--akzent);box-shadow:0 0 12px var(--akzent);opacity:0}
-@media screen and (max-width:820px){
+/* Gestapelt nur im Hochformat; ein Handy quer bekommt Text neben dem Bild, sonst steht das Bild allein unter dem Text */
+@media screen and (max-width:820px) and (orientation:portrait){
   .fahrt .buehne{flex-direction:column}
   .fahrt .ftext{padding:22px 22px 18px}
   .fahrt .fbild{width:min(100% - 6px,calc(var(--bildhoehe,600px) * var(--seite)));align-self:center}
@@ -412,7 +413,7 @@ function knopfWeg(v){ delete v.dataset.steht; v.parentElement.querySelector('.ab
 function fahrtMasse(){ document.querySelectorAll('.fahrt').forEach(f => {
   if (!f.offsetParent) return;
   const leiste = document.querySelector('.sprache').offsetHeight;
-  const schmal = matchMedia('(max-width:820px)').matches;
+  const schmal = matchMedia('(max-width:820px) and (orientation:portrait)').matches;
   const frei = innerHeight - leiste - 24 - 6 - (schmal ? f.querySelector('.ftext').offsetHeight : 0);
   f.style.setProperty('--bildhoehe', Math.max(160, frei) + 'px');
 }); }
