@@ -32,6 +32,8 @@ h2 .z{display:block;text-wrap:balance}
 /* Tarja-Edition: Akzentfamilie Lila statt Orange (Caspar_D: „Lila und Restorange sollte ganz gut harmonieren“).
    Nur CSS-Farben; Bilder bleiben unverändert, der rote Morgenknopf bleibt rot. #b48ce6 auf Schwarz 7,8 : 1. */
 :root.tarja{--akzent:#b48ce6}
+/* Variante ?tarja=rose: Rosé-Oberteil (img/tarja.webp, Farbton ≈ 346°) mit gestaubtem Rosé als Akzent, 9,1 : 1 auf Schwarz */
+:root.tarja.rose{--akzent:#d89aa9}
 
 /* Kolumnentitel (Innenseiten): Haarlinie, Marke · Kapitel · Seitenzahl */
 .kolumne{display:grid;grid-template-columns:var(--marg) 1fr auto;column-gap:var(--steg);flex:0 0 auto;
@@ -199,8 +201,10 @@ const RAHMEN = {
    (Caspar_D, 28.10.2026). In der Tarja-Edition zeigt der Titel Tarja, das Band die ursprüngliche Szene – jede Person einmal. */
 const BAND = { abend: { format: '2.3/1', pos: '58% 40%' } };
 const TARJA = new URLSearchParams(location.search).has('tarja');
+const TARJA_ROSE = TARJA && new URLSearchParams(location.search).get('tarja') === 'rose';   /* ?tarja=rose: Rosé-Variante */
 if (TARJA) document.documentElement.classList.add('tarja');
-const TARJA_TITELBILD = 'img/tarja-lila.webp';   /* Lila-Original passt zur lila Akzentfarbe der Edition; Rosé-Fassung: img/tarja.webp */
+if (TARJA_ROSE) document.documentElement.classList.add('rose');
+const TARJA_TITELBILD = TARJA_ROSE ? 'img/tarja.webp' : 'img/tarja-lila.webp';   /* Standard: Lila-Original zu lila Akzent; ?tarja=rose: Rosé-Oberteil zu Rosé-Akzent */
 const TARJA_EDITION = { zier: ['༺', '༻'], name: 'Tαɾʝα', wort: 'Edition' };
 
 const DRUCKBILD = new URLSearchParams(location.search).has('druck') ? {
@@ -210,7 +214,9 @@ const DRUCKBILD = new URLSearchParams(location.search).has('druck') ? {
   'img/geraete-de.webp': 'img/druck/geraete-de.jpg', 'img/geraete-en.webp': 'img/druck/geraete-en.jpg',
   'img/morgenlauf-de.webp': 'img/druck/morgenlauf-de.jpg', 'img/morgenlauf-en.webp': 'img/druck/morgenlauf-en.jpg', 'img/morgenlauf-ru.webp': 'img/druck/morgenlauf-ru.jpg',
   'img/zimmer-de.webp': 'img/druck/zimmer-de.jpg', 'img/zimmer-en.webp': 'img/druck/zimmer-en.jpg',
-  'img/tanz-de.webp': 'img/druck/tanz.jpg', 'img/tanz-en.webp': 'img/druck/tanz.jpg'
+  'img/tanz-de.webp': 'img/druck/tanz.jpg', 'img/tanz-en.webp': 'img/druck/tanz.jpg',
+  /* Tarja-Edition: ebenfalls x4 hochgerechnet, Bildschirme mit Caspar_Ds Ecken x4 eingesetzt */
+  'img/tarja-lila.webp': 'img/druck/tarja-lila.jpg', 'img/tanz-tarja.webp': 'img/druck/tanz-tarja.jpg', 'img/auto-tarja.webp': 'img/druck/auto-tarja.jpg'
 } : {};
 
 /* Bildausschnitt für den Druck, je Bilddatei: [links, oben, rechts, unten] als Anteil. Schnitte liegen in Lücken
@@ -293,7 +299,11 @@ function quelle(id){
   if (b && b.sprachen) b = b.sprachen[L] || b.sprachen.en;
   return b;
 }
+/* Tarja-Edition: alle Frauen der Szenen sind Tarja (Caspar_D, 28.10.2026). Song-Cover bleiben echt (Okkultation, Vanille-Eis).
+   Bildschirme neu eingesetzt: Fernseher mit Caspar_Ds Ecken [[826.2,151.2],[1505,104.3],[1503.4,517.1],[825.1,504.3]] (werkzeug/ecken/tarja-tv.html), Autodisplay mit echtem Cover. */
+const TARJA_BILD = TARJA ? { abend: TARJA_TITELBILD, fernseher: 'img/tanz-tarja.webp', sichern: 'img/auto-tarja.webp' } : {};
 function bildUrl(id){
+  if (TARJA_BILD[id]) return druck(TARJA_BILD[id]);
   const b = quelle(id);
   if (typeof b !== 'string' || /\.mp4/.test(b)) return null;
   const pfad = b.split('?')[0];
