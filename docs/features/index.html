@@ -133,9 +133,10 @@ main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
 .plus svg{width:14px;height:14px}
 .plus:hover{background:rgba(90,90,94,.9)}
 .k .druck{display:none}
-.overlay{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:6vh 16px}
-.overlay.auf{display:flex}
-.fenster{position:relative;max-width:640px;width:100%;background:var(--kachel2);border-radius:28px;padding:48px 48px 40px}
+/* Leicht gedimmt; das Fenster geht am Plus auf, sein Kreuz liegt dort, wo das Plus war (Lage setzt lage()). */
+.overlay{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;overflow:auto}
+.overlay.auf{display:block}
+.fenster{position:absolute;max-width:640px;width:calc(100% - 32px);box-shadow:0 18px 60px rgba(0,0,0,.6),0 0 0 1px var(--linie);background:var(--kachel2);border-radius:28px;padding:48px 48px 40px}
 .fenster .klein{font-size:15px;font-weight:600;color:var(--akzent);margin:0 0 6px}
 .fenster h4{font-size:clamp(26px,3vw,36px);line-height:1.12;font-weight:700;margin:0 0 22px}
 .fenster ul{margin:0;padding:0;list-style:none}
@@ -305,17 +306,31 @@ function einpassen(){
   }
 }
 addEventListener('resize', einpassen);
-function auf(id){
+let knopf = null;
+function auf(id, plus){
+  knopf = plus;
   const k = KACHELN[id]; if (!k) return;
   document.getElementById('fenster').innerHTML = `<button class="zu" aria-label="${S.kopf.zu[L]}">${KREUZ}</button>
     <p class="klein">${k.klein[L]}</p><h4>${k.h[L]}</h4><ul>${k.d[L].map(x => `<li>${x}</li>`).join('')}</ul>`;
   document.getElementById('overlay').classList.add('auf');
   document.body.style.overflow = 'hidden';
+  lage();
   try { document.querySelector('#fenster .zu').focus({ preventScroll: true }); } catch (e) {}
 }
+function lage(){
+  const o = document.getElementById('overlay'), f = document.getElementById('fenster');
+  if (!knopf || !o.classList.contains('auf')) return;
+  const r = knopf.getBoundingClientRect(), z = f.querySelector('.zu'), W = o.clientWidth, H = o.clientHeight, m = 16;
+  f.style.left = f.style.top = '0px';
+  const w = f.offsetWidth, h = f.offsetHeight, zr = f.offsetWidth - z.offsetLeft - z.offsetWidth, zt = z.offsetTop;
+  const x = Math.max(m, Math.min(r.right + zr - w, W - m - w));
+  const y = Math.max(m, Math.min(r.top - zt, H - m - h));
+  f.style.left = x + 'px'; f.style.top = y + 'px';
+}
+addEventListener('resize', lage);
 function zu(){ document.getElementById('overlay').classList.remove('auf'); document.body.style.overflow = ''; }
 document.addEventListener('click', e => {
-  const p = e.target.closest('.plus'); if (p) return auf(p.dataset.k);
+  const p = e.target.closest('.plus'); if (p) return auf(p.dataset.k, p);
   if (e.target.closest('.zu') || e.target.id === 'overlay') zu();
   const b = e.target.closest('.sprache button');
   if (b){ L = b.dataset.l; try { localStorage.setItem('kt-features-sprache', L); } catch(e){} bauen(); }
