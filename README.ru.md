@@ -12,6 +12,11 @@
 текстами, промптами, обложками, плейлистами и метаданными. К нему прилагается сайт,
 который работает в домашней сети и играет на любом экране с браузером.
 
+<table>
+<tr><td width="50%"><a href="https://caspardavi.github.io/klangtresor/features/?lang=ru"><img src="docs/features/img/geraete-en.webp" alt="Любой экран дома: ноутбук, планшет, телефон" width="100%"></a><br><sub>Любой экран дома: ноутбук, планшет, телефон</sub></td><td width="50%"><a href="https://caspardavi.github.io/klangtresor/features/?lang=ru"><img src="docs/features/img/buehne-en.webp" alt="Сцена: текст песни слово за словом" width="100%"></a><br><sub>Сцена: текст песни слово за словом</sub></td></tr>
+<tr><td width="50%"><a href="https://caspardavi.github.io/klangtresor/features/?lang=ru"><img src="docs/features/img/himmel-en.webp" alt="Звуковое пространство: каждая песня — звезда" width="100%"></a><br><sub>Звуковое пространство: каждая песня — звезда</sub></td><td width="50%"><a href="https://caspardavi.github.io/klangtresor/features/?lang=ru"><img src="docs/features/img/glockenstuhl-en.webp" alt="Настоящая студия в браузере" width="100%"></a><br><sub>Настоящая студия в браузере</sub></td></tr>
+</table>
+
 За ним стоит набор инструментов, который считывает из ваших треков всё, что
 поддаётся измерению: громкость по EBU R128, тональность по басу,
 диапазон голоса, дорожки инструментов, студию звука с эквалайзером и
