@@ -86,6 +86,9 @@ const imPfad = () => { const r = spawnSync(EXE ? 'where' : 'which', ['whisper-cl
 const programmDa = () => PROGRAMM_ORTE.find(istDatei) || imPfad();
 const modellDa = () => MODELL_ORTE.find(p => { try { return fs.statSync(p).size > 100000000; } catch (e) { return false; } });
 
+/* Fuer den Tab „System" (bin/system.js): dieselbe Suche wie hier und in bin/whisper.js, ohne etwas zu holen. */
+if (require.main !== module) { module.exports = { programmDa, modellDa }; return; }
+
 const sag = (t) => console.log('  ' + t);
 const mb = (n) => (n / 1048576).toFixed(0) + ' MB';
 function laeuft(befehl, argumente, opt) {

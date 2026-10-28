@@ -4078,6 +4078,11 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      Seit 27.10.2026 ein Merkmal statt Ordnerumzug: der Titel kommt in library/abgelegt.json, seine Dateien bleiben in
      songs/<id>/, der Server blendet ihn aus (katalogHolen). Steht er bei Suno oeffentlich, holt bin/aufbereiten.js ihn
      beim naechsten Lauf zurueck („oeffentlich bei Suno schlaegt Ablage“). Im Profil: Liste, Zurueckholen, Loeschen. */
+  /* DER TAB „SYSTEM" IM PROFIL (28.10.2026): was da ist, was fehlt - nur nachsehen, nichts holen (bin/system.js). */
+  if (p === '/api/system' && req.method === 'GET') {
+    require('../bin/system.js').stand().then(s => jsonAntwort(res, s)).catch(e => jsonAntwort(res, { fehler: e.message }, 500));
+    return;
+  }
   if (p === '/api/ablage' && req.method === 'GET') {
     const l = listeLesen(ABGELEGT);
     return jsonAntwort(res, { titel: Object.entries(l).map(([id, e]) => ({ id, ...e }))

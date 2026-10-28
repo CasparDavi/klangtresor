@@ -488,6 +488,26 @@ select:not([multiple]):not([size]){
 #ich img{width:38px;height:38px;border-radius:50%;object-fit:cover;
   border:2px solid var(--rand);transition:border-color .2s}
 #ich:hover img{border-color:var(--akzent)}
+/* Roter Punkt am Avatar und an der Lasche „System", solange der Einrichtung etwas fehlt (Caspar_D, 28.10.2026) */
+#ich{position:relative}
+#ich.fehlt::after{content:'';position:absolute;top:1px;right:1px;width:9px;height:9px;border-radius:50%;background:#f9143c;border:2px solid var(--bg)}
+.reg .sysdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f9143c;margin-left:6px;vertical-align:middle}
+.reg .sysdot[hidden]{display:none}
+.systab{margin-top:14px;max-width:760px}
+.systab .syskopf{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 8px 4px}
+.systab .syskopf .fehltzahl{color:#f97b14}
+.systab .syskopf .allesda{color:#59d18c}
+.systab h4{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:22px 8px 6px}
+.systab .syszeile{display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:baseline;padding:7px 8px;border-radius:8px}
+.systab .syszeile:hover{background:var(--flaeche2)}
+.systab .z{text-align:center}
+.systab .z.ok{color:#59d18c}
+.systab .z.nein{color:#f9143c}
+.systab .z.offen{color:var(--schwach)}
+.systab .z.neu{color:#f97b14}
+.systab .r{color:var(--schwach);font-variant-numeric:tabular-nums;text-align:right}
+.systab .unter{grid-column:2 / span 2;color:var(--schwach);font-size:13px;margin-top:-4px}
+.systab code{font-size:13px;background:var(--flaeche2);border-radius:6px;padding:1px 6px}
 
 /* Autorenbereich */
 .ichkopf{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
@@ -3311,14 +3331,14 @@ html.handy .bart #bbewegt{display:none!important}
    der Fussnotengroesse der Rechtszeilen darunter - das hier liest man, um danach etwas zu tun (12 px Lesegrenze).
    Pfad und Skriptname in --text: sie sind das, was man im Dateifenster wiederfinden muss. */
 #werversion{font-size:12.5px;color:var(--text)}
-#werfassungstand{font-size:12.5px;line-height:1.5;color:var(--text);margin-top:4px}
-#werfassungstand .vleise{font-size:12px;color:var(--schwach);margin-top:4px}
-#werfassungstand .vname{color:var(--text);overflow-wrap:anywhere}
-#werfassungstand .vname.skript{white-space:nowrap}   /* der Skriptname bricht sonst am Bindestrich - so findet man ihn nicht wieder */
-#werfassungstand .vtaten{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:8px 0 4px}
-#werfassungstand .vtaten a{font-size:12.5px;color:var(--akzent);text-decoration:none;
+.fassungstand{font-size:12.5px;line-height:1.5;color:var(--text);margin-top:4px}
+.fassungstand .vleise{font-size:12px;color:var(--schwach);margin-top:4px}
+.fassungstand .vname{color:var(--text);overflow-wrap:anywhere}
+.fassungstand .vname.skript{white-space:nowrap}   /* der Skriptname bricht sonst am Bindestrich - so findet man ihn nicht wieder */
+.fassungstand .vtaten{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:8px 0 4px}
+.fassungstand .vtaten a{font-size:12.5px;color:var(--akzent);text-decoration:none;
   border-bottom:1px solid color-mix(in srgb, var(--akzent) 40%, transparent)}
-#werfassungstand .vtaten a:hover{border-bottom-color:var(--akzent)}
+.fassungstand .vtaten a:hover{border-bottom-color:var(--akzent)}
 
 /* Der Erklaerkasten teilt sich die Form mit dem Ueber-Fenster
    (.werkopf, .werinhalt), ist aber breiter: Es steht eine Tabelle
@@ -4418,7 +4438,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
          Der Tooltip sagt, was der Klick tut: er zeigt, wie man einspielt - einspielen
          tut nur das Skript im Ordner (Hausregel 22: Prinzip, nicht nur der Name).
          „Version“ fuers Programm, „Fassung“ bleibt den Liedern (Caspar_D, 15.10.2026). -->
-    <button id="fassungglocke" type="button" hidden onclick="werAuf()" title="Neue Version auf GitHub – Klick zeigt, wie man sie einspielt" data-i18n-title="kopf.fassung">
+    <button id="fassungglocke" type="button" hidden onclick="systemAuf()" title="Neue Version auf GitHub – Klick zeigt, wie man sie einspielt" data-i18n-title="kopf.fassung">
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 22a2.2 2.2 0 0 0 2.2-2.2h-4.4A2.2 2.2 0 0 0 12 22zm7-6.2V11a7 7 0 1 0-14 0v4.8L3 18.2V20h18v-1.8l-2-2.4z"/>
       </svg>
@@ -4690,7 +4710,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
              schauen?“ - der Knopf ist weg, das Fenster fragt beim Aufgehen selbst. -->
         <div>
           <div id="werversion">—</div>
-          <div id="werfassungstand" hidden></div>
+          <div id="werfassungstand" class="fassungstand" hidden></div>
         </div>
         <!-- Die Rechtelage gehoert hierher, nicht nur in die README:
              wer die Software vor sich hat, soll sie sehen koennen. -->
@@ -4966,8 +4986,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=18"></script>
-<script src="/ui-sprache.js?v=30"></script>
+<script src="/ui-sprache-ru.js?v=19"></script>
+<script src="/ui-sprache.js?v=31"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -17751,6 +17771,86 @@ function profilRegister(welches){
      eine eigene Datei und soll den Seitenaufbau nicht aufhalten. */
   if (welches === 'community' && typeof profilNachbarnFuellen === 'function') profilNachbarnFuellen();
   if (welches === 'handy') profilHandyFuellen();
+  if (welches === 'system') profilSystemFuellen();
+}
+
+/* ---- SYSTEM IM PROFIL (28.10.2026) ---------------------------------------------
+   Caspar_D: „wieso kann man nicht im Profil sehen, wie gesund das System ist, welche Modelle da sind, welche fehlen".
+   Der Stand kommt aus /api/system (bin/system.js) - dort wird nur nachgesehen, nichts geholt. Der Punkt am Avatar und
+   an der Lasche steht, solange etwas fehlt. Holen-Knoepfe mit Balken folgen; bis dahin nennt der Tab den Weg ueber die
+   Einrichtung. */
+async function systemStandHolen(){
+  try { const r = await fetch('/api/system', { cache: 'no-store' }); return r.ok ? await r.json() : null; } catch (e) { return null; }
+}
+function systemPunktSetzen(s){
+  const fehlt = !!(s && s.fehlt);
+  const ich = $('ich'); if (ich) ich.classList.toggle('fehlt', fehlt);
+  document.querySelectorAll('.reg .sysdot').forEach(d => d.hidden = !fehlt);
+}
+async function systemPunkt(){ if (!archivEingefroren()) systemPunktSetzen(await systemStandHolen()); }
+/* Der Punkt am Avatar soll beim Laden da sein, nicht erst im Profil - kurz nach dem Start, wenn die Seite steht */
+setTimeout(() => systemPunkt(), 2500);
+const sysGroesse = (b) => {
+  if (b == null) return '';
+  /* dezimal wie die Angaben der Einrichtung (Whisper „3,1 GB", Instrumentspuren „258 MB") */
+  const gb = b / 1e9;
+  return gb >= 1 ? t('system.gb', { n: gb.toLocaleString(localeTag(), { maximumFractionDigits: 1 }) })
+                 : t('system.mb', { n: Math.max(1, Math.round(b / 1e6)).toLocaleString(localeTag()) });
+};
+/* Die Namen in library/gesundheit.json schreibt bin/gesundheit.js deutsch - hier ihre Uebersetzung; ein neuer Name
+   erscheint, wie er dort steht. */
+const SYS_VERBINDUNG = { 'Suno-Seite (Ernte)': 'system.v.ernte', 'Profil-API (Nachbarschaft)': 'system.v.profil',
+  'Kommentar-API (Reaktionen)': 'system.v.kommentare', 'Bild-CDN (Medien)': 'system.v.bilder', 'Video-CDN (Medien)': 'system.v.videos',
+  'Audio-Links im Katalog': 'system.v.audio', 'Ersatzzeichen im Bestand': 'system.v.ersatz' };
+let sysNachmessen = null;
+async function profilSystemFuellen(){
+  const el = $('profilsystem'); if (!el) return;
+  clearTimeout(sysNachmessen);
+  const s = await systemStandHolen();
+  systemPunktSetzen(s);
+  if (!s){ el.innerHTML = `<div class="systab"><p class="fussnote">${esc(t('system.nicht_lesbar'))}</p></div>`; return; }
+  const zeile = (zustand, name, rechts, unter) => `<div class="syszeile"><span class="z ${zustand}">${zustand === 'ok' ? '✓' : zustand === 'nein' ? '✗' : '–'}</span>`
+    + `<span>${name}</span><span class="r">${rechts || ''}</span>${unter ? `<span class="unter">${unter}</span>` : ''}</div>`;
+  const fehltText = (x) => x.da ? '' : t('system.fehlt');
+  const ffBefehl = s.system === 'darwin' ? 'brew install ffmpeg' : s.system === 'win32' ? '' : 'sudo apt install ffmpeg';
+  let h = `<div class="systab"><div class="syskopf">`
+    + (s.fehlt ? `<span class="fehltzahl">${esc(t('system.fehlen', { n: s.fehlt }))}</span>` : `<span class="allesda">${esc(t('system.alles_da'))}</span>`)
+    + `</div>`;
+  if (s.fehlt) h += `<p class="fussnote" style="margin:4px 8px 0">${esc(t('system.ausweg'))}</p>`;
+  /* Das Programm selbst: dieselbe Auskunft wie im Fenster „Wer" (fassungNachsehen), hier mit der Nummer davor */
+  h += `<h4>${esc(t('system.programm'))}</h4><div class="syszeile"><span class="z ok sysprog">✓</span>`
+    + `<span>${esc(paketVersion ? t('wer.version', { v: paketVersion }) : 'KlangTresor')}<div class="fassungstand sysfassung"></div></span><span class="r"></span></div>`;
+  h += `<h4>${esc(t('system.werkzeuge'))}</h4>`;
+  for (const w of s.werkzeuge){
+    const name = w.id === 'node' ? 'Node' : w.id === 'pakete' ? esc(w.anzahl ? t('system.w.pakete', { n: w.anzahl }) : t('system.w.pakete_kurz')) : w.id;
+    const rechts = w.da ? esc(w.wert || '') : esc(fehltText(w));
+    const unter = !w.da && (w.id === 'ffmpeg' || w.id === 'ffprobe') && ffBefehl ? `${esc(t('system.befehl'))} <code>${ffBefehl}</code>`
+                : !w.da && w.id === 'pakete' && w.fehlen && w.fehlen.length ? esc(w.fehlen.join(', '))
+                : !w.da && w.id === 'node' ? esc(t('system.node_alt', { wert: w.wert })) : '';
+    h += zeile(w.da ? 'ok' : 'nein', name, rechts, unter);
+  }
+  h += `<h4>${esc(t('system.modelle'))}</h4>`;
+  for (const m of s.modelle)
+    h += zeile(m.da ? 'ok' : 'nein', esc(t('system.m.' + m.id)), m.da ? sysGroesse(m.bytes) : esc(t('system.fehlt_gross', { g: sysGroesse(m.bytes) })));
+  const v = s.verbindungen || {};
+  h += `<h4>${esc(v.stand ? t('system.verbindungen_stand', { wann: new Date(v.stand).toLocaleString(localeTag(), { dateStyle: 'medium', timeStyle: 'short' }) }) : t('system.verbindungen'))}</h4>`;
+  if (!(v.befunde || []).length) h += zeile('offen', esc(t('system.verbindungen_nie')), '');
+  for (const b of v.befunde || [])
+    h += zeile(b.ok === true ? 'ok' : b.ok === false ? 'nein' : 'offen', esc(SYS_VERBINDUNG[b.name] ? t(SYS_VERBINDUNG[b.name]) : b.name),
+               esc(b.ok === true ? t('system.antwortet') : b.ok === false ? t('system.antwortet_nicht', { code: b.wert }) : String(b.wert)));
+  const p = s.platz || {};
+  h += `<h4>${esc(t('system.platz'))}</h4>`;
+  h += zeile('ok', p.archiv == null ? esc(t('system.wird_gemessen'))
+              : esc(t('system.platz_text', { archiv: sysGroesse(p.archiv), programm: sysGroesse(p.programm) })),
+         p.frei == null ? '' : esc(t('system.frei', { g: sysGroesse(p.frei) })));
+  el.innerHTML = h + `</div>`;
+  /* Liegt eine neuere Version bereit, steht vor der Programmzeile ein oranger Pfeil statt des Hakens */
+  fassungNachsehen(el.querySelector('.sysfassung')).then(() => {
+    const z = el.querySelector('.sysprog'); if (!z || !fassungLetzte || !fassungLetzte.neuer) return;
+    z.className = 'z neu sysprog'; z.textContent = '↑';
+  });
+  /* Die Ordnergroessen zaehlt der Server im Hintergrund - kurz danach noch einmal nachsehen, solange der Tab offen ist */
+  if (p.archiv == null) sysNachmessen = setTimeout(() => { if (!el.hidden) profilSystemFuellen(); }, 4000);
 }
 
 /* ---- ABGELEGTE TITEL IM PROFIL (27.10.2026) -----------------------------------
@@ -19039,6 +19139,9 @@ function profilAuf(){
              nichts auszugeben, dann fehlt die Lasche. -->
         ${archivEingefroren() ? '' : `<button class="reg" data-preg="export" onclick="profilRegister('export')">${t('profil.reg.export')}</button>`}
         <button class="reg" data-preg="handy" onclick="profilRegister('handy')">${t('profil.reg.handy')}</button>
+        <!-- SYSTEM (Caspar_D, 28.10.2026: „ein Tab Systemgesundheit wäre gut"): was da ist und was fehlt.
+             Der Punkt erscheint, solange der Einrichtung etwas fehlt - derselbe wie am Avatar. -->
+        <button class="reg" data-preg="system" onclick="profilRegister('system')">${t('profil.reg.system')}<span class="sysdot" hidden></span></button>
       </div>
 
       <div class="pregfeld" data-preg="daten">
@@ -19119,7 +19222,8 @@ ${t('profil.urheber.suno')}</pre>
         <div class="block" id="profilnachbarn"></div>
       </div><!-- /Register: Meine Gemeinschaft -->
 
-      <div class="pregfeld" data-preg="handy" id="profilhandy" hidden></div><!-- fuellt profilHandyFuellen() -->
+      <div class="pregfeld" data-preg="handy" id="profilhandy" hidden></div>
+      <div class="pregfeld" data-preg="system" id="profilsystem" hidden></div><!-- fuellt profilSystemFuellen() --><!-- fuellt profilHandyFuellen() -->
       <div class="pregfeld" data-preg="export" id="profilexport" hidden></div><!-- fuellt profilExportFuellen() -->
     </div>`;
 
@@ -19146,7 +19250,8 @@ ${t('profil.urheber.suno')}</pre>
      bleiben im Speicher, nur der Bauzustand faellt. */
   _nachbarnGebaut = false;
   { let r = 'daten'; try { r = localStorage.getItem('profilRegister') || 'daten'; } catch (e) {}
-    profilRegister(r === 'community' ? 'community' : r === 'handy' ? 'handy' : (r === 'export' && !archivEingefroren()) ? 'export' : 'daten'); }
+    profilRegister(r === 'community' ? 'community' : r === 'handy' ? 'handy' : r === 'system' ? 'system' : (r === 'export' && !archivEingefroren()) ? 'export' : 'daten'); }
+  systemPunkt();
   profilAblageFuellen();
   profilCommunityFuellen();
   if (!archivEingefroren()) profilExportFuellen();
@@ -30191,6 +30296,13 @@ function werAuf(){
   fassungNachsehen();
 }
 function werZu(){ document.getElementById('wer').classList.remove('auf'); }
+/* DIE GLOCKE OEFFNET DEN TAB „SYSTEM" (Caspar_D, 28.10.2026: „ich bin dafür, dass auch die Glocke genau diesen
+   Profiltab öffnet und man dort das Update initiiert"). Dort steht der Versionsstand oben, darunter, was fehlt. */
+function systemAuf(){
+  profilAuf();
+  profilRegister('system');
+  const r = document.querySelector('.profilreg'); if (r) r.scrollIntoView({ block: 'start' });
+}
 /* GitHub-Release nachsehen: bei jedem Aufgehen des Fensters und von selbst
    ueber fassungErinnern() (beim Oeffnen, dann alle 12 h, nach einem Fehlschlag in 2 h). Der Server fragt
    api.github.com (User-Agent mit Projektadresse) und haelt eine Antwort
@@ -30201,11 +30313,12 @@ function werZu(){ document.getElementById('wer').classList.remove('auf'); }
 let fassungFrage = 0;
 let fassungLetzte;
 let fassungSiehtNach = false;
-async function fassungNachsehen(){
-  const s = document.getElementById('werfassungstand');
+/* ziel: wohin der Stand geschrieben wird - das Fenster „Wer" (Vorgabe) oder der Tab „System" im Profil (28.10.2026) */
+async function fassungNachsehen(ziel){
+  const s = ziel || document.getElementById('werfassungstand');
   if (!s) return;
   s.hidden = false;
-  if (archivEingefroren()){ fassungStandZeigen({ eingefroren: true }); return; }
+  if (archivEingefroren()){ fassungStandZeigen({ eingefroren: true }, s); return; }
   const nr = ++fassungFrage;
   fassungSiehtNach = true;
   s.textContent = t('wer.fassung.sehe');
@@ -30217,7 +30330,7 @@ async function fassungNachsehen(){
   fassungSiehtNach = false;
   fassungHierNachziehen(d);
   if (d){ fassungMerken(d); fassungGlockeSetzen(d); }
-  fassungStandZeigen(d);
+  fassungStandZeigen(d, s);
 }
 /* DIE KOPFZEILE AUS DER FRISCHEN ANTWORT (Gegenpruefung, 15.10.2026). paketVersion kam einmal beim Laden aus
    /api/index. Wer ein Update einspielt, ohne die Seite neu zu laden, sah sonst „Aktuelle Version 1.0.74“ ueber
@@ -30245,8 +30358,8 @@ function fassungZeitpunkt(iso){
    Ordner voll ausgeschrieben da, dazu nur das EINE Skript, das auf dem Rechner des Servers laeuft (nicht alle
    drei), und die Pille „Ordner zeigen“ oeffnet ihn dort. „Version“ fuers Programm, „Update“ fuer den Vorgang;
    „Fassung“ bleibt den Liedern. Gebaut mit Knoten statt innerHTML: grund und Pfad kommen von aussen. */
-function fassungStandZeigen(d){
-  const s = document.getElementById('werfassungstand');
+function fassungStandZeigen(d, ziel){
+  const s = ziel || document.getElementById('werfassungstand');
   if (!s) return;
   s.hidden = false;
   s.textContent = '';

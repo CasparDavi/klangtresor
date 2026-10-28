@@ -266,7 +266,18 @@ function perCurl(url, f, mindestens) {
 }
 
 /* Als Baustein (bin/einrichten.js) nur die Zaehlung, kein Holen. */
-if (require.main !== module) { module.exports = { bestand, DATEIEN }; return; }
+/* WOFUER JEDE DATEI DA IST (28.10.2026) - fuer den Tab „System" im Profil (bin/system.js): dort steht nicht der
+   Dateiname, sondern was ohne ihn fehlt. Jede Datei aus DATEIEN gehoert zu genau einem Zweck; bin/system.js prueft
+   das und meldet eine Datei ohne Zweck laut. */
+const ZWECKE = [
+  { id: 'stems',       dateien: ['htdemucs_6s.onnx'] },
+  { id: 'musikstil',   dateien: DATEIEN.map(d => d[0]).filter(n => /^(discogs-effnet|mtg_jamendo)/.test(n)) },
+  { id: 'tiefe',       dateien: ['depth-anything-v2-large-fp16.onnx', 'model_fp16.onnx_data'] },
+  { id: 'gesichter',   dateien: ['scrfd_500m.onnx', 'text_detection_en_ppocrv3_2023may.onnx'] },
+  { id: 'feder',       dateien: ['informative-drawings.onnx'] },
+  { id: 'geschichten', dateien: ['paraphrase-multilingual-mpnet.onnx', 'paraphrase-multilingual-mpnet-tokenizer.json'] },
+];
+if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL }; return; }
 
 (async () => {
   const unbekannt = NUR ? NUR.filter(n => !DATEIEN.some(([d]) => d === n)) : [];
