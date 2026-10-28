@@ -16486,7 +16486,14 @@ function profilZahlenFuellen(){
           const links = kacheln.length ? kacheln[0].getBoundingClientRect().left - r0.left : 0;
           const rechts = kacheln.length ? kacheln[kacheln.length - 1].getBoundingClientRect().right - r0.left : breite;
           feld.innerHTML = M.hitstromSvg(daten, { breite, hoehe: Math.round(Math.min(253, Math.max(173, breite * 0.28))), links, rechts, messen, schrift, xHoehe: xh }); };
-        malen();
+        /* GEMESSEN WIRD, WENN DAS FELD SICHTBAR IST (28.10.2026). Oeffnet das Profil mit einer anderen Lasche (etwa „System"),
+           entsteht „Meine Daten" versteckt: Breite und Bildkanten der Hitparaden messen dann null, und der Strom lag
+           zusammengeknuellt am linken Rand (Caspar_D: „alles hängt linksbündig zerknüllt"). Darum zeichnet er neu, sobald
+           das Feld eine Breite bekommt oder sie aendert - beim Wechsel der Lasche und beim Ziehen am Fenster. */
+        let zuletzt = -1;
+        const neuMalen = () => { const b = feld.clientWidth; if (b > 0 && b !== zuletzt){ zuletzt = b; malen(); } };
+        if (window.ResizeObserver) new ResizeObserver(neuMalen).observe(feld);
+        neuMalen();
         feld.onclick = (e) => { const b = e.target.closest && e.target.closest('.hsband'); if (b){ $('detail').classList.remove('auf'); spielenNachId(b.dataset.id); } };
       } catch (e) { console.log('Hitstrom:', e); w.remove(); }
     })();
