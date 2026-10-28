@@ -4,7 +4,8 @@
 
 <a href="https://caspardavi.github.io/klangtresor/features/?lang=de"><img src="docs/features/img/readme-de.jpg" alt="KlangTresor — Deine Suno-Musik. Bei dir." width="100%"></a>
 
-**[Was KlangTresor kann → Feature-Seite](https://caspardavi.github.io/klangtresor/features/?lang=de)**
+**[Was KlangTresor kann → Feature-Seite](https://caspardavi.github.io/klangtresor/features/?lang=de)**\
+Broschüre als PDF: [für den Bildschirm (8 MB)](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-de.pdf) · [zum Drucken (70 MB)](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-de-druck.pdf)
 
 *Ein Tresor für die eigene Musik — was drin liegt, gehört dir, und den
 Schlüssel hast nur du.*

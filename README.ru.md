@@ -4,7 +4,8 @@
 
 <a href="https://caspardavi.github.io/klangtresor/features/?lang=ru"><img src="docs/features/img/readme-ru.jpg" alt="KlangTresor" width="100%"></a>
 
-**[Что умеет KlangTresor → страница возможностей](https://caspardavi.github.io/klangtresor/features/?lang=ru)**
+**[Что умеет KlangTresor → страница возможностей](https://caspardavi.github.io/klangtresor/features/?lang=ru)**\
+Брошюра в PDF: [для экрана (8 МБ)](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-ru.pdf) · [для печати (70 МБ)](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-ru-druck.pdf)
 
 *Сейф для вашей музыки: то, что в нём лежит, принадлежит вам, а ключ есть только у вас.*
 

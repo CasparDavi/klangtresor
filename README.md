@@ -4,7 +4,8 @@
 
 <a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/readme-en.jpg" alt="KlangTresor — Your Suno music. At home." width="100%"></a>
 
-**[What KlangTresor can do → feature page](https://caspardavi.github.io/klangtresor/features/)**
+**[What KlangTresor can do → feature page](https://caspardavi.github.io/klangtresor/features/)**\
+The brochure as PDF: [for screens (8 MB)](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-en.pdf) · [for print (70 MB)](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-en-druck.pdf)
 
 *A vault for your own music — what lies inside is yours, and only you
 hold the key.*

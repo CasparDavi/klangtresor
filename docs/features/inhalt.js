@@ -300,6 +300,15 @@ const NUR_TEXT = new Set(['einmessen','offen']);   // Kacheln, die ohne Bild ste
    „KlangTresor auf http://…" bleibt in jeder Sprache deutsch: die Startskripte auf dem Stick lesen sie. Unten angeschnitten. */
 // Die Projektangabe im Fuß wird überall anklickbar (Seite und PDF).
 const GH = 'github.com/CasparDavi/klangtresor';
+// Broschüre: Bildschirmfassung liegt neben der Seite, die Druckfassung (≈ 70 MB je Sprache) als Anhang eines Vorab-Releases,
+// damit das Repo schlank bleibt. Neue Druckfassung = neues Release (nie überschreiben), dann nur hier den Namen ändern.
+const DRUCK_RELEASE = 'broschuere-2026-10-28';
+const PDF = {
+  bildschirm: (L) => `KlangTresor-Broschuere-${L}.pdf`,
+  druck: (L) => `https://${GH}/releases/download/${DRUCK_RELEASE}/KlangTresor-Broschuere-${L}-druck.pdf`,
+  text: { en: ['The brochure as PDF', 'for screens', 'for print'], de: ['Die Broschüre als PDF', 'für den Bildschirm', 'zum Drucken'], ru: ['Брошюра в PDF', 'для экрана', 'для печати'] },
+  mb: { bildschirm: 8, druck: 70 },
+};
 const ghLink = (s) => s.replace(GH, `<a class="gh" href="https://${GH}">${GH}</a>`);
 const KONSOLE = {
   de: ['KlangTresor läuft', 'Auf diesem Mac', 'Im Heimnetz (en0)', 'Katalog geladen: 268 Songs', '268 Songs im Katalog.', 'Beenden mit Strg+C'],

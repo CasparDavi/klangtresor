@@ -196,8 +196,8 @@ h1,h2,h3,h4{text-wrap:balance}
 .lieder .lied:hover .hoeren{color:var(--text)}
 @media screen and (max-width:1100px){.lieder .liste{grid-template-columns:1fr 1fr}}
 @media screen and (max-width:480px){.lieder .liste{gap:12px}.lieder .lied{padding:10px 10px 16px;border-radius:20px}.lieder b{font-size:16px}}
-footer{margin:40px 0 0;color:var(--leise);font-size:13px}
-footer a{color:var(--text);text-decoration:none;border-bottom:1px solid var(--leise)}
+footer{margin:40px 0 0;color:var(--leise);font-size:13px;line-height:1.9}
+footer a{color:var(--text);text-decoration:none;border-bottom:1px solid var(--leise);white-space:nowrap}
 footer a:hover{color:var(--akzent);border-color:var(--akzent)}
 @media screen and (max-width:820px){
   .raster{gap:14px}
@@ -328,7 +328,8 @@ function bauen(){
     h += `<section class="abschnitt lieder"><div class="kopf"><p class="augenbraue">${g.augenbraue[L]}</p><h2>${g.h[L]}</h2><p>${g.p[L]}</p></div><div class="liste">${
       g.liste.map(x => `<a class="lied" href="${x.url}" target="_blank" rel="noopener"><img src="${x.bild}?v=${BV}" alt=""><span class="stil">${x.stil[L]} · ${x.dauer}</span><b>${x.t}</b><span class="hoeren">${g.hoeren[L]} ↗</span></a>`).join('')}</div></section>`; }
   h += `<section class="grenzen"><h2>${S.grenzen.h[L]}</h2><ul>${S.grenzen.l[L].map(x => `<li>${x}</li>`).join('')}</ul></section>`;
-  h += `<footer>${ghLink(S.fuss[L])}${S.stern[L] ? `<br>${S.stern[L]}` : ''}</footer>`;
+  const pt = PDF.text[L], mb = (n) => (L === 'ru' ? n + ' МБ' : n + ' MB');
+  h += `<footer>${ghLink(S.fuss[L])}<br>${pt[0]}: <a href="${PDF.bildschirm(L)}">${pt[1]}</a> (${mb(PDF.mb.bildschirm)}) · <a href="${PDF.druck(L)}">${pt[2]}</a> (${mb(PDF.mb.druck)})${S.stern[L] ? `<br>${S.stern[L]}` : ''}</footer>`;
   document.getElementById('seite').innerHTML = h;
   einpassen(); fahrtMasse(); fahren();
   document.querySelectorAll('#seite video[autoplay]').forEach(anstossen);
