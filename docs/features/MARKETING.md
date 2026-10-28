@@ -1,7 +1,7 @@
 # KlangTresor – Marketingmaterial
 
 Stand 28.10.2026. Was es gibt, wie es entsteht, was beim Ändern zu beachten ist und welche Software dafür nötig ist.
-Gestaltungsregeln im Einzelnen: [STIL.md](STIL.md).
+Gestaltungsregeln im Einzelnen: [STIL.md](STIL.md). Allgemeine Regeln für solche Projekte: [LEITFADEN.md](LEITFADEN.md).
 
 ## 1. Was es gibt
 

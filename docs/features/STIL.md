@@ -3,6 +3,7 @@
 So entsteht `docs/features/index.html`. Alles hier ist mit Caspar_D am 27.10.2026 Kachel für Kachel
 erarbeitet worden; jede Regel hat ein Bild hinter sich, an dem sie gescheitert oder gelungen ist.
 Wer eine Kachel neu macht, liest zuerst hier — und zeigt das Ergebnis, bevor er weiterbaut.
+Die projektunabhängigen Regeln (Arbeitsweise, Web → PDF, Styleguide, Mehrsprachigkeit) stehen in [LEITFADEN.md](LEITFADEN.md).
 
 ## 1. Arbeitsweise
 
