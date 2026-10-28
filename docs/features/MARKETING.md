@@ -105,7 +105,7 @@ Nach dem Push etwa eine Minute warten, dann die Live-Seite prüfen (alle Bilder 
 - **Sonderzeichen** (z. B. ༺ ༻) kommen per Schrift-Ersatz (macOS: Kailasa). Auf anderen Systemen vor dem Druck prüfen.
 - **Konsole** zeigt die echte Startmeldung des Servers; die Zeile „KlangTresor auf http://localhost:8788“ ist in allen Sprachen deutsch.
 - **README:** GitHub erlaubt nur Bilder, keine eigenen Farben oder Schriften; bei hellem GitHub-Thema stehen die dunklen Bilder auf Weiß.
-- **Discord** zeigt Seiten nur als Link-Vorschau (Open-Graph-Zeilen im Seitenkopf – noch nicht eingebaut). Nur verlinken, was schon online ist.
+- **Discord** zeigt Seiten nur als Link-Vorschau (Open-Graph-Zeilen im Seitenkopf von index.html, fest Englisch, Bild img/og-en.jpg 1280 × 640). Nur verlinken, was schon online ist.
 
 ## 5. Externe Software
 
@@ -137,7 +137,7 @@ Der Sandkasten-Server ist KlangTresors eigener `server.js` – keine weitere Sof
 ## 7. Offen
 
 - Russische Bilder fehlen für Bühne, Tonstudio-Grafiken, Messdaten, Sternhimmel, Vorlagen (Russisch zeigt Englisch).
-- Open-Graph-Vorschau für Discord; Vorschaubild auf GitHub von Hand hochladen.
+- Vorschaubild auf GitHub von Hand hochladen (Settings → Social preview).
 - README zeigt vier Bilder (Geräte, Bühne, Sternhimmel, Glockenstuhl) – bei neuen Aufnahmen mitpflegen.
 - App: Hitparade beschriftet die Wochen auch russisch mit „KW“; ffmpeg verlangt auf Mac/Linux noch einen Handgriff.
 - Broschüre: Seiten 12, 14, 15, 19 sind nur zu rund zwei Dritteln gefüllt.
