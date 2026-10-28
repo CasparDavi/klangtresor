@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KlangTresor Brochure</title>
+<style>
+/* KlangTresor – Druckbroschüre A4. Titel und Kapitelöffner: Richtung „Magazin“ (Bild randabfallend, ins Schwarz verlaufend).
+   Innenseiten: Richtung „Swiss“ – Satzspiegel 174 × 264 mm (Ränder außen/innen 18, oben 15, unten 18 mm), 12 Spalten
+   à 10,833 mm, Steg 4 mm; Spalten 1–4 Marginalspalte (Nummer, Marke), Spalten 5–12 Textspalte (2/3).
+   Bilder über die volle Satzbreite mit Haarrahmen; Hochkant/Quadrat nur als Paar gleicher Höhe.
+   Jede Seite ist eine feste Box 210 × 297 mm (kein @page-Rand – Chrome malt ihn weiß). Grund schwarz, Text hell. */
+:root{
+  --bg:#000; --linie:#2e2e33; --haar:#3a3a40;
+  --text:#a8a59f; --grau:#8b8984; --leise:#75736f;   /* Stufe D (Caspar_D, 28.10.2026: „die dunkelste Variante“, der Text soll den Bildern nicht die Show stehlen): Überschrift 8,4 : 1 · Text 6,0 : 1 · Einzelheiten 4,4 : 1 auf Schwarz */ --akzent:#ff8a2a; --rot:#e31c79;
+  --ra:18mm; --ro:15mm; --ru:18mm; --steg:4mm;
+  --marg:55.333mm;   /* 4 Spalten + 3 Stege */
+}
+@page{size:210mm 297mm;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--text);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:9pt;line-height:13pt;
+  -webkit-font-smoothing:antialiased;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-variant-numeric:tabular-nums}
+p{margin:0}
+h2 .z{display:block;text-wrap:balance}
+.seite{width:210mm;height:297mm;position:relative;overflow:hidden;background:var(--bg);break-after:page;page-break-after:always}
+.seite:last-child{break-after:auto;page-break-after:auto}
+@media screen{body{background:#111}.seite{margin:10mm auto;outline:1px solid #222}}
+.satz{position:absolute;left:var(--ra);right:var(--ra);top:var(--ro);bottom:var(--ru);display:flex;flex-direction:column}
+.zeile{display:grid;grid-template-columns:var(--marg) 1fr;column-gap:var(--steg)}
+.rad{display:inline-block;flex:0 0 auto}   /* Tresorrad als eingebettetes SVG (CSS-Maske druckte mit Kastenrand) */
+
+/* Kolumnentitel (Innenseiten): Haarlinie, Marke · Kapitel · Seitenzahl */
+.kolumne{display:grid;grid-template-columns:var(--marg) 1fr auto;column-gap:var(--steg);flex:0 0 auto;
+  font-size:6.5pt;line-height:8pt;letter-spacing:.08em;text-transform:uppercase;color:var(--leise);
+  padding-bottom:2mm;border-bottom:.3pt solid var(--haar);margin-bottom:4.5mm}
+.kolumne b{color:var(--akzent);font-weight:500;margin-right:2.2mm}
+.kolumne .nr{color:var(--text)}
+
+/* Kapitelkopf (Swiss): große Ziffer, darunter die Stationen des Kapitels in der Marginalspalte */
+.kopf{margin-bottom:0}
+.kopf .ziffer{font-size:96pt;line-height:78pt;font-weight:200;letter-spacing:-.04em;color:var(--akzent);margin:-1.5mm 0 0}
+.kopf .aug{font-size:7pt;line-height:9pt;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--akzent);margin:0 0 4mm}
+.kopf h2{text-wrap:balance;font-size:30pt;line-height:32pt;font-weight:700;letter-spacing:-.015em;margin:0 0 5mm}
+.kopf .lead{font-size:12pt;line-height:16pt;color:var(--grau);text-wrap:pretty}
+.stationen{margin-top:6mm;font-size:6.5pt;line-height:9.5pt;color:var(--leise);border-top:.3pt solid var(--haar);padding-top:1.6mm;width:48mm}
+.stationen div{display:grid;grid-template-columns:9mm 1fr auto;column-gap:1.5mm}
+.stationen .n{color:var(--akzent);font-weight:500}
+.stationen .s{color:var(--grau)}
+
+/* Abbildungen: volle Satzbreite, Haarrahmen; Paare gleicher Höhe */
+figure{margin:0;flex:0 0 auto}
+.rahmen{position:relative;overflow:hidden;background:#000}
+.rahmen img{display:block;width:100%;height:auto}
+.rahmen::after{content:"";position:absolute;inset:0;border:.4pt solid var(--linie);pointer-events:none}
+.paar{display:flex;gap:var(--steg);flex:0 0 auto}
+.paar figure{flex-basis:0;min-width:0}
+.film{flex:0 0 auto;display:grid;row-gap:var(--steg)}
+.rahmen{position:relative}
+.streifen{background:#1c1a18;padding:1.1mm 0}
+.streifen .loch{display:block;width:100%;height:2mm}
+.streifen .loch rect{fill:#000}
+.streifen .bilder{display:grid;grid-template-columns:repeat(5,1fr);gap:1.4mm;padding:1.1mm 1.4mm}
+.streifen img{display:block;width:100%;height:auto;outline:.3pt solid #000}
+
+/* Textblock einer Kachel: links Nummer + Marke, rechts Überschrift, Satz, alle Einzelheiten */
+/* EINE Abstandsregel für alle Innenseiten (B = Abbildung: Bild, Paar, Tafel, Konsole, Schaubild, Filmstreifen):
+   Abbildung → ihr Text 3 mm · Text → nächste Abbildung 9 mm · Text → Text 6 mm · Kapitelkopf → Abbildung 9 mm ·
+   Abbildung → Abbildung 4 mm (ein Steg). Das erste Element unter dem Kolumnentitel hat keinen Abstand. */
+:root{--g-bt:3mm; --g-tb:9mm; --g-tt:6mm; --g-kb:9mm; --g-bb:4mm}
+.block{flex:0 0 auto}
+.satz > *{margin-top:0}
+.satz > .block + .block{margin-top:var(--g-tt)}
+.satz > .B + .block{margin-top:var(--g-bt)}
+.satz > .block + .B{margin-top:var(--g-tb)}
+.satz > .B + .B{margin-top:var(--g-bb)}
+.satz > .kopf + *{margin-top:var(--g-kb)}
+/* Erste Zeile: Bildoberkante und die Oberkante der ersten Schrift (Ziffern, Versalien) stehen auf derselben Linie unter dem
+   Kolumnentitel. Schrift hat über den Versalien Luft im Zeilenkasten – die wird hier abgezogen (gemessen am gedruckten PDF). */
+.satz > .kolumne + .block{margin-top:-.5mm}
+.satz > .kolumne + .kopf{margin-top:-.32mm}
+.auftakt .satz > .kolumne + .zeile{margin-top:-1.22mm}
+.auftakt .satz > .zeile + figure{margin-top:var(--g-tb)}
+.marg .n{font-size:13pt;line-height:14pt;font-weight:300;color:var(--akzent);display:block}
+.marg .k{font-size:6.5pt;line-height:8pt;letter-spacing:.1em;text-transform:uppercase;color:var(--leise);display:block;margin-top:1mm}
+.marg .verweis{font-size:6.5pt;line-height:8pt;color:var(--akzent);display:block;margin-top:1.6mm;letter-spacing:.04em}
+.block h3{font-size:12pt;line-height:14.5pt;font-weight:700;margin:0 0 1.2mm;letter-spacing:-.005em}
+.block p{color:var(--grau);text-wrap:pretty;font-size:10pt;line-height:14pt}
+.block p b{color:var(--text);font-weight:500}
+.block ul{list-style:none;margin:2.4mm 0 0;padding:0;font-size:8.5pt;line-height:11.5pt;color:var(--leise)}
+.block li{position:relative;padding-left:3.2mm;margin:0 0 .8mm;text-wrap:pretty}
+.block li::before{content:"";position:absolute;left:0;top:4.1pt;width:1.6mm;height:.5pt;background:var(--akzent)}
+.block li:last-child{margin-bottom:0}
+.block li b{color:var(--text);font-weight:500}
+.block li i{font-style:normal}
+.block .zahl{display:flex;align-items:baseline;gap:2.5mm;margin:1.8mm 0 0;font-size:18pt;line-height:20pt;font-weight:700}
+.block .zahl small{font-size:8pt;line-height:10pt;font-weight:500;color:var(--leise)}
+.block.ohne{border-top:.3pt solid var(--haar);padding-top:3mm}
+
+/* Typografische Abbildungen (auf der Webseite HTML statt Bild): Konsole, Schaubild, Listen */
+.konsole{border:.4pt solid #3a3a40;background:#0a0a0b}
+.konsole .leiste{display:flex;align-items:center;gap:1.8mm;padding:2.4mm 3mm;background:#18181b;border-bottom:.4pt solid #3a3a40}
+.konsole .leiste i{width:2.6mm;height:2.6mm;border-radius:50%;background:#3a3a3e}
+.konsole .leiste span{flex:1;text-align:center;font-size:8pt;color:var(--leise);margin-right:12mm}
+.konsole pre{margin:0;padding:6mm 8mm 7mm;font:10.5pt/16pt Menlo,"SF Mono",Consolas,monospace;color:var(--grau);white-space:pre}
+.konsole pre b{color:var(--akzent);font-weight:600}
+.konsole pre u{text-decoration:none;color:var(--text)}
+.schaubild{border:.4pt solid var(--linie);display:grid;grid-template-columns:1fr auto 1fr;column-gap:5mm;align-items:center;padding:8mm 7mm 9mm}
+.schaubild .l,.schaubild .r{align-self:start}
+.schaubild .sk{font-size:7.5pt;line-height:9pt;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--akzent);margin:0 0 3mm}
+.schaubild .l{text-align:right}
+.schaubild .sl div{font-size:10.5pt;line-height:13pt;color:var(--text);margin:0 0 2.6mm;text-wrap:balance}
+.schaubild .sl i{font-style:normal;color:var(--leise)}
+.schaubild .sm{margin-top:9mm}
+.schaubild .sm{display:grid;grid-template-columns:12mm auto 12mm;align-items:center;row-gap:2.5mm}
+.schaubild .sm i{height:.6pt;background:linear-gradient(90deg,transparent,var(--rot))}
+.schaubild .sm i:last-of-type{background:linear-gradient(90deg,var(--rot),transparent)}
+.schaubild .knopf{width:22mm;height:22mm;border-radius:50%;border:.8pt solid #e31c79aa;background:#e31c7922;display:grid;place-items:center}
+.schaubild .knopf svg{width:10mm;height:10mm;fill:var(--rot)}
+.schaubild .sm b{grid-column:2;text-align:center;color:#ff7fb3;font-size:8.5pt;font-weight:600}
+.tafel{flex:0 0 auto;border-bottom:.3pt solid var(--haar)}
+.tafel .zeile{border-top:.3pt solid var(--haar);padding:1.8mm 0 1.9mm}
+.tafel .tk{font-size:6.5pt;line-height:10pt;letter-spacing:.1em;text-transform:uppercase;color:var(--akzent);font-weight:500}
+.tafel .tw{font-size:8.5pt;line-height:12pt;color:var(--text);text-wrap:pretty}
+.tafel .tw span{color:var(--akzent);padding:0 .35em}
+
+/* 1 · Titel (Magazin): randabfallend, Name unten im Verlauf */
+.titel .bild{position:absolute;inset:0}
+.titel .bild img{width:100%;height:100%;object-fit:cover;display:block}
+.titel .schleier{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.5) 0,rgba(0,0,0,.18) 26%,rgba(0,0,0,0) 34%,rgba(0,0,0,0) 46%,rgba(0,0,0,.78) 70%,#000 92%)}
+.titel .tkopf{position:absolute;left:var(--ra);right:var(--ra);bottom:26mm}
+.titel .marke{display:flex;align-items:baseline;gap:4mm;font-size:58pt;line-height:1;font-weight:700;letter-spacing:-.025em;margin:0 0 5mm;color:var(--akzent)}
+.titel .marke .rad,.schluss .mitte .rad{width:.714em;height:.714em;width:1cap;height:1cap}   /* Ring = Versalhöhe, steht auf der Schriftlinie (Caspar_D, 28.10.2026) */
+.titel .spruch{font-size:24pt;line-height:28pt;font-weight:700;letter-spacing:-.01em;color:var(--text)}
+.titel .fusszeile{position:absolute;left:var(--ra);right:var(--ra);bottom:12mm;font-size:7pt;letter-spacing:.06em;color:#8e8e93}
+
+/* 2 · Kapitelöffner (Magazin): Szene oben randabfallend, weich ins Schwarz; Kopf darunter; Stationen unten */
+.oeffner .bild{position:absolute;left:0;top:0;width:210mm}
+.oeffner .bild img{width:100%;height:100%;object-fit:cover;display:block}
+.oeffner .bild::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 58%,rgba(0,0,0,.72) 84%,#000 100%)}
+.oeffner .okopf{position:absolute;left:var(--ra);right:var(--ra)}
+.oeffner .aug{font-size:8pt;line-height:10pt;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--akzent);margin:0 0 4mm}
+.oeffner .aug b{font-weight:500;margin-right:2.5mm}
+.oeffner h2{font-size:38pt;line-height:41pt;font-weight:700;letter-spacing:-.02em;margin:0 0 5mm;text-wrap:balance;width:160mm}
+.oeffner .lead{font-size:13pt;line-height:18pt;color:var(--grau);width:122mm;text-wrap:pretty}
+.oeffner .oleiste{position:absolute;left:var(--ra);right:var(--ra);bottom:var(--ru);display:grid;column-gap:var(--steg);border-top:.3pt solid var(--haar)}
+.oeffner .oleiste div{padding-top:2mm;font-size:7pt;line-height:9pt;color:var(--grau);position:relative}
+.oeffner .oleiste div::before{content:"";position:absolute;left:0;top:-.6pt;height:1.2pt;width:100%;background:var(--akzent)}
+.oeffner .oleiste .n{display:block;color:var(--akzent);font-weight:500;letter-spacing:.04em}
+.oeffner .oleiste .s{display:block;color:var(--leise);font-size:6.5pt}
+
+/* 3 · Auftakt (S. 2): Leitsatz, Titelband, Inhalt */
+.auftakt .leit{font-size:15pt;line-height:20pt;color:var(--text);text-wrap:pretty}
+.auftakt .ih{font-size:7pt;line-height:9pt;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--akzent);margin:0 0 2mm}
+.verzeichnis{margin-top:9mm}
+/* Inhalt auf Textbreite: Nummer | Kapitel (Augenbraue über der Titelzeile) | Seite – Seitenzahl auf der Grundlinie der Titelzeile */
+.verz{display:grid;grid-template-columns:11mm 1fr auto;column-gap:3mm;align-items:baseline;border-top:.3pt solid var(--haar);padding:1.5mm 0 1.7mm}
+.verz .vn{grid-row:1 / span 2;align-self:end;font-size:15pt;line-height:16pt;font-weight:300;color:var(--akzent)}
+.verz .va{grid-column:2 / span 2;font-size:6.5pt;line-height:8pt;letter-spacing:.1em;text-transform:uppercase;color:var(--leise);margin-bottom:.6mm}
+.verz .vh{grid-column:2;font-size:10.5pt;line-height:13pt;font-weight:700}
+.verz .vs{grid-column:3;font-size:10.5pt;line-height:13pt;color:var(--grau)}
+.verzliste{border-bottom:.3pt solid var(--haar)}
+
+/* 4 · Rückseite */
+.schluss .mitte{position:absolute;left:0;right:0;top:118mm;display:flex;align-items:baseline;justify-content:center;gap:3.5mm;font-size:30pt;font-weight:700;letter-spacing:-.02em;color:var(--akzent)}
+.schluss .unten{position:absolute;left:var(--ra);right:var(--ra);bottom:var(--ru);font-size:7.5pt;line-height:11pt;color:var(--leise);border-top:.3pt solid var(--haar);padding-top:2.5mm}
+.schluss .unten p + p{margin-top:1.5mm}
+</style>
+</head>
+<body>
+<div id="buch"></div>
+<script src="inhalt.js"></script>
+<script>
+/* EINE Textquelle: alle Texte, Bilder und Listen kommen aus inhalt.js (S, BILDER, FORMAT, NUR_TEXT, konsole).
+   Hier steht nur der Seitenplan (PLAN), die Rahmenwörter (RAHMEN) und die Gestaltung. Sprache: ?lang=en|de|ru. */
+
+/* Rahmenwörter, die es auf der Webseite nicht gibt */
+const RAHMEN = {
+  seite:  {en:'p.',       de:'S.',     ru:'с.'},
+  inhalt: {en:'Contents', de:'Inhalt', ru:'Содержание'},
+  abb:    {en:'Fig.',     de:'Abb.',   ru:'Рис.'}
+};
+
+/* Druckfassungen der Bilder: Pfad des Webbildes → Pfad der Druckdatei (höhere Auflösung). Leer = Webbild drucken.
+   Beispiel: 'img/abend.webp': 'img/druck/abend.jpg' */
+/* Innen ein anderes Bild als auf dem Titel: Tarja wollte sich „reinzecken“ (28.10.2026). Bildschirmauflösung genügt; Oberteil von Lila auf Rosé umgestimmt (werkzeug/tarja/lila.cjs, Farbton 345°, Sättigung ×1,15). */
+/* Nur in der Tarja-Edition (?tarja), einer eigenen Kopie der Broschüre; die normale Broschüre bleibt ohne (Caspar_D, 28.10.2026). */
+const TARJA = new URLSearchParams(location.search).has('tarja');
+const INNENBILD = TARJA ? { abend: { bild: 'img/tarja.webp', format: '2.3/1', pos: '58% 40%' } } : {};
+
+const DRUCKBILD = new URLSearchParams(location.search).has('druck') ? {
+  /* Druckerei-Fassung (?druck): Szenen mit Real-ESRGAN x4 hochgerechnet, App-Bilder danach scharf eingesetzt
+     (werkzeug/druck/LIESMICH.md). Die Dateien liegen nur lokal (img/druck/ ist nicht im Repo). */
+  'img/abend.webp': 'img/druck/abend.jpg', 'img/auto.webp': 'img/druck/auto.jpg',
+  'img/geraete-de.webp': 'img/druck/geraete-de.jpg', 'img/geraete-en.webp': 'img/druck/geraete-en.jpg',
+  'img/morgenlauf-de.webp': 'img/druck/morgenlauf-de.jpg', 'img/morgenlauf-en.webp': 'img/druck/morgenlauf-en.jpg', 'img/morgenlauf-ru.webp': 'img/druck/morgenlauf-ru.jpg',
+  'img/zimmer-de.webp': 'img/druck/zimmer-de.jpg', 'img/zimmer-en.webp': 'img/druck/zimmer-en.jpg',
+  'img/tanz-de.webp': 'img/druck/tanz.jpg', 'img/tanz-en.webp': 'img/druck/tanz.jpg'
+} : {};
+
+/* Bildausschnitt für den Druck, je Bilddatei: [links, oben, rechts, unten] als Anteil. Schnitte liegen in Lücken
+   (hier: unter einer Cover-Reihe, ohne Spielerleiste – die Coverwand läuft flächig weiter; RU hat größere Cover, darum nur eine Reihe). */
+const SCHNITT = {
+  'img/uebersicht-en.webp': [0, 0, 1, 735 / 1138],
+  'img/uebersicht-de.webp': [0, 0, 1, 735 / 1138],
+  'img/uebersicht-ru.webp': [0, 0, 1, 522 / 1138]
+};
+
+/* Standbilder für den Effektclip (Druck kann kein Video): aus img/okkult-clip.mp4 bei 0,6 · 1,25 · 2,2 · 4,4 · 7,6 · 11 s, als 3 × 2-Folge */
+const STANDBILDER = { effektclip: Array.from({ length: 15 }, (_, i) => `img/okkult-still-${i + 1}.webp`) };
+
+/* Seitenplan. k = Kapitel (Index in S.abschnitte). Inhalt i in Reihenfolge:
+   'id'          Abbildung der Kachel (Bild, Konsole, Schaubild, Liste, Standbilder) + ihr Textblock
+   '-id'         nur der Textblock; die Abbildung steht anderswo (Öffner, Titel) – Verweis in der Marginalspalte
+   ['a','b']     Bildpaar gleicher Höhe über die Satzbreite, Textblöcke darunter
+   {bild,texte}  ein Bild, mehrere Textblöcke darunter (EQ und Glockenstuhl zeigen dieselbe Kurve)
+   'id!'         nur die Abbildung; der Textblock folgt auf der nächsten Seite als '-id'
+   '#grenzen'    „Gut zu wissen“
+   Öffner: {typ:'oeffner', k, bild (Kachel-ID der Szene), pos (Bildausschnitt), h (Bildhöhe mm)} */
+const PLAN = [
+  {typ:'titel', bild:'abend', pos:'58% 50%'},
+  {typ:'auftakt'},
+  {typ:'oeffner', k:0, bild:'leser', pos:'100% 60%', h:178},
+  {k:0, i:['server', '-leser']},
+  {typ:'oeffner', k:1, bild:'morgenlauf', pos:'58% 50%', h:178},
+  {k:1, i:['-morgenlauf', 'schaubild', '#grenzen']},
+  {k:2, i:['uebersicht', 'filtern']},
+  {k:3, i:['buehne!']},
+  {k:3, i:['-buehne', 'visualisierung']},
+  {k:4, i:[{bild:'glockenstuhl', texte:['eq', 'glockenstuhl']}]},
+  {k:4, i:['kompressor', 'boombox', 'einmessen']},
+  {k:5, i:['klangraum']},
+  {k:5, i:['messdaten', 'messliste']},
+  {k:6, i:[['groupie', 'nachbar']]},
+  {k:6, i:['profil', 'gemein']},
+  {typ:'oeffner', k:7, bild:'zimmer', pos:'40% 50%', h:178},
+  {k:7, i:['-zimmer', 'klangschaum']},
+  {k:7, i:[['papierdetail', 'papier', 'skizze'], 'vorlagen']},
+  {k:8, i:[['okkultbild', 'okkulttiefe']]},
+  {k:8, i:['effektclip', 'rezept']},
+  {typ:'oeffner', k:9, bild:'fernseher', pos:'30% 50%', h:178},
+  {k:9, i:[TARJA ? 'abend' : '-abend', 'handys', '-fernseher']},
+  {k:10, i:['sichern', 'offen']},
+  {typ:'schluss'}
+];
+
+const q = new URLSearchParams(location.search);
+const L = ['en', 'de', 'ru'].includes(q.get('lang')) ? q.get('lang') : 'en';
+const NUR = q.get('seiten') ? q.get('seiten').split(',').map(Number) : null;
+const RAD = `<svg class="rad" viewBox="8 8 48 48" aria-hidden="true"><g transform="translate(32 32)" stroke="#ff8a2a" stroke-width="4" stroke-linecap="round" fill="none"><circle r="22"/><g transform="rotate(15)"><path d="M-22 0H22M0-22V22"/></g></g><circle cx="32" cy="32" r="5" fill="#ff8a2a"/></svg>`;
+const zwei = n => String(n).padStart(2, '0');
+const t = o => (o && (o[L] ?? o.en)) ?? '';
+const ohneBr = s => s.replace(/<br>/g, ' ');
+/* Überschrift mit <br>: jede Zeile für sich ausgleichen (sonst bleibt ein einzelnes Wort als letzte Zeile stehen) */
+const zeilen = s => s.split('<br>').map(x => `<span class="z">${x}</span>`).join('');
+
+/* Verzeichnis: Kachel-ID → Kachel, Kapitel, Nummer im Kapitel, Seite des Textblocks, Seite der Abbildung */
+const VZ = {};
+S.abschnitte.forEach((a, ai) => a.kacheln.forEach((k, ni) => VZ[k.id] = { k, a: ai, n: ni + 1 }));
+const ids = e => typeof e === 'string' ? [e] : Array.isArray(e) ? e : e.texte ? [...e.texte, e.bild] : [];
+PLAN.forEach((p, pi) => {
+  if (p.typ === 'oeffner') { VZ[p.bild].bildSeite = pi + 1; return; }
+  if (p.typ === 'titel') { VZ[p.bild].bildSeite = pi + 1; return; }
+  (p.i || []).forEach(e => {
+    if (typeof e === 'string' && e[0] === '#') return;
+    if (typeof e === 'string' && e[0] === '-') { VZ[e.slice(1)].seite = pi + 1; return; }
+    if (typeof e === 'string' && e.endsWith('!')) { VZ[e.slice(0, -1)].bildSeite = pi + 1; return; }
+    if (e.texte) { e.texte.forEach(id => VZ[id].seite = pi + 1); VZ[e.bild].bildSeite = pi + 1; return; }
+    ids(e).forEach(id => { VZ[id].seite = pi + 1; VZ[id].bildSeite = pi + 1; });
+  });
+});
+const FEHLT = Object.keys(VZ).filter(id => !VZ[id].seite);
+const nummer = id => `${zwei(VZ[id].a + 1)}.${VZ[id].n}`;
+const ersteSeite = ai => PLAN.findIndex(p => p.k === ai) + 1;
+
+function quelle(id){
+  let b = BILDER[id];
+  if (b && b.sprachen) b = b.sprachen[L] || b.sprachen.en;
+  return b;
+}
+function bildUrl(id){
+  const b = quelle(id);
+  if (typeof b !== 'string' || /\.mp4/.test(b)) return null;
+  const pfad = b.split('?')[0];
+  return DRUCKBILD[pfad] || b;
+}
+const druck = u => DRUCKBILD[u] || u;
+
+/* Abbildung einer Kachel */
+function figur(id){
+  if (STANDBILDER[id]){   /* Filmstreifen: dunkle Filmbasis, Perforation oben und unten, fünf Bilder je Streifen */
+    const n = 38, loch = `<svg class="loch" viewBox="0 0 174 2" preserveAspectRatio="none" aria-hidden="true">${Array.from({ length: n }, (_, i) =>
+      `<rect x="${(1.15 + i * 4.55).toFixed(2)}" y="0.25" width="2.3" height="1.5" rx="0.3"/>`).join('')}</svg>`;
+    const us = STANDBILDER[id], reihen = [];
+    for (let i = 0; i < us.length; i += 5) reihen.push(us.slice(i, i + 5));   /* fünf je Streifen, drei Streifen (Caspar_D, 28.10.2026) */
+    return `<div class="film B" data-fig="${id}">${reihen.map(r => `<div class="streifen">${loch}<div class="bilder">${
+      r.map(u => `<img src="${druck(u)}" alt="">`).join('')}</div>${loch}</div>`).join('')}</div>`;
+  }
+  const b = quelle(id);
+  if (b && b.konsole) return `<figure class="konsole B" data-fig="${id}"><div class="leiste"><i></i><i></i><i></i><span>${t(S.kopf.marke)}</span></div><pre>${
+    konsole(L).map(z => z.replace(/^  (KlangTresor (läuft|is running|работает))$/, '  <b>$1</b>').replace(/http:\/\/[^ ]+/g, '<u>$&</u>')).join('\n')}</pre></figure>`;
+  if (b && b.schaubild){ const g = b.schaubild;
+    return `<figure class="schaubild B" data-fig="${id}"><div class="l"><p class="sk">${t(g.links)}</p><div class="sl">${t(g.von).map(x => `<div>${x}</div>`).join('')}</div></div>`
+      + `<div class="sm"><i></i><div class="knopf"><svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></div><i></i><b>${t(g.knopf)}</b></div>`
+      + `<div class="r"><p class="sk">${t(g.rechts)}</p><div class="sl">${t(g.bei).map(x => `<div>${x}</div>`).join('')}</div></div></figure>`; }
+  if (b && b.liste) return `<div class="tafel B" data-fig="${id}">${b.liste.map(g =>
+    `<div class="zeile"><div class="tk">${t(g.k)}</div><div class="tw">${t(g.w).join('<span>·</span>')}</div></div>`).join('')}</div>`;
+  if (INNENBILD[id]){ const ib = INNENBILD[id];
+    return `<figure class="B" data-fig="${id}"><div class="rahmen" style="aspect-ratio:${ib.format}"><img src="${druck(ib.bild)}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:${ib.pos}"></div></figure>`; }
+  const u = bildUrl(id); if (!u) return '';
+  const sn = SCHNITT[quelle(id).split('?')[0]];
+  return `<figure class="B" data-fig="${id}"><div class="rahmen"${sn ? ` data-schnitt="${sn.join(',')}"` : ''}><img src="${u}" alt=""></div></figure>`;
+}
+/* Textblock einer Kachel; verweis = Seite, auf der ihre Abbildung steht */
+function block(id, verweis){
+  const { k } = VZ[id];
+  const zahl = k.zahl ? `<span class="zahl">${k.zahl.n}<small>${t(k.zahl.t)}</small></span>` : '';
+  const vw = verweis ? `<span class="verweis">${RAHMEN.abb[L]} ${RAHMEN.seite[L]} ${zwei(verweis)}</span>` : '';
+  return `<div class="block zeile${NUR_TEXT.has(id) ? ' ohne' : ''}" data-id="${id}">
+    <div class="marg"><span class="n">${nummer(id)}</span><span class="k">${t(k.klein)}</span>${vw}</div>
+    <div><h3>${t(k.h)}</h3><p>${t(k.p)}</p>${zahl}<ul>${t(k.d).map(x => `<li>${x}</li>`).join('')}</ul></div></div>`;
+}
+function grenzen(){
+  return `<div class="block zeile ohne"><div class="marg"><span class="n">!</span></div>
+    <div><h3>${t(S.grenzen.h)}</h3><ul>${t(S.grenzen.l).map(x => `<li>${x}</li>`).join('')}</ul></div></div>`;
+}
+function stationen(ai){
+  return S.abschnitte[ai].kacheln.map(k => `<div><span class="n">${nummer(k.id)}</span><span>${t(k.klein)}</span><span class="s">${RAHMEN.seite[L]} ${zwei(VZ[k.id].seite)}</span></div>`).join('');
+}
+function kolumne(ai, nr){
+  const a = ai === undefined ? null : S.abschnitte[ai];
+  return `<div class="kolumne"><span>${t(S.kopf.marke)}</span><span>${a ? `<b>${zwei(ai + 1)}</b>${t(a.augenbraue)}` : ''}</span><span class="nr">${zwei(nr)}</span></div>`;
+}
+function kopf(ai){
+  const a = S.abschnitte[ai];
+  return `<div class="kopf zeile"><div><p class="ziffer">${zwei(ai + 1)}</p><div class="stationen">${stationen(ai)}</div></div>
+    <div><p class="aug">${t(a.augenbraue)}</p><h2>${zeilen(t(a.h))}</h2><p class="lead">${t(a.p)}</p></div></div>`;
+}
+
+function innen(p, nr){
+  const hatOeffner = PLAN.some(x => x.typ === 'oeffner' && x.k === p.k);
+  let h = kolumne(p.k, nr) + (ersteSeite(p.k) === nr && !hatOeffner ? kopf(p.k) : '');
+  for (const e of p.i){
+    if (Array.isArray(e)) h += `<div class="paar B">${e.map(figur).join('')}</div>` + e.map(id => block(id)).join('');
+    else if (e.texte) h += figur(e.bild) + e.texte.map(id => block(id)).join('');
+    else if (e === '#grenzen') h += grenzen();
+    else if (e[0] === '-') h += block(e.slice(1), VZ[e.slice(1)].bildSeite === nr ? 0 : VZ[e.slice(1)].bildSeite);
+    else if (e.endsWith('!')) h += figur(e.slice(0, -1));
+    else h += figur(e) + block(e);
+  }
+  return `<section class="seite innen" data-nr="${nr}"><div class="satz">${h}</div></section>`;
+}
+function oeffner(p, nr){
+  const a = S.abschnitte[p.k], H = p.h || 178, n = a.kacheln.length;
+  return `<section class="seite oeffner" data-nr="${nr}">
+    <div class="bild" style="height:${H}mm"><img src="${bildUrl(p.bild)}" style="object-position:${p.pos || '50% 50%'}" alt=""></div>
+    <div class="okopf" style="top:${H - 16}mm"><p class="aug"><b>${zwei(p.k + 1)}</b>${t(a.augenbraue)}</p><h2>${zeilen(t(a.h))}</h2><p class="lead">${t(a.p)}</p></div>
+    <div class="oleiste" style="grid-template-columns:repeat(${Math.max(n, 3)},1fr)">${a.kacheln.map(k =>
+      `<div><span class="n">${nummer(k.id)}</span>${t(k.klein)}<span class="s">${RAHMEN.seite[L]} ${zwei(VZ[k.id].seite)}</span></div>`).join('')}</div>
+  </section>`;
+}
+function titel(p){
+  return `<section class="seite titel" data-nr="1"><div class="bild"><img src="${bildUrl(p.bild)}" style="object-position:${p.pos}" alt=""></div><div class="schleier"></div>
+    <div class="tkopf"><h1 class="marke">${RAD}${t(S.kopf.marke)}</h1><p class="spruch">${t(S.kopf.h)}</p></div>
+    <div class="fusszeile">${t(S.fuss).split(' · ').pop()}</div></section>`;
+}
+function auftakt(nr){
+  const verz = S.abschnitte.map((a, ai) => `<div class="verz"><span class="vn">${zwei(ai + 1)}</span><span class="va">${t(a.augenbraue)}</span>
+    <span class="vh">${ohneBr(t(a.h))}</span><span class="vs">${zwei(ersteSeite(ai))}</span></div>`).join('');
+  return `<section class="seite innen auftakt" data-nr="${nr}"><div class="satz">${kolumne(undefined, nr)}
+    <div class="zeile"><div></div><p class="leit">${t(S.kopf.p)}</p></div>
+    <figure><div class="rahmen"><img src="${bildUrl('titel')}" alt=""></div></figure>
+    <div class="zeile verzeichnis"><div></div><div><p class="ih">${RAHMEN.inhalt[L]}</p><div class="verzliste">${verz}</div></div></div></div></section>`;
+}
+function schluss(nr){
+  return `<section class="seite schluss" data-nr="${nr}"><div class="mitte">${RAD}${t(S.kopf.marke)}</div>
+    <div class="unten"><p>${t(S.fuss)}</p>${t(S.stern) ? `<p>${t(S.stern)}</p>` : ''}</div></section>`;
+}
+
+document.documentElement.lang = L;
+let html = '';
+PLAN.forEach((p, pi) => {
+  const nr = pi + 1; if (NUR && !NUR.includes(nr)) return;
+  if (p.typ === 'titel') html += titel(p);
+  else if (p.typ === 'auftakt') html += auftakt(nr);
+  else if (p.typ === 'oeffner') html += oeffner(p, nr);
+  else if (p.typ === 'schluss') html += schluss(nr);
+  else html += innen(p, nr);
+});
+document.getElementById('buch').innerHTML = html;
+
+/* Nach dem Laden: Paare auf gleiche Höhe (Breite ∝ Seitenverhältnis), dann jede Seite messen.
+   BERICHT: je Seite Füllgrad (Unterkante des letzten Elements / Satzspiegelhöhe) und Überlauf in mm. Abgeschnitten wird nichts. */
+(async () => {
+  await Promise.all([...document.images].map(i => i.complete ? (i.decode ? i.decode().catch(() => {}) : 0) : new Promise(r => { i.onload = i.onerror = r; })));
+  const kaputt = [...document.images].filter(i => !i.naturalWidth).map(i => i.getAttribute('src'));
+  document.querySelectorAll('[data-schnitt]').forEach(r => { const i = r.querySelector('img'), [x0, y0, x1, y1] = r.dataset.schnitt.split(',').map(Number);
+    r.style.aspectRatio = (i.naturalWidth * (x1 - x0)) / (i.naturalHeight * (y1 - y0));
+    i.style.width = 100 / (x1 - x0) + '%'; i.style.marginLeft = -x0 / (x1 - x0) * 100 + '%';
+    i.style.marginTop = -y0 * i.naturalHeight / i.naturalWidth / (x1 - x0) * 100 + '%'; });
+  document.querySelectorAll('.paar figure').forEach(f => { const i = f.querySelector('img'); f.style.flexGrow = i.naturalWidth / i.naturalHeight; });
+  const mm = 96 / 25.4, bericht = [];
+  for (const s of document.querySelectorAll('.seite')){
+    const nr = +s.dataset.nr, typ = [...s.classList].find(c => c !== 'seite');
+    let fuell = null, ueber = 0;
+    const satz = s.querySelector('.satz');
+    if (satz){
+      const r = satz.getBoundingClientRect(); let unten = r.top;
+      for (const c of satz.children) unten = Math.max(unten, c.getBoundingClientRect().bottom);
+      fuell = Math.round((unten - r.top) / r.height * 100); ueber = Math.max(0, (unten - r.bottom) / mm);
+    } else if (typ === 'oeffner'){
+      const k = s.querySelector('.okopf').getBoundingClientRect(), l = s.querySelector('.oleiste').getBoundingClientRect();
+      ueber = Math.max(0, (k.bottom + 6 * mm - l.top) / mm);
+    }
+    /* Abstände zwischen den Elementen (Unterkante → Oberkante, mm), je Art des Übergangs */
+    const abst = [];
+    if (satz && typ === 'innen' && !s.classList.contains('auftakt')){
+      const art = e => e.classList.contains('kolumne') ? 'kolumne' : e.classList.contains('kopf') ? 'kopf' : e.classList.contains('block') ? 'text' : e.classList.contains('B') ? 'bild' : '?';
+      const k = [...satz.children];
+      for (let i = 1; i < k.length; i++) abst.push(`${art(k[i - 1])}→${art(k[i])} ${((k[i].getBoundingClientRect().top - k[i - 1].getBoundingClientRect().bottom) / mm).toFixed(2)}`);
+    }
+    bericht.push({ nr, typ, fuell, ueber: Math.round(ueber * 10) / 10, abst });
+  }
+  window.BERICHT = { lang: L, seiten: PLAN.length, fehlt: FEHLT, kaputt, seitenListe: bericht };
+  window.FERTIG = true;
+})();
+</script>
+</body>
+</html>
