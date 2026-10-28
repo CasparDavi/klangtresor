@@ -11,8 +11,9 @@ Einstellen aufeinander hat gedauert. Die Regeln hier sollen diese Zeit beim näc
 
 ## A. Arbeitsweise
 
-1. **Erst die Vorlage, dann der Bau.** Ein Stilvorbild benennen und zeigen (hier: Apples Feature-Zusammenfassungen
-   nach Keynotes). Ohne Vorbild wird jede Kachel einzeln verhandelt.
+1. **Erst die Vorlage, dann der Bau.** Ein Stilvorbild benennen und zeigen (hier: Apples Feature-Zusammenfassung
+   nach einem Event, siehe Teil C). Das Vorbild ist die Primärquelle; eigene Regeln leiten sich davon ab.
+   Ohne Vorbild wird jede Kachel einzeln verhandelt.
 2. **Die Gliederung kommt vom Nutzer her, nicht von der Software.** Abschnitte nach dem, was jemand tut
    (Holen, Hören, Entspannen, Gestalten …), nicht nach Modulen. Wichtiges vor Neuem, nichts Beta, nichts Selbstverständliches.
 3. **Von oben nach unten, ein Abschnitt nach dem anderen.** Ein Abschnitt fertig, gezeigt, abgenommen – dann der nächste.
@@ -64,12 +65,32 @@ einen Schriftzug, der als Kasten druckte. Eine Broschüre ist ein **eigenes Layo
    die im PDF da waren (Fehlalarm). Links im PDF prüfen (`/URI`) – auch nach der Verkleinerung.
 10. **Links gehören ins PDF.** Projektadresse auf Titel und Rückseite als echter Link; Chrome übernimmt `<a href>`.
 
-## C. Styleguide (Vorlage für weitere Projekte)
+## C. Styleguide
 
-**Haltung:** Hell auf dunkel, eine Akzentfarbe, große Schlagzeilen, wenig Text je Kachel, Einzelheiten hinter „+“.
-Die Bilder sind die Hauptsache, der Text tritt zurück.
+### Die Primärquelle
 
-### Web
+**Maßstab ist Apples Feature-Zusammenfassung, die nach einem Event erscheint** (die Seite, die nach einer Keynote
+alle Neuerungen eines Produkts oder Betriebssystems auf einer Seite sammelt). Bei jeder Gestaltungsfrage wird
+**dort** nachgesehen, nicht in unseren Tabellen. Was wir von ihr übernehmen, beschreiben wir nach seiner Rolle,
+nicht als Kopie einzelner Teile:
+
+- **Die Seite ist eine Übersicht, kein Handbuch.** Man überfliegt sie und weiß danach, was das Produkt kann.
+- **Gliederung in Themen**, je Thema eine große Überschrift mit kurzer Unterzeile.
+- **Kacheln unterschiedlicher Breite** in einem festen Raster; jede Kachel eine Neuerung: kurzer Name,
+  eine Schlagzeile, ein Satz, ein Bild.
+- **Das Bild trägt.** Text erklärt nur, was das Bild nicht zeigen kann.
+- **Einzelheiten auf Abruf**, nicht auf der Seite.
+- **Ruhige Fläche, eine Akzentfarbe,** große Schrift, viel Luft; nichts schmückt, was keine Aufgabe hat.
+
+Unsere Abweichungen sind bewusst und begründet: **hell auf dunkel** (Sehbedingung des Auftraggebers, Hausregel),
+die Akzentfarbe aus der eigenen App, das Einzelheiten-Fenster direkt am Plus.
+
+### Unsere Umsetzung (Sekundärquelle)
+
+Die folgenden Werte sind **aus der Primärquelle abgeleitet** und am KlangTresor-Dokument abgenommen. Sie sind ein
+Startpunkt, kein Gesetz: Ein neues Projekt prüft sie am Vorbild nach, statt sie fortzuschreiben.
+
+#### Web
 
 | Element | Wert |
 |---|---|
@@ -87,7 +108,11 @@ Die Bilder sind die Hauptsache, der Text tritt zurück.
 | Fuß | „Gut zu wissen“ (Grenzen ehrlich nennen), Projektadresse als Link |
 | Vorschau | Open Graph statisch (Crawler führen kein JavaScript aus), Bild 1280 × 640 |
 
-### Druck (Broschüre)
+#### Druck (Broschüre)
+
+Für den Druck ist Apples Seite nur die Anmutung. Die Primärquellen der Broschüre sind das **Schweizer Raster**
+(Innenseiten: Spaltenraster, Marginalspalte, Haarlinien) und das **Magazinlayout** (Titel und Kapitelauftakte).
+
 
 | Element | Wert |
 |---|---|
