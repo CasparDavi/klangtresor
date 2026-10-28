@@ -27,7 +27,11 @@ h2 .z{display:block;text-wrap:balance}
 @media screen{body{background:#111}.seite{margin:10mm auto;outline:1px solid #222}}
 .satz{position:absolute;left:var(--ra);right:var(--ra);top:var(--ro);bottom:var(--ru);display:flex;flex-direction:column}
 .zeile{display:grid;grid-template-columns:var(--marg) 1fr;column-gap:var(--steg)}
-.rad{display:inline-block;flex:0 0 auto}   /* Tresorrad als eingebettetes SVG (CSS-Maske druckte mit Kastenrand) */
+.rad{display:inline-block;flex:0 0 auto;color:var(--akzent)}   /* Tresorrad als eingebettetes SVG (CSS-Maske druckte mit Kastenrand) */
+
+/* Tarja-Edition: Akzentfamilie Lila statt Orange (Caspar_D: „Lila und Restorange sollte ganz gut harmonieren“).
+   Nur CSS-Farben; Bilder bleiben unverändert, der rote Morgenknopf bleibt rot. #b48ce6 auf Schwarz 7,8 : 1. */
+:root.tarja{--akzent:#b48ce6}
 
 /* Kolumnentitel (Innenseiten): Haarlinie, Marke · Kapitel · Seitenzahl */
 .kolumne{display:grid;grid-template-columns:var(--marg) 1fr auto;column-gap:var(--steg);flex:0 0 auto;
@@ -130,6 +134,10 @@ figure{margin:0;flex:0 0 auto}
 .titel .tkopf{position:absolute;left:var(--ra);right:var(--ra);bottom:26mm}
 .titel .marke{display:flex;align-items:baseline;gap:4mm;font-size:58pt;line-height:1;font-weight:700;letter-spacing:-.025em;margin:0 0 5mm;color:var(--akzent)}
 .titel .marke .rad,.schluss .mitte .rad{width:.714em;height:.714em;width:1cap;height:1cap}   /* Ring = Versalhöhe, steht auf der Schriftlinie (Caspar_D, 28.10.2026) */
+.titel .edition{display:flex;align-items:baseline;margin:0 0 4.5mm;color:var(--text)}   /* nur Tarja-Edition */
+.titel .edition .zier{font-family:Kailasa,"Noto Sans Tibetan","Microsoft Himalaya",serif;font-size:19pt;line-height:1;color:var(--akzent)}
+.titel .edition .tname{font-size:17pt;line-height:1;font-weight:400;letter-spacing:.08em;margin:0 2.6mm;font-family:"Lucida Grande","Helvetica Neue",sans-serif}
+.titel .edition .ewort{font-size:8pt;line-height:1;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--akzent);margin-left:3.5mm}
 .titel .spruch{font-size:24pt;line-height:28pt;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 .titel .fusszeile{position:absolute;left:var(--ra);right:var(--ra);bottom:12mm;font-size:7pt;letter-spacing:.06em;color:#8e8e93}
 
@@ -182,10 +190,18 @@ const RAHMEN = {
 
 /* Druckfassungen der Bilder: Pfad des Webbildes → Pfad der Druckdatei (höhere Auflösung). Leer = Webbild drucken.
    Beispiel: 'img/abend.webp': 'img/druck/abend.jpg' */
-/* Innen ein anderes Bild als auf dem Titel: Tarja wollte sich „reinzecken“ (28.10.2026). Bildschirmauflösung genügt; Oberteil von Lila auf Rosé umgestimmt (werkzeug/tarja/lila.cjs, Farbton 345°, Sättigung ×1,15). */
-/* Nur in der Tarja-Edition (?tarja), einer eigenen Kopie der Broschüre; die normale Broschüre bleibt ohne (Caspar_D, 28.10.2026). */
+/* Tarja-Edition (?tarja): eine eigene Kopie der Broschüre; die normale Broschüre bleibt unverändert (Caspar_D, 28.10.2026).
+   Tarjas Fassung der Sofaszene (gleicher Bildausschnitt wie abend) ist das Titelbild – im Lila-Original (img/tarja-lila.webp aus
+   werkzeug/tarja/tarja-original.png), weil die Edition Lila als Akzentfarbe trägt; die Rosé-Fassung (img/tarja.webp, werkzeug/tarja/lila.cjs) bleibt liegen; innen bleibt S. 22 wie in der normalen Ausgabe (Text mit „Abb. S. 01“). Bildschirmauflösung genügt – kein Druckbild.
+   Das Innenbild als 2,3:1-Band (INNENBILD) ist damit entfallen: Titel und Innenseite hätten dieselbe Szene zweimal gezeigt.
+   Editionsvermerk: Tarjas Discord-Name mit den tibetischen Zierzeichen ༺ ༻, als Zeile über der Wortmarke. */
+/* Innen als Band statt im vollen Format: die Sofaszene steht auf dem Titel ganz, innen auf S. 22 noch einmal als Band über 10.1
+   (Caspar_D, 28.10.2026). In der Tarja-Edition zeigt der Titel Tarja, das Band die ursprüngliche Szene – jede Person einmal. */
+const BAND = { abend: { format: '2.3/1', pos: '58% 40%' } };
 const TARJA = new URLSearchParams(location.search).has('tarja');
-const INNENBILD = TARJA ? { abend: { bild: 'img/tarja.webp', format: '2.3/1', pos: '58% 40%' } } : {};
+if (TARJA) document.documentElement.classList.add('tarja');
+const TARJA_TITELBILD = 'img/tarja-lila.webp';   /* Lila-Original passt zur lila Akzentfarbe der Edition; Rosé-Fassung: img/tarja.webp */
+const TARJA_EDITION = { zier: ['༺', '༻'], name: 'Tαɾʝα', wort: 'Edition' };
 
 const DRUCKBILD = new URLSearchParams(location.search).has('druck') ? {
   /* Druckerei-Fassung (?druck): Szenen mit Real-ESRGAN x4 hochgerechnet, App-Bilder danach scharf eingesetzt
@@ -238,7 +254,7 @@ const PLAN = [
   {k:8, i:[['okkultbild', 'okkulttiefe']]},
   {k:8, i:['effektclip', 'rezept']},
   {typ:'oeffner', k:9, bild:'fernseher', pos:'30% 50%', h:178},
-  {k:9, i:[TARJA ? 'abend' : '-abend', 'handys', '-fernseher']},
+  {k:9, i:['abend', 'handys', '-fernseher']},
   {k:10, i:['sichern', 'offen']},
   {typ:'schluss'}
 ];
@@ -246,7 +262,7 @@ const PLAN = [
 const q = new URLSearchParams(location.search);
 const L = ['en', 'de', 'ru'].includes(q.get('lang')) ? q.get('lang') : 'en';
 const NUR = q.get('seiten') ? q.get('seiten').split(',').map(Number) : null;
-const RAD = `<svg class="rad" viewBox="8 8 48 48" aria-hidden="true"><g transform="translate(32 32)" stroke="#ff8a2a" stroke-width="4" stroke-linecap="round" fill="none"><circle r="22"/><g transform="rotate(15)"><path d="M-22 0H22M0-22V22"/></g></g><circle cx="32" cy="32" r="5" fill="#ff8a2a"/></svg>`;
+const RAD = `<svg class="rad" viewBox="8 8 48 48" aria-hidden="true"><g transform="translate(32 32)" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"><circle r="22"/><g transform="rotate(15)"><path d="M-22 0H22M0-22V22"/></g></g><circle cx="32" cy="32" r="5" fill="currentColor"/></svg>`;
 const zwei = n => String(n).padStart(2, '0');
 const t = o => (o && (o[L] ?? o.en)) ?? '';
 const ohneBr = s => s.replace(/<br>/g, ' ');
@@ -304,9 +320,8 @@ function figur(id){
       + `<div class="r"><p class="sk">${t(g.rechts)}</p><div class="sl">${t(g.bei).map(x => `<div>${x}</div>`).join('')}</div></div></figure>`; }
   if (b && b.liste) return `<div class="tafel B" data-fig="${id}">${b.liste.map(g =>
     `<div class="zeile"><div class="tk">${t(g.k)}</div><div class="tw">${t(g.w).join('<span>·</span>')}</div></div>`).join('')}</div>`;
-  if (INNENBILD[id]){ const ib = INNENBILD[id];
-    return `<figure class="B" data-fig="${id}"><div class="rahmen" style="aspect-ratio:${ib.format}"><img src="${druck(ib.bild)}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:${ib.pos}"></div></figure>`; }
   const u = bildUrl(id); if (!u) return '';
+  if (BAND[id]) return `<figure class="B" data-fig="${id}"><div class="rahmen" style="aspect-ratio:${BAND[id].format}"><img src="${u}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:${BAND[id].pos}"></div></figure>`;
   const sn = SCHNITT[quelle(id).split('?')[0]];
   return `<figure class="B" data-fig="${id}"><div class="rahmen"${sn ? ` data-schnitt="${sn.join(',')}"` : ''}><img src="${u}" alt=""></div></figure>`;
 }
@@ -359,8 +374,9 @@ function oeffner(p, nr){
   </section>`;
 }
 function titel(p){
-  return `<section class="seite titel" data-nr="1"><div class="bild"><img src="${bildUrl(p.bild)}" style="object-position:${p.pos}" alt=""></div><div class="schleier"></div>
-    <div class="tkopf"><h1 class="marke">${RAD}${t(S.kopf.marke)}</h1><p class="spruch">${t(S.kopf.h)}</p></div>
+  const ed = TARJA ? `<p class="edition"><span class="zier">${TARJA_EDITION.zier[0]}</span><span class="tname">${TARJA_EDITION.name}</span><span class="zier">${TARJA_EDITION.zier[1]}</span><span class="ewort">${TARJA_EDITION.wort}</span></p>` : '';
+  return `<section class="seite titel" data-nr="1"><div class="bild"><img src="${TARJA ? druck(TARJA_TITELBILD) : bildUrl(p.bild)}" style="object-position:${p.pos}" alt=""></div><div class="schleier"></div>
+    <div class="tkopf">${ed}<h1 class="marke">${RAD}${t(S.kopf.marke)}</h1><p class="spruch">${t(S.kopf.h)}</p></div>
     <div class="fusszeile">${t(S.fuss).split(' · ').pop()}</div></section>`;
 }
 function auftakt(nr){
