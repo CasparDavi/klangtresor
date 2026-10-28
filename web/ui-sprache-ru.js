@@ -58,6 +58,7 @@ window.UI_RU = {
   "ablage.frage": "Действительно удалить файлы? Это нельзя отменить.",
   "ablage.loeschen.ja": "Да, удалить окончательно",
   "sprache.wahl": "Язык",
+  "handy.profil.ton": "Аудиофайл",
   "kopf.marke": "Версия, автор, участники",
   "kopf.filter": "Фильтр",
   "kopf.fassung": "Новая версия на GitHub — нажмите, чтобы узнать, как её установить",

@@ -2554,8 +2554,9 @@ html.handy.eq-offen #eqblatt{display:flex;flex-direction:column;position:fixed;l
 #eqblatt .eqband input{flex:1;min-height:0;width:34px;writing-mode:vertical-lr;direction:rtl;accent-color:var(--akzent);touch-action:none}
 #eqblatt .eqfuss{font-size:12px;color:var(--schwach);margin-top:8px}
 html.handy.quer #eqblatt .eqregler{height:150px}
-html.handy .profilsprache.nurhandy{display:flex;align-items:center;gap:12px;margin-top:12px;color:var(--schwach);font-size:14px}
-html.handy .profilsprache .sprachewahl button{min-height:36px;min-width:52px;font-size:13px}
+html.handy .profilsprache.nurhandy{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;color:var(--schwach);font-size:14px}
+html.handy .profilsprache .sprachewahl button{min-height:36px;min-width:40px;padding:5px 6px;font-size:13px}
+html.handy .profilsprache .tonwahl{margin-left:auto}
 #ichersatz{width:24px;height:24px;margin:2px}
 /* Handy: das Profil ist keine Suche - etwas Abstand zum Paar Lupe/Trichter (Tufte) */
 html.handy #ich{margin-left:12px}
@@ -4965,8 +4966,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=17"></script>
-<script src="/ui-sprache.js?v=29"></script>
+<script src="/ui-sprache-ru.js?v=18"></script>
+<script src="/ui-sprache.js?v=30"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -19011,7 +19012,14 @@ function profilAuf(){
              es ist eine persoenliche Einstellung“). Am Rechner bleibt der Schalter in der Kopfzeile. -->
         <p class="profilsprache nurhandy"><span>${t('sprache.wahl')}</span><span class="sprachewahl" role="group">${
           [['de', 'DE', ''], ['en', 'EN*', 'Translation partly AI-generated and still being revised'], ['ru', 'RU*', 'Перевод частично создан с помощью ИИ и ещё дорабатывается']]
-            .map(([k, l, ti]) => `<button type="button" data-sprache="${k}" class="${sprache() === k ? 'an' : ''}"${ti ? ` title="${ti}"` : ''} onclick="spracheSetzen('${k}')">${l}</button>`).join('')}</span></p>
+            .map(([k, l, ti]) => `<button type="button" data-sprache="${k}" class="${sprache() === k ? 'an' : ''}"${ti ? ` title="${ti}"` : ''} onclick="spracheSetzen('${k}')">${l}</button>`).join('')}</span>${
+          /* TONDATEI AUF DEM HANDY (Caspar_D, 28.10.2026: „eine wav mp3 Pille … neben die Sprachpillen“). Die WAV ist
+             achtmal so gross wie das MP3 (50 gegen 6,5 MB je Titel); ueber AirPlay muss das Handy sie empfangen und
+             zugleich weitersenden, und bei schwachem WLAN riss der Ton nach drei Sekunden ab, waehrend der Balken
+             weiterlief. Zu hoeren ist der Unterschied an den HomePods nicht - AirPlay komprimiert ohnehin. Am Rechner
+             bleibt der Umschalter im Studio. Gilt je Geraet (localStorage), wie die Sprache. */
+          `<span class="sprachewahl tonwahl" role="group" aria-label="${t('handy.profil.ton')}">${[['wav', 'WAV'], ['mp3', 'MP3']]
+            .map(([k, l]) => `<button type="button" data-ton="${k}" class="${(bTon === 'mp3') === (k === 'mp3') ? 'an' : ''}" onclick="tonSetzen('${k}')">${l}</button>`).join('')}</span>`}</p>
       </div>
 
       <!-- ZWEI REGISTER (Caspar_D, 26.08.2026: "registerlasche in user,
@@ -20810,9 +20818,11 @@ function tonSetzen(art){
     const stelle = audio.currentTime, lief = !audio.paused;
     const datei = tonDatei(s);
     audio.src = '/media/' + s.id + '/' + datei;
-    audio.currentTime = stelle;
+    /* Erst die Quelle laden, dann die Stelle setzen - vorher verwirft Safari sie, und der Titel begann von vorn. */
+    if (stelle > 0) audio.addEventListener('loadedmetadata', () => { audio.currentTime = stelle; }, { once: true });
     if (lief) audio.play().catch(()=>{});
   }
+  document.querySelectorAll('.tonwahl button').forEach(b => b.classList.toggle('an', (bTon === 'mp3') === (b.dataset.ton === 'mp3')));
   bedienungAufbauen();
   if ($('studio') && $('studio').style.display !== 'none') studioQuelleZeigen();
 }

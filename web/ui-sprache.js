@@ -79,6 +79,7 @@
     ["ablage.frage", "Dateien wirklich löschen? Das lässt sich nicht rückgängig machen.", "Really delete the files? This cannot be undone."],
     ["ablage.loeschen.ja", "Ja, endgültig löschen", "Yes, delete for good"],
     ['sprache.wahl', 'Sprache', 'Language'],
+    ['handy.profil.ton', 'Tondatei', 'Audio file'],
 
     ['kopf.marke', 'Version, Urheber, Mitstreiter', 'Version, author, contributors'],
     ['kopf.filter', 'Filter', 'Filter'],
