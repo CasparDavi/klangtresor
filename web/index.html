@@ -22214,11 +22214,11 @@ async function morgenUebernehmen(){
   h2s.removeAttribute('data-i18n');
   h2s.textContent = t('morgen.nachziehen');
   $('morgenknopf').classList.add('laeuft');
-  /* ZWEITE LISTE, die mitgezogen werden muss: Was hier nicht drinsteht,
-     laesst sich zwar abwaehlen und wird gemerkt - aber die Abwahl faellt
-     beim Start still unter den Tisch, und der Schritt laeuft trotzdem.
-     Wer ein Kreuz oben ergaenzt, ergaenzt es auch hier. */
-  const aus = [...morgenAuswahlLesen()].filter(k => ['kommentare', 'medien', 'analyse', 'whisper', 'musikstil', 'nachbarn'].includes(k));
+  /* ABGEWAEHLT IST, WAS DIE KREUZE SAGEN (28.10.2026). Hier stand eine zweite Liste, die von Hand mitgezogen werden
+     musste - und 'stems' fehlte darin: das Kreuz „Instrumentspuren" liess sich abwaehlen, der Schritt lief trotzdem.
+     Jetzt gilt jedes Kreuz, das nicht Pflicht ist; die Pflichten (Ernte, Katalog) lehnt der Server ohnehin ab. */
+  const abwaehlbar = MORGEN_KREUZE.filter(k => !k.pflicht).map(k => k.schluessel);
+  const aus = [...morgenAuswahlLesen()].filter(k => abwaehlbar.includes(k));
   try { await fetch('/api/morgen/start', { method:'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ aus }) }); }
   catch (e){ $('morgentext').textContent = t('morgen.start_schief', { fehler: e.message }); return; }
   morgenSchauen(false);

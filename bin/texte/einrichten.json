@@ -319,9 +319,9 @@
   "en": "Bear in mind: for all its features KlangTresor needs quite a lot of space.",
   "ru": "Учтите: для всех функций KlangTresor нужно довольно много места."
  },
- "Die Einrichtung selbst rund 1,6 GB — dazu je Titel bis zu 100 MB, wenn": {
-  "en": "The setup itself about 1.6 GB — plus up to 100 MB per title when",
-  "ru": "Сама установка — около 1,6 ГБ, плюс до 100 МБ на трек, если"
+ "Die Einrichtung selbst rund 4,7 GB — dazu je Titel bis zu 100 MB, wenn": {
+  "en": "The setup itself about 4.7 GB — plus up to 100 MB per title when",
+  "ru": "Сама установка — около 4,7 ГБ, плюс до 100 МБ на трек, если"
  },
  "WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.": {
   "en": "WAV and instrument stems are included. With 200 titles that is about 20 GB.",
@@ -375,9 +375,9 @@
   "en": "Only {gb} GB free there.",
   "ru": "Там свободно всего {gb} ГБ."
  },
- "Die Einrichtung selbst braucht rund 1,6 GB, aber dein Archiv wächst mit": {
-  "en": "The setup itself needs about 1.6 GB, but your archive grows with",
-  "ru": "Сама установка требует около 1,6 ГБ, но ваш архив растёт с"
+ "Die Einrichtung selbst braucht rund 4,7 GB, aber dein Archiv wächst mit": {
+  "en": "The setup itself needs about 4.7 GB, but your archive grows with",
+  "ru": "Сама установка требует около 4,7 ГБ, но ваш архив растёт с"
  },
  "jedem Lied — bei ein paar hundert Titeln sind es schnell zehn GB und mehr.": {
   "en": "every song — with a few hundred titles it quickly reaches ten GB and more.",
@@ -551,13 +551,13 @@
   "en": "See you later, then. The setup isn’t going anywhere.",
   "ru": "Тогда до встречи. Установка никуда не денется."
  },
- "Beim ersten Mal werden rund 450 MB geholt. Wie lange das dauert, hängt": {
-  "en": "The first time, about 450 MB are downloaded. How long that takes depends",
-  "ru": "В первый раз загружается около 450 МБ. Сколько это займёт, зависит"
+ "Beim ersten Mal werden rund 4,5 GB geholt. Wie lange das dauert, hängt": {
+  "en": "The first time, about 4.5 GB are downloaded. How long that takes depends",
+  "ru": "В первый раз загружается около 4,5 ГБ. Сколько это займёт, зависит"
  },
- "an deiner Leitung — von wenigen Minuten bis zu einer halben Stunde.": {
-  "en": "on your connection — from a few minutes to half an hour.",
-  "ru": "от вашего подключения — от нескольких минут до получаса."
+ "an deiner Leitung — von wenigen Minuten bis zu gut einer Stunde.": {
+  "en": "on your connection — from a few minutes to well over an hour.",
+  "ru": "от вашего подключения — от нескольких минут до часа с лишним."
  },
  "Lass das Fenster am besten offen, dann siehst du sofort, ob es gut": {
   "en": "Best to leave the window open; then you see straight away whether it is going",
@@ -691,17 +691,17 @@
   "en": "I could not determine the free space — carrying on.",
   "ru": "Не удалось определить свободное место — продолжаю."
  },
- "Hier sind nur {mb} frei. Für die Einrichtung braucht es rund 1,6 GB,": {
-  "en": "Only {mb} free here. The setup needs about 1.6 GB,",
-  "ru": "Здесь свободно всего {mb}. Для установки нужно около 1,6 ГБ,"
+ "Hier sind nur {mb} frei. Für die Einrichtung braucht es rund 4,7 GB,": {
+  "en": "Only {mb} free here. The setup needs about 4.7 GB,",
+  "ru": "Здесь свободно всего {mb}. Для установки нужно около 4,7 ГБ,"
  },
  "Platz": {
   "en": "Space",
   "ru": "Место"
  },
- "nur {mb} frei — gebraucht wird rund 1,6 GB": {
-  "en": "only {mb} free — about 1.6 GB is needed",
-  "ru": "свободно всего {mb} — нужно около 1,6 ГБ"
+ "nur {mb} frei — gebraucht wird rund 4,7 GB": {
+  "en": "only {mb} free — about 4.7 GB is needed",
+  "ru": "свободно всего {mb} — нужно около 4,7 ГБ"
  },
  "und das Archiv kommt danach erst noch dazu.": {
   "en": "and the archive only comes on top of that.",
@@ -711,9 +711,9 @@
   "en": "Try anyway?",
   "ru": "Всё равно попробовать?"
  },
- "{gb} GB frei, die Einrichtung braucht rund 1,6 GB": {
-  "en": "{gb} GB free, the setup needs about 1.6 GB",
-  "ru": "свободно {gb} ГБ, установке нужно около 1,6 ГБ"
+ "{gb} GB frei, die Einrichtung braucht rund 4,7 GB": {
+  "en": "{gb} GB free, the setup needs about 4.7 GB",
+  "ru": "свободно {gb} ГБ, установке нужно около 4,7 ГБ"
  },
  "KlangTresor liegt nicht auf dieser Maschine.": {
   "en": "KlangTresor is not on this machine.",
@@ -983,13 +983,13 @@
   "en": "Downloading ffmpeg",
   "ru": "Загрузка ffmpeg"
  },
- "Ohne ffmpeg läuft alles — nur Klangmessung und Videoschnitt fehlen.": {
-  "en": "Without ffmpeg everything works — only sound measurement and video editing are missing.",
-  "ru": "Без ffmpeg всё работает — нет только анализа звука и монтажа видео."
+ "Ohne ffmpeg hörst du deine Musik, aber fast alles Rechnen fehlt: Klanganalyse, Instrumentspuren, Whisper, Musikstil, Kacheln und Tiefenkarten.": {
+  "en": "Without ffmpeg you can listen to your music, but almost all computing is missing: sound analysis, instrument stems, Whisper, music style, tiles and depth maps.",
+  "ru": "Без ffmpeg музыку слушать можно, но почти все расчёты недоступны: анализ звука, дорожки инструментов, Whisper, музыкальный стиль, плитки и карты глубины."
  },
- "Weiter ohne ffmpeg. Ein späterer Lauf holt es nach.": {
-  "en": "Carrying on without ffmpeg. A later run will fetch it.",
-  "ru": "Продолжаю без ffmpeg. Следующий запуск загрузит его."
+ "Weiter ohne ffmpeg. Starte die Einrichtung später noch einmal, dann holt sie es nach.": {
+  "en": "Carrying on without ffmpeg. Run the setup again later and it will fetch it.",
+  "ru": "Продолжаю без ffmpeg. Запустите установку позже ещё раз — она его загрузит."
  },
  "Programmbausteine des Servers: 19 Pakete werden geladen und eingerichtet": {
   "en": "Building blocks of the server: 19 packages are downloaded and set up",
@@ -1631,8 +1631,8 @@
   "en": "data only you are allowed to see works exclusively in Chrome:",
   "ru": "данных, которые видите только вы, работает исключительно в Chrome:"
  },
- "Platz: {gb} GB frei — die Einrichtung braucht rund 1,6 GB.": {
-  "en": "Space: {gb} GB free — the setup needs about 1.6 GB.",
-  "ru": "Место: свободно {gb} ГБ — установке нужно около 1,6 ГБ."
+ "Platz: {gb} GB frei — die Einrichtung braucht rund 4,7 GB.": {
+  "en": "Space: {gb} GB free — the setup needs about 4.7 GB.",
+  "ru": "Место: свободно {gb} ГБ — установке нужно около 4,7 ГБ."
  }
 }

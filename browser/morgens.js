@@ -68,17 +68,23 @@
     if (m) return m[1];
     return /^de/i.test(String(browser || '')) ? 'de' : 'en';
   }
-  const EN = (() => {
+  /* Woher dieses Skript kam - das Lesezeichen laedt es vom laufenden KlangTresor. */
+  const QUELLE = (() => {
     let src = (document.currentScript && document.currentScript.src) || '';
     if (!src){
       const alle = document.querySelectorAll('script[src*="/browser/morgens.js"]');
       if (alle.length) src = alle[alle.length - 1].src;
     }
-    return spracheAus(src, navigator.language) === 'en';
+    return src;
   })();
+  const EN = spracheAus(QUELLE, navigator.language) === 'en';
   const L = (de, en) => EN ? en : de;
 
-  const DAHEIM = 'http://localhost:8788';
+  /* DER TRESOR IST, WOHER DAS SKRIPT KAM (28.10.2026). Bis dahin stand hier fest 'http://localhost:8788' - wer
+     KlangTresor auf einem anderen Port betrieb, bekam das Skript geladen, aber jeder Rueckruf ging ins Leere
+     („Der Server laeuft nicht"). Die Lesezeichen-Adresse traegt den Ort ohnehin schon (morgenLzAdresse in
+     web/index.html), jetzt folgt ihr auch das Skript. */
+  const DAHEIM = (() => { try { return new URL(QUELLE).origin; } catch (e) { return 'http://localhost:8788'; } })();
   const API    = 'https://studio-api-prod.suno.com';
 
   /* ---------------- Anzeige ----------------

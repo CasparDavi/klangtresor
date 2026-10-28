@@ -162,20 +162,21 @@ user folder, Downloads, the desktop, Documents and Music, two
 levels deep each; it is recognised by the catalogue, never by the name. If your old archive
 is on a different drive, you pick the folder yourself via "Elsewhere".
 
-**Then ten steps, and each says what it does:**
+**Then eleven steps, and each says what it does:**
 
-1. Check the folder — write permission, no administrator rights, space (about 1.6 GB).
+1. Check the folder — write permission, no administrator rights, space (about 4.7 GB).
 2. What is already here? Archive, ffmpeg, packages, AI models, port — with sizes, what
    is missing and will be fetched. Afterwards you know what you are waiting for.
 3. ffmpeg — fetched on Windows, via the package manager on Mac and Linux.
 4. The building blocks of the server (19 packages).
 5. The AI models (16 files, about 1.2 GB).
-6. Your Suno name — the only input.
-7. Your song list: titles, lyrics, styles, albums.
-8. Suno files you have already downloaded are recognised and sorted in.
-9. Cover images and moving images. The longest step — and the only one you can
+6. Whisper — program and model for the lyrics that run along (about 3.1 GB).
+7. Your Suno name — the only input.
+8. Your song list: titles, lyrics, styles, albums.
+9. Suno files you have already downloaded are recognised and sorted in.
+10. Cover images and moving images. The longest step — and the only one you can
    safely cancel: "Start now, the rest later" fetches the rest while you use the program.
-10. Finally: what only you can fetch yourself, and why.
+11. Finally: what only you can fetch yourself, and why.
 
 Cancelling is allowed everywhere; the next start fetches only what is missing.
 If something sticks, everything is in plain text behind the **Log** tab.

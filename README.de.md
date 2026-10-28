@@ -130,32 +130,20 @@ erzählen. Wer wissen will, wie so etwas zustande kommt, findet in
 
 ## Einrichten
 
-Voraussetzung: [Node.js](https://nodejs.org) und
-[ffmpeg](https://ffmpeg.org) (`brew install ffmpeg` auf dem Mac,
-`apt install ffmpeg` unter Linux).
+Doppelklick auf das Einrichtungsskript deines Systems:
+`einrichten-macos.command`, `einrichten-windows.cmd` oder
+`einrichten-linux.sh`. Es holt, was fehlt — Node.js, die Pakete, die
+KI-Modelle und Whisper, unter Windows auch ffmpeg (auf Mac und Linux kommt
+ffmpeg über den Paketverwalter) —, zusammen rund 4,7 GB. Dann fragt es nach
+deinem Suno-Namen, holt die öffentliche Songliste, übernimmt Suno-Dateien,
+die schon auf dem Rechner liegen, lädt Titelbilder und Bewegtbilder und
+startet KlangTresor. Jeder Schritt ist in [START-HIER.md](START-HIER.md)
+erklärt.
 
-```bash
-node bin/sammelskript.js
-```
-
-Das Skript nennt die Adresse, die in Chrome zu öffnen ist. Dort:
-Rechtsklick → *Untersuchen* → *Console*, den Inhalt der erzeugten
-Datei `browser/02-sammeln-aktuell.js` einfügen, Enter. Am Ende liegt
-`suno-archiv-metadaten.json` im Download-Ordner.
-
-```bash
-mv ~/Downloads/suno-archiv-metadaten.json \
-   library/roh/profil-$(date +%Y-%m-%d-%H-%M-%S).json
-node bin/wiederherstellen.js
-node server/server.js
-```
-
-`wiederherstellen.js` baut alles Weitere: Katalog, Medien, Kacheln,
-Farbpaletten. Der Server nennt die Adressen für Heimnetz und iPhone.
-
-**Der eigene Handle wird nirgends eingetragen.** Das Sammelskript liest
-ihn aus der Adresse der Profilseite, auf der es läuft, und sortiert
-fremde Songs danach aus.
+Was nur angemeldet geht — unveröffentlichte Titel, Alben, Wort-Zeitmarken,
+schon freigeschaltete Audiodateien —, holt danach das Lesezeichen
+„KlangTresor morgens". Seine Adresse steht im Morgenfenster hinter dem
+roten Knopf.
 
 ### Unter Windows
 

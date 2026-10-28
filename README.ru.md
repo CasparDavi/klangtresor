@@ -124,32 +124,19 @@
 
 ## Установка
 
-Требования: [Node.js](https://nodejs.org) и
-[ffmpeg](https://ffmpeg.org) (`brew install ffmpeg` на Mac,
-`apt install ffmpeg` в Linux).
+Дважды щёлкните скрипт установки для вашей системы:
+`einrichten-macos.command`, `einrichten-windows.cmd` или
+`einrichten-linux.sh`. Он загружает недостающее — Node.js, пакеты,
+ИИ-модели и Whisper, в Windows также ffmpeg (на Mac и в Linux ffmpeg
+ставится через менеджер пакетов) — всего около 4,7 ГБ. Затем он спрашивает
+ваше имя в Suno, загружает публичный список песен, забирает файлы Suno,
+которые уже лежат на компьютере, загружает обложки и анимированные обложки
+и запускает KlangTresor. Каждый шаг описан в [START-RU.md](START-RU.md).
 
-```bash
-node bin/sammelskript.js
-```
-
-Скрипт называет адрес, который нужно открыть в Chrome. Там:
-правый клик → *Просмотреть код* → *Console*, вставьте содержимое созданного
-файла `browser/02-sammeln-aktuell.js`, нажмите Enter. В конце в папке загрузок
-окажется `suno-archiv-metadaten.json`.
-
-```bash
-mv ~/Downloads/suno-archiv-metadaten.json \
-   library/roh/profil-$(date +%Y-%m-%d-%H-%M-%S).json
-node bin/wiederherstellen.js
-node server/server.js
-```
-
-`wiederherstellen.js` строит всё остальное: каталог, медиа, плитки,
-цветовые палитры. Сервер сообщает адреса для домашней сети и iPhone.
-
-**Свой хэндл нигде не вводится.** Сборочный скрипт считывает
-его из адреса страницы профиля, на которой работает, и по нему отсеивает
-чужие песни.
+То, что доступно только после входа, — неопубликованные треки, альбомы,
+пословные метки времени, уже разблокированные аудиофайлы, — затем загружает
+закладка «KlangTresor morgens». Её адрес находится в утреннем окне за
+красной кнопкой.
 
 ### В Windows
 

@@ -56,5 +56,21 @@ function server() {
     process.exit(code == null ? 1 : code);
   });
 }
+/* FEHLENDE PAKETE VOR DEM START NACHHOLEN (28.10.2026). Der Server selbst braucht keine - er startete, und erst
+   der Morgenlauf brach dann bei Instrumentspuren, Musikstil, Tiefenkarten und Klangraum mit „Cannot find module"
+   ab, ohne dass jemand erfuhr, warum. Fehlt etwas, holt bin/pakete.js genau das in der Fassung aus package-lock;
+   klappt das nicht (kein Netz, Firmennetz), startet der Tresor trotzdem und sagt, was fehlt und wie es kommt. */
+try {
+  const pakete = require('./pakete.js');
+  const fehlt = pakete.fehlende();
+  if (fehlt.length) {
+    console.log('\n' + T('  Es fehlen Programmbausteine ({namen}) — ich hole sie nach.', { namen: fehlt.join(', ') }));
+    const rest = pakete.nachholen();
+    if (rest.length) {
+      console.log(T('  Nicht geholt: {namen}. KlangTresor startet trotzdem; Instrumentspuren, Musikstil,', { namen: rest.join(', ') }));
+      console.log(T('  Tiefenkarten und Klangraum fehlen, bis sie da sind. Ausweg: aktualisieren-* doppelklicken.'));
+    } else console.log(T('  Alle Programmbausteine sind jetzt da.'));
+  }
+} catch (e) { console.log(T('  Die Programmbausteine ließen sich nicht prüfen: {fehler}', { fehler: e.message })); }
 server();
 browserSobaldDa();

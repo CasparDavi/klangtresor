@@ -334,5 +334,25 @@
  "  KlangTresor ist auf {adresse} — Browser geht auf.": {
   "en": "  KlangTresor is at {adresse} — the browser is opening.",
   "ru": "  KlangTresor доступен по адресу {adresse} — открывается браузер."
+ },
+ "  Es fehlen Programmbausteine ({namen}) — ich hole sie nach.": {
+  "en": "  Some program components are missing ({namen}) — fetching them.",
+  "ru": "  Не хватает программных компонентов ({namen}) — загружаю их."
+ },
+ "  Nicht geholt: {namen}. KlangTresor startet trotzdem; Instrumentspuren, Musikstil,": {
+  "en": "  Not fetched: {namen}. KlangTresor starts anyway; instrument stems, music style,",
+  "ru": "  Не загружено: {namen}. KlangTresor всё равно запускается; дорожки инструментов, музыкальный стиль,"
+ },
+ "  Tiefenkarten und Klangraum fehlen, bis sie da sind. Ausweg: aktualisieren-* doppelklicken.": {
+  "en": "  depth maps and the sound space are missing until they arrive. Way out: double-click aktualisieren-*.",
+  "ru": "  карты глубины и звуковое пространство недоступны, пока их нет. Выход: дважды щёлкните aktualisieren-*."
+ },
+ "  Alle Programmbausteine sind jetzt da.": {
+  "en": "  All program components are now in place.",
+  "ru": "  Все программные компоненты теперь на месте."
+ },
+ "  Die Programmbausteine ließen sich nicht prüfen: {fehler}": {
+  "en": "  Could not check the program components: {fehler}",
+  "ru": "  Не удалось проверить программные компоненты: {fehler}"
  }
 }

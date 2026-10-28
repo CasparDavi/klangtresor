@@ -163,20 +163,21 @@ Nutzerverzeichnis, in Downloads, auf dem Schreibtisch, in Dokumente und Musik, j
 zwei Ebenen tief; erkannt wird am Katalog, nie am Namen. Liegt dein altes Archiv
 auf einer anderen Platte, wählst du den Ordner selbst über „Woanders".
 
-**Dann zehn Schritte, und jeder sagt, was er tut:**
+**Dann elf Schritte, und jeder sagt, was er tut:**
 
-1. Ordner prüfen — Schreibrecht, keine Verwalterrechte, Platz (rund 1,6 GB).
+1. Ordner prüfen — Schreibrecht, keine Verwalterrechte, Platz (rund 4,7 GB).
 2. Was ist schon da? Archiv, ffmpeg, Pakete, KI-Modelle, Port — mit Größen, was
    fehlt und geholt wird. Danach weiß man, worauf man wartet.
 3. ffmpeg — unter Windows geholt, auf Mac und Linux über den Paketverwalter.
 4. Die Programmbausteine des Servers (19 Pakete).
 5. Die KI-Modelle (16 Dateien, rund 1,2 GB).
-6. Dein Suno-Name — die einzige Eingabe.
-7. Deine Songliste: Titel, Texte, Stile, Alben.
-8. Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet.
-9. Titelbilder und Bewegtbilder. Der längste Schritt — und der einzige, den man
+6. Whisper — Programm und Modell für den mitlaufenden Liedtext (rund 3,1 GB).
+7. Dein Suno-Name — die einzige Eingabe.
+8. Deine Songliste: Titel, Texte, Stile, Alben.
+9. Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet.
+10. Titelbilder und Bewegtbilder. Der längste Schritt — und der einzige, den man
    getrost abbricht: „Jetzt starten, Rest später" holt den Rest im Betrieb nach.
-10. Zum Schluss: was nur du selbst holen kannst, und warum.
+11. Zum Schluss: was nur du selbst holen kannst, und warum.
 
 Abbrechen ist überall erlaubt; beim nächsten Start wird nur nachgeholt, was fehlt.
 Hakt etwas, steht hinter der Registerlasche **Protokoll** alles im Klartext.

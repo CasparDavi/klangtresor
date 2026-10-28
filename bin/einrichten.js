@@ -152,8 +152,12 @@ const SCHRITTE = 11;
 /* Die Liste links steht von Anfang an da - man soll sehen, was kommt,
    nicht erst, was schon war. Die Namen hier sind dieselben, die
    schritt() spaeter als "kurz" setzt. */
-const KURZ = [T('Ordner prüfen'), T('Was ist schon da?'), 'ffmpeg', T('Pakete'), T('KI-Modelle'),
+const KURZ = [T('Ordner prüfen'), T('Was ist schon da?'), 'ffmpeg', T('Pakete'), T('KI-Modelle'), 'Whisper',
               T('Dein Suno-Name'), T('Songliste'), T('Deine Suno-Dateien'), T('Bilder'), T('Zum Schluss')];
+/* Whisper kam als sechster Schritt dazu, und Liste und Zaehler blieben bei zehn stehen: die Seite zeigte
+   „Schritt 7 von 10" und links einen Namen zu wenig (28.10.2026). Darum zaehlt die Seite jetzt aus SCHRITTE. */
+ZUSTAND.gesamt = SCHRITTE;
+if (KURZ.length !== SCHRITTE) console.warn(`einrichten.js: KURZ hat ${KURZ.length} Namen, SCHRITTE ist ${SCHRITTE}`);
 KURZ.forEach((k, i) => { ZUSTAND.schritte[i] = { nr: i + 1, kurz: k, name: k, erklaerung: '', zustand: '', zeilen: [], kacheln: [], titel: [], lauf: null }; });
 /* kurz  - wie der Schritt in der Liste links heisst
    titel - die Ueberschrift rechts, in ganzen Worten
@@ -1097,7 +1101,7 @@ open -a Terminal ${JSON.stringify(starter)}
     satz(HELL(`  [${tW.toUpperCase()}]`) + MATT(T('  woanders — ein Fenster geht auf, du wählst (etwa eine externe Platte)')));
     leer();
     matt(T('Denk daran: für alle Funktionen braucht KlangTresor ziemlich viel Platz.'));
-    matt(T('Die Einrichtung selbst rund 1,6 GB — dazu je Titel bis zu 100 MB, wenn'));
+    matt(T('Die Einrichtung selbst rund 4,7 GB — dazu je Titel bis zu 100 MB, wenn'));
     matt(T('WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.'));
     leer();
     const gross = (t, w) => (vorgabe === w ? t.toUpperCase() : t);
@@ -1131,7 +1135,7 @@ open -a Terminal ${JSON.stringify(starter)}
       const gb = frei / 1073741824;
       if (gb < 20) {
         wink(T('Dort sind nur {gb} GB frei.', { gb: gb.toFixed(1) }));
-        matt(T('Die Einrichtung selbst braucht rund 1,6 GB, aber dein Archiv wächst mit'));
+        matt(T('Die Einrichtung selbst braucht rund 4,7 GB, aber dein Archiv wächst mit'));
         matt(T('jedem Lied — bei ein paar hundert Titeln sind es schnell zehn GB und mehr.'));
         matt(T('Eine externe Platte ist dafür völlig in Ordnung. Trotzdem hier?'));
         leer();
@@ -1255,8 +1259,8 @@ open -a Terminal ${JSON.stringify(starter)}
   }
 
   leer();
-  matt(T('Beim ersten Mal werden rund 450 MB geholt. Wie lange das dauert, hängt'));
-  matt(T('an deiner Leitung — von wenigen Minuten bis zu einer halben Stunde.'));
+  matt(T('Beim ersten Mal werden rund 4,5 GB geholt. Wie lange das dauert, hängt'));
+  matt(T('an deiner Leitung — von wenigen Minuten bis zu gut einer Stunde.'));
   leer();
   matt(T('Lass das Fenster am besten offen, dann siehst du sofort, ob es gut'));
   matt(T('läuft oder ob es hakt. Bei Abbruch kann man einfach von diesem Stand'));
@@ -1321,24 +1325,25 @@ open -a Terminal ${JSON.stringify(starter)}
     zeile('rechte', T('Keine erhöhten Rechte'), T('es laufen auch keine'));
   }
 
-  /* Platz: rund 1,6 GB fuer Werkzeuge, Pakete und Modelle (gemessen
-     14.09.2026: Node 30, ffmpeg 100, Pakete 240, Modelle 1200). Das ARCHIV
+  /* Platz: rund 4,7 GB fuer Werkzeuge, Pakete und Modelle (gemessen
+     14.09.2026: Node 30, ffmpeg 100, Pakete 240, Modelle 1200; dazu seit Schritt 6 Whisper mit
+     3,1 GB - bis 28.10.2026 stand hier und auf der Seite 1,6 GB, Whisper fehlte darin). Das ARCHIV
      kommt danach und kann ein Vielfaches werden - darum wird die Zahl
      genannt und nicht nur geprueft. */
   const platz = freierPlatz(WURZEL);
   if (platz === null) {
     matt(T('Freien Platz konnte ich nicht ermitteln — ich mache weiter.'));
-  } else if (platz < 2147483648) {
-    boese(T('Hier sind nur {mb} frei. Für die Einrichtung braucht es rund 1,6 GB,', { mb: MB(platz) }));
-    zeile('platz', T('Platz'), T('nur {mb} frei — gebraucht wird rund 1,6 GB', { mb: MB(platz) }), 'wink');
+  } else if (platz < 5 * 1073741824) {
+    boese(T('Hier sind nur {mb} frei. Für die Einrichtung braucht es rund 4,7 GB,', { mb: MB(platz) }));
+    zeile('platz', T('Platz'), T('nur {mb} frei — gebraucht wird rund 4,7 GB', { mb: MB(platz) }), 'wink');
     matt(T('und das Archiv kommt danach erst noch dazu.'));
     leer();
     if (!await jaNein(T('Trotzdem versuchen?'), 'n')) { wiederkommen(); schluss(0); }
   } else {
     /* Dezimalkomma ausser im Englischen; und dieselbe Zahl wie auf der Seite (vorher hier „rund 1 GB", dort „1,6 GB"). */
     const gbText = sprache() === 'en' ? (platz / 1073741824).toFixed(1) : (platz / 1073741824).toFixed(1).replace('.', ',');
-    gut(T('Platz: {gb} GB frei — die Einrichtung braucht rund 1,6 GB.', { gb: gbText }));
-    zeile('platz', T('Platz'), T('{gb} GB frei, die Einrichtung braucht rund 1,6 GB', { gb: gbText }));
+    gut(T('Platz: {gb} GB frei — die Einrichtung braucht rund 4,7 GB.', { gb: gbText }));
+    zeile('platz', T('Platz'), T('{gb} GB frei, die Einrichtung braucht rund 4,7 GB', { gb: gbText }));
   }
 
   /* Ein Projekt auf einer Netzwerkfreigabe ist unter Windows heikel:
@@ -1505,21 +1510,18 @@ open -a Terminal ${JSON.stringify(starter)}
         }
         if (!ffmpeg) {
           const w = await wieWeiter(T('ffmpeg holen'),
-            T('Ohne ffmpeg läuft alles — nur Klangmessung und Videoschnitt fehlen.'));
+            T('Ohne ffmpeg hörst du deine Musik, aber fast alles Rechnen fehlt: Klanganalyse, Instrumentspuren, Whisper, Musikstil, Kacheln und Tiefenkarten.'));
           if (w === 'schluss') { wiederkommen(); schluss(0); }
-          if (w === 'ueber') { wink(T('Weiter ohne ffmpeg. Ein späterer Lauf holt es nach.')); versuche = false; }
+          if (w === 'ueber') { wink(T('Weiter ohne ffmpeg. Starte die Einrichtung später noch einmal, dann holt sie es nach.')); versuche = false; }
         }
       }
     }
   }
   if (ffmpeg) {
     process.env.PATH = path.dirname(ffmpeg) + path.delimiter + process.env.PATH;
-    /* Damit der Starter und der Morgenlauf dieselben Werkzeuge finden,
-       ohne dass jemand am PATH des Systems dreht. */
-    fs.mkdirSync(WERKZEUG, { recursive: true });
-    fs.writeFileSync(path.join(WERKZEUG, 'werkzeug.txt'),
-      '# Von bin/einrichten.js geschrieben. Löschen ist harmlos - dann wird neu gesucht.\n' +
-      `node=${process.execPath}\nffmpeg=${ffmpeg}\n`);
+    /* Hier wurde bis 28.10.2026 werkzeug/werkzeug.txt geschrieben (Pfade zu Node und ffmpeg), „damit Starter und
+       Morgenlauf dieselben Werkzeuge finden" - gelesen hat die Datei nie jemand. Den Weg zu ffmpeg setzen die Starter
+       selbst (starten-*.cmd, bin/starten.js: werkzeug/ffmpeg/bin vorn in den PATH). */
   }
 
   /* ================================================================ */

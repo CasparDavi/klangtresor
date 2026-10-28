@@ -132,33 +132,19 @@ about will also find the detours in
 
 ## Setting up
 
-Requirements: [Node.js](https://nodejs.org) and
-[ffmpeg](https://ffmpeg.org) (`brew install ffmpeg` on the Mac,
-`apt install ffmpeg` on Linux).
+Double-click the setup script for your system:
+`einrichten-macos.command`, `einrichten-windows.cmd` or
+`einrichten-linux.sh`. It fetches what is missing — Node.js, the packages,
+the AI models and Whisper, on Windows also ffmpeg (on Mac and Linux ffmpeg
+comes from the package manager) —, about 4.7 GB in total. Then it asks for
+your Suno name, fetches the public song list, takes over Suno files that
+are already on the computer, loads cover images and motion artwork and
+starts KlangTresor. Every step is explained in [START-HERE.md](START-HERE.md).
 
-```bash
-node bin/sammelskript.js
-```
-
-The script names the address to open in Chrome. There: right-click →
-*Inspect* → *Console*, paste the contents of the generated file
-`browser/02-sammeln-aktuell.js`, press Enter. In the end,
-`suno-archiv-metadaten.json` is in your Downloads folder.
-
-```bash
-mv ~/Downloads/suno-archiv-metadaten.json \
-   library/roh/profil-$(date +%Y-%m-%d-%H-%M-%S).json
-node bin/wiederherstellen.js
-node server/server.js
-```
-
-`wiederherstellen.js` builds everything else: catalogue, media, tiles,
-colour palettes. The server names the addresses for the home network and
-iPhone.
-
-**Your own handle is entered nowhere.** The collection script reads it
-from the address of the profile page it runs on, and sorts out other
-people's songs accordingly.
+What only works when signed in — unpublished titles, albums, word
+timestamps, audio files you have already unlocked — is fetched afterwards
+by the bookmark "KlangTresor morgens". Its address is in the morning window
+behind the red button.
 
 ### On Windows
 
