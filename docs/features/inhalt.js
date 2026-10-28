@@ -253,6 +253,19 @@ const S = {
       ru:['<b>Обновление заменяет программу</b>, но не архив.','<b>Немецкий, английский, русский.</b>','<b>Сторонние компоненты сохраняют свои лицензии.</b> Модели ИИ для определения музыкального стиля — только для некоммерческого использования; подробности в web/fremd/LIZENZEN.md.']}}
   ]}
  ],
+ /* Soundtrack: die vier Songs über KlangTresor; Bild = erstes Bild des Bewegtbild-Covers (trägt den Titel) */
+ lieder:{
+  augenbraue:{en:'Soundtrack',de:'Soundtrack',ru:'Саундтрек'},
+  h:{en:'Four songs about KlangTresor.',de:'Vier Songs über KlangTresor.',ru:'Четыре песни о KlangTresor.'},
+  p:{en:'By Caspar_D, made with Suno.',de:'Von Caspar_D, gemacht mit Suno.',ru:'От Caspar_D, сделано в Suno.'},
+  hoeren:{en:'Listen on Suno',de:'Auf Suno anhören',ru:'Слушать в Suno'},
+  liste:[
+   {t:'KlangTresor', bild:'img/lied-1.webp', url:'https://suno.com/song/47dfffbc-4c16-41f5-ae0e-a07278afcf39', dauer:'4:14', stil:{en:'Neue Deutsche Härte',de:'Neue Deutsche Härte',ru:'Neue Deutsche Härte'}},
+   {t:'KlangTresor – ClubMix', bild:'img/lied-2.webp', url:'https://suno.com/song/e55a2590-18bf-461a-9bde-fddb1434ad44', dauer:'5:11', stil:{en:'Melodic hard trance',de:'Melodic Hard Trance',ru:'Мелодичный хард-транс'}},
+   {t:'KlangTresor – SchneeMix', bild:'img/lied-3.webp', url:'https://suno.com/song/b6ca4dc6-7c79-4f27-b3e4-ed722f2281bd', dauer:'4:08', stil:{en:'Synth-pop',de:'Synthpop',ru:'Синти-поп'}},
+   {t:'KlangTresor – Снег по кнопке', bild:'img/lied-4.webp', url:'https://suno.com/song/f3f3f9b8-4116-4025-8643-faff6b860fdd', dauer:'4:06', stil:{en:'Synth-pop, in Russian',de:'Synthpop, auf Russisch',ru:'Синти-поп, на русском'}}
+  ]
+ },
  grenzen:{
   h:{en:'Good to know',de:'Gut zu wissen',ru:'Полезно знать'},
   l:{en:['KlangTresor does not make music. Songs are made on Suno; KlangTresor keeps and shows them.','It only fetches your own songs, with your own Suno login.','When Suno changes its website, the morning run may need an update. Everything already at home stays playable.'],

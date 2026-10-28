@@ -16,6 +16,18 @@ Gestaltungsregeln im Einzelnen: [STIL.md](STIL.md).
 | Vorschaubild für Discord & Co. (1280 × 640) | `~/Downloads/KlangTresor-social-preview.jpg` | von Hand hochladen: Repo → Settings → Social preview |
 | Sonderausgabe (Schalter `?tarja`, eigene Akzentfarbe) | Bilder nur lokal, von git ignoriert | nicht öffentlich |
 
+**Soundtrack – vier Songs über KlangTresor** (alle öffentlich auf Suno, auf der Feature-Seite vor „Gut zu wissen“ verlinkt;
+Daten in `inhalt.js` unter `lieder`; Bild je Song = erstes Bild seines Bewegtbild-Covers, `img/lied-1…4.webp`):
+
+| Song | Stil | Länge | Link |
+|---|---|---|---|
+| KlangTresor | Neue Deutsche Härte | 4:14 | https://suno.com/song/47dfffbc-4c16-41f5-ae0e-a07278afcf39 |
+| KlangTresor – ClubMix | Melodic Hard Trance | 5:11 | https://suno.com/song/e55a2590-18bf-461a-9bde-fddb1434ad44 |
+| KlangTresor – SchneeMix | Synthpop | 4:08 | https://suno.com/song/b6ca4dc6-7c79-4f27-b3e4-ed722f2281bd |
+| KlangTresor – Снег по кнопке | Synthpop, russisch | 4:06 | https://suno.com/song/f3f3f9b8-4116-4025-8643-faff6b860fdd |
+
+Neue Songs dort eintragen; die Broschüre zeigt den Abschnitt nicht (im Druck ausgeblendet).
+
 **Eine Textquelle.** Jeder Text steht genau einmal in `inhalt.js`. Wer ihn dort ändert, ändert Seite und Broschüre.
 `broschuere.html` enthält nur den Seitenplan (`PLAN`), wenige Rahmenwörter (`RAHMEN`: S., Inhalt, Abb.) und das Layout.
 

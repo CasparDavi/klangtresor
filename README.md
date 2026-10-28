@@ -13,10 +13,15 @@ hold the key.*
 lyrics, prompts, artworks, playlists and metadata. Plus a website that
 runs on your home network and plays on every screen with a browser.
 
+<br>
+
 <table>
-<tr><td width="50%"><a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/geraete-en.webp" alt="Every screen at home: laptop, tablet, phone" width="100%"></a><br><sub>Every screen at home: laptop, tablet, phone</sub></td><td width="50%"><a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/buehne-en.webp" alt="The stage: lyrics word by word" width="100%"></a><br><sub>The stage: lyrics word by word</sub></td></tr>
-<tr><td width="50%"><a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/himmel-en.webp" alt="Sound space: every song a star, sorted by sound" width="100%"></a><br><sub>Sound space: every song a star, sorted by sound</sub></td><td width="50%"><a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/glockenstuhl-en.webp" alt="A real studio in the browser" width="100%"></a><br><sub>A real studio in the browser</sub></td></tr>
+<tr><td width="50%" valign="bottom"><a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/geraete-en.webp" alt="Every screen at home: laptop, tablet, phone" width="100%"></a><br><sub>Every screen at home: laptop, tablet, phone</sub></td><td width="50%" valign="bottom"><a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/buehne-en.webp" alt="The stage: lyrics word by word" width="100%"></a><br><sub>The stage: lyrics word by word</sub></td></tr>
+<tr><td width="50%" valign="top"><a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/himmel-en.webp" alt="Sound space: every song a star, sorted by sound" width="100%"></a><br><sub>Sound space: every song a star, sorted by sound</sub></td><td width="50%" valign="top"><a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/glockenstuhl-en.webp" alt="A real studio in the browser" width="100%"></a><br><sub>A real studio in the browser</sub></td></tr>
 </table>
+
+<br>
+
 
 Behind it sits a toolbox that reads from your own tracks what can be
 measured: loudness according to EBU R128, key from the bass, vocal

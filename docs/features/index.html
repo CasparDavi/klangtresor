@@ -136,6 +136,16 @@ main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
 .grenzen li{margin:0 0 6px}
 h1,h2,h3,h4{text-wrap:balance}
 .k p,.held p,.kopf p,.fenster li,.grenzen li{text-wrap:pretty}
+/* Soundtrack: vier Songs, je Kachel das erste Bild des Bewegtbild-Covers, verlinkt zu Suno */
+.lieder .liste{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.lieder .lied{display:block;background:var(--kachel);border-radius:28px;padding:16px 16px 22px;color:var(--text);text-decoration:none}
+.lieder .lied img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px;display:block;margin-bottom:16px}
+.lieder .stil{display:block;font-size:14px;font-weight:600;color:var(--akzent);margin:0 4px 4px}
+.lieder b{display:block;font-size:19px;line-height:1.2;font-weight:700;margin:0 4px}
+.lieder .hoeren{display:block;margin:8px 4px 0;font-size:14px;color:var(--leise)}
+.lieder .lied:hover .hoeren{color:var(--text)}
+@media screen and (max-width:1100px){.lieder .liste{grid-template-columns:1fr 1fr}}
+@media screen and (max-width:480px){.lieder .liste{gap:12px}.lieder .lied{padding:10px 10px 16px;border-radius:20px}.lieder b{font-size:16px}}
 footer{margin:40px 0 0;color:var(--leise);font-size:13px}
 @media screen and (max-width:820px){
   .raster{gap:14px}
@@ -169,7 +179,7 @@ footer{margin:40px 0 0;color:var(--leise);font-size:13px}
   html,body{background:#000}
   body{font-size:10.5pt;line-height:1.45}
   main{max-width:none;padding:18mm 20mm 16mm;box-decoration-break:clone;-webkit-box-decoration-break:clone}
-  .sprache,.plus,.overlay,.held .pdf{display:none!important}
+  .sprache,.plus,.overlay,.held .pdf,.lieder{display:none!important}
   /* Kopf */
   .held{padding:0 0 6mm;text-align:left}
   .held h1{font-size:30pt;background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--akzent)}
@@ -259,6 +269,9 @@ function bauen(){
     }
     h += `</div></section>`;
   }
+  { const g = S.lieder;
+    h += `<section class="abschnitt lieder"><div class="kopf"><p class="augenbraue">${g.augenbraue[L]}</p><h2>${g.h[L]}</h2><p>${g.p[L]}</p></div><div class="liste">${
+      g.liste.map(x => `<a class="lied" href="${x.url}" target="_blank" rel="noopener"><img src="${x.bild}?v=${BV}" alt=""><span class="stil">${x.stil[L]} · ${x.dauer}</span><b>${x.t}</b><span class="hoeren">${g.hoeren[L]} ↗</span></a>`).join('')}</div></section>`; }
   h += `<section class="grenzen"><h2>${S.grenzen.h[L]}</h2><ul>${S.grenzen.l[L].map(x => `<li>${x}</li>`).join('')}</ul></section>`;
   h += `<footer>${S.fuss[L]}${S.stern[L] ? `<br>${S.stern[L]}` : ''}</footer>`;
   document.getElementById('seite').innerHTML = h;
