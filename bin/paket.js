@@ -2,11 +2,11 @@
 /**
  * Packt das Weitergabe-ZIP — und prüft vorher, daß nichts Privates hinein kann.
  *
- *   node bin/paket.js              → ../KlangTresor.zip und ../KlangTresor-Update.zip
+ *   node bin/paket.js              → ../KlangTresor.zip, ../KlangTresor-Update.zip, ../KlangTresor-Setup.exe
  *
- * Beide gehoeren an jede Release:
- *   gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip …
- * Fehlt das zweite, liefert seine feste Adresse 404.
+ * Alle drei gehoeren an jede Release:
+ *   gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe …
+ * Fehlt eines, liefert seine feste Adresse 404.
  *
  * Das ZIP entsteht aus `git archive HEAD`. Damit kommt nur hinein, was
  * git kennt - library/ und alles andere aus .gitignore sind von
@@ -140,4 +140,10 @@ if (fehler.length) {
 }
 console.log(`  ${path.basename(zielUpdate)} — ${eintraege.length} Dateien, flach, ${fs.statSync(zielUpdate).size} Bytes`);
 console.log('  Geprüft: genau die vier Dateien, Mac/Linux ausführbar, .cmd mit CRLF.\n');
-console.log('  Release: gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip …\n');
+/* DIE SETUP.EXE FUER WINDOWS (Entscheidung vom 28.10.2026: jedes Release traegt sie). Gebaut aus dem eben geprueften
+   KlangTresor.zip, siehe bin/setup-bauen.js. Scheitert sie, scheitert das Paket - ein Release ohne Setup.exe liesse
+   die feste Adresse .../latest/download/KlangTresor-Setup.exe ins Leere zeigen. */
+const setup = spawnSync(process.execPath, [path.join(__dirname, 'setup-bauen.js')], { stdio: 'inherit' });
+if (setup.status !== 0) { console.error('\n  ABGEBROCHEN — die Setup.exe liess sich nicht bauen (siehe oben).\n'); process.exit(3); }
+
+console.log('  Release: gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe …\n');

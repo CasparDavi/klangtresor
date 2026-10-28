@@ -133,13 +133,17 @@ Function ${UN}LaeuftNicht
     ${IfNot} ${FileExists} "$INSTDIR\werkzeug\node\node.exe"
       ${ExitDo}
     ${EndIf}
+    ; Zum Schreiben oeffnen: das verweigert Windows, solange node.exe laeuft. (Umbenennen dagegen erlaubt es auch
+    ; bei laufendem Programm - so stand es hier zuerst, und das Entfernen loeschte im Test den laufenden Server.)
     ClearErrors
-    Rename "$INSTDIR\werkzeug\node\node.exe" "$INSTDIR\werkzeug\node\node.exe.pruefen"
+    FileOpen $0 "$INSTDIR\werkzeug\node\node.exe" a
     ${IfNot} ${Errors}
-      Rename "$INSTDIR\werkzeug\node\node.exe.pruefen" "$INSTDIR\werkzeug\node\node.exe"
+      FileClose $0
       ${ExitDo}
     ${EndIf}
-    MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "$(laeuft_noch)" IDRETRY weiter
+    ; /SD: im stillen Lauf (/S) gibt es niemanden, der klickt - dann Abbruch mit Fehlercode, nicht ewiges Warten.
+    MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "$(laeuft_noch)" /SD IDCANCEL IDRETRY weiter
+    SetErrorLevel 2
     Quit
     weiter:
   ${Loop}

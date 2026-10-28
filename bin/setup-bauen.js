@@ -19,19 +19,24 @@
    CUDA-Teile). Darum laesst sich node_modules hier auf dem Mac fuer Windows bauen: npm ci ohne Skripte, danach
    bleibt von onnxruntime nur win32/x64 - der Rest waere 120 MB Ballast.
 
-   Gebaut wird ausserhalb des Repos, in ../_setup-bau/ (auf der SSD): geholt/ haelt die Downloads, inhalt/ ist der
-   Ordner, wie er beim Nutzer landet.
+   Die Downloads liegen ausserhalb des Repos in ../_setup-bau/geholt/; der Ordner, wie er beim Nutzer landet, entsteht
+   in einem Wegwerfordner auf der Systemplatte (siehe BAU).
    ============================================================= */
 'use strict';
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 
 const WURZEL = path.join(__dirname, '..');
-const BAU = path.join(WURZEL, '..', '_setup-bau');
-const GEHOLT = path.join(BAU, 'geholt');
+/* Die Downloads bleiben auf der SSD (../_setup-bau/geholt). Der Inhalt entsteht auf der Systemplatte und wird danach
+   geloescht: die SSD ist exFAT, und dort legt macOS zu jeder Datei eine Begleitdatei ._name an - die laegen sonst
+   alle in der Setup.exe (so geschehen beim ersten Bau, 28.10.2026). */
+const BAU = fs.mkdtempSync(path.join(os.tmpdir(), 'klangtresor-setup-'));
+const GEHOLT = path.join(WURZEL, '..', '_setup-bau', 'geholt');
 const INHALT = path.join(BAU, 'inhalt');
+process.on('exit', () => fs.rmSync(BAU, { recursive: true, force: true }));
 const ZIP = path.join(WURZEL, '..', 'KlangTresor.zip');
 const AUSGABE = path.join(WURZEL, '..', 'KlangTresor-Setup.exe');
 const NSI = path.join(__dirname, 'setup', 'klangtresor.nsi');
@@ -108,7 +113,11 @@ einsetzen(holen('node-windows-x64'), path.join(INHALT, 'werkzeug', 'node'));
 if (!fs.existsSync(path.join(INHALT, 'werkzeug', 'node', 'node.exe'))) stirb('node.exe fehlt nach dem Auspacken');
 sag(`werkzeug/node: ${mb(groesse(path.join(INHALT, 'werkzeug', 'node')))}`);
 einsetzen(holen('ffmpeg-windows'), path.join(INHALT, 'werkzeug', 'ffmpeg'));
-if (!fs.existsSync(path.join(INHALT, 'werkzeug', 'ffmpeg', 'bin', 'ffmpeg.exe'))) stirb('ffmpeg.exe fehlt nach dem Auspacken');
+for (const f of ['ffmpeg.exe', 'ffprobe.exe']) if (!fs.existsSync(path.join(INHALT, 'werkzeug', 'ffmpeg', 'bin', f))) stirb(f + ' fehlt nach dem Auspacken');
+/* ffplay.exe (ein Abspieler, 106 MB) und die Handbuchseiten ruft KlangTresor nirgends auf - nur ffmpeg und ffprobe.
+   LICENSE und README.txt bleiben: sie gehoeren zur Weitergabe von ffmpeg dazu. */
+fs.rmSync(path.join(INHALT, 'werkzeug', 'ffmpeg', 'bin', 'ffplay.exe'), { force: true });
+fs.rmSync(path.join(INHALT, 'werkzeug', 'ffmpeg', 'doc'), { recursive: true, force: true });
 sag(`werkzeug/ffmpeg: ${mb(groesse(path.join(INHALT, 'werkzeug', 'ffmpeg')))}`);
 
 /* 3. Die Pakete, genau nach package-lock.json */
@@ -139,7 +148,10 @@ sag(`Gesamt, ausgepackt: ${mb(groesse(INHALT))}\n`);
 /* 5. makensis */
 fs.rmSync(AUSGABE, { force: true });
 lauf('makensis', ['-V2', '-INPUTCHARSET', 'UTF8', `-DVERSION=${VERSION}`, `-DINHALT=${INHALT}`, `-DAUSGABE=${AUSGABE}`,
-  `-DENTFERNEN=${ENTFERNEN}`, NSI]);
+  `-DENTFERNEN=${ENTFERNEN}`, NSI],
+  /* Ohne UTF-8-Locale liest makensis auf dem Mac das Skript nicht („Bad text encoding" schon an Zeile 1) - auch mit
+     -INPUTCHARSET UTF8, auch mit BOM. Aus dem Terminal mit LANG=de_DE.UTF-8 ginge es, aus anderen Aufrufern nicht. */
+  { env: { ...process.env, LC_ALL: 'en_US.UTF-8' } });
 const summe = crypto.createHash('sha256').update(fs.readFileSync(AUSGABE)).digest('hex');
 console.log(`\n  ${path.basename(AUSGABE)} — ${mb(fs.statSync(AUSGABE).size)}`);
 console.log(`  SHA-256 ${summe}\n`);
