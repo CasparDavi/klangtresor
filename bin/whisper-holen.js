@@ -117,7 +117,7 @@ async function laden(url, ziel, name, mindestens) {
         if (!aus.write(stueck)) await new Promise(f => aus.once('drain', f));
         if (Date.now() - zuletzt > 500) {
           zuletzt = Date.now();
-          melden.lauf({ was: T('{name} wird geladen', { name }), bytes: n, gesamt: ganz || mindestens,
+          melden.lauf({ was: T('{name} wird geladen', { name }), bytes: n, gesamt: ganz || mindestens, quelle: new URL(url).hostname,
             jetzt: ganz ? T('{teil} von {ganz}', { teil: mb(n), ganz: mb(ganz) }) : mb(n) });
           if (process.stdout.isTTY && !STILL) process.stdout.write(`\r  ${name} … ${mb(n)}${ganz ? ' / ' + mb(ganz) : ''}   `);
         }

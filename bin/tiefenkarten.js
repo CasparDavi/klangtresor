@@ -289,15 +289,10 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
 }
 
 (async () => {
-  if (!fs.existsSync(MODELL)) {
-    /* KEIN ABBRUCH. Dieser Schritt haengt in bin/wiederherstellen.js und damit im
-       Morgenlauf; ein fehlendes Modell ist dort kein Fehler, sondern ein Zustand -
-       wer die Modelle uebersprungen hat, soll trotzdem Medien und Kacheln bekommen.
-       Echte Fehler geben weiterhin 1 zurueck. */
-    console.log('  ' + T('Das Tiefenmodell fehlt — Tiefenkarten werden übersprungen.'));
-    console.log('  ' + T('Einmal nachholen mit:  node bin/modelle-holen.js') + '\n');
-    return;
-  }
+  /* Fehlt das Modell, ist die Einrichtung unvollstaendig - das wird gesagt und rot (bin/fehlt.js, 28.10.2026).
+     Bis dahin hiess es „uebersprungen" und der Schritt blieb gruen. Medien und Kacheln bekommt man trotzdem:
+     bin/wiederherstellen.js laeuft nach einem roten Teilschritt weiter. */
+  if (!fs.existsSync(MODELL)) require('./fehlt.js').fehlt(T('Tiefenkarten'), path.relative(WURZEL, MODELL));
   const ort = require('onnxruntime-node');
   const t0 = Date.now();
   const sitzung = await ort.InferenceSession.create(MODELL);

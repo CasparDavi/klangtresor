@@ -76,32 +76,28 @@ function nachholen(sag = (t) => console.log(t)) {
   const mitSkript = fehlt.filter((n) => (pakete['node_modules/' + n] || {}).hasInstallScript);
   const ohneSkript = fehlt.filter((n) => !mitSkript.includes(n));
   const npm = npmAufruf();
+  /* JE PAKET EIN AUFRUF, MIT BALKEN (28.10.2026, Tab „System": „Progressbars für alles, was von remote kommt").
+     npm selbst meldet keine Zahlen; je Paket ein Schritt gibt dem Balken „3 von 5" und den Namen dazu. */
+  const melden = require('./melden.js');
+  const alle = fehlt.length; let nr = 0;
   const lauf = (namen, extra) => {
-    if (!namen.length) return;
-    sag(`  Pakete nachholen: ${namen.join(', ')} …`);
-    spawnSync(npm.befehl, npm.vorn.concat(['install', '--no-save', '--no-fund', '--no-audit', ...extra, ...namen.map(fassung)]),
-      { cwd: WURZEL, stdio: 'inherit', shell: npm.schale });
+    for (const name of namen) {
+      nr++;
+      melden.lauf({ was: 'Programmbausteine werden geholt', n: nr - 1, von: alle, nEinheit: 'Paket', quelle: 'registry.npmjs.org', jetzt: name });
+      sag(`  Paket nachholen: ${fassung(name)} …`);
+      spawnSync(npm.befehl, npm.vorn.concat(['install', '--no-save', '--no-fund', '--no-audit', ...extra, fassung(name)]),
+        { cwd: WURZEL, stdio: 'inherit', shell: npm.schale });
+    }
   };
   /* Erst die ohne Skript - die koennen nicht an einem fremden Skript scheitern. */
   lauf(ohneSkript, ['--ignore-scripts']);
   lauf(mitSkript, []);
+  melden.ausLauf();
   return fehlende();
 }
 
-/* Fuer Programme, die ein Paket brauchen (karte.js): fehlt es, wird es
-   geholt; klappt das nicht, gibt es eine Meldung mit Ausweg statt eines
-   Stapelabzugs. */
-function brauche(name) {
-  if (!fehlende().includes(name)) return true;
-  console.log(`  Das Paket ${name} fehlt in node_modules — ich hole es nach.`);
-  const rest = nachholen();
-  if (!rest.includes(name)) return true;
-  console.log(`  ${name} liess sich nicht holen. Ausweg: im KlangTresor-Ordner aktualisieren-* doppelklicken`);
-  console.log('  oder in einem Terminal dort: node bin/pakete.js --tun');
-  return false;
-}
-
-module.exports = { fehlende, nachholen, brauche };
+/* brauche(name) holte fuer karte.js ein fehlendes Paket still nach - bis 28.10.2026; seither sagt es bin/fehlt.js. */
+module.exports = { fehlende, nachholen };
 
 if (require.main === module) {
   const fehlt = fehlende();

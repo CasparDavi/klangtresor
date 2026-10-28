@@ -152,27 +152,15 @@ const OHNE_PLAYLISTS = new Set([
    Auch hier schlaegt der Aufruf mit einer ID den Ausschluss. */
 const INSTRUMENTAL_TITEL = /\s(I|II|III|IV)$/;
 
+/* FEHLT WHISPER, IST DIE EINRICHTUNG UNVOLLSTAENDIG (28.10.2026). Bis dahin galt Whisper als optional: „uebersprungen",
+   Exit 0, und eine lange Anleitung zum Selbereinlegen. Programm und Modell holt seit 1.0.125 die Einrichtung
+   (bin/whisper-holen.js, Schritt 6); fehlt eines, wird der Schritt laut und rot (bin/fehlt.js). Eigene Orte gehen
+   weiterhin ueber WHISPER_CLI und WHISPER_MODELL. */
 if (!fs.existsSync(WERKZEUG) || !fs.existsSync(MODELL)) {
-  /* Whisper ist optional (Tarjas Paket, 21.08.2026): fehlt es, wird
-     der Schritt uebersprungen, nicht die ganze Morgenkette gestoppt.
-     Exit 0 mit klarer Meldung; Einrichtung in START-HIER.md. */
-  const fehlt = [];
-  if (!fs.existsSync(WERKZEUG)) fehlt.push('das Programm whisper-cli');
-  if (!fs.existsSync(MODELL))   fehlt.push('das Sprachmodell (ggml-*.bin)');
-  console.log(`  Whisper nicht eingerichtet — übersprungen. Es fehlt: ${fehlt.join(' und ')}.
-
-  Gesucht wurde der Reihe nach:
-${WO_WERKZEUG.filter(Boolean).map(o => '    ' + o).join('\n')}
-  und als Sprachmodell:
-${WO_MODELL.filter(Boolean).map(o => '    ' + o).join('\n')}
-
-  Am einfachsten: beides nach werkzeug/whisper/ legen (das Programm whisper-cli,
-  unter Windows das ausgepackte whisper-bin-x64.zip, und ein Sprachmodell, etwa
-  ggml-large-v3.bin oder – ohne Grafikkarte viel schneller – ggml-large-v3-turbo.bin)
-  — dann findet es sich von selbst. Oder die Orte angeben:
-    WHISPER_CLI=… WHISPER_MODELL=… node bin/whisper.js
-  Ausführlich: START-HIER.md („Karaoke-Zeitmarken mit Whisper“) bzw. docs/suno/WHISPER.md`);
-  process.exit(0);
+  const fehlen = [];
+  if (!fs.existsSync(WERKZEUG)) fehlen.push('whisper-cli');
+  if (!fs.existsSync(MODELL))   fehlen.push(path.basename(MODELL || 'ggml-large-v3.bin'));
+  require('./fehlt.js').fehlt('Whisper', fehlen);
 }
 
 /* ---- Text-Helfer: Kern in whisper-text.js, geteilt mit dem

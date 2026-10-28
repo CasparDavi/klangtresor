@@ -196,27 +196,16 @@ function buchSchreiben(buch) {
 if (require.main === module) (async () => {
   if (!sperren()) { console.log(T('Gesichter — läuft schon (anderer Lauf), nichts zu tun.') + '\n'); return; }
   process.on('exit', entsperren);
-  /* FEHLENDE MODELLE NACHHOLEN (07.10.2026). Tarja: in bestehenden
-     Installationen und im Docker kamen die beiden neuen Modelle nie an -
-     der Docker-Entrypoint holt nur beim ersten Start, bin/einrichten.js nur
-     bei der Einrichtung, der Morgenlauf gar nicht. Beide zusammen rund
-     5 MB, also Sekunden; scheitert es, gilt die Meldung darunter. */
-  const fehlen = [MODELL, TEXTMODELL].filter(f => !fs.existsSync(f)).map(f => path.basename(f));
-  if (fehlen.length) {
-    console.log(T('Gesichter — hole fehlende Modelle: {liste}', { liste: fehlen.join(', ') }));
-    spawnSync(process.execPath, [path.join(__dirname, 'modelle-holen.js'), '--nur', fehlen.join(',')], { stdio: 'inherit' });
-  }
-  AUSWEIS.schrift = fs.existsSync(TEXTMODELL) ? SCHRIFTAUSWEIS : null;
-  if (!fs.existsSync(MODELL)) {
-    console.log(T('Gesichter — das Modell fehlt: {modell}', { modell: path.relative(WURZEL, MODELL) }));
-    console.log('  ' + T('Einmal nachholen mit:  node bin/modelle-holen.js') + '\n');
-    return;
-  }
+  /* FEHLENDE MODELLE: LAUT UND ROT (28.10.2026). Hier wurden sie seit dem 07.10.2026 still nachgeholt - fuer
+     Installationen, in denen sie nie ankamen. Seit der Regel „alles in der Einrichtung, nichts hinterher" holt sie
+     nur noch die Einrichtung (nach einem Update startet bin/aktualisieren.js sie dafuer); hier wird es gesagt. */
+  const fehlen = [MODELL, TEXTMODELL].filter(f => !fs.existsSync(f)).map(f => path.relative(WURZEL, f));
+  if (fehlen.length) require('./fehlt.js').fehlt(T('Gesichter'), fehlen);
+  AUSWEIS.schrift = SCHRIFTAUSWEIS;
   const ort = require('onnxruntime-node');
   /* hoechstens vier Faeden - der Lauf ist klein, der Rechner soll nebenher frei bleiben */
   const sitzung = await ort.InferenceSession.create(MODELL, { intraOpNumThreads: 4, logSeverityLevel: 3 });
-  const textSitzung = fs.existsSync(TEXTMODELL) ? await ort.InferenceSession.create(TEXTMODELL, { intraOpNumThreads: 4, logSeverityLevel: 3 }) : null;
-  if (!textSitzung) console.log('  ' + T('Ohne Texterkenner (library/modelle/text_detection_en_ppocrv3_2023may.onnx fehlt - node bin/modelle-holen.js).'));
+  const textSitzung = await ort.InferenceSession.create(TEXTMODELL, { intraOpNumThreads: 4, logSeverityLevel: 3 });
   const buch = buchLesen();
   if (MODELLIDENT(buch.ausweis) !== MODELLIDENT(AUSWEIS) && Object.keys(buch.bilder).length) {
     console.log('  ' + T('Der Erkenner hat gewechselt — alle Bilder werden neu durchsucht.'));

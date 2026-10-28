@@ -228,15 +228,5 @@
    "name": "Тональность и диапазон голоса по инструментальным дорожкам",
    "was": "Для каждой песни с инструментальными дорожками, у которой ещё нет записи, определяет по вокальной дорожке самую низкую и самую высокую ноту, а по остальным дорожкам — тональность. Так обзор можно сортировать и фильтровать по тональности и диапазону голоса."
   }
- },
- "whisper-holen": {
-  "en": {
-   "name": "Provide Whisper — program and model, if missing",
-   "was": "Checks whether Whisper is ready on this computer and fetches what is missing: the program (ready-made for Windows and Linux, built here on the Mac) and the large-v3 model of 3.1 GB. If both are there, the step takes a second. If the download breaks off, the next run continues where it stopped."
-  },
-  "ru": {
-   "name": "Подготовить Whisper — программу и модель, если их нет",
-   "was": "Проверяет, готов ли Whisper на этом компьютере, и догружает недостающее: программу (готовую для Windows и Linux, на Mac она собирается здесь) и модель large-v3 размером 3,1 ГБ. Если всё на месте, шаг занимает секунду. Если загрузка прервётся, следующий прогон продолжит с того же места."
-  }
  }
 }

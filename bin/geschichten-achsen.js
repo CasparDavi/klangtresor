@@ -88,10 +88,9 @@ const ACHSEN = {
 const cos = (a, b) => { let p = 0; for (let i = 0; i < a.length; i++) p += a[i] * b[i]; return p; };
 
 (async () => {
-  /* Fehlende Voraussetzung = Schritt ueberspringen (Exit 0), damit der
-     Wartungslauf weiterkommt - gleiches Muster wie bin/geschichten.js. */
-  for (const [d, was] of [[MODELL, 'Modell'], [TOKEN, 'Tokenizer']])
-    if (!fs.existsSync(d)) { console.log(`  Achsen: ${was} fehlt — Schritt übersprungen. Holen: node bin/modelle-holen.js`); process.exit(0); }
+  /* Fehlt Modell oder Tokenizer: laut und rot wie in bin/geschichten.js (bin/fehlt.js, 28.10.2026). */
+  const fehlen = [MODELL, TOKEN].filter(d => !fs.existsSync(d)).map(d => path.relative(path.join(LIB, '..'), d));
+  if (fehlen.length) require('./fehlt.js').fehlt('Geschichten-Achsen', fehlen);
   const gesch = path.join(LIB, 'geschichten.json');
   if (!fs.existsSync(gesch)) { console.error('  library/geschichten.json fehlt — erst node bin/geschichten.js'); process.exit(1); }
   const pfad = path.join(LIB, 'karte-geschichten.json');

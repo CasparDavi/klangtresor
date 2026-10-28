@@ -229,13 +229,19 @@ function holenText(url, timeoutMs) {
   });
 }
 
+/* Der Balken im Tab „System" (28.10.2026): bin/melden.js, wenn es da ist - aktualisieren.js laeuft auch als Kopie aus
+   KlangTresor-Update.zip in Installationen ohne bin/melden.js, dort bleibt es bei den Saetzen. */
+const melden = (() => { try { return require('./melden.js'); } catch (e) { const n = () => {}; n.lauf = n; n.ausLauf = n; n.zeile = n; return n; } })();
 function holenDatei(url, ziel) {
   return new Promise((fertig, bruch) => {
     fs.mkdirSync(path.dirname(ziel), { recursive: true });
     anfrage(url, { 'User-Agent': UA }, 30000, (a) => {
       const soll = Number(a.headers['content-length']) || 0;
-      let ist = 0;
-      a.on('data', t => { ist += t.length; });
+      let ist = 0, zuletzt = 0;
+      const quelle = (() => { try { return new URL(url).hostname; } catch (e) { return ''; } })();
+      a.on('data', t => { ist += t.length;
+        if (Date.now() - zuletzt > 400) { zuletzt = Date.now(); melden.lauf({ was: 'KlangTresor.zip', bytes: ist, gesamt: soll || null, quelle }); } });
+      a.on('end', () => melden.ausLauf());
       pipeline(a, fs.createWriteStream(ziel), (fehler) => {
         if (fehler) return bruch(new Error(T('Download abgebrochen: {grund}', { grund: fehler.message || fehler })));
         if (!a.complete || (soll && ist !== soll)) return bruch(new Error(T('Download unvollstaendig ({ist} von {soll} Bytes)', { ist, soll: soll || '?' })));
@@ -763,15 +769,21 @@ async function main() {
       sag('  ' + e.message);
       sag(T('  Das Programm liegt, die Pakete musst du von Hand setzen: npm ci'));
     }
-    /* Auch bei unveraendertem package-lock nachsehen: eine einmal unvollstaendige Installation blieb
-       es sonst fuer immer (Lutz, 23.10.2026, umap-js). bin/pakete.js holt nur, was fehlt. */
-    try { const rest = require('./pakete.js').nachholen(sag);
-          if (rest.length) sag(T('  Noch immer fehlen: {liste} — Ausweg: im KlangTresor-Ordner node bin/pakete.js --tun', { liste: rest.join(', ') })); }
-    catch (e) { sag(T('  Paketprüfung: {grund}', { grund: e.message })); }
+    /* Hier wurden bis 28.10.2026 fehlende Pakete still nachgeholt (bin/pakete.js, Lutz' umap-js vom 23.10.). Seit der
+       Regel „alles in der Einrichtung, nichts hinterher" zeigt der Tab „System" im Profil, was fehlt, und holt es dort
+       auf Knopfdruck mit Balken. Geaenderte Pakete eines Updates setzt npmCiWennNoetig oben weiterhin - das gehoert
+       zum Einspielen der neuen Version. */
+    try { const fehlt = require('./pakete.js').fehlende();
+          if (fehlt.length) sag(T('  Es fehlen Programmbausteine: {liste} — holen: Profil → System.', { liste: fehlt.join(', ') })); }
+    catch (e) {}
     sag('');
-    sag(T('  Fertig. Den laufenden Server einmal neu starten:'));
-    sag(T('    ./starten-linux.sh   oder starten-macos.command / starten-windows.cmd'));
-    sag(T('  Danach die Seite hart neu laden.'));
+    /* Aus dem Tab „System" gestartet (bin/auftrag.js): der Server hat die neue server.js gesehen und startet von selbst neu */
+    if (process.env.KT_AUFTRAG === '1') sag(T('  Fertig. Der Server startet von selbst neu – danach die Seite neu laden.'));
+    else {
+      sag(T('  Fertig. Den laufenden Server einmal neu starten:'));
+      sag(T('    ./starten-linux.sh   oder starten-macos.command / starten-windows.cmd'));
+      sag(T('  Danach die Seite hart neu laden.'));
+    }
   }
   sag('');
   schluss();

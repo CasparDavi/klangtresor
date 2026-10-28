@@ -67,12 +67,6 @@
   },
   {
     "schluessel": "whisper",
-    "name": "Whisper bereitstellen — Programm und Modell, falls sie fehlen",
-    "was": "Prüft, ob Whisper auf diesem Rechner bereitsteht, und holt nach, was fehlt: das Programm (fertig für Windows und Linux, auf dem Mac hier gebaut) und das Modell large-v3 mit 3,1 GB. Ist beides da, ist der Schritt in einer Sekunde durch. Bricht das Laden ab, macht der nächste Lauf an derselben Stelle weiter.",
-    "kurzergebnis_muster": "✓ Whisper bereit"
-  },
-  {
-    "schluessel": "whisper",
     "name": "Mitlaufender Text: Wort-Zeitmarken mit Whisper für neue Titel",
     "was": "Ermittelt für jeden eigenen Titel mit Liedtext, den Whisper noch nicht gerechnet hat, aus dem Gesang die Zeit jedes Wortes, damit die Bühne den Text mitlaufen lassen kann — auch für Titel, die Sunos eigene Zeitmarken tragen, weil Suno sich dabei verhört und Whisper zuverlässiger zuordnet. Der Liedtext aus dem Katalog hilft beim Hören. Naturklänge der Fokus-Wanderung, Suiten-Stücke I bis IV und Titel ohne Text bleiben außen vor. Wo Suno Zeitmarken geliefert hat, bleiben sie erhalten; die Whisper-Zeitmarken stehen daneben, in der Bühne wählbar. Jeder fertige Titel wird sofort gesichert; in die Bühne gelangen die Zeitmarken beim nächsten Katalogbau. Das Rechnen dauert je Titel etwa das Anderthalbfache seiner Spieldauer.",
     "kurzergebnis_muster": "→ <n> Titel abgehört, <n> min gerechnet; die Zeitmarken kommen beim nächsten Katalogbau in die Bühne. | → Alle Titel mit Text sind schon gehört, nichts zu tun."

@@ -7,7 +7,6 @@
      node bin/feder.js                      was fehlt, wird gezeichnet
      node bin/feder.js --neu                alles noch einmal
      node bin/feder.js --nur 0ac2e049,baff0ad0   nur diese Titel (Anfang der Kennung genuegt, Komma trennt)
-     node bin/feder.js --nur-modell         nur das Modell bereithalten (Morgenlauf), nichts zeichnen
      node bin/feder.js --avatare 2e06….jpg,91c5….jpg   nur diese Avatare als Bildnis (Dateinamen aus library/avatare/)
 
    WOFUER. Die Plakatvorlage „Skizzenbuch" (web/klangschaum/plakat.js) legt den Schaum als Studie auf eine
@@ -55,19 +54,12 @@
    bin/gesichter.js allein, ob titelbild.jpg da ist), sonst cover.jpg. Gezeichnet wird je eigenem Titel
    des Katalogs (nicht fremd), der ein Bild hat.
 
-   MODELL HOLEN - drei Wege, und keinen muss der Nutzer kennen (Caspar_D, 07.10.2026: „auch das Modelle
-   holen muß der Nutzer nicht wissen"; 08.10.2026: „über die morgenroutine werden nicht vorhandene modelle
-   geholt oder wenn sie gebraucht werden", „und wenn klangtresor das erste mal geladen wird, wird jedes
-   Modell mitinstalliert"):
-     Ersteinrichtung  bin/einrichten.js ruft bin/modelle-holen.js ohne --nur - der Eintrag dort reicht.
-     Morgenlauf       bin/wiederherstellen.js ruft  feder.js --nur-modell  (holt nur, wenn es fehlt;
-                      gezeichnet wird im Morgenlauf nichts - das kostet Minuten und braucht nur, wer ein
-                      Skizzenbuch oeffnet).
-     Bei Bedarf       das Skizzenbuch fragt /api/feder; fehlt etwas, startet server.js bilderVorbereiten('feder'):
-                      erst gesichter.js (die Schriftkaesten), dann dieses Skript, das das Modell selbst nachholt.
-   Scheitert das Holen (kein Netz), wird NICHTS gezeichnet, stand().modell bleibt false, und die Seite sagt es,
-   statt mindere Qualitaet zu zeigen (Caspar_D, 07.10.2026: „es wird gar nichts gerechnet, wenn die Modelle
-   fehlen, sonst würden wir mindere Qualität liefern").
+   DAS MODELL HOLT DIE EINRICHTUNG, SONST NIEMAND (28.10.2026). Bis dahin gab es drei Wege: Einrichtung, Morgenlauf
+   (feder.js --nur-modell in bin/wiederherstellen.js) und „bei Bedarf" aus diesem Skript selbst. Caspar_D: „Alles was
+   nötig ist, wird im Setup gemacht. Wir machen gar nichts hinterher." Fehlt das Modell, wird NICHTS gezeichnet, das
+   Skript endet laut und rot (bin/fehlt.js), stand().modell bleibt false, und die Seite sagt es, statt mindere
+   Qualitaet zu zeigen (Caspar_D, 07.10.2026: „es wird gar nichts gerechnet, wenn die Modelle fehlen, sonst würden
+   wir mindere Qualität liefern").
 
    DAS BUCH. library/feder.json traegt den AUSWEIS (Modell mit Pruefsumme, Breite, Nachbearbeitung, Fassung) und
    je Titel die Quelle (titelbild | cover | eigen), ihren Zeitstempel (quellStand = mtimeMs), Breite, Hoehe, den
@@ -131,7 +123,6 @@ const FAEDEN = Math.max(1, Math.min(8, Math.floor((os.cpus().length || 2) / 2)))
 const MINDESTENS = (() => { try { const e = require('./modelle-holen.js').DATEIEN.find(d => d[0] === MODELLNAME); return e ? e[2] : 1; } catch (e) { return 1; } })();
 
 const NEU = process.argv.includes('--neu');
-const NUR_MODELL = process.argv.includes('--nur-modell');
 const NUR = (() => { const i = process.argv.indexOf('--nur'); return i >= 0 ? String(process.argv[i + 1] || '').split(',').map(s => s.trim()).filter(Boolean) : []; })();
 /* --avatare: null = Lauf ueber die Titel wie bisher; sonst die gewuenschten Avatar-Dateien (Bildnisse, siehe Kopf) */
 const AVATARE_WUNSCH = (() => { const i = process.argv.indexOf('--avatare'); return i >= 0 ? String(process.argv[i + 1] || '').split(',').map(s => s.trim()).filter(Boolean) : null; })();
@@ -297,18 +288,6 @@ function buchSchreiben(buch) {
   umbenennen(neben, BUCH);
 }
 
-/* Fehlt das Modell, still nachholen - genau diesen einen Eintrag, nie die 1,2 GB der uebrigen. Die Ausgabe von
-   modelle-holen.js geht durch (die @@KT-Zeilen tragen nEinheit 'Datei' und bleiben im Fortschritt der Seite
-   unsichtbar, server.js bilderVorbereiten). Ein Fehlschlag haelt nichts auf: der Rueckgabewert bleibt 0, damit
-   der Morgenlauf (bin/wiederherstellen.js bricht bei jedem anderen ab) weitergeht. */
-function modellHolen() {
-  if (modellDa(true)) return true;
-  console.log(`Feder — hole das fehlende Modell: ${MODELLNAME}`);
-  auffrischen();
-  spawnSync(process.execPath, [path.join(__dirname, 'modelle-holen.js'), '--nur', MODELLNAME], { stdio: 'inherit' });
-  auffrischen();
-  return modellDa(true);
-}
 
 /* Bild holen und Zeichnung schreiben - beides ueber ffmpeg, das ohnehin im Haus ist, wie bin/tiefenkarten.js.
    Kein zweites Bildpaket. */
@@ -426,12 +405,6 @@ async function bildnisseLauf(buch, wunsch) {
 }
 
 if (require.main === module) (async () => {
-  /* Morgenlauf: nur bereithalten. Kein Zeichnen, keine Sperre, nie ein Rueckgabewert ungleich 0. */
-  if (NUR_MODELL) {
-    if (modellHolen()) console.log(`Feder — Modell ist da (${MODELLNAME}).`);
-    else console.log(`Feder — Modell nicht zu holen (${MODELLNAME}); das Skizzenbuch versucht es beim Öffnen wieder.`);
-    return;
-  }
   if (AVATARE_WUNSCH && !AVATARE_WUNSCH.length) { console.log('Feder — --avatare ohne Dateinamen, nichts zu tun.\n'); return; }
   if (!sperren()) { console.log('Feder — läuft schon (anderer Lauf), nichts zu tun.\n'); return; }
   process.on('exit', entsperren);
@@ -444,11 +417,7 @@ if (require.main === module) (async () => {
     if (imBuch) try { buchSchreiben(imBuch); } catch (e) {}
     process.exit(sig === 'SIGINT' ? 130 : 143);
   });
-  if (!modellHolen()) {
-    console.log(`Feder — das Modell fehlt: ${path.relative(WURZEL, MODELL)}`);
-    console.log('  Gezeichnet wird nichts (keine mindere Qualität). Nachholen mit:  node bin/modelle-holen.js --nur ' + MODELLNAME + '\n');
-    return;
-  }
+  if (!modellDa(true)) require('./fehlt.js').fehlt('Skizzenbuch (Federzeichnung)', path.relative(WURZEL, MODELL));
   const aw = ausweis(), buch = buchLesen();
   /* beide Abschnitte verfallen zusammen (siehe Kopf, Bildnisse); avatare nur anfassen, wo es ihn gibt */
   if (AUSWEISIDENT(buch.ausweis) !== AUSWEISIDENT(aw)) {

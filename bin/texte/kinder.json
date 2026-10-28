@@ -1322,5 +1322,33 @@
  "Wieder öffentlich bei Suno, aus der Ablage zurückgeholt: {n}": {
   "en": "Public on Suno again, brought back from storage: {n}",
   "ru": "Снова опубликованы в Suno, возвращены из отложенных: {n}"
+ },
+ "{was}: es fehlt {liste}.": {
+  "en": "{was}: missing {liste}.",
+  "ru": "{was}: не хватает {liste}."
+ },
+ "Holen: Profil → System. Dort steht, was fehlt, und ein Knopf holt es.": {
+  "en": "Get it: Profile → System. It shows what is missing, and a button fetches it.",
+  "ru": "Загрузить: Профиль → Система. Там видно, чего не хватает, и кнопка это загрузит."
+ },
+ "Tiefenkarten": {
+  "en": "Depth maps",
+  "ru": "Карты глубины"
+ },
+ "Gesichter": {
+  "en": "Faces",
+  "ru": "Лица"
+ },
+ "Nicht gelungen: {datei} (Rückgabewert {status}). Die übrigen Schritte laufen weiter.": {
+  "en": "Did not work: {datei} (exit code {status}). The other steps continue.",
+  "ru": "Не получилось: {datei} (код возврата {status}). Остальные шаги продолжаются."
+ },
+ "nicht gelungen": {
+  "en": "did not work",
+  "ru": "не получилось"
+ },
+ "Nicht gelungen: {liste}. Die fertigen Schritte bleiben erhalten; der nächste Lauf holt nur nach, was fehlt.": {
+  "en": "Did not work: {liste}. Finished steps are kept; the next run only catches up on what is missing.",
+  "ru": "Не получилось: {liste}. Готовые шаги сохраняются; следующий запуск доделает только недостающее."
  }
 }

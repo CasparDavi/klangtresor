@@ -493,18 +493,30 @@ select:not([multiple]):not([size]){
 #ich.fehlt::after{content:'';position:absolute;top:1px;right:1px;width:9px;height:9px;border-radius:50%;background:#f9143c;border:2px solid var(--bg)}
 .reg .sysdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f9143c;margin-left:6px;vertical-align:middle}
 .reg .sysdot[hidden]{display:none}
-.systab{margin-top:14px;max-width:760px}
-.systab .syskopf{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 8px 4px}
+.systab .syskopf{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 4px}
 .systab .syskopf .fehltzahl{color:#f97b14}
 .systab .syskopf .allesda{color:#59d18c}
-.systab h4{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:22px 8px 6px}
-.systab .syszeile{display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:baseline;padding:7px 8px;border-radius:8px}
+.systab .syszeile{display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:baseline;padding:7px 8px;border-radius:8px;margin:0 -8px}
 .systab .syszeile:hover{background:var(--flaeche2)}
 .systab .z{text-align:center}
 .systab .z.ok{color:#59d18c}
 .systab .z.nein{color:#f9143c}
 .systab .z.offen{color:var(--schwach)}
 .systab .z.neu{color:#f97b14}
+.systab .pille{font:inherit;font-size:13px;padding:4px 14px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;white-space:nowrap}
+.systab .pille:hover:not([disabled]){border-color:var(--akzent)}
+.systab .pille[disabled]{opacity:.45;cursor:default}
+.systab .sysauftrag{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:var(--flaeche2)}
+.systab .sysauftrag.gut .sa{color:#59d18c}
+.systab .sysauftrag.rot .sa{color:#f9143c}
+.systab .sysauftrag .sa{margin-bottom:8px}
+.systab .sysauftrag .sz{font-size:13px;color:var(--schwach);margin-top:6px;overflow-wrap:anywhere}
+.systab .sysauftrag .leise{color:var(--schwach)}
+.systab .sysauftrag .szeilen{font:12px/1.4 ui-monospace,monospace;color:var(--schwach);white-space:pre-wrap;margin:6px 0 0}
+.systab .sysauftrag .pille{margin-top:8px}
+.systab .sysbalken{height:6px;border-radius:3px;background:var(--rand);overflow:hidden}
+.systab .sysbalken i{display:block;height:100%;background:#f97b14;transition:width .6s}
+.systab .sysbalken.unbestimmt i{opacity:.35}
 .systab .r{color:var(--schwach);font-variant-numeric:tabular-nums;text-align:right}
 .systab .unter{grid-column:2 / span 2;color:var(--schwach);font-size:13px;margin-top:-4px}
 .systab code{font-size:13px;background:var(--flaeche2);border-radius:6px;padding:1px 6px}
@@ -2505,12 +2517,10 @@ html.handy #schaumbild.zieht{will-change:transform}
    Adressen; schmal untereinander. */
 html.handy .profilreg{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-right:52px}
 html.handy .profilreg .reg{white-space:nowrap;flex:0 0 auto}
-.handyblock{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;padding:6px 0 10px}
+.handyblock{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
 .handyqr{flex:0 0 auto;width:200px;height:200px;border-radius:12px;overflow:hidden;background:#fff}
 .handyqr svg{display:block;width:100%;height:100%}
 .handytext{flex:1 1 280px;min-width:0;line-height:1.5}
-.handytext h3{margin:0 0 6px;font-size:17px}
-.handytext h4{margin:18px 0 4px;font-size:14px}
 .handytext p{margin:4px 0}
 .handyurl b{font-size:17px;color:var(--text);word-break:break-all}
 .handytext small{color:var(--schwach)}
@@ -4986,8 +4996,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=19"></script>
-<script src="/ui-sprache.js?v=31"></script>
+<script src="/ui-sprache-ru.js?v=20"></script>
+<script src="/ui-sprache.js?v=32"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -17802,55 +17812,119 @@ const sysGroesse = (b) => {
 const SYS_VERBINDUNG = { 'Suno-Seite (Ernte)': 'system.v.ernte', 'Profil-API (Nachbarschaft)': 'system.v.profil',
   'Kommentar-API (Reaktionen)': 'system.v.kommentare', 'Bild-CDN (Medien)': 'system.v.bilder', 'Video-CDN (Medien)': 'system.v.videos',
   'Audio-Links im Katalog': 'system.v.audio', 'Ersatzzeichen im Bestand': 'system.v.ersatz' };
-let sysNachmessen = null;
+let sysNachmessen = null, sysUhr = null, sysNeustart = false;
+/* Was ein Auftrag heisst - fuer „Tiefenkarten werden geholt …" und die Ergebniszeile */
+const sysAuftragName = (id) => id === 'alle' ? t('system.a.alle') : id === 'update' ? t('system.a.update')
+  : id === 'pakete' ? t('system.w.pakete_kurz') : t('system.m.' + id);
+/* Der Balken eines laufenden Auftrags aus seiner letzten @@KT-Zeile (bin/melden.js): Bytes, wenn es sie gibt, sonst Stueck */
+function sysBalken(a){
+  const L = a.lauf || {};
+  const anteil = L.gesamt && L.bytes != null ? L.bytes / L.gesamt : L.von ? (L.n || 0) / L.von : null;
+  const zahl = L.gesamt && L.bytes != null ? t('system.von', { teil: sysGroesse(L.bytes), ganz: sysGroesse(L.gesamt) })
+    : L.von ? t('system.n_von', { n: L.n || 0, von: L.von }) : '';
+  const quelle = L.quelle ? ' · ' + L.quelle : '';
+  return `<div class="sysauftrag"><div class="sa">${esc(a.id === 'update' ? t('system.update_laeuft') : t('system.laeuft', { was: sysAuftragName(a.id) }))}</div>`
+    + `<div class="sysbalken${anteil == null ? ' unbestimmt' : ''}"><i style="width:${anteil == null ? 100 : Math.max(2, Math.min(100, anteil * 100)).toFixed(1)}%"></i></div>`
+    + `<div class="sz">${esc([L.was, zahl].filter(Boolean).join(' · ') + quelle)}</div>`
+    + (a.zeilen && a.zeilen.length ? `<div class="sz leise">${esc(a.zeilen[a.zeilen.length - 1].trim())}</div>` : '') + `</div>`;
+}
+/* Ergebnis eines beendeten Auftrags - eine halbe Stunde lang sichtbar, mit den letzten Zeilen, wenn er scheiterte */
+function sysErgebnis(a){
+  if (!a || !a.id || a.laeuft) return '';
+  const ende = a.ende ? new Date(a.ende) : null;
+  if (ende && Date.now() - ende > 1800000) return '';
+  if (!ende && !a.abgebrochen) return '';
+  const gut = a.code === 0;
+  const satz = a.abgebrochen ? t('system.abgebrochen', { was: sysAuftragName(a.id) })
+    : gut ? t('system.fertig', { was: sysAuftragName(a.id) }) : t('system.nicht_gelungen', { was: sysAuftragName(a.id) });
+  return `<div class="sysauftrag ${gut ? 'gut' : 'rot'}"><div class="sa">${esc(satz)}`
+    + (ende ? ` <span class="leise">${esc(ende.toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' }))}</span>` : '') + `</div>`
+    + (!gut && a.zeilen && a.zeilen.length ? `<pre class="szeilen">${esc(a.zeilen.slice(-6).join('\n'))}</pre>` : '')
+    + (a.id === 'update' && gut ? `<button type="button" class="pille" onclick="location.reload()">${esc(t('system.neu_laden'))}</button>` : '')
+    + `</div>`;
+}
+async function sysHolen(was){
+  document.querySelectorAll('#profilsystem button[data-holen]').forEach(b => b.disabled = true);
+  let r = null;
+  try { r = await (await fetch('/api/system/holen?was=' + encodeURIComponent(was), { method: 'POST' })).json(); } catch (e) {}
+  if (!r || !r.ok) kurzMeldung(t('system.ging_nicht', { grund: (r && r.grund) || '–' }));
+  profilSystemFuellen();
+}
+/* Solange ein Auftrag laeuft: alle 0,8 s den Balken nachziehen. Antwortet der Server nicht (Neustart nach einem
+   Update), wird weiter gefragt, bis er wieder da ist; dann baut sich der Tab neu. */
+function sysBeobachten(){
+  clearTimeout(sysUhr);
+  sysUhr = setTimeout(async () => {
+    const el = $('profilsystem'); if (!el || el.hidden || !el.isConnected) return;
+    let a = null;
+    try { const r = await fetch('/api/system/auftrag', { cache: 'no-store' }); a = r.ok ? await r.json() : null; } catch (e) { a = null; }
+    const platz = el.querySelector('.sysauftragplatz');
+    if (!a){ sysNeustart = true; if (platz) platz.innerHTML = `<div class="sysauftrag"><div class="sa">${esc(t('system.server_neustart'))}</div></div>`; return sysBeobachten(); }
+    if (a.laeuft){ if (platz) platz.innerHTML = sysBalken(a); return sysBeobachten(); }
+    profilSystemFuellen();
+  }, 800);
+}
 async function profilSystemFuellen(){
   const el = $('profilsystem'); if (!el) return;
-  clearTimeout(sysNachmessen);
+  clearTimeout(sysNachmessen); clearTimeout(sysUhr);
   const s = await systemStandHolen();
   systemPunktSetzen(s);
   if (!s){ el.innerHTML = `<div class="systab"><p class="fussnote">${esc(t('system.nicht_lesbar'))}</p></div>`; return; }
+  const a = s.auftrag || null, laeuft = !!(a && a.laeuft);
+  /* Holen geht nur am Rechner selbst und nicht im eingefrorenen Archiv; waehrend eines Auftrags ist alles gesperrt */
+  const kann = s.lokal && !s.eingefroren;
+  const knopf = (was, text) => kann ? `<button type="button" class="pille" data-holen="${was}"${laeuft ? ' disabled' : ''} onclick="sysHolen('${was}')">${esc(text)}</button>` : '';
   const zeile = (zustand, name, rechts, unter) => `<div class="syszeile"><span class="z ${zustand}">${zustand === 'ok' ? '✓' : zustand === 'nein' ? '✗' : '–'}</span>`
     + `<span>${name}</span><span class="r">${rechts || ''}</span>${unter ? `<span class="unter">${unter}</span>` : ''}</div>`;
-  const fehltText = (x) => x.da ? '' : t('system.fehlt');
   const ffBefehl = s.system === 'darwin' ? 'brew install ffmpeg' : s.system === 'win32' ? '' : 'sudo apt install ffmpeg';
-  let h = `<div class="systab"><div class="syskopf">`
-    + (s.fehlt ? `<span class="fehltzahl">${esc(t('system.fehlen', { n: s.fehlt }))}</span>` : `<span class="allesda">${esc(t('system.alles_da'))}</span>`)
+  const fehlendBytes = s.modelle.filter(m => !m.da).reduce((x, m) => x + (m.bytes || 0), 0);
+  const holbar = s.modelle.some(m => !m.da) || s.werkzeuge.some(w => w.id === 'pakete' && !w.da);
+  /* Abschnitte als Kaesten wie in den anderen Laschen (.block mit h3) */
+  let h = `<div class="systab"><div class="block"><h3>${esc(t('system.zustand'))}</h3><div class="syskopf">`
+    + (s.fehlt ? `<span class="fehltzahl">${esc(s.fehlt === 1 ? t('system.fehlt_eins') : t('system.fehlen', { n: s.fehlt }))}</span>` : `<span class="allesda">${esc(t('system.alles_da'))}</span>`)
+    + (holbar ? knopf('alle', fehlendBytes ? t('system.alles_holen', { g: sysGroesse(fehlendBytes) }) : t('system.alles_holen_kurz')) : '')
     + `</div>`;
-  if (s.fehlt) h += `<p class="fussnote" style="margin:4px 8px 0">${esc(t('system.ausweg'))}</p>`;
+  if (s.fehlt && !kann) h += `<p class="fussnote" style="margin:4px 8px 0">${esc(t(s.eingefroren ? 'system.eingefroren' : 'system.nur_lokal'))}</p>`;
+  h += `<div class="sysauftragplatz">${laeuft ? sysBalken(a) : sysErgebnis(a)}</div></div>`;
   /* Das Programm selbst: dieselbe Auskunft wie im Fenster „Wer" (fassungNachsehen), hier mit der Nummer davor */
-  h += `<h4>${esc(t('system.programm'))}</h4><div class="syszeile"><span class="z ok sysprog">✓</span>`
-    + `<span>${esc(paketVersion ? t('wer.version', { v: paketVersion }) : 'KlangTresor')}<div class="fassungstand sysfassung"></div></span><span class="r"></span></div>`;
-  h += `<h4>${esc(t('system.werkzeuge'))}</h4>`;
+  h += `<div class="block"><h3>${esc(t('system.programm'))}</h3><div class="syszeile"><span class="z ok sysprog">✓</span>`
+    + `<span>${esc(paketVersion ? t('wer.version', { v: paketVersion }) : 'KlangTresor')}<div class="fassungstand sysfassung"></div></span><span class="r sysupdate"></span></div></div>`;
+  h += `<div class="block"><h3>${esc(t('system.werkzeuge'))}</h3>`;
   for (const w of s.werkzeuge){
     const name = w.id === 'node' ? 'Node' : w.id === 'pakete' ? esc(w.anzahl ? t('system.w.pakete', { n: w.anzahl }) : t('system.w.pakete_kurz')) : w.id;
-    const rechts = w.da ? esc(w.wert || '') : esc(fehltText(w));
-    const unter = !w.da && (w.id === 'ffmpeg' || w.id === 'ffprobe') && ffBefehl ? `${esc(t('system.befehl'))} <code>${ffBefehl}</code>`
+    const rechts = w.da ? esc(w.wert || '') : w.id === 'pakete' ? (knopf('pakete', t('system.holen_kurz')) || esc(t('system.fehlt'))) : esc(t('system.fehlt'));
+    const unter = !w.da && (w.id === 'ffmpeg' || w.id === 'ffprobe') ? (ffBefehl ? `${esc(t('system.befehl'))} <code>${ffBefehl}</code>` : esc(t('system.ffmpeg_win')))
                 : !w.da && w.id === 'pakete' && w.fehlen && w.fehlen.length ? esc(w.fehlen.join(', '))
                 : !w.da && w.id === 'node' ? esc(t('system.node_alt', { wert: w.wert })) : '';
     h += zeile(w.da ? 'ok' : 'nein', name, rechts, unter);
   }
-  h += `<h4>${esc(t('system.modelle'))}</h4>`;
+  h += `</div><div class="block"><h3>${esc(t('system.modelle'))}</h3>`;
   for (const m of s.modelle)
-    h += zeile(m.da ? 'ok' : 'nein', esc(t('system.m.' + m.id)), m.da ? sysGroesse(m.bytes) : esc(t('system.fehlt_gross', { g: sysGroesse(m.bytes) })));
+    h += zeile(m.da ? 'ok' : 'nein', esc(t('system.m.' + m.id)),
+      m.da ? sysGroesse(m.bytes) : (knopf(m.id, t('system.holen', { g: sysGroesse(m.bytes) })) || esc(t('system.fehlt_gross', { g: sysGroesse(m.bytes) }))));
   const v = s.verbindungen || {};
-  h += `<h4>${esc(v.stand ? t('system.verbindungen_stand', { wann: new Date(v.stand).toLocaleString(localeTag(), { dateStyle: 'medium', timeStyle: 'short' }) }) : t('system.verbindungen'))}</h4>`;
+  h += `</div><div class="block"><h3>${esc(v.stand ? t('system.verbindungen_stand', { wann: new Date(v.stand).toLocaleString(localeTag(), { dateStyle: 'medium', timeStyle: 'short' }) }) : t('system.verbindungen'))}</h3>`;
   if (!(v.befunde || []).length) h += zeile('offen', esc(t('system.verbindungen_nie')), '');
   for (const b of v.befunde || [])
     h += zeile(b.ok === true ? 'ok' : b.ok === false ? 'nein' : 'offen', esc(SYS_VERBINDUNG[b.name] ? t(SYS_VERBINDUNG[b.name]) : b.name),
                esc(b.ok === true ? t('system.antwortet') : b.ok === false ? t('system.antwortet_nicht', { code: b.wert }) : String(b.wert)));
   const p = s.platz || {};
-  h += `<h4>${esc(t('system.platz'))}</h4>`;
+  h += `</div><div class="block"><h3>${esc(t('system.platz'))}</h3>`;
   h += zeile('ok', p.archiv == null ? esc(t('system.wird_gemessen'))
               : esc(t('system.platz_text', { archiv: sysGroesse(p.archiv), programm: sysGroesse(p.programm) })),
          p.frei == null ? '' : esc(t('system.frei', { g: sysGroesse(p.frei) })));
-  el.innerHTML = h + `</div>`;
-  /* Liegt eine neuere Version bereit, steht vor der Programmzeile ein oranger Pfeil statt des Hakens */
+  el.innerHTML = h + `</div></div>`;
+  /* Liegt eine neuere Version bereit, steht vor der Programmzeile ein oranger Pfeil - und am Rechner selbst
+     (nicht im Container, dort wird das Image neu gebaut) der Knopf, der das Update einspielt */
   fassungNachsehen(el.querySelector('.sysfassung')).then(() => {
     const z = el.querySelector('.sysprog'); if (!z || !fassungLetzte || !fassungLetzte.neuer) return;
     z.className = 'z neu sysprog'; z.textContent = '↑';
+    const r = el.querySelector('.sysupdate');
+    if (r && !s.container) r.innerHTML = knopf('update', t('system.update'));
   });
+  if (laeuft) sysBeobachten();
   /* Die Ordnergroessen zaehlt der Server im Hintergrund - kurz danach noch einmal nachsehen, solange der Tab offen ist */
-  if (p.archiv == null) sysNachmessen = setTimeout(() => { if (!el.hidden) profilSystemFuellen(); }, 4000);
+  else if (p.archiv == null) sysNachmessen = setTimeout(() => { if (!el.hidden) profilSystemFuellen(); }, 4000);
 }
 
 /* ---- ABGELEGTE TITEL IM PROFIL (27.10.2026) -----------------------------------
@@ -17902,17 +17976,19 @@ async function profilHandyFuellen(){
   const erste = liste.find(a => a.art === 'ip') || liste[0], rest = liste.filter(a => a !== erste);
   const art = (a) => a.art === 'name' ? t('handy.adr.art.name') : a.art === 'bonjour' ? t('handy.adr.art.bonjour') : t('handy.adr.art.ip', { schnitt: a.schnitt || '' });
   el.dataset.gefuellt = '1';
-  el.innerHTML = `<div class="handyblock">
+  /* IN KAESTEN WIE DIE ANDEREN LASCHEN (Caspar_D, 28.10.2026: „die Tabs Aufs Handy und System richten sich nicht nach
+     den Hausregeln wie die anderen drei"): .block mit der Ueberschrift in kleinen gesperrten Grossbuchstaben. */
+  el.innerHTML = `<div class="block"><h3>${esc(t('handy.adr.titel'))}</h3><div class="handyblock">
     <div class="handyqr" aria-label="${esc(t('handy.adr.qr'))}" role="img">${qrSvg(erste.url)}</div>
     <div class="handytext">
-      <h3>${esc(t('handy.adr.titel'))}</h3>
       <p>${esc(t('handy.adr.text'))}</p>
       <p class="handyurl"><b>${esc(erste.url)}</b> <small>${esc(art(erste))}</small></p>
       ${rest.length ? `<p class="handysonst">${esc(t('handy.adr.sonst'))}</p><ul class="handyliste">${rest.map(a => `<li><span>${esc(a.url)}</span> <small>${esc(art(a))}</small></li>`).join('')}</ul>` : ''}
-      <h4>${esc(t('handy.home.titel'))}</h4>
+      <p class="handyhinweis">${esc(t('handy.adr.heimnetz'))}</p>
+    </div></div></div>
+    <div class="block"><h3>${esc(t('handy.home.titel'))}</h3><div class="handytext">
       <p><b>iPhone:</b> ${esc(t('handy.home.ios'))}</p>
       <p><b>Android:</b> ${esc(t('handy.home.android'))}</p>
-      <p class="handyhinweis">${esc(t('handy.adr.heimnetz'))}</p>
     </div></div>`;
 }
 

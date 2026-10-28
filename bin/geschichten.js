@@ -169,15 +169,10 @@ module.exports = { nurGesungenes: nurGesungenesGanz, ohneRegie: nurGesungenes };
 if (require.main !== module) return;
 
 (async () => {
-  /* Fehlt das Modell, wird der Schritt UEBERSPRUNGEN, nicht abgebrochen
-     (Exit 0): im Wartungslauf ist eine fehlende Voraussetzung kein
-     Fehler - der Rest des Morgens soll trotzdem laufen. Wichtig fuer
-     Bestaende, auf denen bin/modelle-holen.js noch nie lief. */
-  for (const [d, was] of [[MODELL, 'Modell'], [TOKEN, 'Tokenizer']])
-    if (!fs.existsSync(d)) {
-      console.log(`  Geschichten: ${was} fehlt (${path.relative(WURZEL, d)}) — Schritt übersprungen. Holen: node bin/modelle-holen.js`);
-      process.exit(0);
-    }
+  /* Fehlt Modell oder Tokenizer, ist die Einrichtung unvollstaendig: laut und rot (bin/fehlt.js, 28.10.2026),
+     nicht mehr „uebersprungen" mit Exit 0. Der Morgenlauf geht nach einem roten Schritt weiter. */
+  const fehlen = [MODELL, TOKEN].filter(d => !fs.existsSync(d)).map(d => path.relative(WURZEL, d));
+  if (fehlen.length) require('./fehlt.js').fehlt('Geschichten-Raum', fehlen);
 
   const katalog = K.lesen();
   if (!katalog) { console.error('Kein Katalog.'); process.exit(1); }

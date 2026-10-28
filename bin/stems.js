@@ -223,11 +223,7 @@ async function trennen(sitzung, quelle, zielOrdner, name) {
 
 /* ---- Lauf ------------------------------------------------------------ */
 (async () => {
-  if (!fs.existsSync(MODELL)) {
-    console.log('  Stems: das Modell fehlt — library/modelle/htdemucs_6s.onnx.');
-    console.log('  Holen mit:  node bin/modelle-holen.js');
-    return;
-  }
+  if (!fs.existsSync(MODELL)) require('./fehlt.js').fehlt('Instrumentspuren', 'library/modelle/htdemucs_6s.onnx');
   const katalog = K.lesen();
   if (!katalog) { console.log('  Stems: noch kein Katalog — erst sammeln.'); return; }
 

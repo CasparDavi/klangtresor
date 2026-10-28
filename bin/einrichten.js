@@ -1980,5 +1980,9 @@ open -a Terminal ${JSON.stringify(starter)}
     matt(T('Daten, die nur du sehen darfst, läuft ausschließlich in Chrome:'));
     satz(MATT('  ') + MARKE('https://www.google.com/chrome/'));
   }
-  await laeuft(process.execPath, [path.join('server', 'server.js')]);
+  /* UEBER DEN STARTER, NICHT DIREKT (28.10.2026). Der Server beendet sich mit Code 75, wenn sich sein Programm
+     aendert (ein Update aus dem Tab „System"), und nur bin/starten.js holt ihn dann zurueck. Direkt gestartet,
+     waere er nach dem ersten Update aus der Einrichtung heraus einfach weg. Den Browser hat die Einrichtung schon
+     geoeffnet. */
+  await laeuft(process.execPath, [path.join('bin', 'starten.js'), '--ohne-browser']);
 })();

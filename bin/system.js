@@ -115,29 +115,104 @@ function groessenZaehlen() {
   (async () => {
     const modelle = path.join(LIB, 'modelle');
     const archiv = await ordnerGroesse(LIB, [modelle]);
-    const programm = (await ordnerGroesse(modelle)) + (await ordnerGroesse(path.join(WURZEL, 'werkzeug')))
-      + (await ordnerGroesse(path.join(WURZEL, 'node_modules')));
+    /* PROGRAMM UND MODELLE = der ganze Programmordner ohne Archiv und ohne .git, dazu die Modelle - und Whisper, WO
+       IMMER es liegt. Bis zum 28.10.2026 zaehlten nur werkzeug/, node_modules/ und library/modelle/; auf Caspar_Ds
+       Rechner liegt Whisper (3,1 GB) aber neben dem Tresor, und der Tab zeigte 1,3 GB. Liegt Whisper im Ordner,
+       ist es oben schon gezaehlt und wird nicht doppelt genommen. */
+    let programm = (await ordnerGroesse(WURZEL, [LIB, path.join(WURZEL, '.git')])) + (await ordnerGroesse(modelle));
+    try {
+      const wh = require('./whisper-holen.js');
+      for (const f of [wh.programmDa(), wh.modellDa()]) {
+        if (!f) continue;
+        const echt = fs.realpathSync(f);
+        if (echt.startsWith(fs.realpathSync(WURZEL) + path.sep)) continue;
+        programm += fs.statSync(echt).size;
+      }
+    } catch (e) {}
     groessen = { archiv, programm }; groessenZeit = Date.now();
   })().catch(() => {}).finally(() => { zaehltGerade = false; });
 }
 
 function platz() {
-  groessenZaehlen();
+  groessenZaehlen();   /* nur im Server - der Start (bin/starten.js) fragt mit ohnePlatz */
   let frei = null;
   try { const s = fs.statfsSync(WURZEL); frei = s.bavail * s.bsize; } catch (e) {}
   return { frei, archiv: groessen ? groessen.archiv : null, programm: groessen ? groessen.programm : null };
 }
 
-async function stand() {
+async function stand(opt = {}) {
   const w = await werkzeuge(), m = modelle();
   return {
     system: process.platform,
-    werkzeuge: w, modelle: m, verbindungen: verbindungen(), platz: platz(),
+    werkzeuge: w, modelle: m, verbindungen: verbindungen(), platz: opt.ohnePlatz ? null : platz(),
     fehlt: w.filter(x => !x.da).length + m.filter(x => !x.da).length,
   };
 }
 
-module.exports = { stand };
+/* ---- AUFTRAEGE: HOLEN UND UPDATE (bin/auftrag.js) ----
+   Nur einer zur Zeit. Wer was holt, steht in library/auftrag.json, die Ausgabe in library/auftrag.log. */
+const AUFTRAG = path.join(LIB, 'auftrag.json');
+const PROTOKOLL = path.join(LIB, 'auftrag.log');
+const lebt = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
+
+function auftragStand() {
+  let a = null;
+  try { a = JSON.parse(fs.readFileSync(AUFTRAG, 'utf8')); } catch (e) { return null; }
+  let text = '';
+  try {
+    const fd = fs.openSync(PROTOKOLL, 'r'), g = fs.fstatSync(fd).size, n = Math.min(g, 262144), b = Buffer.alloc(n);
+    fs.readSync(fd, b, 0, n, g - n); fs.closeSync(fd); text = b.toString('utf8');
+  } catch (e) {}
+  let lauf = null; const zeilen = [];
+  /* Eine @@KT-Meldung kann mitten in einer Zeile stehen (modelle-holen.js schreibt „hole … " ohne Zeilenende und
+     meldet dann den Fortschritt) - vor ihr ist Text, ab ihr JSON bis zum Zeilenende. */
+  for (const z of text.split(/\r?\n/)) {
+    const i = z.indexOf('@@KT ');
+    const vorn = (i >= 0 ? z.slice(0, i) : z).replace(/\x1b\[[0-9;]*m/g, '').replace(/\r/g, '').trimEnd();
+    if (vorn.trim()) zeilen.push(vorn);
+    if (i >= 0) { try { const m = JSON.parse(z.slice(i + 5)); if ('lauf' in m) lauf = m.lauf; } catch (e) {} }
+  }
+  const laeuft = !a.ende && !!a.pid && lebt(a.pid);
+  return { id: a.id, seit: a.seit, ende: a.ende || null, code: a.code == null ? null : a.code,
+           laeuft, abgebrochen: !a.ende && !laeuft, lauf: laeuft ? lauf : null, zeilen: zeilen.slice(-8) };
+}
+
+/* id: 'alle' | 'update' | 'pakete' | 'whisper' | ein Zweck aus ZWECKE ('tiefe', …) */
+async function auftragStarten(id) {
+  const jetzt = auftragStand();
+  if (jetzt && jetzt.laeuft) return { ok: false, grund: 'laeuft', id: jetzt.id };
+  const s = await stand();
+  const mh = require('./modelle-holen.js');
+  const modellBefehl = (ids) => {
+    const dateien = s.modelle.filter(m => ids.includes(m.id) && m.id !== 'whisper' && !m.da).flatMap(m => m.fehlen);
+    return dateien.length ? [['bin/modelle-holen.js', '--nur', dateien.join(',')]] : [];
+  };
+  let befehle = [];
+  if (id === 'update') befehle = [['bin/aktualisieren.js']];
+  else if (id === 'pakete') befehle = [['bin/pakete.js', '--tun']];
+  else if (id === 'whisper') befehle = [['bin/whisper-holen.js']];
+  else if (id === 'alle') {
+    if (s.werkzeuge.some(w => w.id === 'pakete' && !w.da)) befehle.push(['bin/pakete.js', '--tun']);
+    befehle.push(...modellBefehl(mh.ZWECKE.map(z => z.id)));
+    if (s.modelle.some(m => m.id === 'whisper' && !m.da)) befehle.push(['bin/whisper-holen.js']);
+  } else if (mh.ZWECKE.some(z => z.id === id)) befehle = modellBefehl([id]);
+  else return { ok: false, grund: 'unbekannt' };
+  if (!befehle.length) return { ok: false, grund: 'nichts' };
+  fs.writeFileSync(PROTOKOLL, '');
+  fs.writeFileSync(AUFTRAG, JSON.stringify({ id, seit: new Date().toISOString(), ende: null, code: null }, null, 1));
+  const aus = fs.openSync(PROTOKOLL, 'a');
+  const args = [path.join('bin', 'auftrag.js'), id];
+  for (const b of befehle) args.push('--', ...b);
+  const kind = require('node:child_process').spawn(process.execPath, args,
+    { cwd: WURZEL, detached: true, stdio: ['ignore', aus, aus], windowsHide: true });
+  kind.unref(); fs.closeSync(aus);
+  /* Die Nummer des Auftrags gleich eintragen - sonst saehe eine Nachfrage in der ersten Zehntelsekunde einen Auftrag
+     ohne Prozess und meldete ihn als abgebrochen (so im ersten Test, 28.10.2026). auftrag.js schreibt dieselbe Nummer. */
+  fs.writeFileSync(AUFTRAG, JSON.stringify({ id, seit: new Date().toISOString(), pid: kind.pid, ende: null, code: null }, null, 1));
+  return { ok: true, id };
+}
+
+module.exports = { stand, auftragStand, auftragStarten };
 
 if (require.main === module) (async () => {
   const s = await stand();

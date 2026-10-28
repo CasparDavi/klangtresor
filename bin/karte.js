@@ -34,8 +34,9 @@
 'use strict';
 const fs   = require('node:fs');
 const path = require('node:path');
-/* Fehlt umap-js, wird es geholt statt jeden Morgen mit „Cannot find module" abzubrechen (Lutz, 23.10.2026). */
-if (!require('./pakete.js').brauche('umap-js')) process.exit(1);
+/* Fehlt umap-js, sagt es das laut statt mit „Cannot find module" abzubrechen (Lutz, 23.10.2026). Bis 28.10.2026 wurde es
+   hier still nachgeholt; seither holt es nur die Einrichtung oder der Tab „System" (bin/fehlt.js). */
+if (require('./pakete.js').fehlende().includes('umap-js')) require('./fehlt.js').fehlt('Klangraum', 'umap-js');
 const { UMAP } = require('umap-js');
 
 const WURZEL = path.join(__dirname, '..');

@@ -114,16 +114,13 @@ const SCHRITTE = [
   /* Die Avatare der Gemeinschaft einmal holen (bin/avatare.js), damit gesichter.js auch in ihnen sucht */
   ['avatare.js',     [...TEST], T('Avatare der Gemeinschaft holen')],
   ['gesichter.js',   [...TEST], T('Gesichter und Schrift in Titelbildern und Avataren finden')],
-  /* Das Zeichenmodell fuers Plakat „Skizzenbuch" bereithalten (bin/feder.js). Caspar_D, 08.10.2026: „über die
-     morgenroutine werden nicht vorhandene modelle geholt oder wenn sie gebraucht werden". Nur das Modell, und nur
-     wenn es fehlt - gezeichnet wird erst, wenn jemand ein Skizzenbuch oeffnet (server.js, bilderVorbereiten
-     'feder'): alle Cover zu zeichnen kostet Minuten, die der Morgen nicht fuer etwas ausgeben soll, das vielleicht
-     nie gebraucht wird. Gibt immer 0 zurueck - ohne Netz bricht der Morgen hier nicht ab. */
-  ['feder.js',       ['--nur-modell'], T('Zeichenmodell für das Skizzenbuch bereithalten')],
+  /* Hier stand bis 28.10.2026 feder.js --nur-modell: das Zeichenmodell fuers Skizzenbuch still nachholen. Seit der
+     Regel „alles in der Einrichtung, nichts hinterher" holt es nur die Einrichtung oder der Tab „System". */
   ['farben.js',      [],        T('Farbpaletten aus den Covern')],
 ];
 
 const start = Date.now();
+const rot = [];
 for (let i = 0; i < SCHRITTE.length; i++){
   const [datei, args, zweck] = SCHRITTE[i];
   console.log(`\n${'='.repeat(64)}`);
@@ -136,12 +133,18 @@ for (let i = 0; i < SCHRITTE.length; i++){
 
   const e = spawnSync(process.execPath, [path.join(__dirname, datei), ...args],
                       { stdio: 'inherit' });
+  /* EIN ROTER TEILSCHRITT HAELT DIE ANDEREN NICHT AUF (28.10.2026). Fehlt etwa das Tiefenmodell, endet
+     tiefenkarten.js rot (bin/fehlt.js) - Gesichter und Farben brauchen es nicht und laufen weiter. Am Ende steht,
+     was rot war, und der Rueckgabewert sagt es dem Morgenlauf. Vorher brach die Kette beim ersten Fehler ab. */
   if (e.status !== 0){
-    console.error('\n' + T('Abgebrochen bei {datei} (Rückgabewert {status}).', { datei, status: e.status }));
-    console.error(T('Die fertigen Schritte bleiben erhalten - einfach erneut starten,'));
-    console.error(T('es wird nur nachgeholt, was fehlt.'));
-    process.exit(e.status || 1);
+    rot.push(datei);
+    console.error('\n' + T('Nicht gelungen: {datei} (Rückgabewert {status}). Die übrigen Schritte laufen weiter.', { datei, status: e.status }));
+    melden.zeile('teil' + (i+1), zweck, T('nicht gelungen'), 'wink');
   }
+}
+if (rot.length) {
+  console.error('\n' + T('Nicht gelungen: {liste}. Die fertigen Schritte bleiben erhalten; der nächste Lauf holt nur nach, was fehlt.', { liste: rot.join(', ') }));
+  process.exitCode = 1;
 }
 
 const dauer = Math.round((Date.now() - start)/1000);

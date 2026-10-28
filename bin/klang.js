@@ -273,13 +273,12 @@ async function vermessen(M, mp3) {
   liste = liste.filter(s => fs.existsSync(path.join(SONGS, s.id, 'audio.mp3'))).slice(0, anzahl);
   if (!liste.length) { console.log('  Musikstil: nichts zu tun — alle Songs vermessen.'); return; }
 
-  /* Ohne Modelle freundlich aussteigen (Exit 0), damit der Morgenlauf
-     weitergeht - der Klangraum bleibt dann leer, alles andere laeuft
-     (22.08.2026: Kollege unter Windows, Modelle kamen nicht an). */
+  /* Ohne Modelle: laut und rot (bin/fehlt.js, 28.10.2026). Bis dahin hiess es „uebersprungen" mit Exit 0 -
+     so blieb unbemerkt, dass bei einem Kollegen unter Windows die Modelle nie ankamen (22.08.2026). */
   const fehlt = ['discogs-effnet-bsdynamic-1.onnx', 'discogs-effnet-bs64-1.json', 'mtg_jamendo_genre-discogs-effnet-1.onnx', 'mtg_jamendo_genre-discogs-effnet-1.json',
     'mtg_jamendo_moodtheme-discogs-effnet-1.onnx', 'mtg_jamendo_moodtheme-discogs-effnet-1.json', 'mtg_jamendo_instrument-discogs-effnet-1.onnx', 'mtg_jamendo_instrument-discogs-effnet-1.json']
     .filter(n => !fs.existsSync(path.join(MODELLE, n)));
-  if (fehlt.length) { console.log(`  Musikstil: ${fehlt.length} Modelldatei(en) fehlen in library/modelle/ — erst node bin/modelle-holen.js (START-HIER.md). Übersprungen.`); return; }
+  if (fehlt.length) require('./fehlt.js').fehlt('Musikstil', fehlt.map(n => 'library/modelle/' + n));
 
   const t0 = Date.now();
   const M = await modelleLaden();

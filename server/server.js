@@ -449,7 +449,9 @@ const MORGEN_HERKUNFT = 'https://suno.com';
 
    Was nur mit Anmeldung geht - WAV, Wort-Zeitmarken, Playlists - kann
    der Server nicht; das bleibt beim Lesezeichen auf suno.com. */
-const MORGEN_SAMMELN = { name: 'Suno abfragen', befehl: ['bin/sammeln.js'] };
+/* Kommt die Anfrage vom Rechner, auf dem KlangTresor laeuft? (Ordnerfenster, Holen, Update) */
+const vomRechnerSelbst = (req) => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(String(req.socket.remoteAddress || ''));
+/* Hier stand bis 28.10.2026 MORGEN_SAMMELN - nie benutzt; /api/morgen/sammeln ruft bin/sammeln.js selbst. */
 
 /* Wie alt ist die juengste Profil-Ernte des Lesezeichens? Ist sie
    juenger als zwei Stunden, verwertet der rote Knopf SIE, statt Suno
@@ -599,10 +601,9 @@ const MORGEN_SCHRITTE = [
   /* HOECHSTENS WHISPER_MINUTEN_JE_MORGEN je Lauf (Lutz, 23.10.2026: rund 900 offene Titel auf einer CPU
      blockierten den Morgen tagelang). whisper.js faengt danach keinen neuen Titel mehr an; der Rest folgt
      am naechsten Morgen. obergrenzeMs deckelt die Schaetzung im Morgenfenster mit derselben Grenze. */
-  /* WHISPER NACHHOLEN (27.10.2026): bestehende Installationen bekamen Whisper nie - die Einrichtung laeuft nur
-     einmal, das Aktualisieren holt keine Modelle. Ist alles da, ist der Schritt in einer Sekunde durch; sonst
-     holt er Programm und Modell (3,1 GB) - ohne Rueckfragen, einen Apple-Dialog oeffnet nur das Einrichten. */
-  { id: 'whisper-holen', schluessel: 'whisper', name: 'Whisper bereitstellen — Programm und Modell, falls sie fehlen', befehl: ['bin/whisper-holen.js', '--still'] },
+  /* Hier stand vom 27.10. bis 28.10.2026 der Schritt „Whisper bereitstellen": er holte Programm und Modell (3,1 GB)
+     still nach. Seit der Regel „alles in der Einrichtung, nichts hinterher" (Caspar_D) holt sie nur die Einrichtung
+     oder der Tab „System" im Profil, sichtbar und mit Balken; fehlt Whisper, wird der naechste Schritt rot. */
   { id: 'whisper-zeitmarken', schluessel: 'whisper', kaffee: true, name: 'Mitlaufender Text: Wort-Zeitmarken mit Whisper für neue Titel',
     befehl: ['bin/whisper.js', '--still', '--alle', '--bis-minuten', String(WHISPER_MINUTEN_JE_MORGEN)],
     obergrenzeMs: (WHISPER_MINUTEN_JE_MORGEN + 10) * 60000,
@@ -1527,8 +1528,8 @@ function eigeneSeite(req) {
    und Avatare vom CDN - still mindere Qualitaet. Jetzt: „es wird gar nichts gerechnet, wenn die Modelle
    fehlen, sonst würden wir mindere Qualität liefern", „auch das Modelle holen muß der Nutzer nicht
    wissen", „man könnte die map auch schon rechnen, aber eben noch keine grafiken einsetzen" - die Seite
-   legt den Schaum, der Server holt derweil hier nach, was fehlt (bin/avatare.js, dann bin/gesichter.js,
-   der die Modelle selbst nachholt). Die Seite zeigt „Bilder werden vorbereitet" und zeichnet erst danach.
+   legt den Schaum, der Server holt derweil hier nach, was fehlt (bin/avatare.js, dann bin/gesichter.js).
+   Die Modelle holt seit 28.10.2026 nur die Einrichtung oder der Tab „System"; fehlen sie, endet gesichter.js rot. Die Seite zeigt „Bilder werden vorbereitet" und zeichnet erst danach.
    Nie doppelt: laeuft der Morgenschritt „Medien laden" gerade, oder haelt ein anderer Lauf die Sperre
    (library/gesichter.lauf, library/avatare.lauf), wird nur gewartet. Der Morgenlauf arbeitet weiter vor -
    dies ist das Netz darunter. */
@@ -1600,7 +1601,7 @@ function bilderVorbereiten(art) {
     kind.stdout.on('data', (d) => {
       rest += String(d); const zeilen = rest.split('\n'); rest = zeilen.pop();
       for (const z of zeilen) if (z.startsWith('@@KT ')) {
-        /* nur Bilder zaehlen - das Nachholen der Modelle (nEinheit 'Datei') bleibt unsichtbar (Caspar_D: „darin verstecken sich auch die Modelle") */
+        /* nur Bilder zaehlen (nEinheit 'Datei' waren bis 28.10.2026 still nachgeholte Modelle - die holt hier niemand mehr) */
         try { const m = JSON.parse(z.slice(5)); if (m.lauf && m.lauf.von && m.lauf.nEinheit !== 'Datei') { bilderLauf.n = m.lauf.n || 0; bilderLauf.von = m.lauf.von; } } catch (e) {}
       }
     });
@@ -4080,7 +4081,22 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      beim naechsten Lauf zurueck („oeffentlich bei Suno schlaegt Ablage“). Im Profil: Liste, Zurueckholen, Loeschen. */
   /* DER TAB „SYSTEM" IM PROFIL (28.10.2026): was da ist, was fehlt - nur nachsehen, nichts holen (bin/system.js). */
   if (p === '/api/system' && req.method === 'GET') {
-    require('../bin/system.js').stand().then(s => jsonAntwort(res, s)).catch(e => jsonAntwort(res, { fehler: e.message }, 500));
+    const sys = require('../bin/system.js');
+    sys.stand().then(s => jsonAntwort(res, { ...s, lokal: vomRechnerSelbst(req), container: IM_CONTAINER, eingefroren: EINGEFROREN, auftrag: sys.auftragStand() }))
+      .catch(e => jsonAntwort(res, { fehler: e.message }, 500));
+    return;
+  }
+  if (p === '/api/system/auftrag' && req.method === 'GET') return jsonAntwort(res, require('../bin/system.js').auftragStand() || {});
+  /* HOLEN UND UPDATE (28.10.2026) - nur vom Rechner selbst: sonst koennte jedes Geraet im Heimnetz Programmcode
+     nachladen lassen. Der Auftrag laeuft losgeloest (bin/auftrag.js) und ueberlebt den Neustart nach einem Update. */
+  if (p === '/api/system/holen' && req.method === 'POST') {
+    if (!vomRechnerSelbst(req)) return jsonAntwort(res, { ok: false, grund: 'nicht_lokal' }, 403);
+    if (!eigeneSeite(req)) return jsonAntwort(res, { ok: false, grund: 'fremde_seite' }, 403);
+    if (EINGEFROREN) return jsonAntwort(res, { ok: false, grund: 'eingefroren' }, 405);
+    const was = u.searchParams.get('was') || '';
+    if (was === 'update' && IM_CONTAINER) return jsonAntwort(res, { ok: false, grund: 'container' }, 409);
+    require('../bin/system.js').auftragStarten(was).then(r => jsonAntwort(res, r, r.ok ? 200 : 409))
+      .catch(e => jsonAntwort(res, { ok: false, grund: e.message }, 500));
     return;
   }
   if (p === '/api/ablage' && req.method === 'GET') {

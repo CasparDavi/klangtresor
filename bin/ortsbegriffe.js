@@ -89,14 +89,11 @@ async function wortvektorenAktualisieren() {
   for (const w of vok.anzeige.keys()) if (alt[w]) woerter[w] = alt[w];   /* verschwundene fallen weg */
 
   if (fehlend.length) {
-    /* Fehlt das Modell, bleibt die Datei wie sie ist (Exit 0) - gleiches
-       Muster wie bin/geschichten.js: der Wartungslauf soll weiterkommen. */
+    /* Fehlt das Modell: laut und rot wie in bin/geschichten.js (bin/fehlt.js, 28.10.2026). */
     const MODELL = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet.onnx');
     const TOKEN = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json');
-    if (!fs.existsSync(MODELL) || !fs.existsSync(TOKEN)) {
-      console.log(`  Ortsbegriffe: Modell fehlt — ${fehlend.length} Wörter bleiben offen. Holen: node bin/modelle-holen.js`);
-      return null;
-    }
+    if (!fs.existsSync(MODELL) || !fs.existsSync(TOKEN))
+      require('./fehlt.js').fehlt('Ortsbegriffe', [MODELL, TOKEN].filter(d => !fs.existsSync(d)).map(d => path.relative(path.join(LIB, '..'), d)));
     const { einbetterLaden } = require('./texte-einbetten.js');
     const e = await einbetterLaden(
       path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet.onnx'),

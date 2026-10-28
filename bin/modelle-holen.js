@@ -43,8 +43,9 @@
  * holt nur die genannten Eintraege (07.10.2026, Tarja: in bestehenden
  * Installationen und im Docker kamen neue Modelle nie an - der Entrypoint
  * holt nur beim ersten Start, die Einrichtung nur einmal, der Morgenlauf
- * gar nicht). So kann ein Schritt, der ein Modell braucht, sich genau
- * dieses nachholen, statt 1,2 GB anzustossen.
+ * gar nicht). Seit 28.10.2026 ruft --nur nur noch der Tab „System" im
+ * Profil (bin/system.js) - je Zweck genau dessen Dateien, sichtbar und mit
+ * Balken. Kein anderes Programm holt sich hier still etwas nach.
  */
 'use strict';
 const fs = require('node:fs');
@@ -119,8 +120,8 @@ const DATEIEN = [
      Gewichte nennt keine der beiden Quellen ausdruecklich eine Lizenz, und die Trainingsdaten sind teils nicht
      kommerziell - darum liegt das Modell nicht im Paket, sondern wird geholt wie die uebrigen; KlangTresor bleibt
      nicht kommerziell (Caspar_D, 07.10.2026). 17 193 338 Byte, sha256 1fef40b8...4f498 (steht im Ausweis von
-     library/feder.json). Einzeln holbar mit --nur informative-drawings.onnx - das tut bin/feder.js selbst, wenn
-     es fehlt, und der Morgenlauf ueber feder.js --nur-modell. */
+     library/feder.json). Einzeln holbar mit --nur informative-drawings.onnx - das tut der Tab „System"
+     (bis 28.10.2026 tat es bin/feder.js still selbst, und der Morgenlauf ueber feder.js --nur-modell). */
   ['informative-drawings.onnx',
    'https://huggingface.co/rocca/informative-drawings-line-art-onnx/resolve/main/model.onnx', 17000000],
   ['paraphrase-multilingual-mpnet.onnx',
@@ -168,6 +169,9 @@ const STILLSTAND = 45000;
 /* Merkt sich, was gerade laeuft: die Fortschrittszeile ueberschreibt
    sich selbst und muss den Namen jedesmal mitschreiben. */
 let NAME_JETZT = '';
+/* Woher die Datei gerade kommt - aus ihrer Adresse, nicht fest „huggingface.co" (die Musikstil-Modelle kommen von
+   essentia.upf.edu, Gesichter und Schrift von github.com; korrigiert 28.10.2026) */
+let QUELLE_JETZT = '';
 
 function mb(n) { return (n / 1048576).toFixed(1) + ' MB'; }
 
@@ -224,7 +228,7 @@ async function perFetch(url, mindestens) {
              Summe ueber alle. GEHOLT_VORHER ist, was vor dieser Datei
              schon lag - sonst spraenge der Gesamtbalken zurueck. */
           melden.lauf({ was: T('{name} wird geladen', { name: NAME_JETZT }), n: NUMMER_JETZT, von: LISTE.length,
-            nEinheit: T('Datei'), quelle: T('von huggingface.co'),
+            nEinheit: T('Datei'), quelle: QUELLE_JETZT,
             bytes: GEHOLT_VORHER + n, gesamt: SOLL_GESAMT, jetzt: ganz ? T('{teil} von {ganz}', { teil: mb(n), ganz: mb(ganz) }) : mb(n) });
         }
       }
@@ -290,7 +294,7 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL
     const f = path.join(ZIEL, name);
     if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  ${T('vorhanden').padEnd(11)}${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
     melden.lauf({ was: T('{name} wird geladen', { name }), n: NUMMER_JETZT, von: LISTE.length,
-      nEinheit: T('Datei'), quelle: T('von huggingface.co'), bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });
+      nEinheit: T('Datei'), quelle: QUELLE_JETZT = new URL(url).hostname, bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });
     NAME_JETZT = name;
     process.stdout.write(`  ${T('hole').padEnd(11)}${name} … `);
     const a = await perFetch(url, mindestens);
