@@ -174,6 +174,7 @@ figure{margin:0;flex:0 0 auto}
 .schluss .mitte{position:absolute;left:0;right:0;top:118mm;display:flex;align-items:baseline;justify-content:center;gap:3.5mm;font-size:30pt;font-weight:700;letter-spacing:-.02em;color:var(--akzent)}
 .schluss .unten{position:absolute;left:var(--ra);right:var(--ra);bottom:var(--ru);font-size:7.5pt;line-height:11pt;color:var(--leise);border-top:.3pt solid var(--haar);padding-top:2.5mm}
 .schluss .unten p + p{margin-top:1.5mm}
+.titel .fusszeile a,.schluss .unten a{color:inherit;text-decoration:none}
 </style>
 </head>
 <body>
@@ -387,7 +388,7 @@ function titel(p){
   const ed = TARJA ? `<p class="edition"><span class="zier">${TARJA_EDITION.zier[0]}</span><span class="tname">${TARJA_EDITION.name}</span><span class="zier">${TARJA_EDITION.zier[1]}</span><span class="ewort">${TARJA_EDITION.wort}</span></p>` : '';
   return `<section class="seite titel" data-nr="1"><div class="bild"><img src="${TARJA ? druck(TARJA_TITELBILD) : bildUrl(p.bild)}" style="object-position:${p.pos}" alt=""></div><div class="schleier"></div>
     <div class="tkopf">${ed}<h1 class="marke">${RAD}${t(S.kopf.marke)}</h1><p class="spruch">${t(S.kopf.h)}</p></div>
-    <div class="fusszeile">${t(S.fuss).split(' · ').pop()}</div></section>`;
+    <div class="fusszeile">${ghLink(t(S.fuss).split(' · ').pop())}</div></section>`;
 }
 function auftakt(nr){
   const verz = S.abschnitte.map((a, ai) => `<div class="verz"><span class="vn">${zwei(ai + 1)}</span><span class="va">${t(a.augenbraue)}</span>
@@ -399,7 +400,7 @@ function auftakt(nr){
 }
 function schluss(nr){
   return `<section class="seite schluss" data-nr="${nr}"><div class="mitte">${RAD}${t(S.kopf.marke)}</div>
-    <div class="unten"><p>${t(S.fuss)}</p>${t(S.stern) ? `<p>${t(S.stern)}</p>` : ''}</div></section>`;
+    <div class="unten"><p>${ghLink(t(S.fuss))}</p>${t(S.stern) ? `<p>${t(S.stern)}</p>` : ''}</div></section>`;
 }
 
 document.documentElement.lang = L;

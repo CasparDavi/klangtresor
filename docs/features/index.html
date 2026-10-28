@@ -32,7 +32,7 @@ main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
 .sprache button{background:none;border:0;color:var(--leise);font:inherit;font-size:13px;padding:4px 10px;border-radius:980px;cursor:pointer}
 .sprache button.an{color:#000;background:var(--text)}
 .held{text-align:center;padding:72px 0 40px}
-.held h1{display:inline-flex;align-items:center;gap:.14em;font-size:clamp(48px,9vw,112px);line-height:1.04;letter-spacing:-.02em;font-weight:700;margin:0 0 10px;
+.held h1{display:inline-flex;align-items:center;gap:.14em;font-size:calc(clamp(48px,9vw,112px) * var(--fit,1));line-height:1.04;letter-spacing:-.02em;font-weight:700;margin:0 0 10px;
   background:linear-gradient(90deg,var(--akzent),var(--akzent2));-webkit-background-clip:text;background-clip:text;color:transparent}
 /* Das Tresorrad der App, als Maske auf demselben Verlauf wie der Name */
 .held h1 .rad{width:.9em;height:.9em;flex:0 0 auto;background:linear-gradient(90deg,var(--akzent),var(--akzent2));background-size:800% 100%;
@@ -101,7 +101,7 @@ main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
 .konsole .leiste{display:flex;align-items:center;gap:7px;padding:10px 12px;background:#18181b;border-bottom:1px solid #2c2c30}
 .konsole .leiste i{width:11px;height:11px;border-radius:50%;background:#3a3a3e}
 .konsole .leiste span{margin-left:auto;margin-right:auto;font-size:12px;color:#b0b0b5;transform:translateX(-27px)}
-.konsole pre{margin:0;padding:14px 16px;font:13px/1.55 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:#b9b9be;white-space:pre;overflow:hidden}
+.konsole pre{margin:0;padding:14px 16px;font:calc(13px * var(--fit,1))/1.55 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:#b9b9be;white-space:pre;overflow:hidden}
 .konsole pre b{color:var(--akzent);font-weight:600}
 .konsole pre u{text-decoration:none;color:#e6e6ea}
 .schaubild{display:grid;grid-template-columns:1fr auto 1fr;align-items:baseline;column-gap:22px;padding:6px 32px 34px}
@@ -160,18 +160,20 @@ h1,h2,h3,h4{text-wrap:balance}
 @media screen and (max-width:1100px){.lieder .liste{grid-template-columns:1fr 1fr}}
 @media screen and (max-width:480px){.lieder .liste{gap:12px}.lieder .lied{padding:10px 10px 16px;border-radius:20px}.lieder b{font-size:16px}}
 footer{margin:40px 0 0;color:var(--leise);font-size:13px}
+footer a{color:var(--text);text-decoration:none;border-bottom:1px solid var(--leise)}
+footer a:hover{color:var(--akzent);border-color:var(--akzent)}
 @media screen and (max-width:820px){
   .raster{gap:14px}
   .k,.k.w4,.k.w5,.k.w6,.k.w7,.k.w8{grid-column:span 12}
   .k .text{padding:26px 24px 22px}
   .held{padding:48px 0 28px}
+  .held h1{font-size:calc((100vw - 48px) / 6.5 * var(--fit,1))}
   .held .bild{aspect-ratio:4/3;border-radius:22px}
   .abschnitt{margin-top:84px}
   .k.w12 .bild{aspect-ratio:4/3}
   .fenster{padding:44px 24px 28px}
   .k h3{padding-right:40px}
   .grenzen{margin-top:84px}
-  .konsole pre{font-size:11px;white-space:pre-wrap;word-break:break-all}
   .filterliste{padding-bottom:64px}
 }
 @media screen and (max-width:480px){
@@ -286,9 +288,23 @@ function bauen(){
     h += `<section class="abschnitt lieder"><div class="kopf"><p class="augenbraue">${g.augenbraue[L]}</p><h2>${g.h[L]}</h2><p>${g.p[L]}</p></div><div class="liste">${
       g.liste.map(x => `<a class="lied" href="${x.url}" target="_blank" rel="noopener"><img src="${x.bild}?v=${BV}" alt=""><span class="stil">${x.stil[L]} · ${x.dauer}</span><b>${x.t}</b><span class="hoeren">${g.hoeren[L]} ↗</span></a>`).join('')}</div></section>`; }
   h += `<section class="grenzen"><h2>${S.grenzen.h[L]}</h2><ul>${S.grenzen.l[L].map(x => `<li>${x}</li>`).join('')}</ul></section>`;
-  h += `<footer>${S.fuss[L]}${S.stern[L] ? `<br>${S.stern[L]}` : ''}</footer>`;
+  h += `<footer>${ghLink(S.fuss[L])}${S.stern[L] ? `<br>${S.stern[L]}` : ''}</footer>`;
   document.getElementById('seite').innerHTML = h;
+  einpassen();
 }
+// Titel füllt die Spalte; die Servermeldung zeigt überall denselben Ausschnitt.
+function einpassen(){
+  // Titel: füllt die Breite, wird aber nie breiter als die Spalte (Schriftbreite schwankt je Gerät).
+  const h1 = document.querySelector('.held h1');
+  if (h1){ h1.style.setProperty('--fit', 1); const f = h1.parentElement.clientWidth / h1.getBoundingClientRect().width;
+    if (f < 1) h1.style.setProperty('--fit', (Math.floor(f * 100) / 100).toFixed(2)); }
+  // Servermeldung: auf schmaleren Kacheln derselbe Ausschnitt wie auf dem großen Schirm (dort 22 em Text breit), nur kleiner.
+  for (const pre of document.querySelectorAll('.konsole pre')){
+    const f = Math.min(1, (pre.clientWidth - 32) / (22 * 13));
+    pre.style.setProperty('--fit', (Math.floor(f * 100) / 100).toFixed(2));
+  }
+}
+addEventListener('resize', einpassen);
 function auf(id){
   const k = KACHELN[id]; if (!k) return;
   document.getElementById('fenster').innerHTML = `<button class="zu" aria-label="${S.kopf.zu[L]}">${KREUZ}</button>

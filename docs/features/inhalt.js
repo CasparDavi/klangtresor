@@ -295,6 +295,9 @@ const TEMPO = {};   // Abspielgeschwindigkeit je Clip. Okkultation laeuft halb s
 const NUR_TEXT = new Set(['einmessen','offen']);   // Kacheln, die ohne Bild stehen
 /* Die Startmeldung, wie server.js sie druckt - in der Sprache des Systems (bin/texte/server.json). Die Zeile
    „KlangTresor auf http://…" bleibt in jeder Sprache deutsch: die Startskripte auf dem Stick lesen sie. Unten angeschnitten. */
+// Die Projektangabe im Fuß wird überall anklickbar (Seite und PDF).
+const GH = 'github.com/CasparDavi/klangtresor';
+const ghLink = (s) => s.replace(GH, `<a class="gh" href="https://${GH}">${GH}</a>`);
 const KONSOLE = {
   de: ['KlangTresor läuft', 'Auf diesem Mac', 'Im Heimnetz (en0)', 'Katalog geladen: 268 Songs', '268 Songs im Katalog.', 'Beenden mit Strg+C'],
   en: ['KlangTresor is running', 'On this Mac', 'In the home network (en0)', 'Catalogue loaded: 268 songs', '268 songs in the catalogue.', 'Quit with Ctrl+C'],
