@@ -138,6 +138,12 @@
 закладка «KlangTresor morgens». Её адрес находится в утреннем окне за
 красной кнопкой.
 
+### В Linux
+
+**AppImage** (RU\*): скачайте [KlangTresor-x86_64.AppImage](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage), сделайте исполняемым (правый клик → Свойства →
+«Выполнять как программу») и дважды кликните. Он загружает ffmpeg, ИИ-модели и Whisper с индикатором прогресса,
+спрашивает имя в Suno и затем работает как значок на панели. Без sudo. Подробности в [START-RU.md](START-RU.md).
+
 ### В Windows
 
 **Setup.exe** (RU\*): скачайте [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) и дважды кликните. Установщик показывает, что уже есть,

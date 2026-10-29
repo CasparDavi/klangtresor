@@ -56,7 +56,22 @@ button of its own — it hides behind the **small arrow ˅ next to "Delete"**.
 Removing: Settings → Apps → KlangTresor, or Start menu → "KlangTresor entfernen". Your archive (`library`) and the AI
 models (`modelle`) stay; the last page says where and how big.
 
-For macOS and Linux the zip stays for now (next section); installers of their own for both are in the works.
+For macOS the zip stays for now (the section after next); an installer of its own is in the works.
+
+## Linux: the AppImage — download, make executable, double-click
+
+For Linux on regular PCs (x64) there is a single file:
+
+    https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage
+
+1. **Make it executable** (once): right-click the file → Properties → switch on "Executable as Program".
+   In a terminal: `chmod +x KlangTresor-x86_64.AppImage`.
+2. **Double-click.** KlangTresor places itself in `~/KlangTresor`, adds itself to the applications menu and opens the
+   setup in the browser: ffmpeg, the AI models and Whisper are fetched with progress bars, then only your Suno name.
+3. After that KlangTresor runs as an **icon in the panel** (top right on Ubuntu): Open, Show log, Quit. Where the panel
+   shows no such icons, quit KlangTresor in the app under **Profile → System**.
+
+A newer AppImage renews the program on start; your archive stays. No sudo, no package manager. Tested on Ubuntu 24.04.
 
 ## The zip way — macOS, Linux, Docker (and Windows without the Setup.exe)
 

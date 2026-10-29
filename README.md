@@ -146,6 +146,12 @@ timestamps, audio files you have already unlocked — is fetched afterwards
 by the bookmark "KlangTresor morgens". Its address is in the morning window
 behind the red button.
 
+### On Linux
+
+**The AppImage:** download [KlangTresor-x86_64.AppImage](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage), make it executable (right-click → Properties →
+"Executable as Program"), double-click. It fetches ffmpeg, the AI models and Whisper with progress bars, asks for the
+Suno name and then runs as an icon in the panel. No sudo. Details in [START-HERE.md](START-HERE.md).
+
 ### On Windows
 
 **The Setup.exe:** download [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) and double-click it. It shows what is already there, fetches

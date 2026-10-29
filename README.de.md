@@ -145,6 +145,12 @@ schon freigeschaltete Audiodateien —, holt danach das Lesezeichen
 „KlangTresor morgens". Seine Adresse steht im Morgenfenster hinter dem
 roten Knopf.
 
+### Unter Linux
+
+**Das AppImage:** [KlangTresor-x86_64.AppImage](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage) herunterladen, ausführbar machen (Rechtsklick → Eigenschaften →
+„Als Programm ausführen“), doppelklicken. Es holt ffmpeg, die KI-Modelle und Whisper mit Balken, fragt nach dem
+Suno-Namen und läuft danach als Symbol im Panel. Kein sudo. Einzelheiten in [START-HIER.md](START-HIER.md).
+
 ### Unter Windows
 
 **Die Setup.exe:** [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) herunterladen und doppelklicken. Sie zeigt, was schon da ist, holt

@@ -56,7 +56,23 @@ kein eigener Knopf — es versteckt sich hinter dem **kleinen Pfeil ˅ neben „
 Entfernen: Einstellungen → Apps → KlangTresor, oder Startmenü → „KlangTresor entfernen". Dein Archiv (`library`) und
 die KI-Modelle (`modelle`) bleiben liegen; die letzte Seite sagt, wo und wie groß.
 
-Für macOS und Linux bleibt vorerst das Zip (der nächste Abschnitt); eigene Installer für beide sind in Arbeit.
+Für macOS bleibt vorerst das Zip (übernächster Abschnitt); ein eigener Installer ist in Arbeit.
+
+## Linux: das AppImage — herunterladen, ausführbar machen, doppelklicken
+
+Für Linux auf normalen PCs (x64) gibt es eine einzige Datei:
+
+    https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage
+
+1. **Ausführbar machen** (einmal): Rechtsklick auf die Datei → Eigenschaften → „Als Programm ausführen“ einschalten.
+   Im Terminal geht auch `chmod +x KlangTresor-x86_64.AppImage`.
+2. **Doppelklick.** KlangTresor legt sich nach `~/KlangTresor`, trägt sich ins Anwendungsmenü ein und öffnet die
+   Einrichtung im Browser: ffmpeg, die KI-Modelle und Whisper werden mit Balken geholt, dann nur noch dein Suno-Name.
+3. Danach läuft KlangTresor als **Symbol im Panel** (oben rechts bei Ubuntu): Öffnen, Protokoll anzeigen, Beenden.
+   Wo das Panel keine solchen Symbole zeigt, beendest du KlangTresor in der App unter **Profil → System**.
+
+Ein neueres AppImage erneuert beim Start das Programm; dein Archiv bleibt. Kein sudo, kein Paketverwalter.
+Geprüft auf Ubuntu 24.04.
 
 ## Der Weg mit dem Zip — macOS, Linux, Docker (und Windows ohne Setup.exe)
 
