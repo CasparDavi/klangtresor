@@ -669,6 +669,13 @@ Section "Uninstall"
   ; Genau das, was die Setup.exe hingelegt hat (vom Bauskript aus dem Inhalt erzeugt) - library\ und modelle\
   ; stehen nie darin.
   !include "${ENTFERNEN}"
+  ; Hielt etwas eine Datei kurz fest (im Test: der Virenschutz an einem eben gelaufenen node.exe, werkzeug\ blieb
+  ; stehen), gibt es einen zweiten Durchgang.
+  ${If} ${FileExists} "$INSTDIR\werkzeug\*.*"
+  ${OrIf} ${FileExists} "$INSTDIR\node_modules\*.*"
+    Sleep 1500
+    !include "${ENTFERNEN}"
+  ${EndIf}
   Delete "$INSTDIR\KlangTresor-entfernen.exe"
   RMDir /r "$SMPROGRAMS\KlangTresor"
   ; Die Verknuepfung auf dem Desktop legt die Einrichtung an (bin/einrichten.js) - sie zeigte jetzt ins Leere.
