@@ -51,7 +51,10 @@ const modellBytes = modellFehlt.reduce((s, [, , m]) => s + m, 0);
 /* ffmpeg: nur unter Windows holt es der Installer (auf Mac und Linux: docs/INSTALLER.md). */
 const FF_ORDNER = path.join(WURZEL, 'werkzeug', 'ffmpeg');
 const FF_DA = process.platform !== 'win32' || fs.existsSync(path.join(FF_ORDNER, 'bin', 'ffmpeg.exe'));
-const FF_URL = (() => { try { const m = /^\s*ffmpeg-windows\s*=\s*(\S+)/m.exec(fs.readFileSync(path.join(WURZEL, 'quellen.txt'), 'utf8')); return m && m[1]; } catch (e) { return null; } })();
+/* gyan.dev zuerst, BtbN auf GitHub als zweiter Weg (quellen.txt) */
+const FF_URLS = (() => { try { const q = fs.readFileSync(path.join(WURZEL, 'quellen.txt'), 'utf8');
+  return ['ffmpeg-windows', 'ffmpeg-windows-2'].map((k) => { const m = new RegExp('^\\s*' + k + '\\s*=\\s*(\\S+)', 'm').exec(q); return m && m[1]; }).filter(Boolean);
+} catch (e) { return []; } })();
 const ffBytes = FF_DA ? 0 : 115000000;   /* gyan.dev essentials, 7.x: rund 110 MB */
 const whisper = require('./whisper-holen.js');
 const WHISPER_MODELL = 3095033483, WHISPER_PROGRAMM = 8000000;   /* ggml-large-v3.bin; das Windows-Paket ~8 MB */
@@ -76,8 +79,14 @@ function setzen(o) {
 
 /* Der eine Balken: geholt = Bytes seit dem Start, ueber alle Dateien. */
 let zuletztGezeigt = 0;
+/* Die Restzeit aus dem Tempo der letzten 20 Sekunden - nicht aus dem Mittel seit Beginn: schleicht eine Quelle
+   (gyan.dev, 29.10.2026) und die naechste ist schnell, rechnete das Mittel noch lange „8 Std." hoch. */
+const PROBEN = [];
 function zeigen(geholt, was, quelle) {
-  const sek = (Date.now() - START) / 1000, rate = geholt / Math.max(1, sek);
+  const jetzt = Date.now();
+  PROBEN.push([jetzt, geholt]);
+  while (PROBEN.length > 2 && jetzt - PROBEN[0][0] > 20000) PROBEN.shift();
+  const sek = (jetzt - PROBEN[0][0]) / 1000, rate = sek >= 3 ? (geholt - PROBEN[0][1]) / sek : 0;
   stand.promille = GESAMT ? Math.min(999, Math.floor(geholt / GESAMT * 1000)) : 0;
   stand.oben = was || stand.oben;
   stand.unten = [T('{teil} von {ganz}', { teil: mb(geholt), ganz: mb(GESAMT) }), quelle,
@@ -108,45 +117,57 @@ function kind(skript, args, umrechnen) {
   });
 }
 
-/* ffmpeg fuer Windows: das Zip von gyan.dev (quellen.txt), mit Balken, ausgepackt mit tar.exe (liegt Windows 10 ab 1803
+/* ffmpeg fuer Windows: das Zip von gyan.dev (quellen.txt; schleicht es, von BtbN auf GitHub), mit Balken, ausgepackt mit tar.exe (liegt Windows 10 ab 1803
    und Windows 11 bei, packt Zip) - sonst Expand-Archive. Danach liegt es in werkzeug/ffmpeg, wie es die Starter
    erwarten. ffplay.exe (ein Abspieler, 106 MB) ruft KlangTresor nirgends auf; es wird nach dem Auspacken entfernt. */
 async function ffmpegHolen() {
-  if (!FF_URL) return false;
   const werkzeug = path.join(WURZEL, 'werkzeug');
   fs.mkdirSync(werkzeug, { recursive: true });
   const zip = path.join(werkzeug, 'ffmpeg.zip'), roh = path.join(werkzeug, '_ff_roh');
-  const quelle = new URL(FF_URL).hostname;
-  for (let versuch = 1; versuch <= 3; versuch++) {
-    try {
-      const r = await fetch(FF_URL, { redirect: 'follow', headers: { 'User-Agent': 'KlangTresor-Installer' } });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const datei = fs.createWriteStream(zip);
-      let n = 0;
-      for await (const stueck of r.body) {
-        n += stueck.length;
-        if (!datei.write(stueck)) await new Promise((f) => datei.once('drain', f));
-        zeigen(Math.min(n, ffBytes), T('{name} wird geladen', { name: 'ffmpeg' }), quelle);
+  for (let q = 0; q < FF_URLS.length; q++) {
+    const url = FF_URLS[q], quelle = new URL(url).hostname, naechste = FF_URLS[q + 1];
+    for (let versuch = 1; versuch <= (naechste ? 1 : 3); versuch++) {
+      try {
+        const steuer = new AbortController();
+        const r = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'KlangTresor-Installer' }, signal: steuer.signal });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const ganz = Number(r.headers.get('content-length')) || ffBytes;
+        const datei = fs.createWriteStream(zip);
+        let n = 0; const beginn = Date.now(); let zuLangsam = false;
+        for await (const stueck of r.body) {
+          n += stueck.length;
+          if (!datei.write(stueck)) await new Promise((f) => datei.once('drain', f));
+          /* der Balken rechnet mit ffBytes; ein groesseres Zip (BtbN) wird darauf umgerechnet */
+          zeigen(Math.min(ffBytes, Math.floor(n / ganz * ffBytes)), T('{name} wird geladen', { name: 'ffmpeg' }), quelle);
+          /* Schleicht diese Quelle und gibt es eine zweite: nach 30 s mit weniger als 15 MB umschwenken */
+          if (naechste && Date.now() - beginn > 30000 && n < 15e6 && n < ganz) { zuLangsam = true; steuer.abort(); break; }
+        }
+        await new Promise((f) => datei.end(f));
+        if (zuLangsam) {
+          fs.rmSync(zip, { force: true });
+          stand.unten = T('{quelle} liefert zu langsam — ich hole ffmpeg von {neu}', { quelle, neu: new URL(naechste).hostname });
+          break;
+        }
+        if (n < 50000000) throw new Error(T('zu klein ({n} Bytes)', { n }));
+        fs.rmSync(roh, { recursive: true, force: true }); fs.mkdirSync(roh, { recursive: true });
+        stand.oben = T('ffmpeg wird ausgepackt');
+        const { spawnSync } = require('node:child_process');
+        let e = spawnSync('tar.exe', ['-xf', zip, '-C', roh], { windowsHide: true });
+        if (e.status !== 0) e = spawnSync('powershell', ['-NoProfile', '-Command', `$ProgressPreference='SilentlyContinue'; Expand-Archive -LiteralPath '${zip}' -DestinationPath '${roh}' -Force`], { windowsHide: true });
+        if (e.status !== 0) throw new Error(T('Auspacken ging nicht'));
+        const drin = fs.readdirSync(roh).filter((x) => fs.statSync(path.join(roh, x)).isDirectory());
+        fs.rmSync(FF_ORDNER, { recursive: true, force: true });
+        fs.renameSync(drin.length === 1 ? path.join(roh, drin[0]) : roh, FF_ORDNER);
+        fs.rmSync(roh, { recursive: true, force: true }); fs.rmSync(zip, { force: true });
+        fs.rmSync(path.join(FF_ORDNER, 'bin', 'ffplay.exe'), { force: true });
+        fs.rmSync(path.join(FF_ORDNER, 'doc'), { recursive: true, force: true });
+        if (fs.existsSync(path.join(FF_ORDNER, 'bin', 'ffmpeg.exe')) && fs.existsSync(path.join(FF_ORDNER, 'bin', 'ffprobe.exe'))) return true;
+        throw new Error('ffmpeg.exe fehlt nach dem Auspacken');
+      } catch (e) {
+        stand.unten = String(e.message).slice(0, 160);
+        try { fs.rmSync(zip, { force: true }); } catch (x) {}
+        await new Promise((f) => setTimeout(f, 1500 * versuch));
       }
-      await new Promise((f) => datei.end(f));
-      if (n < 50000000) throw new Error(T('zu klein ({n} Bytes)', { n }));
-      fs.rmSync(roh, { recursive: true, force: true }); fs.mkdirSync(roh, { recursive: true });
-      stand.oben = T('ffmpeg wird ausgepackt');
-      const { spawnSync } = require('node:child_process');
-      let e = spawnSync('tar.exe', ['-xf', zip, '-C', roh], { windowsHide: true });
-      if (e.status !== 0) e = spawnSync('powershell', ['-NoProfile', '-Command', `$ProgressPreference='SilentlyContinue'; Expand-Archive -LiteralPath '${zip}' -DestinationPath '${roh}' -Force`], { windowsHide: true });
-      if (e.status !== 0) throw new Error(T('Auspacken ging nicht'));
-      const drin = fs.readdirSync(roh).filter((x) => fs.statSync(path.join(roh, x)).isDirectory());
-      fs.rmSync(FF_ORDNER, { recursive: true, force: true });
-      fs.renameSync(drin.length === 1 ? path.join(roh, drin[0]) : roh, FF_ORDNER);
-      fs.rmSync(roh, { recursive: true, force: true }); fs.rmSync(zip, { force: true });
-      fs.rmSync(path.join(FF_ORDNER, 'bin', 'ffplay.exe'), { force: true });
-      fs.rmSync(path.join(FF_ORDNER, 'doc'), { recursive: true, force: true });
-      return fs.existsSync(path.join(FF_ORDNER, 'bin', 'ffmpeg.exe')) && fs.existsSync(path.join(FF_ORDNER, 'bin', 'ffprobe.exe'));
-    } catch (e) {
-      stand.unten = String(e.message).slice(0, 160);
-      try { fs.rmSync(zip, { force: true }); } catch (x) {}
-      await new Promise((f) => setTimeout(f, 1500 * versuch));
     }
   }
   return false;

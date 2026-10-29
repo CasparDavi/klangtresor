@@ -121,9 +121,9 @@ LangString fertig_text ${LANG_GERMAN} "KlangTresor liegt in $INSTDIR - mit allem
 LangString fertig_text ${LANG_ENGLISH} "KlangTresor is in $INSTDIR - with everything it needs to run.$\r$\n$\r$\nNext your browser opens: there you enter your Suno name, and your songs are fetched.$\r$\n$\r$\nLater: Start menu → KlangTresor."
 LangString fertig_text ${LANG_RUSSIAN} "KlangTresor находится в $INSTDIR - со всем, что нужно для работы.$\r$\n$\r$\nДальше откроется браузер: там вы вводите своё имя в Suno, и ваши песни загружаются.$\r$\n$\r$\nПозже: меню «Пуск» → KlangTresor."
 
-LangString fertig_text_update ${LANG_GERMAN} "KlangTresor ist auf ${VERSION} erneuert - dein Archiv ist unberührt.$\r$\n$\r$\nKlangTresor läuft danach als Symbol unten rechts in der Taskleiste: Doppelklick öffnet die Seite, Rechtsklick beendet."
-LangString fertig_text_update ${LANG_ENGLISH} "KlangTresor has been renewed to ${VERSION} - your archive is untouched.$\r$\n$\r$\nKlangTresor then runs as an icon at the bottom right of the taskbar: double-click opens the page, right-click quits."
-LangString fertig_text_update ${LANG_RUSSIAN} "KlangTresor обновлён до ${VERSION} - ваш архив не тронут.$\r$\n$\r$\nKlangTresor работает как значок справа внизу на панели задач: двойной клик открывает страницу, правый клик - выход."
+LangString fertig_text_update ${LANG_GERMAN} "KlangTresor ist auf ${VERSION} erneuert - dein Archiv ist unberührt.$\r$\n$\r$\nKlangTresor läuft danach als Symbol unten rechts in der Taskleiste: Doppelklick öffnet die Seite, Rechtsklick → Beenden."
+LangString fertig_text_update ${LANG_ENGLISH} "KlangTresor has been renewed to ${VERSION} - your archive is untouched.$\r$\n$\r$\nKlangTresor then runs as an icon at the bottom right of the taskbar: double-click opens the page, right-click → Quit."
+LangString fertig_text_update ${LANG_RUSSIAN} "KlangTresor обновлён до ${VERSION} - ваш архив не тронут.$\r$\n$\r$\nKlangTresor работает как значок справа внизу на панели задач: двойной клик открывает страницу, правый клик → Выйти."
 LangString fertig_starten ${LANG_GERMAN} "KlangTresor starten"
 LangString fertig_starten ${LANG_ENGLISH} "Start KlangTresor"
 LangString fertig_starten ${LANG_RUSSIAN} "Запустить KlangTresor"

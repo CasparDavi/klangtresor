@@ -86,5 +86,9 @@
  "KlangTresor startet - unten rechts in der Taskleiste erscheint sein Symbol, die Seite geht gleich auf.": {
  "en": "KlangTresor is starting - its icon appears at the bottom right of the taskbar, the page opens in a moment.",
  "ru": "KlangTresor запускается - его значок появится справа внизу на панели задач, страница сейчас откроется."
+},
+ "{quelle} liefert zu langsam — ich hole ffmpeg von {neu}": {
+ "en": "{quelle} is too slow — fetching ffmpeg from {neu}",
+ "ru": "{quelle} отдаёт слишком медленно — загружаю ffmpeg с {neu}"
 }
 }
