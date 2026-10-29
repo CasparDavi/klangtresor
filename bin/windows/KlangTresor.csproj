@@ -1,0 +1,25 @@
+<!-- KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE
+     Das Symbol unten rechts (KlangTresor.cs). Gebaut von bin/setup-bauen.js mit dotnet auf dem Mac, gegen
+     .NET Framework 4.7.2 - das liegt jedem Windows 10 (ab 1803) und 11 bei. Die Referenzassemblies kommen als
+     NuGet-Paket; ein Windows zum Bauen braucht es nicht. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>KlangTresor</AssemblyName>
+    <RootNamespace>KlangTresor</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <ApplicationIcon>klangtresor.ico</ApplicationIcon>
+    <Product>KlangTresor</Product>
+    <Company>Caspar_D</Company>
+    <Copyright>Copyright (c) 2026 Caspar_D · MIT</Copyright>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+</Project>

@@ -16,7 +16,7 @@
 ;                 (ffmpeg: GPL, quellen.txt; Modelle: bin/modelle-holen.js). Das Holen macht bin/installieren.js, unsichtbar; diese Seite zeigt seinen
 ;                 Stand (Balken, was, wie weit, wie lange noch). Nichts fehlt -> die Seite entfaellt.
 ;   Fertig        Haken „Weiter im Browser": bin/einrichten.js --nach-setup, ohne Fenster - die Seite fragt nach dem
-;                 Suno-Namen und holt die Lieder; danach startet KlangTresor ueber starten-windows.cmd.
+;                 Suno-Namen und holt die Lieder; danach startet KlangTresor.exe - das Symbol unten rechts, kein Fenster.
 ;
 ; Entschieden am 28.10.2026: Ordner nach Wahl, vorgeschlagen %USERPROFILE%\KlangTresor, keine Verwalterrechte
 ; (das Archiv liegt im Programmordner, server.js - nach C:\Programme duerfte es nicht schreiben). Updates laufen
@@ -191,9 +191,9 @@ LangString lnk_entfernen ${LANG_GERMAN} "KlangTresor entfernen"
 LangString lnk_entfernen ${LANG_ENGLISH} "Remove KlangTresor"
 LangString lnk_entfernen ${LANG_RUSSIAN} "Удалить KlangTresor"
 
-LangString laeuft_noch ${LANG_GERMAN} "KlangTresor läuft noch - im Fenster „KlangTresor läuft“ oder als Einrichtung im Browser.$\r$\n$\r$\nSoll ich es beenden? Dein Archiv bleibt, wie es ist.$\r$\n$\r$\nJa: beenden und weitermachen.   Nein: abbrechen, nichts wird verändert."
-LangString laeuft_noch ${LANG_ENGLISH} "KlangTresor is still running - in the window „KlangTresor is running“ or as the setup in your browser.$\r$\n$\r$\nShall I end it? Your archive stays as it is.$\r$\n$\r$\nYes: end it and continue.   No: cancel, nothing is changed."
-LangString laeuft_noch ${LANG_RUSSIAN} "KlangTresor ещё работает - в окне «KlangTresor работает» или как настройка в браузере.$\r$\n$\r$\nЗавершить его? Ваш архив останется как есть.$\r$\n$\r$\nДа: завершить и продолжить.   Нет: отменить, ничего не изменится."
+LangString laeuft_noch ${LANG_GERMAN} "KlangTresor läuft noch - unten rechts in der Taskleiste (Symbol) oder als Einrichtung im Browser.$\r$\n$\r$\nSoll ich es beenden? Dein Archiv bleibt, wie es ist.$\r$\n$\r$\nJa: beenden und weitermachen.   Nein: abbrechen, nichts wird verändert."
+LangString laeuft_noch ${LANG_ENGLISH} "KlangTresor is still running - at the bottom right of the taskbar (icon) or as the setup in your browser.$\r$\n$\r$\nShall I end it? Your archive stays as it is.$\r$\n$\r$\nYes: end it and continue.   No: cancel, nothing is changed."
+LangString laeuft_noch ${LANG_RUSSIAN} "KlangTresor ещё работает - значком справа внизу на панели задач или как настройка в браузере.$\r$\n$\r$\nЗавершить его? Ваш архив останется как есть.$\r$\n$\r$\nДа: завершить и продолжить.   Нет: отменить, ничего не изменится."
 
 LangString weg_oben ${LANG_GERMAN} "Das Programm wird aus diesem Ordner entfernt. Was dir gehört, bleibt liegen: dein Archiv (library) und die KI-Modelle (modelle)."
 LangString weg_oben ${LANG_ENGLISH} "The program is removed from this folder. What belongs to you stays: your archive (library) and the AI models (modelle)."
@@ -238,14 +238,14 @@ FunctionEnd
 ; der Setup.exe hat kein Fenster, das man schliessen koennte (so im Test am 29.10.2026 gesehen: die erste Fassung
 ; verlangte „das schwarze Fenster schliessen", das es nicht gab).
 !macro LaeuftNicht UN
-; Beendet genau die node.exe aus DIESEM Ordner - kein anderes Node auf dem Rechner. Das Skript wird als UTF-16 mit BOM
+; Beendet genau node.exe und KlangTresor.exe (das Symbol) aus DIESEM Ordner - kein anderes Programm auf dem Rechner. Das Skript wird als UTF-16 mit BOM
 ; geschrieben, damit ein Benutzername mit Umlaut oder kyrillischen Buchstaben heil bei PowerShell ankommt.
 Function ${UN}KlangTresorBeenden
   InitPluginsDir
   FileOpen $R0 "$PLUGINSDIR\beenden.ps1" w
   FileWriteWord $R0 0xFEFF
-  FileWriteUTF16LE $R0 "$$ziel = '$INSTDIR\werkzeug\node\node.exe'$\r$\n"
-  FileWriteUTF16LE $R0 "Get-CimInstance Win32_Process -Filter $\"Name='node.exe'$\" | Where-Object { $$_.ExecutablePath -eq $$ziel } | ForEach-Object { Stop-Process -Id $$_.ProcessId -Force }$\r$\n"
+  FileWriteUTF16LE $R0 "$$ziele = @('$INSTDIR\werkzeug\node\node.exe', '$INSTDIR\KlangTresor.exe')$\r$\n"
+  FileWriteUTF16LE $R0 "Get-CimInstance Win32_Process | Where-Object { $$ziele -contains $$_.ExecutablePath } | ForEach-Object { Stop-Process -Id $$_.ProcessId -Force }$\r$\n"
   FileClose $R0
   nsExec::Exec 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\beenden.ps1"'
   Pop $R0
@@ -263,7 +263,17 @@ Function ${UN}LaeuftNicht
     FileOpen $0 "$INSTDIR\werkzeug\node\node.exe" a
     ${IfNot} ${Errors}
       FileClose $0
-      ${ExitDo}
+      ; auch das Symbol: laeuft es, ist KlangTresor.exe gesperrt (auch wenn der Server gerade steht)
+      ClearErrors
+      ${If} ${FileExists} "$INSTDIR\KlangTresor.exe"
+        FileOpen $0 "$INSTDIR\KlangTresor.exe" a
+        ${IfNot} ${Errors}
+          FileClose $0
+        ${EndIf}
+      ${EndIf}
+      ${IfNot} ${Errors}
+        ${ExitDo}
+      ${EndIf}
     ${EndIf}
     ; /SD: im stillen Lauf (/S) gibt es niemanden, der klickt - dann Abbruch mit Fehlercode, nicht ewiges Warten.
     MessageBox MB_YESNO|MB_ICONEXCLAMATION "$(laeuft_noch)" /SD IDNO IDYES beenden
@@ -284,7 +294,8 @@ Section "KlangTresor"
   WriteUninstaller "$INSTDIR\KlangTresor-entfernen.exe"
 
   CreateDirectory "$SMPROGRAMS\KlangTresor"
-  CreateShortcut "$SMPROGRAMS\KlangTresor\KlangTresor.lnk" "$INSTDIR\starten-windows.cmd" "" "$INSTDIR\web\symbol\klangtresor.ico"
+  ; Das Symbol unten rechts statt des schwarzen Fensters (bin/windows/KlangTresor.cs; Caspar_D, 29.10.2026)
+  CreateShortcut "$SMPROGRAMS\KlangTresor\KlangTresor.lnk" "$INSTDIR\KlangTresor.exe" "" "$INSTDIR\KlangTresor.exe"
   CreateShortcut "$SMPROGRAMS\KlangTresor\$(lnk_entfernen).lnk" "$INSTDIR\KlangTresor-entfernen.exe"
 
   WriteRegStr HKCU "${UNINST}" "DisplayName" "KlangTresor"
@@ -677,6 +688,8 @@ Section "Uninstall"
     !include "${ENTFERNEN}"
   ${EndIf}
   Delete "$INSTDIR\KlangTresor-entfernen.exe"
+  ; das Protokoll des Symbols (KlangTresor.exe) - Programmausgabe, kein Archiv
+  RMDir /r "$INSTDIR\protokoll"
   RMDir /r "$SMPROGRAMS\KlangTresor"
   ; Die Verknuepfung auf dem Desktop legt die Einrichtung an (bin/einrichten.js) - sie zeigte jetzt ins Leere.
   Delete "$DESKTOP\KlangTresor.lnk"

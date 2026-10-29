@@ -117,6 +117,22 @@ sag(`werkzeug/node: ${mb(groesse(path.join(INHALT, 'werkzeug', 'node')))}`);
 /* ffmpeg NICHT: ein GPL-Bau - KlangTresor verteilt es nicht, die Setup.exe holt es beim Nutzer (bin/installieren.js,
    quellen.txt Abschnitt FFMPEG). Bis 29.10.2026 lag es hier drin. */
 
+/* 2b. Das Symbol unten rechts (bin/windows/KlangTresor.cs) - mit dotnet gegen .NET Framework 4.7.2, das jedem
+   Windows 10/11 beiliegt. Gebaut im Wegwerfordner; der NuGet-Zwischenspeicher bleibt, wo dotnet ihn hinlegt
+   (~/.nuget, rund 80 MB) - auf der exFAT-SSD legte macOS ._-Beiakten hinein, an denen der Bau sich stiess. */
+{
+  if (spawnSync('dotnet', ['--version']).status !== 0) stirb('dotnet fehlt. Einmal: brew install dotnet');
+  const T = path.join(BAU, '_starter');
+  fs.mkdirSync(T, { recursive: true });
+  for (const f of ['KlangTresor.cs', 'KlangTresor.csproj']) fs.copyFileSync(path.join(__dirname, 'windows', f), path.join(T, f));
+  fs.copyFileSync(path.join(WURZEL, 'web', 'symbol', 'klangtresor.ico'), path.join(T, 'klangtresor.ico'));
+  sag('Das Symbol unten rechts (KlangTresor.exe) wird gebaut …');
+  lauf('dotnet', ['build', '-c', 'Release', '-o', path.join(T, 'aus'), '-nologo', '-v', 'q', `-p:Version=${VERSION}`],
+    { cwd: T, env: { ...process.env, DOTNET_CLI_TELEMETRY_OPTOUT: '1', DOTNET_NOLOGO: '1' } });
+  for (const f of ['KlangTresor.exe', 'KlangTresor.exe.config']) fs.copyFileSync(path.join(T, 'aus', f), path.join(INHALT, f));
+  sag(`KlangTresor.exe: ${(fs.statSync(path.join(INHALT, 'KlangTresor.exe')).size / 1024).toFixed(0)} KB`);
+}
+
 /* 3. Die Pakete, genau nach package-lock.json */
 const NPM = path.join(BAU, '_npm');
 fs.rmSync(NPM, { recursive: true, force: true });

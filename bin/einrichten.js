@@ -761,7 +761,8 @@ function schreibtischVerknuepfung(ordner) {
       const ps = [
         '$w = New-Object -ComObject WScript.Shell',
         `$s = $w.CreateShortcut(${JSON.stringify(lnk)})`,
-        `$s.TargetPath = ${JSON.stringify(path.join(ordner, 'starten-windows.cmd'))}`,
+        /* Das Symbol unten rechts, wenn die Setup.exe es hingelegt hat; sonst der alte Starter mit Fenster */
+        `$s.TargetPath = ${JSON.stringify(fs.existsSync(path.join(ordner, 'KlangTresor.exe')) ? path.join(ordner, 'KlangTresor.exe') : path.join(ordner, 'starten-windows.cmd'))}`,
         `$s.WorkingDirectory = ${JSON.stringify(ordner)}`,
         `$s.IconLocation = ${JSON.stringify(path.join(ordner, 'web', 'symbol', 'klangtresor.ico') + ',0')}`,
         `$s.Description = ${JSON.stringify(T('KlangTresor starten'))}`,
@@ -2011,13 +2012,19 @@ open -a Terminal ${JSON.stringify(starter)}
   }
   /* Nach der Setup.exe laeuft diese Einrichtung ohne Fenster - der Server darf nicht in ihr weiterlaufen, sonst
      liefe er unsichtbar und liesse sich nicht beenden. Also ueber den Starter, den auch das Startmenue nimmt: der
-     hat sein eigenes Fenster („KlangTresor laeuft") und oeffnet den Browser selbst, sobald der Server antwortet. */
+     hat sein eigenes Fenster bzw. Symbol und oeffnet den Browser selbst, sobald der Server antwortet. */
   if (NACH_SETUP && process.platform === 'win32') {
-    /* Zeile von Hand: start braucht als Titel ein leeres "" - Node wuerde es beim Quoten zu \"\" verbiegen */
-    const k = require('node:child_process').spawn('cmd.exe', ['/d /c start "" "' + path.join(WURZEL, 'starten-windows.cmd') + '"'],
-      { cwd: WURZEL, detached: true, stdio: 'ignore', windowsVerbatimArguments: true });
+    /* Seit 29.10.2026 das Symbol unten rechts (KlangTresor.exe, bin/windows/KlangTresor.cs) statt des schwarzen
+       Fensters - Caspar_D: „kein konsolenfenster mehr". Es startet bin/starten.js ohne Fenster und oeffnet die Seite. */
+    const exe = path.join(WURZEL, 'KlangTresor.exe');
+    const k = fs.existsSync(exe)
+      ? require('node:child_process').spawn(exe, [], { cwd: WURZEL, detached: true, stdio: 'ignore' })
+      /* Rueckfall ohne Symbol: der alte Starter. Zeile von Hand - start braucht als Titel ein leeres "" */
+      : require('node:child_process').spawn('cmd.exe', ['/d /c start "" "' + path.join(WURZEL, 'starten-windows.cmd') + '"'],
+          { cwd: WURZEL, detached: true, stdio: 'ignore', windowsVerbatimArguments: true });
     k.unref();
-    gut(T('KlangTresor startet in seinem eigenen Fenster und öffnet sich gleich im Browser.'));
+    gut(fs.existsSync(exe) ? T('KlangTresor startet - unten rechts in der Taskleiste erscheint sein Symbol, die Seite geht gleich auf.')
+                           : T('KlangTresor startet in seinem eigenen Fenster und öffnet sich gleich im Browser.'));
     setTimeout(() => process.exit(0), 3000);   /* der Seite Zeit lassen, „fertig" noch abzuholen */
     return;
   }
