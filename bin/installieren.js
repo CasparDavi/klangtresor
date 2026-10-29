@@ -26,6 +26,7 @@
                                                    Zeile 3  wie weit, woher, wie lange noch
                                                    Zeile 4  laeuft | fertig | fehler | halt
                                                    Zeile 5  Schlusssatz (bei fertig und fehler)
+                                                   Zeile 6  Herzschlag (zaehlt hoch; steht er, ist das Holen weg)
                                                  Liegt <datei>.halt daneben, wird abgebrochen. Was halb geholt
                                                  ist, macht der naechste Lauf an derselben Stelle weiter.
 
@@ -67,9 +68,12 @@ const dauer = (s) => s >= 5400 ? T('noch etwa {n} Std.', { n: Math.round(s / 360
 let stand = { promille: 0, oben: T('Es geht los …'), unten: '', zustand: 'laeuft', schluss: '' };
 const START = Date.now();
 
+let herz = 0;
 function schreiben() {
   if (!STAND) return;
-  const text = [stand.promille, stand.oben, stand.unten, stand.zustand, stand.schluss].join('\r\n') + '\r\n';
+  /* Zeile 6: der Herzschlag - er aendert sich mit jedem Schreiben. Bleibt er stehen, ist dieses Programm weg, und der
+     Installer sagt es, statt ewig „laeuft" zu zeigen. */
+  const text = [stand.promille, stand.oben, stand.unten, stand.zustand, stand.schluss, ++herz].join('\r\n') + '\r\n';
   try { fs.writeFileSync(STAND + '.neu', text, 'utf16le'); fs.renameSync(STAND + '.neu', STAND); } catch (e) {}
 }
 function setzen(o) {
@@ -128,8 +132,7 @@ async function ffmpegHolen() {
     const url = FF_URLS[q], quelle = new URL(url).hostname, naechste = FF_URLS[q + 1];
     for (let versuch = 1; versuch <= (naechste ? 1 : 3); versuch++) {
       try {
-        const steuer = new AbortController();
-        const r = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'KlangTresor-Installer' }, signal: steuer.signal });
+        const r = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'KlangTresor-Installer' } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const ganz = Number(r.headers.get('content-length')) || ffBytes;
         const datei = fs.createWriteStream(zip);
@@ -140,7 +143,8 @@ async function ffmpegHolen() {
           /* der Balken rechnet mit ffBytes; ein groesseres Zip (BtbN) wird darauf umgerechnet */
           zeigen(Math.min(ffBytes, Math.floor(n / ganz * ffBytes)), T('{name} wird geladen', { name: 'ffmpeg' }), quelle);
           /* Schleicht diese Quelle und gibt es eine zweite: nach 30 s mit weniger als 15 MB umschwenken */
-          if (naechste && Date.now() - beginn > 30000 && n < 15e6 && n < ganz) { zuLangsam = true; steuer.abort(); break; }
+          /* break schliesst den Strom sauber (ein AbortController liess am 29.10.2026 den ganzen Prozess abstuerzen) */
+          if (naechste && Date.now() - beginn > 30000 && n < 15e6 && n < ganz) { zuLangsam = true; break; }
         }
         await new Promise((f) => datei.end(f));
         if (zuLangsam) {
@@ -172,6 +176,15 @@ async function ffmpegHolen() {
   }
   return false;
 }
+
+/* Was auch immer schiefgeht: der Installer erfaehrt es, statt auf „laeuft" stehen zu bleiben */
+function abgestuerzt(e) {
+  setzen({ zustand: 'fehler', oben: T('Holen brach ab.'), unten: String((e && e.message) || e).slice(0, 200),
+    schluss: T('KlangTresor läuft trotzdem. Was fehlt, holst du später in KlangTresor unter Profil → System — mit einem Klick, mit Balken. Oder hier gleich noch einmal versuchen.') });
+  schreiben(); process.exit(1);
+}
+process.on('uncaughtException', abgestuerzt);
+process.on('unhandledRejection', abgestuerzt);
 
 /* Halt vom Installer (Abbrechen): Kind beenden, Stand sagen, raus. */
 const wache = setInterval(() => {

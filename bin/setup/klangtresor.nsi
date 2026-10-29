@@ -68,6 +68,9 @@ Var LUnten
 Var LSchluss
 Var KnopfNochmal
 Var HolenLaeuft
+; Herzschlag aus stand.txt (Zeile 6) und wie viele Takte er schon steht
+Var Herz
+Var HerzStill
 Var Fett
 ; Abschlussseite: mit Archiv geht es in die App, ohne in die Einrichtung (Suno-Name)
 Var FertigText
@@ -189,6 +192,9 @@ LangString holen_nochmal ${LANG_RUSSIAN} "Попробовать ещё раз"
 LangString holen_start ${LANG_GERMAN} "Es geht los …"
 LangString holen_start ${LANG_ENGLISH} "Starting …"
 LangString holen_start ${LANG_RUSSIAN} "Начинаем …"
+LangString holen_tot ${LANG_GERMAN} "Das Holen hat sich unerwartet beendet. KlangTresor läuft trotzdem; was fehlt, holst du später unter Profil → System - oder hier gleich noch einmal versuchen."
+LangString holen_tot ${LANG_ENGLISH} "Downloading stopped unexpectedly. KlangTresor runs anyway; fetch what is missing later under Profile → System - or try again here right away."
+LangString holen_tot ${LANG_RUSSIAN} "Загрузка неожиданно прервалась. KlangTresor всё равно работает; недостающее можно загрузить позже: Профиль → Система - или попробовать ещё раз прямо здесь."
 LangString holen_kein_node ${LANG_GERMAN} "Node.js ließ sich nicht starten - werkzeug\node\node.exe fehlt oder wird blockiert (Virenschutz?)."
 LangString holen_kein_node ${LANG_ENGLISH} "Node.js could not be started - werkzeug\node\node.exe is missing or blocked (antivirus?)."
 LangString holen_kein_node ${LANG_RUSSIAN} "Не удалось запустить Node.js - werkzeug\node\node.exe отсутствует или заблокирован (антивирус?)."
@@ -529,6 +535,8 @@ Function HolenStarten
     Return
   ${EndIf}
   StrCpy $HolenLaeuft 1
+  StrCpy $Herz ""
+  StrCpy $HerzStill 0
   ${NSD_CreateTimer} HolenTakt 500
 FunctionEnd
 
@@ -575,7 +583,21 @@ Function HolenTakt
   FileReadUTF16LE $R0 $R3
   FileReadUTF16LE $R0 $R4
   FileReadUTF16LE $R0 $R5
+  FileReadUTF16LE $R0 $R6
   FileClose $R0
+  ${TrimNewLines} $R6 $R6
+  ; Steht der Herzschlag 10 s (20 Takte), lebt das Holen nicht mehr - sagen, statt ewig „laeuft" zu zeigen
+  ${If} $R6 == $Herz
+    IntOp $HerzStill $HerzStill + 1
+  ${Else}
+    StrCpy $Herz $R6
+    StrCpy $HerzStill 0
+  ${EndIf}
+  ${If} $HerzStill >= 20
+  ${AndIf} $R4 == "laeuft"
+    StrCpy $R4 "fehler"
+    StrCpy $R5 "$(holen_tot)"
+  ${EndIf}
   ${TrimNewLines} $R1 $R1
   ${TrimNewLines} $R2 $R2
   ${TrimNewLines} $R3 $R3
