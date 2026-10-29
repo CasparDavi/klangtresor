@@ -3332,7 +3332,21 @@ html.handy .bart #bbewegt{display:none!important}
 .werkopf button{background:none;border:none;color:var(--schwach);font-size:16px;
   cursor:pointer;line-height:1;padding:2px 4px}
 .werkopf button:hover{color:var(--text)}
-.werinhalt{padding:16px}
+.werinhalt{padding:16px;overflow:auto}
+/* ZWEI REITER (29.10.2026): „Über" und „Rechtliches" - Castos Hinweis, auch freie Software brauche einen
+   Haftungsausschluss. Er betrifft die SOFTWARE, gehoert also in dieses Fenster, nicht ins Profil (das erklaert das
+   Archiv). Lang wie er ist, bekommt er einen eigenen Reiter; das Fenster rollt, statt aus dem Bild zu wachsen. */
+#werkasten{display:flex;flex-direction:column;max-height:calc(100vh - 40px)}
+.werlaschen{display:flex;gap:4px;padding:8px 16px 0;border-bottom:1px solid #ffffff12}
+.werlaschen button{background:none;border:none;border-bottom:2px solid transparent;color:var(--schwach);
+  font:inherit;font-size:12.5px;padding:6px 8px 7px;cursor:pointer;margin-bottom:-1px}
+.werlaschen button:hover{color:var(--text)}
+.werlaschen button.an{color:var(--text);border-bottom-color:var(--akzent)}
+.werhinweis h4{margin:0 0 10px;font-size:13px;font-weight:600;color:var(--text)}
+.werhinweis p{margin:0 0 10px;font-size:12px;line-height:1.55;color:var(--schwach)}
+.werhinweis p b{color:var(--text);font-weight:600}
+.werhinweis .werrecht{color:var(--schwach)}
+.werhinweis .werstand{font-size:10.5px;color:var(--schwach);margin-top:12px}
 .werblock{margin-bottom:18px}
 .werblock:last-of-type{margin-bottom:14px}
 /* Die Rolle steht ueber dem Namen und klein - wer liest, sucht den
@@ -4660,7 +4674,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <h3>KlangTresor</h3>
       <button type="button" onclick="werZu()" title="Schließen" data-i18n-title="zu.schliessen">✕</button>
     </div>
-    <div class="werinhalt">
+    <div class="werlaschen" role="tablist">
+      <button type="button" class="an" data-wer="ueber" onclick="werReiter('ueber')" data-i18n="wer.reiter.ueber">Über</button>
+      <button type="button" data-wer="recht" onclick="werReiter('recht')" data-i18n="wer.reiter.recht">Rechtliches</button>
+    </div>
+    <div class="werinhalt" id="werueber">
       <div class="wereinstieg" data-i18n="wer.einstieg" data-i18n-html>Ein lokales Archiv der eigenen
         <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>-Titel
         — mit Karaoke-Bühne, Klanganalyse und Tonstudio. Läuft im eigenen
@@ -4741,20 +4759,31 @@ h3 .infoknopf .ico{width:14px;height:14px}
           <div id="werversion">—</div>
           <div id="werfassungstand" class="fassungstand" hidden></div>
         </div>
-        <!-- Die Rechtelage gehoert hierher, nicht nur in die README:
-             wer die Software vor sich hat, soll sie sehen koennen. -->
-        <div class="werrecht" data-i18n="wer.recht.mit" data-i18n-html>Der Quelltext steht unter der
-          <a href="https://github.com/CasparDavi/klangtresor/blob/main/LICENSE"
-             target="_blank" rel="noopener">MIT-Lizenz</a>. Nimm ihn, ändere ihn,
-          gib ihn weiter — der Urhebervermerk reist mit.</div>
-        <div class="werrecht" data-i18n="wer.recht.fremd">Die fremden Bausteine und die KI-Modelle tragen
-          eigene Bedingungen; die Musikstil-Erkennung darf nicht kommerziell
-          benutzt werden.</div>
         <!-- Und der Verweis auf das andere "Ueber": dieses Fenster
              erklaert die SOFTWARE, das Profilfenster das ARCHIV. -->
         <div class="werrecht" data-i18n="wer.recht.ueber" data-i18n-html>Woher die Titel stammen, steht im Profil
           unter <i>Über…</i></div>
       </div>
+    </div>
+    <!-- RECHTLICHES (29.10.2026, nach Castos Vorlage fuer seinen CB Audio Analyzer, fuer KlangTresor neu geschrieben
+         und von Caspar_D abgenommen). Die Zusage unter „Deine Daten" ist am Code geprueft: nach draussen gehen nur
+         Lesezugriffe (Suno, GitHub, Programm- und Modellquellen); geschrieben wird nur an den eigenen Server. -->
+    <div class="werinhalt werhinweis" id="werrecht" hidden>
+      <h4 data-i18n="wer.haft.titel">Haftungs- und Nutzungshinweis</h4>
+      <p data-i18n="wer.haft.1" data-i18n-html>KlangTresor ist ein kostenloses Open-Source-Projekt von Caspar_D. Es wird unentgeltlich und so, wie es ist, zur Verfügung gestellt. Es gibt keine Gewähr, dass es fehlerfrei, ununterbrochen oder auf jedem Rechner läuft.</p>
+      <p data-i18n="wer.haft.2" data-i18n-html><b>Messwerte sind Orientierung.</b> Lautheit, Tonart, Tempo, Störfrequenzen, Stilerkennung, Liedtext-Zeitmarken und alle anderen Analysen dienen der Orientierung. Sie sind keine verbindliche Bewertung für Mischung, Mastering oder Veröffentlichung. Für wichtige Entscheidungen prüfe sie mit geeigneten Werkzeugen nach. Achte beim Hören auf eine gesunde Lautstärke.</p>
+      <p data-i18n="wer.haft.3" data-i18n-html><b>Auf eigene Verantwortung.</b> Installation und Nutzung erfolgen auf eigenes Risiko. Sichere dein Archiv, den Ordner <i>library</i>, regelmäßig.</p>
+      <p data-i18n="wer.haft.4" data-i18n-html><b>Haftung.</b> Soweit gesetzlich zulässig, wird keine Haftung für Schäden übernommen, die aus Installation, Nutzung, Fehlfunktion oder Nichtverfügbarkeit entstehen – insbesondere für Datenverlust, beschädigte Dateien oder Systemausfälle. Das gilt nicht bei Vorsatz und grober Fahrlässigkeit, nicht bei Schäden an Leben, Körper oder Gesundheit und nicht, wo eine Haftung gesetzlich zwingend ist.</p>
+      <p data-i18n="wer.haft.5" data-i18n-html><b>Suno.</b> KlangTresor ist ein privates Projekt und gehört nicht zu Suno. Es liest, was bei Suno öffentlich zu sehen ist: deine Profilseite und die öffentlichen Profile derer, die deine Titel geherzt oder kommentiert haben. Was nur dir gehört, holt das Lesezeichen mit deiner eigenen Anmeldung. Für den Umgang mit Suno-Inhalten gelten Sunos Nutzungsbedingungen – dafür bist du selbst verantwortlich.</p>
+      <p data-i18n="wer.haft.6" data-i18n-html><b>Deine Daten.</b> Dein Archiv bleibt auf deinem Rechner; KlangTresor schickt es nirgendwohin. Ins Netz geht es nur, um bei Suno zu lesen, Programmteile und KI-Modelle zu holen und bei GitHub nach neuen Fassungen zu fragen.</p>
+      <p data-i18n="wer.haft.7" data-i18n-html><b>Fremde Bausteine.</b> Die eingebundenen Programme und KI-Modelle haben eigene Lizenzen; die Musikstil-Erkennung darf nicht kommerziell genutzt werden.</p>
+      <p data-i18n="wer.haft.8" data-i18n-html><b>Mitstreiter sind nicht Anbieter.</b> Tester, Mitentwickler, Communitys und Discord-Server, in denen KlangTresor vorgestellt oder geprüft wird, übernehmen keine Verantwortung für die Software.</p>
+      <p data-i18n="wer.haft.9" data-i18n-html><b>Keine Zusage für die Zukunft.</b> Support, Fehlerbehebungen und Updates sind nicht garantiert; die Entwicklung kann sich ändern oder enden.</p>
+      <div class="werrecht" data-i18n="wer.recht.mit" data-i18n-html>Der Quelltext steht unter der
+        <a href="https://github.com/CasparDavi/klangtresor/blob/main/LICENSE"
+           target="_blank" rel="noopener">MIT-Lizenz</a>. Nimm ihn, ändere ihn,
+        gib ihn weiter — der Urhebervermerk reist mit.</div>
+      <div class="werstand" data-i18n="wer.haft.stand">Stand: Oktober 2026</div>
     </div>
   </div>
 </div>
@@ -30485,7 +30514,13 @@ function werVersionSetzen(){
   const w = document.getElementById('werversion');
   if (w) w.textContent = paketVersion ? t('wer.version', { v: paketVersion }) : '—';
 }
-function werAuf(){
+function werReiter(w){
+  document.querySelectorAll('.werlaschen button').forEach(b => b.classList.toggle('an', b.dataset.wer === w));
+  document.getElementById('werueber').hidden = w !== 'ueber';
+  document.getElementById('werrecht').hidden = w !== 'recht';
+}
+function werAuf(reiter){
+  werReiter(reiter === 'recht' ? 'recht' : 'ueber');
   werVersionSetzen();
   document.getElementById('wer').classList.add('auf');
   fassungNachsehen();
