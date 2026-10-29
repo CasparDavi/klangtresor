@@ -21,7 +21,44 @@ erkennt das Programm selbst, sobald du einmal sammelst.
 > **Die Dokumente liegen nach Modulen sortiert** — die Karte dazu steht in
 > [docs/LIESMICH.md](docs/LIESMICH.md).
 
-## Der schnelle Weg — ein Skript, das alles macht
+## Windows: die Setup.exe — herunterladen, doppelklicken, fertig
+
+Für Windows 10 und 11 gibt es einen Installer:
+
+    https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe
+
+Er legt KlangTresor nach `C:\Users\<Name>\KlangTresor`, zeigt, was schon da ist, holt ffmpeg, die KI-Modelle und
+Whisper mit Fortschrittsbalken und öffnet danach den Browser — dort gibst du nur noch deinen Suno-Namen ein. Danach
+läuft KlangTresor als **Symbol unten rechts in der Taskleiste**: Doppelklick öffnet die Seite, Rechtsklick → Beenden.
+Verwalterrechte braucht es nicht. Liegt schon ein KlangTresor da, wird nur das Programm erneuert; dein Archiv bleibt.
+
+**Windows fragt drei Mal nach — das ist normal.** Die Setup.exe ist nicht signiert, und Windows kennt sie noch nicht.
+Die orange markierte Stelle ist jeweils die, auf die du klickst:
+
+**1. Edge, gleich nach dem Herunterladen:** „… wird häufig nicht heruntergeladen". Mit der Maus auf den Eintrag, dann
+auf die drei Punkte **…** daneben → **Behalten**.
+
+![Edge: wird häufig nicht heruntergeladen](docs/bilder/windows-download/1-edge-behalten.png)
+
+**2. Die Rückfrage dazu:** „Stellen Sie sicher, dass Sie KlangTresor-Setup.exe vertrauen". „Trotzdem behalten" ist
+kein eigener Knopf — es versteckt sich hinter dem **kleinen Pfeil ˅ neben „Löschen"**.
+
+![SmartScreen: Pfeil neben Löschen, dann Trotzdem behalten](docs/bilder/windows-download/2-trotzdem-behalten.png)
+
+**3. Beim Öffnen:** „Der Computer wurde durch Windows geschützt". Auf den Link **Weitere Informationen** klicken …
+
+![Der Computer wurde durch Windows geschützt: Weitere Informationen](docs/bilder/windows-download/3-weitere-informationen.png)
+
+**4. … dann erscheint *Trotzdem ausführen*.**
+
+![Trotzdem ausführen](docs/bilder/windows-download/4-trotzdem-ausfuehren.png)
+
+Entfernen: Einstellungen → Apps → KlangTresor, oder Startmenü → „KlangTresor entfernen". Dein Archiv (`library`) und
+die KI-Modelle (`modelle`) bleiben liegen; die letzte Seite sagt, wo und wie groß.
+
+Für macOS und Linux bleibt vorerst das Zip (der nächste Abschnitt); eigene Installer für beide sind in Arbeit.
+
+## Der Weg mit dem Zip — macOS, Linux, Docker (und Windows ohne Setup.exe)
 
 Das Paket gibt es hier, immer in der jüngsten Version:
 

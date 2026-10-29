@@ -21,7 +21,44 @@ your Suno account by itself as soon as you collect once.
 > **The documents are sorted by module** — the map is in
 > [docs/LIESMICH.md](docs/LIESMICH.md) (German).
 
-## The quick way — one script that does it all
+## Windows: the Setup.exe — download, double-click, done
+
+For Windows 10 and 11 there is an installer:
+
+    https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe
+
+It puts KlangTresor into `C:\Users\<name>\KlangTresor`, shows what is already there, fetches ffmpeg, the AI models and
+Whisper with progress bars and then opens the browser — there you only enter your Suno name. After that KlangTresor runs
+as an **icon at the bottom right of the taskbar**: double-click opens the page, right-click → Quit. No administrator
+rights needed. If a KlangTresor is already there, only the program is renewed; your archive stays.
+
+**Windows asks three times — that is normal.** The Setup.exe is not signed, and Windows does not know it yet. The
+screenshots are from a German Windows; the orange mark is always where you click:
+
+**1. Edge, right after downloading:** "… isn't commonly downloaded". Hover over the entry, click the three dots **…**
+next to it → **Keep**.
+
+![Edge: isn't commonly downloaded](docs/bilder/windows-download/1-edge-behalten.png)
+
+**2. The follow-up question:** "Make sure you trust KlangTresor-Setup.exe before you open it". "Keep anyway" is not a
+button of its own — it hides behind the **small arrow ˅ next to "Delete"**.
+
+![SmartScreen: arrow next to Delete, then Keep anyway](docs/bilder/windows-download/2-trotzdem-behalten.png)
+
+**3. When opening it:** "Windows protected your PC". Click the link **More info** …
+
+![Windows protected your PC: More info](docs/bilder/windows-download/3-weitere-informationen.png)
+
+**4. … then *Run anyway* appears.**
+
+![Run anyway](docs/bilder/windows-download/4-trotzdem-ausfuehren.png)
+
+Removing: Settings → Apps → KlangTresor, or Start menu → "KlangTresor entfernen". Your archive (`library`) and the AI
+models (`modelle`) stay; the last page says where and how big.
+
+For macOS and Linux the zip stays for now (next section); installers of their own for both are in the works.
+
+## The zip way — macOS, Linux, Docker (and Windows without the Setup.exe)
 
 The package is available here, always in the latest version:
 

@@ -116,3 +116,18 @@ Nicht geprüft:
 - Die Einrichtung im Browser nach dem Suno-Namen bis zum Start von KlangTresor (ich habe keinen Suno-Namen eingegeben).
 - SmartScreen beim Download aus dem Netz (die Datei kam über die Parallels-Freigabe).
 - Zwei Installationen auf demselben Rechner teilen sich einen Eintrag unter „Apps“; wer eine entfernt, nimmt den Eintrag der anderen mit. Bei einer Installation je Nutzer, dem Normalfall, spielt das keine Rolle.
+
+## SmartScreen: der Weg eines echten Nutzers (geprüft 29.10.2026, Windows 11, Edge)
+
+Drei Rückfragen, mit Bildern in START-HIER/HERE/RU (`docs/bilder/windows-download/`):
+1. Edge: „… wird häufig nicht heruntergeladen“, dann „…“ und „Behalten“.
+2. SmartScreen: „Stellen Sie sicher, dass Sie … vertrauen“. „Trotzdem behalten“ steckt hinter dem Pfeil ˅ neben „Löschen“.
+3. Beim Start: „Der Computer wurde durch Windows geschützt“, dann „Weitere Informationen“ und „Trotzdem ausführen“.
+
+Achtung beim Testen in Parallels: Edge speichert dort in die Mac-Downloads (`C:\Mac\Home\Downloads`). Die Markierung
+„aus dem Internet“ (Zone.Identifier) geht auf der Freigabe verloren, deshalb fehlt dort Schritt 3. Geprüft wurde mit
+einer Kopie auf der Windows-Platte und von Hand gesetzter `ZoneId=3`.
+
+Kostenloser Ausweg, ohne Zertifikat: die Setup.exe bei Microsoft als Softwarehersteller einreichen („Submit a file for
+malware analysis“, Kategorie „Software developer“). Das verkürzt die Zeit, bis SmartScreen sie kennt. Je Release einmal,
+von Hand, mit dem Microsoft-Konto des Herausgebers – das kann nur Caspar_D.

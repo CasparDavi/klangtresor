@@ -148,6 +148,14 @@ behind the red button.
 
 ### On Windows
 
+**The Setup.exe:** download [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) and double-click it. It shows what is already there, fetches
+ffmpeg, the AI models and Whisper with progress bars and then opens the browser — only the Suno name is left. KlangTresor
+then runs as an icon at the bottom right of the taskbar. Windows asks three times the first time, because the Setup.exe
+is not signed; [START-HERE.md](START-HERE.md) shows with pictures where to click.
+
+The old way from the zip still works:
+
+
 Double-click **`einrichten-windows.cmd`** — the rest runs by itself:
 check what is missing, fetch Node.js and packages, fetch models, ask for
 your Suno alias, collect songs, start. The setup opens as a page in the

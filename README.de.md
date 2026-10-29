@@ -147,6 +147,14 @@ roten Knopf.
 
 ### Unter Windows
 
+**Die Setup.exe:** [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) herunterladen und doppelklicken. Sie zeigt, was schon da ist, holt
+ffmpeg, die KI-Modelle und Whisper mit Balken und öffnet danach den Browser — nur noch der Suno-Name. KlangTresor läuft
+danach als Symbol unten rechts in der Taskleiste. Windows fragt beim ersten Mal drei Mal nach, weil die Setup.exe nicht
+signiert ist; wo man klickt, zeigt [START-HIER.md](START-HIER.md) mit Bildern.
+
+Der alte Weg aus dem Zip geht weiter:
+
+
 Doppelklick auf **`einrichten-windows.cmd`** — der Rest läuft von
 selbst: prüfen, was fehlt, Node.js und Pakete holen, Modelle holen, nach
 dem Suno-Alias fragen, Songs sammeln, starten. Die Einrichtung öffnet
