@@ -9,9 +9,9 @@
 #
 #   - startet bin/starten.js ohne Fenster (holt den Server nach einem Update zurueck, oeffnet den Browser)
 #   - Ausgabe nach protokoll/klangtresor.log (die vom letzten Mal: klangtresor.alt.log)
-#   - Symbol mit „KlangTresor oeffnen", „Protokoll anzeigen", „Beenden" - ueber AppIndicator (Ubuntu, KDE, Xfce,
-#     Cinnamon, MATE; unter reinem GNOME nur mit der AppIndicator-Erweiterung, die Ubuntu mitbringt)
-#   - fehlt AppIndicator, laeuft KlangTresor trotzdem: ohne Symbol, Beenden dann ueber die App. Das Protokoll sagt es.
+#   - Symbol mit „KlangTresor oeffnen", „Protokoll anzeigen", „Beenden" - als StatusNotifierItem ueber D-Bus (Ubuntu
+#     mit seiner AppIndicator-Erweiterung, KDE, Xfce, Cinnamon, MATE, LXQt; reines GNOME ohne Erweiterung zeigt keins)
+#   - ohne Platz fuer Symbole laeuft KlangTresor trotzdem: Beenden dann ueber die App. Das Protokoll sagt es.
 #   - beendet sich der Server ueber den Knopf in der App (Code 0), endet auch das Symbol
 #   - ein zweiter Start oeffnet nur die Seite
 # Nur Python 3 und GObject aus dem System - nichts wird nachinstalliert.
@@ -132,82 +132,227 @@ def aufhoeren():
 
 
 # --- das Symbol (wenn es geht)
-Gtk = Indikator = None
+# DIREKT UEBER D-BUS (StatusNotifierItem + com.canonical.dbusmenu), nicht ueber AppIndicator: Ubuntu 24.04 zeigt solche
+# Symbole (Erweiterung ubuntu-appindicators ist an), bringt aber die Python-Bibliothek dafuer nicht mit
+# (gir1.2-ayatanaappindicator3 fehlt; so in der Test-VM am 29.10.2026 gesehen). Gio aus python3-gi ist ueberall da.
+# Dasselbe Protokoll sprechen KDE, Xfce (Status-Plugin), Cinnamon, MATE, LXQt und die AppIndicator-Erweiterung.
 try:
     import gi
-    gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk, GLib
-    for name in ('AyatanaAppIndicator3', 'AppIndicator3'):
-        try:
-            gi.require_version(name, '0.1')
-            Indikator = __import__('gi.repository.' + name, fromlist=[name])
-            break
-        except (ValueError, ImportError):
-            continue
+    gi.require_version('Gio', '2.0')
+    from gi.repository import Gio, GLib
 except Exception as e:
-    prot.zeile('Kein GTK (%s) - KlangTresor läuft ohne Symbol; beenden über Profil → System.' % e)
-    Gtk = None
+    Gio = None
+    prot.zeile('Kein GObject (%s) - KlangTresor läuft ohne Symbol; beenden über Profil → System.' % e)
 
-if Gtk and not Indikator:
-    prot.zeile('Kein AppIndicator auf diesem System - KlangTresor läuft ohne Symbol; beenden über Profil → System.')
+SNI_XML = """<node>
+ <interface name="org.kde.StatusNotifierItem">
+  <property name="Category" type="s" access="read"/><property name="Id" type="s" access="read"/>
+  <property name="Title" type="s" access="read"/><property name="Status" type="s" access="read"/>
+  <property name="WindowId" type="i" access="read"/><property name="IconName" type="s" access="read"/>
+  <property name="IconThemePath" type="s" access="read"/><property name="IconPixmap" type="a(iiay)" access="read"/>
+  <property name="ToolTip" type="(sa(iiay)ss)" access="read"/><property name="ItemIsMenu" type="b" access="read"/>
+  <property name="Menu" type="o" access="read"/>
+  <method name="ContextMenu"><arg type="i" direction="in"/><arg type="i" direction="in"/></method>
+  <method name="Activate"><arg type="i" direction="in"/><arg type="i" direction="in"/></method>
+  <method name="SecondaryActivate"><arg type="i" direction="in"/><arg type="i" direction="in"/></method>
+  <method name="Scroll"><arg type="i" direction="in"/><arg type="s" direction="in"/></method>
+  <signal name="NewTitle"/><signal name="NewIcon"/><signal name="NewToolTip"/><signal name="NewStatus"><arg type="s"/></signal>
+ </interface>
+</node>"""
+MENU_XML = """<node>
+ <interface name="com.canonical.dbusmenu">
+  <property name="Version" type="u" access="read"/><property name="TextDirection" type="s" access="read"/>
+  <property name="Status" type="s" access="read"/><property name="IconThemePath" type="as" access="read"/>
+  <method name="GetLayout"><arg type="i" direction="in"/><arg type="i" direction="in"/><arg type="as" direction="in"/>
+   <arg type="u" direction="out"/><arg type="(ia{sv}av)" direction="out"/></method>
+  <method name="GetGroupProperties"><arg type="ai" direction="in"/><arg type="as" direction="in"/>
+   <arg type="a(ia{sv})" direction="out"/></method>
+  <method name="GetProperty"><arg type="i" direction="in"/><arg type="s" direction="in"/><arg type="v" direction="out"/></method>
+  <method name="Event"><arg type="i" direction="in"/><arg type="s" direction="in"/><arg type="v" direction="in"/><arg type="u" direction="in"/></method>
+  <method name="EventGroup"><arg type="a(isvu)" direction="in"/><arg type="ai" direction="out"/></method>
+  <method name="AboutToShow"><arg type="i" direction="in"/><arg type="b" direction="out"/></method>
+  <method name="AboutToShowGroup"><arg type="ai" direction="in"/><arg type="ai" direction="out"/><arg type="ai" direction="out"/></method>
+  <signal name="ItemsPropertiesUpdated"><arg type="a(ia{sv})"/><arg type="a(ias)"/></signal>
+  <signal name="LayoutUpdated"><arg type="u"/><arg type="i"/></signal>
+ </interface>
+</node>"""
+
+
+class Symbol:
+    def __init__(self):
+        self.revision = 1
+        self.kopf = 'KlangTresor'
+        self.beendet = False
+        self.bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        self.name = 'org.kde.StatusNotifierItem-%d-1' % os.getpid()
+        sni = Gio.DBusNodeInfo.new_for_xml(SNI_XML).interfaces[0]
+        men = Gio.DBusNodeInfo.new_for_xml(MENU_XML).interfaces[0]
+        self.bus.register_object('/StatusNotifierItem', sni, self.sni_aufruf, self.sni_eigenschaft, None)
+        self.bus.register_object('/MenuBar', men, self.menu_aufruf, self.menu_eigenschaft, None)
+        Gio.bus_own_name_on_connection(self.bus, self.name, Gio.BusNameOwnerFlags.NONE, None, None)
+        self.pixmap = self.bildpunkte()
+        self.anmelden()
+        # Startet das Panel neu (oder kommt die Erweiterung spaeter), wieder anmelden
+        Gio.bus_watch_name_on_connection(self.bus, 'org.kde.StatusNotifierWatcher', Gio.BusNameWatcherFlags.NONE,
+                                         lambda *_: self.anmelden(), None)
+
+    def anmelden(self):
+        try:
+            self.bus.call_sync('org.kde.StatusNotifierWatcher', '/StatusNotifierWatcher', 'org.kde.StatusNotifierWatcher',
+                               'RegisterStatusNotifierItem', GLib.Variant('(s)', (self.name,)), None,
+                               Gio.DBusCallFlags.NONE, 3000, None)
+            prot.zeile('Symbol im Panel angemeldet.')
+        except Exception as e:
+            prot.zeile('Kein Platz für Symbole im Panel (%s) - beenden über Profil → System.' % str(e).split(':')[-1].strip())
+
+    def bildpunkte(self):
+        # Das Bild als ARGB-Punkte (IconPixmap) - so braucht das Panel kein Symbolthema
+        try:
+            gi.require_version('GdkPixbuf', '2.0')
+            from gi.repository import GdkPixbuf
+            pb = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(WURZEL, 'web', 'symbol', 'klangtresor-256.png'), 64, 64)
+            if not pb.get_has_alpha():
+                pb = pb.add_alpha(False, 0, 0, 0)
+            w, h, rs, roh = pb.get_width(), pb.get_height(), pb.get_rowstride(), pb.get_pixels()
+            argb = bytearray()
+            for y in range(h):
+                for x in range(w):
+                    i = y * rs + x * 4
+                    r, g, b, a = roh[i], roh[i + 1], roh[i + 2], roh[i + 3]
+                    argb += bytes((a, r, g, b))
+            return [(w, h, bytes(argb))]
+        except Exception:
+            return []
+
+    # --- StatusNotifierItem
+    def sni_eigenschaft(self, _c, _s, _p, _i, name):
+        werte = {
+            'Category': GLib.Variant('s', 'ApplicationStatus'), 'Id': GLib.Variant('s', 'klangtresor'),
+            'Title': GLib.Variant('s', 'KlangTresor'), 'Status': GLib.Variant('s', 'Active'),
+            'WindowId': GLib.Variant('i', 0), 'IconName': GLib.Variant('s', 'klangtresor-256'),
+            'IconThemePath': GLib.Variant('s', os.path.join(WURZEL, 'web', 'symbol')),
+            'IconPixmap': GLib.Variant('a(iiay)', self.pixmap),
+            'ToolTip': GLib.Variant('(sa(iiay)ss)', ('', [], 'KlangTresor', self.kopf)),
+            'ItemIsMenu': GLib.Variant('b', False), 'Menu': GLib.Variant('o', '/MenuBar'),
+        }
+        return werte.get(name)
+
+    def sni_aufruf(self, _c, _s, _p, _i, methode, _args, aufruf):
+        if methode in ('Activate', 'SecondaryActivate'):
+            seite_auf()
+        aufruf.return_value(None)
+
+    # --- das Menue
+    def punkte(self):
+        p = [(1, self.kopf, False), (2, L('KlangTresor öffnen', 'Open KlangTresor', 'Открыть KlangTresor'), True)]
+        if self.beendet:
+            p.append((3, L('Neu starten', 'Restart', 'Перезапустить'), True))
+        p += [(4, L('Protokoll anzeigen', 'Show log', 'Показать журнал'), True), (5, None, False),
+              (6, L('Beenden', 'Quit', 'Выйти'), True)]
+        return p
+
+    def eintrag(self, nr, text, an):
+        e = {'visible': GLib.Variant('b', True)}
+        if text is None:
+            e['type'] = GLib.Variant('s', 'separator')
+        else:
+            e['label'] = GLib.Variant('s', text)
+            e['enabled'] = GLib.Variant('b', an)
+        return e
+
+    def menu_eigenschaft(self, _c, _s, _p, _i, name):
+        return {'Version': GLib.Variant('u', 3), 'TextDirection': GLib.Variant('s', 'ltr'),
+                'Status': GLib.Variant('s', 'normal'), 'IconThemePath': GLib.Variant('as', [])}.get(name)
+
+    def menu_aufruf(self, _c, _s, _p, _i, methode, args, aufruf):
+        if methode == 'GetLayout':
+            kinder = [GLib.Variant('(ia{sv}av)', (n, self.eintrag(n, t, a), [])) for n, t, a in self.punkte()]
+            wurzel = (0, {'children-display': GLib.Variant('s', 'submenu')}, kinder)
+            aufruf.return_value(GLib.Variant('(u(ia{sv}av))', (self.revision, wurzel)))
+        elif methode == 'GetGroupProperties':
+            ids = args.unpack()[0]
+            l = [(n, self.eintrag(n, t, a)) for n, t, a in self.punkte() if not ids or n in ids]
+            aufruf.return_value(GLib.Variant('(a(ia{sv}))', (l,)))
+        elif methode == 'GetProperty':
+            n, name = args.unpack()
+            e = next((self.eintrag(n2, t, a) for n2, t, a in self.punkte() if n2 == n), {})
+            aufruf.return_value(GLib.Variant('(v)', (e.get(name, GLib.Variant('s', '')),)))
+        elif methode == 'Event':
+            n, art = args.unpack()[:2]
+            if art == 'clicked':
+                GLib.idle_add(self.geklickt, n)
+            aufruf.return_value(None)
+        elif methode == 'EventGroup':
+            for n, art, _d, _t in args.unpack()[0]:
+                if art == 'clicked':
+                    GLib.idle_add(self.geklickt, n)
+            aufruf.return_value(GLib.Variant('(ai)', ([],)))
+        elif methode == 'AboutToShow':
+            aufruf.return_value(GLib.Variant('(b)', (False,)))
+        elif methode == 'AboutToShowGroup':
+            aufruf.return_value(GLib.Variant('(aiai)', ([], [])))
+        else:
+            aufruf.return_value(None)
+
+    def neu_zeichnen(self):
+        self.revision += 1
+        self.bus.emit_signal(None, '/MenuBar', 'com.canonical.dbusmenu', 'LayoutUpdated', GLib.Variant('(ui)', (self.revision, 0)))
+        self.bus.emit_signal(None, '/StatusNotifierItem', 'org.kde.StatusNotifierItem', 'NewToolTip', None)
+
+    def geklickt(self, n):
+        if n == 2:
+            seite_auf()
+        elif n == 3:
+            self.beendet = False
+            starten()
+            self.laeuft_seit()
+        elif n == 4:
+            subprocess.Popen(['xdg-open', PROTOKOLL], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        elif n == 6:
+            aufhoeren()
+            schleife.quit()
+        return False
+
+    def laeuft_seit(self):
+        self.kopf = L('KlangTresor - läuft seit ', 'KlangTresor - running since ', 'KlangTresor - работает с ') \
+            + datetime.datetime.now().strftime('%H:%M')
+        self.neu_zeichnen()
+
+
+symbol = None
 
 
 def beendet(code):
     # Code 0: der Knopf „KlangTresor beenden" in der App - dann geht auch das Symbol
-    if Gtk and Indikator:
-        GLib.idle_add(nach_ende, code)
-    else:
-        os._exit(0 if code == 0 else 1)
-
-
-if Gtk and Indikator:
-    ind = Indikator.Indicator.new('klangtresor', os.path.join(WURZEL, 'web', 'symbol', 'klangtresor-256.png'),
-                                  Indikator.IndicatorCategory.APPLICATION_STATUS)
-    ind.set_status(Indikator.IndicatorStatus.ACTIVE)
-    ind.set_title('KlangTresor')
-    menue = Gtk.Menu()
-
-    def punkt(text, tun):
-        p = Gtk.MenuItem(label=text)
-        p.connect('activate', lambda _w: tun())
-        menue.append(p)
-        return p
-
-    kopf = Gtk.MenuItem(label='KlangTresor')
-    kopf.set_sensitive(False)
-    menue.append(kopf)
-    punkt(L('KlangTresor öffnen', 'Open KlangTresor', 'Открыть KlangTresor'), seite_auf)
-    neu = punkt(L('Neu starten', 'Restart', 'Перезапустить'), lambda: (neu.hide(), starten(), kopf_setzen()))
-    punkt(L('Protokoll anzeigen', 'Show log', 'Показать журнал'),
-          lambda: subprocess.Popen(['xdg-open', PROTOKOLL], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
-    menue.append(Gtk.SeparatorMenuItem())
-    punkt(L('Beenden', 'Quit', 'Выйти'), lambda: (aufhoeren(), Gtk.main_quit()))
-    menue.show_all()
-    neu.hide()
-    # Ein Klick auf das Symbol (wo das Panel es kann) oeffnet die Seite
-    ind.set_secondary_activate_target(menue.get_children()[1])
-    ind.set_menu(menue)
-
-    def kopf_setzen():
-        kopf.set_label(L('KlangTresor - läuft seit ', 'KlangTresor - running since ', 'KlangTresor - работает с ')
-                       + datetime.datetime.now().strftime('%H:%M'))
-
-    def nach_ende(code):
-        if code == 0:
-            Gtk.main_quit()
+    if code == 0 or not symbol:
+        if Gio and schleife:
+            GLib.idle_add(schleife.quit)
         else:
-            kopf.set_label(L('KlangTresor - beendet (siehe Protokoll)', 'KlangTresor - stopped (see log)',
-                             'KlangTresor - остановлен (см. журнал)'))
-            neu.show()
+            os._exit(0 if code == 0 else 1)
+        return
+    def zeigen():
+        symbol.beendet = True
+        symbol.kopf = L('KlangTresor - beendet (siehe Protokoll)', 'KlangTresor - stopped (see log)', 'KlangTresor - остановлен (см. журнал)')
+        symbol.neu_zeichnen()
         return False
+    GLib.idle_add(zeigen)
 
-    signal.signal(signal.SIGTERM, lambda *_: (aufhoeren(), Gtk.main_quit()))
+
+schleife = None
+if Gio:
+    schleife = GLib.MainLoop()
+    try:
+        symbol = Symbol()
+    except Exception as e:
+        prot.zeile('Symbol ging nicht (%s) - beenden über Profil → System.' % e)
+        symbol = None
+    GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, lambda: (aufhoeren(), schleife.quit(), False)[2])
     starten()
-    kopf_setzen()
-    Gtk.main()
+    if symbol:
+        symbol.laeuft_seit()
+    schleife.run()
     aufhoeren()
 else:
-    # Ohne Symbol: der Server laeuft, bis er ueber die App beendet wird
     signal.signal(signal.SIGTERM, lambda *_: (aufhoeren(), sys.exit(0)))
     starten()
     kind.wait()
