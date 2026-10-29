@@ -9935,3 +9935,8 @@ Setup-Fenster – BM_CLICK per PostMessage wirkt im Hintergrund nicht, SendMessa
 Ergebnisse in docs/INSTALLER.md, Abschnitt „Geprüft“.
 **Wiedervorlage:** Entscheidungen A–D in docs/INSTALLER.md (Taskleistensymbol statt Konsolenfenster; Mac-Fortschritt
 im Browser; Mac-Beenden über das Dock; Reihenfolge Mac/Linux). Release 1.0.134 nach Caspar_Ds Blick auf die Setup.exe.
+**Wiedervorlage (Caspar_D, 29.10.2026): Windows-10-VM aufräumen, wenn alles fertig getestet ist.** Dort liegt aus
+unseren Tests: `C:\Users\Jörg Bernhardt\KlangTresor` (Installation mit 268 Titeln, 41 Audios, Modelle 4 GB), Setup.exe
+in `C:\Users\Jörg Bernhardt\Downloads`, Startmenü-Ordner KlangTresor, Schreibtisch-Verknüpfung, Eintrag unter „Apps“
+(fehlt evtl. – zwei Testinstallationen teilten sich ihn), alte Edge-Tabs, `%LOCALAPPDATA%\KlangTresor` (Zwischenlager
+der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach library/ und modelle/ von Hand – nur auf Wort.
