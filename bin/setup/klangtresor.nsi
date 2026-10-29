@@ -3,14 +3,20 @@
 ; DIE SETUP.EXE FUER WINDOWS
 ; bin/setup/klangtresor.nsi - gebaut von bin/setup-bauen.js (makensis, laeuft auf dem Mac)
 ;
-; Caspar_D, 28.10.2026: „Alles was nötig ist, wird im Setup gemacht" - und „dass nichts im Verborgenen
-; stattfindet". Die Setup.exe bringt darum mit, was die Einrichtung sonst erst aus dem Netz holte:
-;   werkzeug\node     Node.js fuer Windows x64
-;   werkzeug\ffmpeg   ffmpeg (gyan.dev, essentials)
-;   node_modules      die Pakete aus package-lock.json, onnxruntime nur fuer Windows x64
-; Danach startet sie die gewohnte Einrichtung (einrichten-windows.cmd). Die sieht nach, findet das alles vor und
-; ueberspringt es - mit „ist da" auf der Seite, nicht still. Was sie dann noch holt (KI-Modelle, Whisper), holt sie
-; mit Balken.
+; Caspar_D, 28.10.2026: „Alles was nötig ist, wird im Setup gemacht" - „dass nichts im Verborgenen stattfindet".
+; Und am 29.10.2026, nachdem die erste Fassung danach die alte Einrichtung im Konsolenfenster anwarf: „ich rufe eine
+; setup.exe auf und der Rest passiert von alleine, ggf noch einen avatar namen" - „ab avatar geht alles im browser".
+;
+; Die Seiten, in dieser Reihenfolge:
+;   Ordner        vorgeschlagen %USERPROFILE%\KlangTresor, oder wo die letzte Setup.exe installiert hat
+;   Was schon da  frisch, oder: welche Fassung, wie gross das Archiv, wie viele KI-Modelle, Whisper - und was jetzt
+;                 passiert (erneuern, holen). Gerechnet hier in NSIS, denn vorher gibt es dort vielleicht kein Node.
+;   Kopieren      das Programm samt werkzeug\node, werkzeug\ffmpeg und node_modules (alles fuer Windows x64)
+;   Holen         KI-Modelle und Whisper aus dem Netz, an ihrer Quelle - mitliefern verbieten die Lizenzen
+;                 (bin/modelle-holen.js). Das Holen macht bin/installieren.js, unsichtbar; diese Seite zeigt seinen
+;                 Stand (Balken, was, wie weit, wie lange noch). Nichts fehlt -> die Seite entfaellt.
+;   Fertig        Haken „Weiter im Browser": bin/einrichten.js --nach-setup, ohne Fenster - die Seite fragt nach dem
+;                 Suno-Namen und holt die Lieder; danach startet KlangTresor ueber starten-windows.cmd.
 ;
 ; Entschieden am 28.10.2026: Ordner nach Wahl, vorgeschlagen %USERPROFILE%\KlangTresor, keine Verwalterrechte
 ; (das Archiv liegt im Programmordner, server.js - nach C:\Programme duerfte es nicht schreiben). Updates laufen
@@ -29,31 +35,56 @@ RequestExecutionLevel user
 !include "MUI2.nsh"
 !include "FileFunc.nsh"
 !include "LogicLib.nsh"
+!include "nsDialogs.nsh"
+!include "WordFunc.nsh"
+!include "WinMessages.nsh"
+!include "TextFunc.nsh"
+!ifndef PBM_SETRANGE32
+  !define PBM_SETRANGE32 0x406
+!endif
 
 !define UNINST "Software\Microsoft\Windows\CurrentVersion\Uninstall\KlangTresor"
 
 Name "KlangTresor ${VERSION}"
 OutFile "${AUSGABE}"
 InstallDir "$PROFILE\KlangTresor"
+; Wo die letzte Setup.exe installiert hat - so findet ein Update seinen Ordner von selbst.
+InstallDirRegKey HKCU "${UNINST}" "InstallLocation"
 BrandingText "KlangTresor ${VERSION}"
 ShowInstDetails show
 ShowUninstDetails show
 
 Var ArchivGroesse
 Var ModellGroesse
+; Was schon da ist (Seite „Was schon da")
+Var ModellOrdner
+Var MDa
+Var FehltMB
+Var ZuHolenMB
+; Seite „Holen"
+Var Balken
+Var LOben
+Var LUnten
+Var LSchluss
+Var KnopfNochmal
+Var HolenLaeuft
+Var Fett
 
 !define MUI_ICON "${INHALT}\web\symbol\klangtresor.ico"
 !define MUI_UNICON "${INHALT}\web\symbol\klangtresor.ico"
 !define MUI_ABORTWARNING
+!define MUI_CUSTOMFUNCTION_ABORT AbbruchHalt
 
 !define MUI_DIRECTORYPAGE_TEXT_TOP "$(ordner_oben)"
 !insertmacro MUI_PAGE_DIRECTORY
+Page custom BestandSeite
 !insertmacro MUI_PAGE_INSTFILES
+Page custom HolenSeite HolenVerlassen
 !define MUI_FINISHPAGE_TITLE "$(fertig_titel)"
 !define MUI_FINISHPAGE_TEXT "$(fertig_text)"
 !define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "$(fertig_einrichten)"
-!define MUI_FINISHPAGE_RUN_FUNCTION EinrichtungStarten
+!define MUI_FINISHPAGE_RUN_TEXT "$(fertig_weiter)"
+!define MUI_FINISHPAGE_RUN_FUNCTION WeiterImBrowser
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -75,17 +106,71 @@ LangString ordner_fremd ${LANG_GERMAN} "In diesem Ordner liegen schon andere Dat
 LangString ordner_fremd ${LANG_ENGLISH} "This folder already holds other files, but no KlangTresor.$\r$\n$\r$\nPlease choose an empty or new folder - for example a subfolder „KlangTresor“. Otherwise removing it later could hit files that are not KlangTresor's."
 LangString ordner_fremd ${LANG_RUSSIAN} "В этой папке уже есть другие файлы, но нет KlangTresor.$\r$\n$\r$\nВыберите пустую или новую папку - например, подпапку «KlangTresor». Иначе при удалении могут пострадать чужие файлы."
 
-LangString fertig_titel ${LANG_GERMAN} "Das Programm ist da"
-LangString fertig_titel ${LANG_ENGLISH} "The program is in place"
-LangString fertig_titel ${LANG_RUSSIAN} "Программа установлена"
+LangString fertig_titel ${LANG_GERMAN} "KlangTresor ist installiert"
+LangString fertig_titel ${LANG_ENGLISH} "KlangTresor is installed"
+LangString fertig_titel ${LANG_RUSSIAN} "KlangTresor установлен"
 
-LangString fertig_text ${LANG_GERMAN} "Node.js, ffmpeg und die Programmbausteine liegen in $INSTDIR.$\r$\n$\r$\nJetzt folgt die Einrichtung im Browser: dein Suno-Name, deine Lieder und - wenn du willst - die KI-Modelle (rund 4,7 GB, mit Fortschrittsbalken).$\r$\n$\r$\nSpäter startest du KlangTresor über das Startmenü oder die Verknüpfung auf dem Desktop."
-LangString fertig_text ${LANG_ENGLISH} "Node.js, ffmpeg and the program components are in $INSTDIR.$\r$\n$\r$\nNext comes the setup in your browser: your Suno name, your songs and - if you like - the AI models (about 4.7 GB, with progress bars).$\r$\n$\r$\nLater you start KlangTresor from the Start menu or the shortcut on the desktop."
-LangString fertig_text ${LANG_RUSSIAN} "Node.js, ffmpeg и компоненты программы находятся в $INSTDIR.$\r$\n$\r$\nДальше - настройка в браузере: ваше имя в Suno, ваши песни и, если хотите, ИИ-модели (около 4,7 ГБ, с индикатором прогресса).$\r$\n$\r$\nПозже KlangTresor запускается из меню «Пуск» или ярлыком на рабочем столе."
+LangString fertig_text ${LANG_GERMAN} "KlangTresor liegt in $INSTDIR - mit allem, was es zum Laufen braucht.$\r$\n$\r$\nAls Nächstes geht dein Browser auf: Dort gibst du deinen Suno-Namen ein, und deine Lieder werden geholt.$\r$\n$\r$\nSpäter startest du KlangTresor über das Startmenü oder die Verknüpfung auf dem Desktop."
+LangString fertig_text ${LANG_ENGLISH} "KlangTresor is in $INSTDIR - with everything it needs to run.$\r$\n$\r$\nNext your browser opens: there you enter your Suno name, and your songs are fetched.$\r$\n$\r$\nLater you start KlangTresor from the Start menu or the shortcut on the desktop."
+LangString fertig_text ${LANG_RUSSIAN} "KlangTresor находится в $INSTDIR - со всем, что нужно для работы.$\r$\n$\r$\nДальше откроется браузер: там вы вводите своё имя в Suno, и ваши песни загружаются.$\r$\n$\r$\nПозже KlangTresor запускается из меню «Пуск» или ярлыком на рабочем столе."
 
-LangString fertig_einrichten ${LANG_GERMAN} "Einrichtung jetzt starten"
-LangString fertig_einrichten ${LANG_ENGLISH} "Start the setup now"
-LangString fertig_einrichten ${LANG_RUSSIAN} "Начать настройку сейчас"
+LangString fertig_weiter ${LANG_GERMAN} "Weiter im Browser: Suno-Name und Lieder"
+LangString fertig_weiter ${LANG_ENGLISH} "Continue in the browser: Suno name and songs"
+LangString fertig_weiter ${LANG_RUSSIAN} "Продолжить в браузере: имя в Suno и песни"
+
+LangString bestand_titel ${LANG_GERMAN} "Was schon da ist"
+LangString bestand_titel ${LANG_ENGLISH} "What is already here"
+LangString bestand_titel ${LANG_RUSSIAN} "Что уже есть"
+LangString bestand_unter ${LANG_GERMAN} "und was jetzt passiert"
+LangString bestand_unter ${LANG_ENGLISH} "and what happens now"
+LangString bestand_unter ${LANG_RUSSIAN} "и что произойдёт сейчас"
+LangString bestand_neu ${LANG_GERMAN} "In $INSTDIR liegt noch kein KlangTresor. Er wird neu eingerichtet."
+LangString bestand_neu ${LANG_ENGLISH} "There is no KlangTresor in $INSTDIR yet. It will be set up fresh."
+LangString bestand_neu ${LANG_RUSSIAN} "В $INSTDIR ещё нет KlangTresor. Он будет установлен заново."
+LangString bestand_alt ${LANG_GERMAN} "In $INSTDIR liegt KlangTresor $0. Das Programm wird auf ${VERSION} erneuert."
+LangString bestand_alt ${LANG_ENGLISH} "$INSTDIR holds KlangTresor $0. The program will be renewed to ${VERSION}."
+LangString bestand_alt ${LANG_RUSSIAN} "В $INSTDIR находится KlangTresor $0. Программа будет обновлена до ${VERSION}."
+LangString bestand_archiv ${LANG_GERMAN} "Dein Archiv:  $0 Titel, $1  -  bleibt unberührt"
+LangString bestand_archiv ${LANG_ENGLISH} "Your archive:  $0 songs, $1  -  stays untouched"
+LangString bestand_archiv ${LANG_RUSSIAN} "Ваш архив:  $0 песен, $1  -  останется нетронутым"
+LangString bestand_modelle ${LANG_GERMAN} "KI-Modelle:  $0 von $1 da  ($ModellOrdner)"
+LangString bestand_modelle ${LANG_ENGLISH} "AI models:  $0 of $1 present  ($ModellOrdner)"
+LangString bestand_modelle ${LANG_RUSSIAN} "ИИ-модели:  $0 из $1 на месте  ($ModellOrdner)"
+LangString bestand_whisper_da ${LANG_GERMAN} "Whisper (mitlaufender Liedtext):  da"
+LangString bestand_whisper_da ${LANG_ENGLISH} "Whisper (synced lyrics):  present"
+LangString bestand_whisper_da ${LANG_RUSSIAN} "Whisper (текст песни в такт):  на месте"
+LangString bestand_whisper_fehlt ${LANG_GERMAN} "Whisper (mitlaufender Liedtext):  fehlt"
+LangString bestand_whisper_fehlt ${LANG_ENGLISH} "Whisper (synced lyrics):  missing"
+LangString bestand_whisper_fehlt ${LANG_RUSSIAN} "Whisper (текст песни в такт):  отсутствует"
+LangString bestand_holen ${LANG_GERMAN} "Nach dem Kopieren wird geholt, was fehlt: rund $0 - jedes Modell an seiner Quelle, mit Fortschrittsbalken. Mitliefern lassen das ihre Lizenzen nicht zu."
+LangString bestand_holen ${LANG_ENGLISH} "After copying, whatever is missing is fetched: about $0 - each model from its source, with a progress bar. Their licences do not allow shipping them."
+LangString bestand_holen ${LANG_RUSSIAN} "После копирования загрузится недостающее: около $0 - каждая модель из своего источника, с индикатором прогресса. Их лицензии не разрешают поставлять их вместе с программой."
+LangString bestand_nichts ${LANG_GERMAN} "KI-Modelle und Whisper sind vollständig - aus dem Netz wird nichts geholt."
+LangString bestand_nichts ${LANG_ENGLISH} "AI models and Whisper are complete - nothing will be downloaded."
+LangString bestand_nichts ${LANG_RUSSIAN} "ИИ-модели и Whisper на месте - из сети ничего загружаться не будет."
+LangString bestand_platz ${LANG_GERMAN} "Freier Platz dort: $0"
+LangString bestand_platz ${LANG_ENGLISH} "Free space there: $0"
+LangString bestand_platz ${LANG_RUSSIAN} "Свободно там: $0"
+
+LangString holen_titel ${LANG_GERMAN} "KI-Modelle und Whisper"
+LangString holen_titel ${LANG_ENGLISH} "AI models and Whisper"
+LangString holen_titel ${LANG_RUSSIAN} "ИИ-модели и Whisper"
+LangString holen_unter ${LANG_GERMAN} "werden an ihrer Quelle geholt - das dauert je nach Leitung ein paar Minuten bis gut eine Stunde"
+LangString holen_unter ${LANG_ENGLISH} "are fetched from their sources - depending on your connection a few minutes to well over an hour"
+LangString holen_unter ${LANG_RUSSIAN} "загружаются из своих источников - в зависимости от соединения от нескольких минут до часа с лишним"
+LangString holen_nochmal ${LANG_GERMAN} "Noch einmal versuchen"
+LangString holen_nochmal ${LANG_ENGLISH} "Try again"
+LangString holen_nochmal ${LANG_RUSSIAN} "Попробовать ещё раз"
+LangString holen_start ${LANG_GERMAN} "Es geht los …"
+LangString holen_start ${LANG_ENGLISH} "Starting …"
+LangString holen_start ${LANG_RUSSIAN} "Начинаем …"
+LangString holen_kein_node ${LANG_GERMAN} "Node.js ließ sich nicht starten - werkzeug\node\node.exe fehlt oder wird blockiert (Virenschutz?)."
+LangString holen_kein_node ${LANG_ENGLISH} "Node.js could not be started - werkzeug\node\node.exe is missing or blocked (antivirus?)."
+LangString holen_kein_node ${LANG_RUSSIAN} "Не удалось запустить Node.js - werkzeug\node\node.exe отсутствует или заблокирован (антивирус?)."
+
+LangString kt_sprache ${LANG_GERMAN} "de"
+LangString kt_sprache ${LANG_ENGLISH} "en"
+LangString kt_sprache ${LANG_RUSSIAN} "ru"
 
 LangString lnk_entfernen ${LANG_GERMAN} "KlangTresor entfernen"
 LangString lnk_entfernen ${LANG_ENGLISH} "Remove KlangTresor"
@@ -175,9 +260,311 @@ Section "KlangTresor"
   WriteRegDWORD HKCU "${UNINST}" "EstimatedSize" $0
 SectionEnd
 
-Function EinrichtungStarten
+; ---------------------------------------------------------------
+; Groesse in Worten fuer die Seite „Was schon da": $R0 = Megabyte -> $R1 „3,4 GB" / „120 MB"
+Function MBinWorten
+  ${If} $R0 >= 1024
+    IntOp $R2 $R0 / 1024
+    IntOp $R3 $R0 % 1024
+    IntOp $R3 $R3 * 10
+    IntOp $R3 $R3 / 1024
+    StrCpy $R1 "$R2,$R3 GB"
+  ${Else}
+    StrCpy $R1 "$R0 MB"
+  ${EndIf}
+FunctionEnd
+
+; Eine Modelldatei: liegt sie in voller Groesse da (am Modellordner oder noch am alten Ort library\modelle)?
+; Die Liste kommt beim Bau aus bin/modelle-holen.js (modelle.nsh) - dieselbe, nach der installieren.js holt.
+!macro ModellPruefen NAME MIN MINMB
+  StrCpy $R5 "$ModellOrdner\${NAME}"
+  ${IfNot} ${FileExists} "$R5"
+    StrCpy $R5 "$INSTDIR\library\modelle\${NAME}"
+  ${EndIf}
+  StrCpy $R6 0
+  ClearErrors
+  FileOpen $R7 "$R5" r
+  ${IfNot} ${Errors}
+    FileSeek $R7 0 END $R6
+    FileClose $R7
+  ${EndIf}
+  ${If} $R6 >= ${MIN}
+    IntOp $MDa $MDa + 1
+  ${Else}
+    IntOp $FehltMB $FehltMB + ${MINMB}
+  ${EndIf}
+!macroend
+!include "${MODELLE}"
+
+; Was schon da ist - in NSIS gerechnet, weil es vorher womoeglich kein Node gibt.
+Function BestandSeite
+  !insertmacro MUI_HEADER_TEXT "$(bestand_titel)" "$(bestand_unter)"
+  nsDialogs::Create 1018
+  Pop $R9
+  CreateFont $Fett "$(^Font)" "$(^FontSize)" 700
+  StrCpy $R8 0   ; y in Dialogeinheiten
+
+  ; Der Modellordner: library\konfig.json „modellOrdner", sonst <Ordner>\modelle (bin/modellordner.js)
+  StrCpy $ModellOrdner "$INSTDIR\modelle"
+  ${If} ${FileExists} "$INSTDIR\library\konfig.json"
+    ClearErrors
+    FileOpen $R0 "$INSTDIR\library\konfig.json" r
+    ${IfNot} ${Errors}
+      ${Do}
+        ClearErrors
+        FileRead $R0 $R1
+        ${If} ${Errors}
+          ${ExitDo}
+        ${EndIf}
+        ${WordFind2X} $R1 '"modellOrdner": "' '"' "+1" $R2
+        ${If} $R2 != $R1
+          ${WordReplace} $R2 "\\" "\" "+" $ModellOrdner
+          ${ExitDo}
+        ${EndIf}
+      ${Loop}
+      FileClose $R0
+    ${EndIf}
+  ${EndIf}
+
+  ; Fassung und Archiv
+  ${If} ${FileExists} "$INSTDIR\server\server.js"
+    StrCpy $0 "?"
+    ClearErrors
+    FileOpen $R0 "$INSTDIR\package.json" r
+    ${IfNot} ${Errors}
+      ${Do}
+        ClearErrors
+        FileRead $R0 $R1
+        ${If} ${Errors}
+          ${ExitDo}
+        ${EndIf}
+        ${WordFind2X} $R1 '"version": "' '"' "+1" $R2
+        ${If} $R2 != $R1
+          StrCpy $0 $R2
+          ${ExitDo}
+        ${EndIf}
+      ${Loop}
+      FileClose $R0
+    ${EndIf}
+    ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_alt)"
+    Pop $R0
+    SendMessage $R0 ${WM_SETFONT} $Fett 1
+    IntOp $R8 $R8 + 24
+    ${If} ${FileExists} "$INSTDIR\library\*.*"
+      StrCpy $0 0
+      FindFirst $R0 $R1 "$INSTDIR\library\songs\*"
+      ${DoWhile} $R1 != ""
+        ${If} $R1 != "."
+        ${AndIf} $R1 != ".."
+        ${AndIf} ${FileExists} "$INSTDIR\library\songs\$R1\*.*"
+          IntOp $0 $0 + 1
+        ${EndIf}
+        FindNext $R0 $R1
+      ${Loop}
+      FindClose $R0
+      ${GetSize} "$INSTDIR\library" "/S=0M" $R0 $R1 $R2
+      Call MBinWorten
+      StrCpy $1 $R1
+      ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_archiv)"
+      Pop $R0
+      IntOp $R8 $R8 + 14
+    ${EndIf}
+  ${Else}
+    ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_neu)"
+    Pop $R0
+    SendMessage $R0 ${WM_SETFONT} $Fett 1
+    IntOp $R8 $R8 + 24
+  ${EndIf}
+
+  ; KI-Modelle und Whisper
+  StrCpy $MDa 0
+  StrCpy $FehltMB 0
+  !insertmacro ModellListe
+  StrCpy $0 $MDa
+  StrCpy $1 ${MODELLE_ANZAHL}
+  ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_modelle)"
+  Pop $R0
+  IntOp $R8 $R8 + 14
+  StrCpy $ZuHolenMB $FehltMB
+  ${If} ${FileExists} "$INSTDIR\werkzeug\whisper\Release\whisper-cli.exe"
+  ${AndIf} ${FileExists} "$ModellOrdner\ggml-large-v3.bin"
+    ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_whisper_da)"
+  ${Else}
+    ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_whisper_fehlt)"
+    ${IfNot} ${FileExists} "$ModellOrdner\ggml-large-v3.bin"
+    ${AndIfNot} ${FileExists} "$INSTDIR\library\modelle\ggml-large-v3.bin"
+      IntOp $ZuHolenMB $ZuHolenMB + 2952
+    ${EndIf}
+    IntOp $ZuHolenMB $ZuHolenMB + 8
+  ${EndIf}
+  Pop $R0
+  IntOp $R8 $R8 + 22
+
+  ${If} $ZuHolenMB > 0
+    StrCpy $R0 $ZuHolenMB
+    Call MBinWorten
+    StrCpy $0 $R1
+    ${NSD_CreateLabel} 0 $R8u 100% 30u "$(bestand_holen)"
+  ${Else}
+    ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_nichts)"
+  ${EndIf}
+  Pop $R0
+  IntOp $R8 $R8 + 34
+
+  ; Platz am Ziel (das Laufwerk des Ordners)
+  StrCpy $R1 $INSTDIR 3
+  ${DriveSpace} "$R1" "/D=F /S=M" $R0
+  Call MBinWorten
+  StrCpy $0 $R1
+  ${NSD_CreateLabel} 0 $R8u 100% 12u "$(bestand_platz)"
+  Pop $R0
+
+  nsDialogs::Show
+FunctionEnd
+
+; ---------------------------------------------------------------
+; HOLEN. bin/installieren.js laeuft unsichtbar und schreibt seinen Stand nach $PLUGINSDIR\stand.txt
+; (UTF-16LE, fuenf Zeilen: Promille, was, wie weit, laeuft|fertig|fehler|halt, Schlusssatz). Diese Seite liest ihn
+; zweimal je Sekunde. Abbrechen legt stand.txt.halt daneben - dann hoert es auf, Halbes geht beim naechsten Mal weiter.
+Function SpracheSetzen
+  System::Call 'kernel32::SetEnvironmentVariable(t "KT_SPRACHE", t "$(kt_sprache)")'
+FunctionEnd
+
+Function HolenStarten
+  Delete "$PLUGINSDIR\stand.txt"
+  Delete "$PLUGINSDIR\stand.txt.halt"
+  ${NSD_SetText} $LOben "$(holen_start)"
+  ${NSD_SetText} $LUnten ""
+  ShowWindow $LSchluss ${SW_HIDE}
+  ShowWindow $KnopfNochmal ${SW_HIDE}
+  SendMessage $Balken ${PBM_SETPOS} 0 0
+  GetDlgItem $R0 $HWNDPARENT 1
+  EnableWindow $R0 0
+  Call SpracheSetzen
   SetOutPath "$INSTDIR"
-  ExecShell "open" "$INSTDIR\einrichten-windows.cmd"
+  ClearErrors
+  ExecShell "open" "$INSTDIR\werkzeug\node\node.exe" '"$INSTDIR\bin\installieren.js" --stand "$PLUGINSDIR\stand.txt"' SW_HIDE
+  ${If} ${Errors}
+    ${NSD_SetText} $LOben "$(holen_kein_node)"
+    ShowWindow $KnopfNochmal ${SW_SHOW}
+    EnableWindow $R0 1
+    Return
+  ${EndIf}
+  StrCpy $HolenLaeuft 1
+  ${NSD_CreateTimer} HolenTakt 500
+FunctionEnd
+
+; Ein Knopf-Klick legt den Knopf auf den Stapel - erst wegnehmen
+Function NochmalKlick
+  Pop $R0
+  Call HolenStarten
+FunctionEnd
+
+Function HolenSeite
+  ${If} $ZuHolenMB == 0
+    Abort   ; nichts zu holen - die Seite entfaellt
+  ${EndIf}
+  !insertmacro MUI_HEADER_TEXT "$(holen_titel)" "$(holen_unter)"
+  nsDialogs::Create 1018
+  Pop $R9
+  ${NSD_CreateLabel} 0 0 100% 12u ""
+  Pop $LOben
+  SendMessage $LOben ${WM_SETFONT} $Fett 1
+  ${NSD_CreateProgressBar} 0 16u 100% 12u ""
+  Pop $Balken
+  SendMessage $Balken ${PBM_SETRANGE32} 0 1000
+  ${NSD_CreateLabel} 0 32u 100% 12u ""
+  Pop $LUnten
+  ${NSD_CreateLabel} 0 52u 100% 40u ""
+  Pop $LSchluss
+  ${NSD_CreateButton} 0 96u 120u 15u "$(holen_nochmal)"
+  Pop $KnopfNochmal
+  ${NSD_OnClick} $KnopfNochmal NochmalKlick
+  ; Zurueck ergibt hier keinen Sinn mehr: kopiert ist schon
+  GetDlgItem $R0 $HWNDPARENT 3
+  EnableWindow $R0 0
+  Call HolenStarten
+  nsDialogs::Show
+FunctionEnd
+
+Function HolenTakt
+  IfFileExists "$PLUGINSDIR\stand.txt" 0 nichts
+  ClearErrors
+  FileOpen $R0 "$PLUGINSDIR\stand.txt" r
+  IfErrors nichts
+  FileReadUTF16LE $R0 $R1
+  FileReadUTF16LE $R0 $R2
+  FileReadUTF16LE $R0 $R3
+  FileReadUTF16LE $R0 $R4
+  FileReadUTF16LE $R0 $R5
+  FileClose $R0
+  ${TrimNewLines} $R1 $R1
+  ${TrimNewLines} $R2 $R2
+  ${TrimNewLines} $R3 $R3
+  ${TrimNewLines} $R4 $R4
+  ${TrimNewLines} $R5 $R5
+  ${If} $R1 == ""
+    Return
+  ${EndIf}
+  SendMessage $Balken ${PBM_SETPOS} $R1 0
+  ${NSD_SetText} $LOben $R2
+  ${NSD_SetText} $LUnten $R3
+  ${If} $R4 == "fertig"
+    ${NSD_KillTimer} HolenTakt
+    StrCpy $HolenLaeuft 0
+    GetDlgItem $R0 $HWNDPARENT 1
+    EnableWindow $R0 1
+    ; von allein weiter - „der Rest passiert von alleine"
+    SendMessage $HWNDPARENT 0x408 1 0
+  ${ElseIf} $R4 == "fehler"
+  ${OrIf} $R4 == "halt"
+    ${NSD_KillTimer} HolenTakt
+    StrCpy $HolenLaeuft 0
+    ${NSD_SetText} $LSchluss $R5
+    ShowWindow $LSchluss ${SW_SHOW}
+    ShowWindow $KnopfNochmal ${SW_SHOW}
+    GetDlgItem $R0 $HWNDPARENT 1
+    EnableWindow $R0 1
+  ${EndIf}
+  nichts:
+FunctionEnd
+
+Function HolenVerlassen
+  ${If} $HolenLaeuft == 1
+    Abort
+  ${EndIf}
+FunctionEnd
+
+; Abbrechen (nach der Rueckfrage von MUI_ABORTWARNING): laeuft das Holen, ihm Halt sagen und kurz warten
+Function AbbruchHalt
+  ${If} $HolenLaeuft == 1
+    FileOpen $R0 "$PLUGINSDIR\stand.txt.halt" w
+    FileClose $R0
+    Sleep 1500
+  ${EndIf}
+FunctionEnd
+
+; Im stillen Lauf (/S) gibt es keine Seiten - dann holt die Installation selbst, im Protokoll statt mit Balken.
+; /OHNEHOLEN laesst das aus (fuer Probelaeufe).
+Section "-Holen"
+  ${If} ${Silent}
+    ${GetParameters} $R0
+    ClearErrors
+    ${GetOptions} $R0 "/OHNEHOLEN" $R1
+    ${If} ${Errors}
+      Call SpracheSetzen
+      SetOutPath "$INSTDIR"
+      nsExec::ExecToLog '"$INSTDIR\werkzeug\node\node.exe" "$INSTDIR\bin\installieren.js"'
+      Pop $R0
+    ${EndIf}
+  ${EndIf}
+SectionEnd
+
+; Fertig -> die Einrichtung ab dem Suno-Namen, nur als Seite im Browser, ohne Fenster
+Function WeiterImBrowser
+  Call SpracheSetzen
+  SetOutPath "$INSTDIR"
+  ExecShell "open" "$INSTDIR\werkzeug\node\node.exe" '"$INSTDIR\bin\einrichten.js" --nach-setup' SW_HIDE
 FunctionEnd
 
 ; Groesse eines Ordners in Worten: „3,4 GB" / „120 MB" / „nicht vorhanden". $R0 = Ordner, Ergebnis in $R1.

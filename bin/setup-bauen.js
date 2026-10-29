@@ -13,6 +13,8 @@
 
    Was dazukommt, steht in bin/setup/klangtresor.nsi oben: werkzeug\node, werkzeug\ffmpeg und node_modules, alle fuer
    Windows x64. Die Adressen kommen aus quellen.txt - dieselben, von denen die Einrichtung sonst holen wuerde.
+   Die KI-Modelle und Whisper holt die Setup.exe beim Nutzer selbst (bin/installieren.js): mitliefern verbieten ihre
+   Lizenzen (bin/modelle-holen.js, Kopf).
 
    onnxruntime-node traegt in seinem npm-Paket die fertigen Dateien fuer alle Systeme (darwin, linux, win32, je x64 und
    arm64; geprueft 28.10.2026 an 1.20.1); sein Installationsskript tut unter Windows nichts (es holt nur unter Linux
@@ -145,10 +147,19 @@ const zeilen = fs.readdirSync(INHALT, { withFileTypes: true }).map((e) =>
 fs.writeFileSync(ENTFERNEN, '; erzeugt von bin/setup-bauen.js\r\n' + zeilen.join('\r\n') + '\r\n');
 sag(`Gesamt, ausgepackt: ${mb(groesse(INHALT))}\n`);
 
+/* 4b. Die Liste der KI-Modelle fuer die Seite „Was schon da" - aus bin/modelle-holen.js, derselben Liste, nach der
+   bin/installieren.js holt. Nie von Hand abgeschrieben. */
+const MODELLE = path.join(BAU, 'modelle.nsh');
+{
+  const { DATEIEN } = require('./modelle-holen.js');
+  const z = DATEIEN.map(([n, , m]) => `  !insertmacro ModellPruefen "${n}" ${m} ${Math.ceil(m / 1048576)}`);
+  fs.writeFileSync(MODELLE, `; erzeugt von bin/setup-bauen.js aus bin/modelle-holen.js\r\n!define MODELLE_ANZAHL ${DATEIEN.length}\r\n!macro ModellListe\r\n${z.join('\r\n')}\r\n!macroend\r\n`);
+}
+
 /* 5. makensis */
 fs.rmSync(AUSGABE, { force: true });
 lauf('makensis', ['-V2', '-INPUTCHARSET', 'UTF8', `-DVERSION=${VERSION}`, `-DINHALT=${INHALT}`, `-DAUSGABE=${AUSGABE}`,
-  `-DENTFERNEN=${ENTFERNEN}`, NSI],
+  `-DENTFERNEN=${ENTFERNEN}`, `-DMODELLE=${MODELLE}`, NSI],
   /* Ohne UTF-8-Locale liest makensis auf dem Mac das Skript nicht („Bad text encoding" schon an Zeile 1) - auch mit
      -INPUTCHARSET UTF8, auch mit BOM. Aus dem Terminal mit LANG=de_DE.UTF-8 ginge es, aus anderen Aufrufern nicht. */
   { env: { ...process.env, LC_ALL: 'en_US.UTF-8' } });

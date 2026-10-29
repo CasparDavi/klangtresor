@@ -57,6 +57,13 @@ const OHNE_START = process.argv.includes('--ohne-start');
 const NUR_TEXT = process.argv.includes('--text');
 /* Fuer Probelaeufe: Seite bereitstellen, aber keinen Browser aufreissen. */
 const OHNE_BROWSER = process.argv.includes('--ohne-browser');
+/* NACH DER SETUP.EXE (29.10.2026). Caspar_D: „ich rufe eine setup.exe auf und der Rest passiert von alleine, ggf noch
+   einen avatar namen" - „ab avatar geht alles im browser". Der Installer hat den Ordner gewaehlt und Programm,
+   Werkzeuge, Pakete, KI-Modelle und Whisper hingelegt (bin/installieren.js). Diese Einrichtung laeuft dann ohne
+   sichtbares Fenster, nur als Seite: keine Frage nach dem Ort, kein Umzug; die Schritte bis Whisper finden alles vor
+   und haken es ab, danach fragt die Seite nach dem Suno-Namen. Am Ende startet KlangTresor ueber den gewohnten
+   Starter - in dessen eigenem Fenster, wie an jedem anderen Tag. */
+const NACH_SETUP = process.argv.includes('--nach-setup');
 /* --seite N: die Seite soll auf Port N horchen, weil dort schon eine auf
    uns wartet - der Fall nach dem Umzug (siehe dort). Dann geht auch kein
    zweites Browserfenster auf. */
@@ -1049,6 +1056,9 @@ open -a Terminal ${JSON.stringify(starter)}
   };
   const gbText = (g) => g === null ? '' : T('  ({gb} GB frei)', { gb: g.toFixed(0) });
 
+  if (NACH_SETUP) {
+    gut(T('KlangTresor ist installiert in {ordner}.', { ordner: WURZEL }));
+  } else {
   const grund = mussUmziehen(WURZEL);
   /* Liegt HIER schon ein Archiv, ist hier das Zuhause - auch im
      Download-Ordner. Wer eben „dieses Archiv weiterfuehren" gewaehlt hat
@@ -1219,6 +1229,8 @@ open -a Terminal ${JSON.stringify(starter)}
     }
   }
 
+  }   /* Ende: if (NACH_SETUP) … else - Wohin und Umzug */
+
   wink(T('Bevor du anfängst — zwei Sätze zu deinen Suno-Titeln und ihren Audiodateien:'));
   matt(T('Deine Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte holt'));
   matt(T('KlangTresor selbst. Beim Ton gibt es zwei Wege, und der erste kostet'));
@@ -1277,7 +1289,9 @@ open -a Terminal ${JSON.stringify(starter)}
   /* Nur Windows. Auf Mac und Linux gibt es den Markierungsmodus nicht,
      und eine Warnung vor etwas, das es nicht gibt, ist schlechter als
      keine. */
-  if (process.platform === 'win32' && QUICKEDIT_AUS) {
+  if (NACH_SETUP) {
+    /* kein Fenster, also auch kein Markierungsmodus, vor dem zu warnen waere */
+  } else if (process.platform === 'win32' && QUICKEDIT_AUS) {
     matt(T('Ein Klick in dieses Fenster würde Windows sonst in den Markierungsmodus'));
     matt(T('schalten und alles anhalten — für dieses Fenster ist das abgeschaltet.'));
   } else if (process.platform === 'win32') {
@@ -1989,6 +2003,18 @@ open -a Terminal ${JSON.stringify(starter)}
     matt(T('erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke'));
     matt(T('„Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.'));
     leer();
+  }
+  /* Nach der Setup.exe laeuft diese Einrichtung ohne Fenster - der Server darf nicht in ihr weiterlaufen, sonst
+     liefe er unsichtbar und liesse sich nicht beenden. Also ueber den Starter, den auch das Startmenue nimmt: der
+     hat sein eigenes Fenster („KlangTresor laeuft") und oeffnet den Browser selbst, sobald der Server antwortet. */
+  if (NACH_SETUP && process.platform === 'win32') {
+    /* Zeile von Hand: start braucht als Titel ein leeres "" - Node wuerde es beim Quoten zu \"\" verbiegen */
+    const k = require('node:child_process').spawn('cmd.exe', ['/d /c start "" "' + path.join(WURZEL, 'starten-windows.cmd') + '"'],
+      { cwd: WURZEL, detached: true, stdio: 'ignore', windowsVerbatimArguments: true });
+    k.unref();
+    gut(T('KlangTresor startet in seinem eigenen Fenster und öffnet sich gleich im Browser.'));
+    setTimeout(() => process.exit(0), 3000);   /* der Seite Zeit lassen, „fertig" noch abzuholen */
+    return;
   }
   if (seiteAufmachen('http://localhost:8788/?sprache=' + sprache())) gut(T('KlangTresor geht in Chrome auf.'));
   else {
