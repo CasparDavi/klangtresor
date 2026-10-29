@@ -17890,6 +17890,20 @@ async function sysBeenden(){
   let r = null; try { r = await (await fetch('/api/system/beenden', { method: 'POST' })).json(); } catch (e) {}
   if (!r || !r.ok) return;
   document.body.innerHTML = `<div style="max-width:560px;margin:18vh auto;padding:0 16px;color:var(--text,#ececed);font:16px/1.5 system-ui"><h2>${esc(t('system.beendet_titel'))}</h2><p>${esc(t('system.beendet_text'))}</p></div>`;
+  /* KOMMT KLANGTRESOR WIEDER, KOMMT DIE SEITE MIT (Caspar_D, 29.10.2026: „wenn ich vorher einen song gespielt habe,
+     bleibt dessen adresse in der url leiste und es steht da, klangtresor beendet"). Der Tab bleibt offen und zaehlt
+     als offene Seite (/api/seite/draht) - der naechste Start holt darum ihn nach vorn statt einen neuen zu oeffnen.
+     Er muss sich also selbst erholen: alle 2 s nachsehen, und sobald der Server antwortet, die Startseite laden -
+     ohne #song=…, sonst finge beim Neuladen ein Titel an. */
+  let warWeg = false;   /* erst neu laden, wenn er wirklich einmal weg war - nicht in den sterbenden Server hinein */
+  const wieder = async () => {
+    let da = false;
+    try { da = (await fetch('/api/system/auftrag', { cache: 'no-store' })).ok; } catch (e) {}
+    if (da && warWeg) { location.replace(location.pathname); return; }
+    if (!da) warWeg = true;
+    setTimeout(wieder, 2000);
+  };
+  setTimeout(wieder, 1500);
 }
 async function sysModellordner(){
   let r = null;

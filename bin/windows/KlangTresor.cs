@@ -40,6 +40,11 @@ static class KlangTresor
     static Process Kind;
     static IntPtr Job = IntPtr.Zero;
     static NotifyIcon Symbol;
+    // Der Faden der Oberflaeche, fuer Meldungen aus anderen Faeden (Prozessende, Warten auf den Server). Bis 1.0.138 lief
+    // das ueber das Rechtsklick-Menue - dessen Fenster gibt es aber erst, wenn es einmal offen war. Wer nie
+    // rechtsgeklickt hatte und in der App „KlangTresor beenden" drueckte, liess das Symbol abstuerzen (Windows 11,
+    // 29.10.2026: InvalidOperationException in BeginInvoke).
+    static Control Ui;
     static ToolStripMenuItem NeuStarten;
     static DateTime Seit;
     static bool Gewollt;            // Beenden kam vom Menue, nicht von allein
@@ -85,6 +90,7 @@ static class KlangTresor
             }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            Ui = new Control(); Ui.CreateControl(); var unused = Ui.Handle;
             SymbolBauen();
             JobAnlegen();
             Starten(ohneBrowser);
@@ -177,7 +183,7 @@ static class KlangTresor
     {
         ProtokollOeffnen();
         var si = new ProcessStartInfo(Path.Combine(Wurzel, "werkzeug", "node", "node.exe"),
-                                      "bin\\starten.js" + (ohneBrowser ? " --ohne-browser" : ""))
+                                      "bin\\starten.js --ohne-browser")
         {
             WorkingDirectory = Wurzel,
             UseShellExecute = false,
@@ -193,7 +199,7 @@ static class KlangTresor
         Kind = new Process { StartInfo = si, EnableRaisingEvents = true };
         Kind.OutputDataReceived += (s, e) => Schreiben(e.Data);
         Kind.ErrorDataReceived += (s, e) => Schreiben(e.Data);
-        Kind.Exited += (s, e) => Symbol.ContextMenuStrip.BeginInvoke((Action)Beendet);
+        Kind.Exited += (s, e) => { try { Ui.BeginInvoke((Action)Beendet); } catch { } };
         try
         {
             Kind.Start();
@@ -211,6 +217,18 @@ static class KlangTresor
         Seit = DateTime.Now;
         NeuStarten.Visible = false;
         Tooltip(L("KlangTresor - läuft seit ", "KlangTresor - running since ", "KlangTresor - работает с ") + Seit.ToString("HH:mm"));
+        // DIE SEITE OEFFNET DAS SYMBOL SELBST, nicht bin\starten.js (29.10.2026). Ein Tab, der noch offen ist, soll nach
+        // vorn kommen statt eines neuen - und nach vorn holen darf Windows ein Fenster nur fuer das Programm, das der
+        // Mensch gerade gestartet hat, also dieses hier, nicht den Server dahinter. Vorher hiess „schon offen" bei einem
+        // Start aus dem Startmenue: es passiert sichtbar nichts. Gewartet wird, bis der Server antwortet, und dann bis
+        // zu drei Sekunden, ob sich ein offener Tab wieder meldet (er tut es binnen einer Sekunde).
+        if (!ohneBrowser) new Thread(() =>
+        {
+            for (int i = 0; i < 120 && !Antwortet(); i++) Thread.Sleep(500);
+            int offen = 0;
+            for (int i = 0; i < 6 && (offen = OffeneSeiten()) == 0; i++) Thread.Sleep(500);
+            try { Ui.BeginInvoke((Action)(() => SeiteAuf(offen))); } catch { }
+        }) { IsBackground = true }.Start();
     }
 
     // Von allein beendet (nicht ueber „Beenden"): sagen, warum, und den Weg zurueck anbieten
@@ -278,12 +296,12 @@ static class KlangTresor
     // ein Fenster von Chrome, Edge oder Firefox, dessen Titel mit „KlangTresor" beginnt - das ist der Titel der Seite,
     // und der Browser setzt den Titel des AKTIVEN Tabs ins Fenster. Liegt der Tab im Hintergrund seines Fensters, findet
     // sich so nichts; dann blinkt die Seite in ihrem Tab (das macht sie selbst) und der Hinweis sagt, wo sie ist.
-    static void SeiteAuf()
+    static void SeiteAuf() { SeiteAuf(OffeneSeiten()); }
+    static void SeiteAuf(int offen)
     {
-        int offen = OffeneSeiten();
         if (offen > 0)
         {
-            if (!FensterNachVorn())
+            if (!FensterNachVorn() && Symbol != null)   // ein zweiter Start hat kein eigenes Symbol
                 Symbol.ShowBalloonTip(8000, "KlangTresor",
                     L("KlangTresor ist schon im Browser offen – der Tab „KlangTresor“ blinkt.",
                       "KlangTresor is already open in your browser – the “KlangTresor” tab is blinking.",
@@ -342,6 +360,7 @@ static class KlangTresor
             r.Timeout = 1500;
             using (var a = (HttpWebResponse)r.GetResponse()) return a.StatusCode == HttpStatusCode.OK;
         }
+        catch (WebException ex) when (ex.Response != null) { return true; }   // jede HTTP-Antwort: da laeuft einer
         catch { return false; }
     }
 
