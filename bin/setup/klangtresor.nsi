@@ -92,6 +92,7 @@ Page custom HolenSeite HolenVerlassen
 !define MUI_FINISHPAGE_RUN_FUNCTION WeiterImBrowser
 !insertmacro MUI_PAGE_FINISH
 
+!define MUI_UNCONFIRMPAGE_TEXT_TOP "$(weg_oben)"
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !define MUI_FINISHPAGE_TITLE "$(weg_titel)"
@@ -115,9 +116,9 @@ LangString fertig_titel ${LANG_GERMAN} "KlangTresor ist installiert"
 LangString fertig_titel ${LANG_ENGLISH} "KlangTresor is installed"
 LangString fertig_titel ${LANG_RUSSIAN} "KlangTresor установлен"
 
-LangString fertig_text ${LANG_GERMAN} "KlangTresor liegt in $INSTDIR - mit allem, was es zum Laufen braucht.$\r$\n$\r$\nAls Nächstes geht dein Browser auf: Dort gibst du deinen Suno-Namen ein, und deine Lieder werden geholt.$\r$\n$\r$\nSpäter startest du KlangTresor über das Startmenü oder die Verknüpfung auf dem Desktop."
-LangString fertig_text ${LANG_ENGLISH} "KlangTresor is in $INSTDIR - with everything it needs to run.$\r$\n$\r$\nNext your browser opens: there you enter your Suno name, and your songs are fetched.$\r$\n$\r$\nLater you start KlangTresor from the Start menu or the shortcut on the desktop."
-LangString fertig_text ${LANG_RUSSIAN} "KlangTresor находится в $INSTDIR - со всем, что нужно для работы.$\r$\n$\r$\nДальше откроется браузер: там вы вводите своё имя в Suno, и ваши песни загружаются.$\r$\n$\r$\nПозже KlangTresor запускается из меню «Пуск» или ярлыком на рабочем столе."
+LangString fertig_text ${LANG_GERMAN} "KlangTresor liegt in $INSTDIR - mit allem, was es zum Laufen braucht.$\r$\n$\r$\nAls Nächstes geht dein Browser auf: Dort gibst du deinen Suno-Namen ein, und deine Lieder werden geholt.$\r$\n$\r$\nSpäter: Startmenü → KlangTresor."
+LangString fertig_text ${LANG_ENGLISH} "KlangTresor is in $INSTDIR - with everything it needs to run.$\r$\n$\r$\nNext your browser opens: there you enter your Suno name, and your songs are fetched.$\r$\n$\r$\nLater: Start menu → KlangTresor."
+LangString fertig_text ${LANG_RUSSIAN} "KlangTresor находится в $INSTDIR - со всем, что нужно для работы.$\r$\n$\r$\nДальше откроется браузер: там вы вводите своё имя в Suno, и ваши песни загружаются.$\r$\n$\r$\nПозже: меню «Пуск» → KlangTresor."
 
 LangString fertig_weiter ${LANG_GERMAN} "Weiter im Browser: Suno-Name und Lieder"
 LangString fertig_weiter ${LANG_ENGLISH} "Continue in the browser: Suno name and songs"
@@ -135,6 +136,9 @@ LangString bestand_neu ${LANG_RUSSIAN} "В $INSTDIR ещё нет KlangTresor. �
 LangString bestand_alt ${LANG_GERMAN} "In $INSTDIR liegt KlangTresor $0. Das Programm wird auf ${VERSION} erneuert."
 LangString bestand_alt ${LANG_ENGLISH} "$INSTDIR holds KlangTresor $0. The program will be renewed to ${VERSION}."
 LangString bestand_alt ${LANG_RUSSIAN} "В $INSTDIR находится KlangTresor $0. Программа будет обновлена до ${VERSION}."
+LangString bestand_gleich ${LANG_GERMAN} "In $INSTDIR liegt schon KlangTresor $0 - dieselbe Fassung. Das Programm wird noch einmal hingelegt, geholt wird nur, was fehlt."
+LangString bestand_gleich ${LANG_ENGLISH} "$INSTDIR already holds KlangTresor $0 - the same version. The program is put in place once more; only what is missing is fetched."
+LangString bestand_gleich ${LANG_RUSSIAN} "В $INSTDIR уже есть KlangTresor $0 - та же версия. Программа будет записана ещё раз, загрузится только недостающее."
 LangString bestand_archiv ${LANG_GERMAN} "Dein Archiv:  $0 Titel, $1  -  bleibt unberührt"
 LangString bestand_archiv ${LANG_ENGLISH} "Your archive:  $0 songs, $1  -  stays untouched"
 LangString bestand_archiv ${LANG_RUSSIAN} "Ваш архив:  $0 песен, $1  -  останется нетронутым"
@@ -190,10 +194,13 @@ LangString lnk_entfernen ${LANG_GERMAN} "KlangTresor entfernen"
 LangString lnk_entfernen ${LANG_ENGLISH} "Remove KlangTresor"
 LangString lnk_entfernen ${LANG_RUSSIAN} "Удалить KlangTresor"
 
-LangString laeuft_noch ${LANG_GERMAN} "KlangTresor läuft noch.$\r$\n$\r$\nBitte das schwarze Fenster „KlangTresor läuft“ schließen und dann „Wiederholen“ wählen."
-LangString laeuft_noch ${LANG_ENGLISH} "KlangTresor is still running.$\r$\n$\r$\nPlease close the black window „KlangTresor is running“ and then choose „Retry“."
-LangString laeuft_noch ${LANG_RUSSIAN} "KlangTresor ещё работает.$\r$\n$\r$\nЗакройте чёрное окно «KlangTresor работает» и нажмите «Повторить»."
+LangString laeuft_noch ${LANG_GERMAN} "KlangTresor läuft noch - im Fenster „KlangTresor läuft“ oder als Einrichtung im Browser.$\r$\n$\r$\nSoll ich es beenden? Dein Archiv bleibt, wie es ist.$\r$\n$\r$\nJa: beenden und weitermachen.   Nein: abbrechen, nichts wird verändert."
+LangString laeuft_noch ${LANG_ENGLISH} "KlangTresor is still running - in the window „KlangTresor is running“ or as the setup in your browser.$\r$\n$\r$\nShall I end it? Your archive stays as it is.$\r$\n$\r$\nYes: end it and continue.   No: cancel, nothing is changed."
+LangString laeuft_noch ${LANG_RUSSIAN} "KlangTresor ещё работает - в окне «KlangTresor работает» или как настройка в браузере.$\r$\n$\r$\nЗавершить его? Ваш архив останется как есть.$\r$\n$\r$\nДа: завершить и продолжить.   Нет: отменить, ничего не изменится."
 
+LangString weg_oben ${LANG_GERMAN} "Das Programm wird aus diesem Ordner entfernt. Was dir gehört, bleibt liegen: dein Archiv (library) und die KI-Modelle (modelle)."
+LangString weg_oben ${LANG_ENGLISH} "The program is removed from this folder. What belongs to you stays: your archive (library) and the AI models (modelle)."
+LangString weg_oben ${LANG_RUSSIAN} "Программа будет удалена из этой папки. Ваше останется: архив (library) и ИИ-модели (modelle)."
 LangString weg_titel ${LANG_GERMAN} "Das Programm ist entfernt"
 LangString weg_titel ${LANG_ENGLISH} "The program has been removed"
 LangString weg_titel ${LANG_RUSSIAN} "Программа удалена"
@@ -225,8 +232,25 @@ Function .onVerifyInstDir
   ${EndIf}
 FunctionEnd
 
-; Laeuft der Server aus diesem Ordner, ist node.exe gesperrt. Lieber vorher sagen als mitten im Kopieren scheitern.
+; Laeuft KlangTresor aus diesem Ordner (Server oder die Einrichtung nach der Setup.exe), ist node.exe gesperrt. Lieber
+; vorher fragen als mitten im Kopieren oder Loeschen scheitern - und gleich den Ausweg anbieten: die Einrichtung nach
+; der Setup.exe hat kein Fenster, das man schliessen koennte (so im Test am 29.10.2026 gesehen: die erste Fassung
+; verlangte „das schwarze Fenster schliessen", das es nicht gab).
 !macro LaeuftNicht UN
+; Beendet genau die node.exe aus DIESEM Ordner - kein anderes Node auf dem Rechner. Das Skript wird als UTF-16 mit BOM
+; geschrieben, damit ein Benutzername mit Umlaut oder kyrillischen Buchstaben heil bei PowerShell ankommt.
+Function ${UN}KlangTresorBeenden
+  InitPluginsDir
+  FileOpen $R0 "$PLUGINSDIR\beenden.ps1" w
+  FileWriteWord $R0 0xFEFF
+  FileWriteUTF16LE $R0 "$$ziel = '$INSTDIR\werkzeug\node\node.exe'$\r$\n"
+  FileWriteUTF16LE $R0 "Get-CimInstance Win32_Process -Filter $\"Name='node.exe'$\" | Where-Object { $$_.ExecutablePath -eq $$ziel } | ForEach-Object { Stop-Process -Id $$_.ProcessId -Force }$\r$\n"
+  FileClose $R0
+  nsExec::Exec 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\beenden.ps1"'
+  Pop $R0
+  Sleep 1500
+FunctionEnd
+
 Function ${UN}LaeuftNicht
   ${Do}
     ${IfNot} ${FileExists} "$INSTDIR\werkzeug\node\node.exe"
@@ -241,10 +265,11 @@ Function ${UN}LaeuftNicht
       ${ExitDo}
     ${EndIf}
     ; /SD: im stillen Lauf (/S) gibt es niemanden, der klickt - dann Abbruch mit Fehlercode, nicht ewiges Warten.
-    MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "$(laeuft_noch)" /SD IDCANCEL IDRETRY weiter
+    MessageBox MB_YESNO|MB_ICONEXCLAMATION "$(laeuft_noch)" /SD IDNO IDYES beenden
     SetErrorLevel 2
     Quit
-    weiter:
+    beenden:
+    Call ${UN}KlangTresorBeenden
   ${Loop}
 FunctionEnd
 !macroend
@@ -360,7 +385,11 @@ Function BestandSeite
       ${Loop}
       FileClose $R0
     ${EndIf}
-    ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_alt)"
+    ${If} $0 == "${VERSION}"
+      ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_gleich)"
+    ${Else}
+      ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_alt)"
+    ${EndIf}
     Pop $R0
     SendMessage $R0 ${WM_SETFONT} $Fett 1
     IntOp $R8 $R8 + 24

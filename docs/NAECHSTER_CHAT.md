@@ -9912,3 +9912,26 @@ Offen: auf dem Mac verlangt ffmpeg weiter „brew install ffmpeg" – derselbe F
 Statt einer Kasus-Tabelle wie im Deutschen (DATIV in plakat.js) jetzt „площадь: {mass}" und „группировка: {glied}";
 das bleibt für jeden Namen richtig. Geprueft am Papierplakat im Sandkasten.
 Notiert, nicht gebaut: die Hitparade (Profil) beschriftet die Wochen auch russisch mit „KW".
+
+## §145 29.10.2026: Installer, die ihren Namen verdienen (1.0.134, nicht veröffentlicht)
+
+Caspar_D, nachts: „ich rufe eine setup.exe auf und der Rest passiert von alleine, ggf noch einen avatar namen" –
+„ab avatar geht alles im browser" – „das Scriptgefrickel kann keiner, ich verliere alle Nutzer schon bevor sie
+angefangen haben" – „ja, erstmal zertifikatfreie installer". Plan für alle drei Systeme: **docs/INSTALLER.md**.
+- **Absturz jeder Neueinrichtung seit 1.0.132** behoben (`mLager`, Rest des Modellordner-Umbaus; fiel nur auf, wenn
+  Modelle fehlten). Gefunden im Windows-10-Test. Gegenprobe ESLint no-undef über bin/ und server/: sonst nichts.
+  **1.0.132 und 1.0.133 sind für neue Nutzer kaputt** – 1.0.134 sollte bald raus.
+- **Setup.exe** (bin/setup/klangtresor.nsi, gebaut von bin/setup-bauen.js aus bin/paket.js): Ordner → „Was schon
+  da ist“ (Fassung, Archiv, ffmpeg, Modelle x/16, Whisper, was geholt wird, freier Platz) → Kopieren → Holen mit
+  einem Balken (neu **bin/installieren.js**, holt ffmpeg, Modelle, Whisper über modelle-holen.js/whisper-holen.js,
+  Stand als Datei für NSIS) → Fertig, Haken „Weiter im Browser“ → **einrichten.js --nach-setup** ohne Fenster: keine
+  Ortsfrage, keine Vorfrage, Schritte 1–6 sofort „fertig“, erste Frage ist der Suno-Name; am Ende startet
+  starten-windows.cmd in seinem eigenen Fenster.
+- **ffmpeg wird nicht mehr mitgeliefert** (GPL; quellen.txt sagt das seit jeher – die erste Setup.exe vom 28.10.
+  hatte es trotzdem drin, korrigiert bevor sie jemand bekam). Die Modelle ohnehin nicht (Lizenzen).
+- Setup.exe 82 MB. Casto kann nicht signieren (Voicechat 29.10.); bleibt SignPath Foundation, vorerst unsigniert.
+Geprüft: Windows 10, als angemeldeter Nutzer, Seiten per Fensternachricht weitergeklickt (WM_COMMAND an das
+Setup-Fenster – BM_CLICK per PostMessage wirkt im Hintergrund nicht, SendMessage blockiert bis zur nächsten Seite).
+Ergebnisse in docs/INSTALLER.md, Abschnitt „Geprüft“.
+**Wiedervorlage:** Entscheidungen A–D in docs/INSTALLER.md (Taskleistensymbol statt Konsolenfenster; Mac-Fortschritt
+im Browser; Mac-Beenden über das Dock; Reihenfolge Mac/Linux). Release 1.0.134 nach Caspar_Ds Blick auf die Setup.exe.

@@ -35,7 +35,7 @@ NSIS, gebaut auf dem Mac mit `node bin/paket.js` (ruft `bin/setup-bauen.js`). Sk
 | 4. Holen | Ein Balken über alles: was gerade geladen wird, „1,2 GB von 4,3 GB · huggingface.co · noch etwa 12 Min.“. Danach geht es von allein weiter. Kommt etwas nicht an, sagt die Seite, was fehlt, und bietet „Noch einmal versuchen“ an; KlangTresor läuft auch ohne. Fehlt nichts, entfällt die Seite. |
 | 5. Fertig | Häkchen „Weiter im Browser: Suno-Name und Lieder“. Der Browser geht auf, die Einrichtung fragt nach dem Suno-Namen. Danach startet KlangTresor in seinem gewohnten Fenster. |
 
-Größe: rund 60 MB (ohne ffmpeg). Startmenü: „KlangTresor“, „KlangTresor entfernen“. Eintrag unter „Apps“.
+Größe: 82 MB (ohne ffmpeg, Modelle und Whisper). Startmenü: „KlangTresor“, „KlangTresor entfernen“. Eintrag unter „Apps“.
 Stiller Lauf für Tests: `KlangTresor-Setup.exe /S /D=C:\Pfad` (`/OHNEHOLEN` lässt das Holen aus).
 
 **Warnung ohne Zertifikat:** SmartScreen „Der Computer wurde durch Windows geschützt“ → „Weitere Informationen“ →
@@ -87,4 +87,12 @@ durchgelaufen sind, fliegen Handweg, Anlasser (`bin/anlasser.ps1`) und das Windo
 
 - **A — Das Fenster „KlangTresor läuft“ unter Windows.** Der Server läuft heute in einem schwarzen Konsolenfenster, und wer es schließt, beendet KlangTresor. Soll das so bleiben, oder soll KlangTresor als Symbol unten rechts in der Taskleiste laufen, mit „Öffnen“ und „Beenden“? Das Symbol wäre ein eigenes kleines Projekt, etwa ein Tag.
 - **B — Mac: Fortschritt im Browser.** Auf dem Mac (und unter Linux) gibt es kein Installer-Fenster mit Seiten. Die Balken für ffmpeg, Modelle und Whisper stünden dort im Browser, auf der Seite „KlangTresor wird eingerichtet“. Unter Windows stehen sie im Setup-Fenster. Einverstanden?
-- **C — Reihenfolge:** zuerst Mac, dann Linux. Oder umgekehrt?
+- **C — Mac: Wie beendet man KlangTresor?** Ohne Terminalfenster gibt es nichts, das man schließen könnte. Mein Vorschlag: Solange der Server läuft, steht KlangTresor im Dock; „Beenden“ dort (oder Cmd-Q) beendet den Server. Das verlangt einen kleinen echten Mac-Starter statt eines Skripts, gebaut mit Apples `swiftc`, das hier liegt. Rund ein halber Tag.
+- **D — Reihenfolge:** zuerst Mac, dann Linux. Oder umgekehrt?
+
+## Geprüft (29.10.2026, nachts, Windows 10 in Parallels, angemeldeter Nutzer)
+
+| Fall | Ergebnis |
+|---|---|
+| Über eine bestehende Installation (1.0.133, ohne Modelle) | Seite „Was schon da“ zeigt 1.0.133, ffmpeg da, 0 von 16 Modellen, Whisper fehlt, 3,9 GB. Kopieren, Holen mit Balken (rund 6 Min. bei dieser Leitung), danach von allein zur Abschlussseite. „Weiter im Browser“ öffnet Edge, kein Konsolenfenster; Schritte 1 bis 6 sofort „fertig“, Schritt 7 fragt nach dem Suno-Namen. |
+| Frisch in einen neuen Ordner (Pfad mit „ö“) | Seite „Was schon da“: neu, ffmpeg fehlt, 0 von 16, Whisper fehlt, 4,0 GB. ffmpeg von www.gyan.dev mit Balken, … (siehe Bericht) |
