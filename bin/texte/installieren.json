@@ -94,5 +94,9 @@
  "KlangTresor startet - sein Symbol erscheint im Panel oben bzw. unten, die Seite geht gleich auf.": {
  "en": "KlangTresor is starting - its icon appears in the top or bottom panel, the page opens in a moment.",
  "ru": "KlangTresor запускается - его значок появится на верхней или нижней панели, страница сейчас откроется."
+},
+ "KlangTresor startet - das Symbol steht im Dock, die Seite geht gleich auf.": {
+ "en": "KlangTresor is starting - its icon is in the Dock, the page opens in a moment.",
+ "ru": "KlangTresor запускается - значок в Dock, страница сейчас откроется."
 }
 }

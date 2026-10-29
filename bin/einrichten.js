@@ -1457,6 +1457,7 @@ open -a Terminal ${JSON.stringify(starter)}
     else if (ffLager) zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('liegt auf diesem Rechner, wird kopiert'), 'laeuft');
     else if (process.platform === 'win32') zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt, wird geholt (rund 100 MB)'), 'laeuft');
     else if (process.platform === 'linux' && process.arch === 'x64') zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt, wird geholt (rund 40 MB)'), 'laeuft');
+    else if (process.platform === 'darwin') zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt, wird geholt (rund 60 MB)'), 'laeuft');
     else zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt — der Paketverwalter holt es, ein Befehl'), 'wink');
 
     /* ALLE Pakete aus package.json, nicht nur onnxruntime-node (Lutz, 23.10.2026: umap-js fehlte, und
@@ -1471,7 +1472,7 @@ open -a Terminal ${JSON.stringify(starter)}
     if (mDa >= mVon) zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} sind da', { da: mDa, von: mVon }));
     else zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} — der Rest wird geholt (rund 1,2 GB)', { da: mDa, von: mVon }), 'laeuft');
 
-    const zuHolen = (ffDa || ffLager || (process.platform !== 'win32' && !(process.platform === 'linux' && process.arch === 'x64')) ? 0 : process.platform === 'win32' ? 100 : 40) + (paketeDa ? 0 : 240) + (mDa >= mVon ? 0 : 1200);
+    const zuHolen = (ffDa || ffLager || (process.platform === 'linux' && process.arch !== 'x64') ? 0 : process.platform === 'win32' ? 100 : process.platform === 'darwin' ? 60 : 40) + (paketeDa ? 0 : 240) + (mDa >= mVon ? 0 : 1200);
     if (zuHolen) zeile('summe', T('Zu holen'), T('rund {mb} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung', { mb: zuHolen }), 'laeuft');
     else zeile('summe', T('Zu holen'), T('nichts — alles liegt schon hier'));
   }
@@ -1494,9 +1495,7 @@ open -a Terminal ${JSON.stringify(starter)}
     T('ffmpeg arbeitet mit den Ton- und Bilddaten: Klanganalyse, Wellenformen, Videoschnitt.') + ' ' +
     (process.platform === 'win32'
       ? T('Es wird geholt und nach {ordner} gelegt.', { ordner: path.join(WERKZEUG, 'ffmpeg') })
-      : process.platform === 'darwin'
-        ? T('Auf dem Mac ist dafür der Paketverwalter zuständig — ein Befehl im Terminal, und es gilt für den ganzen Rechner.')
-        : process.arch === 'x64'
+      : process.platform === 'darwin' || process.arch === 'x64'
           ? T('Es wird geholt und nach {ordner} gelegt.', { ordner: path.join(WERKZEUG, 'ffmpeg') })
           : T('Unter Linux ist dafür der Paketverwalter zuständig — ein Befehl, und es gilt für den ganzen Rechner.')));
   matt(T('Für Klanganalyse, Wellenformen und den Videoschnitt.'));
@@ -1551,9 +1550,36 @@ open -a Terminal ${JSON.stringify(starter)}
         if (w === 'ueber') { wink(T('Weiter ohne ffmpeg. Starte die Einrichtung später noch einmal, dann holt sie es nach.')); versuche = false; }
       }
     }
+  } else if (process.platform === 'darwin' && QUELLEN['ffmpeg-macos-' + (process.arch === 'arm64' ? 'arm64' : 'x64')]) {
+    /* MAC: HOLEN STATT „brew install ffmpeg" (29.10.2026, Mac-Installer). Fertige Bauten von Martin Riedl
+       (ffmpeg.martin-riedl.de, GPL, signiert) fuer Intel und Apple Silicon - je ein Zip fuer ffmpeg und ffprobe. */
+    const a = process.arch === 'arm64' ? 'arm64' : 'x64';
+    let versuche = true;
+    while (versuche && !ffmpeg) {
+      tut(T('ffmpeg holen — rund 60 MB.'));
+      const bin = path.join(WERKZEUG, 'ffmpeg', 'bin');
+      fs.mkdirSync(bin, { recursive: true });
+      for (const was of ['ffmpeg', 'ffprobe']) {
+        const zip = path.join(WERKZEUG, was + '.zip'), roh = path.join(WERKZEUG, '_' + was + '_roh');
+        if (await holen(QUELLEN[`${was}-macos-${a}`], zip, was) && auspacken(zip, roh)) {
+          const f = path.join(roh, was);
+          if (fs.existsSync(f)) { fs.renameSync(f, path.join(bin, was)); fs.chmodSync(path.join(bin, was), 0o755);
+            spawnSync('xattr', ['-d', 'com.apple.quarantine', path.join(bin, was)], { stdio: 'ignore' }); }
+        }
+        try { fs.rmSync(zip, { force: true }); fs.rmSync(roh, { recursive: true, force: true }); } catch (e) {}
+      }
+      if (fs.existsSync(ffEigen) && fs.existsSync(path.join(bin, 'ffprobe'))) {
+        ffmpeg = ffEigen; gut(T('ffmpeg liegt jetzt in werkzeug/ffmpeg.'));
+        zeile('ffmpeg', 'ffmpeg', T('geholt und abgelegt in werkzeug/ffmpeg'));
+      } else {
+        const w = await wieWeiter(T('ffmpeg holen'),
+          T('Ohne ffmpeg hörst du deine Musik, aber fast alles Rechnen fehlt: Klanganalyse, Instrumentspuren, Whisper, Musikstil, Kacheln und Tiefenkarten.'));
+        if (w === 'schluss') { wiederkommen(); schluss(0); }
+        if (w === 'ueber') { wink(T('Weiter ohne ffmpeg. Starte die Einrichtung später noch einmal, dann holt sie es nach.')); versuche = false; }
+      }
+    }
   } else if (process.platform !== 'win32') {
-    /* Auf dem Mac (und Linux ohne x64) gibt es einen Paketverwalter, der es besser kann
-       als ein Download an ihm vorbei. */
+    /* Linux ohne x64 (und der Mac ohne Eintrag in quellen.txt): der Paketverwalter */
     wink(T('ffmpeg fehlt.'));
     zeile('ffmpeg', 'ffmpeg', T('fehlt — ein Befehl im Terminal holt es'), 'wink');
     matt(process.platform === 'darwin' ? '  brew install ffmpeg' : '  sudo apt install ffmpeg');
@@ -2024,7 +2050,7 @@ open -a Terminal ${JSON.stringify(starter)}
     kachel(T('Bilder'), String(mitBild));
     if (a && a.abschluss) a.abschluss.adressen = [];
   }
-  { const v = schreibtischVerknuepfung(WURZEL);
+  { const v = NACH_SETUP && process.platform === 'darwin' ? null : schreibtischVerknuepfung(WURZEL);   /* Mac: die App in „Programme“ ist der Starter */
     if (v) { gut(T('Auf dem Schreibtisch liegt jetzt „KlangTresor" — damit startest du es künftig.'));
              zeile('desktop', T('Auf dem Schreibtisch liegt jetzt „KlangTresor"'), T('damit startest du es künftig')); }
     else { matt(T('Zum späteren Starten: der Starter liegt in {ordner}.', { ordner: WURZEL }));
@@ -2066,6 +2092,13 @@ open -a Terminal ${JSON.stringify(starter)}
      hat sein eigenes Fenster bzw. Symbol und oeffnet den Browser selbst, sobald der Server antwortet. */
   /* LINUX NACH DEM APPIMAGE (29.10.2026): das Symbol im Panel (bin/linux/klangtresor-symbol.py) startet den Server
      ohne Terminal; ohne AppIndicator laeuft er ohne Symbol weiter und wird ueber Profil → System beendet. */
+  /* MAC NACH DER APP (29.10.2026): KlangTresor.app (bin/mac/KlangTresor.swift) wartet auf das Ende dieser Einrichtung
+     und startet dann selbst den Server - sie haelt ihn, damit Cmd-Q ihn beendet. */
+  if (NACH_SETUP && process.platform === 'darwin') {
+    gut(T('KlangTresor startet - das Symbol steht im Dock, die Seite geht gleich auf.'));
+    setTimeout(() => process.exit(0), 3000);
+    return;
+  }
   if (NACH_SETUP && process.platform === 'linux') {
     const k = require('node:child_process').spawn('python3', [path.join(WURZEL, 'bin', 'linux', 'klangtresor-symbol.py')],
       { cwd: WURZEL, detached: true, stdio: 'ignore' });

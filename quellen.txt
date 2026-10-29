@@ -51,6 +51,13 @@ ffmpeg-windows-2 = https://github.com/BtbN/FFmpeg-Builds/releases/download/lates
 # Geholt vom Linux-Installer bzw. der Einrichtung nach werkzeug/ffmpeg/bin - kein sudo, kein Paketverwalter.
 ffmpeg-linux-x64 = https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
 
+# macOS (Intel und Apple Silicon): fertige Bauten von Martin Riedl (GPL, signiert), je ein Zip fuer ffmpeg und ffprobe.
+# Geholt von der Einrichtung nach werkzeug/ffmpeg/bin - statt „brew install ffmpeg".
+ffmpeg-macos-x64 = https://ffmpeg.martin-riedl.de/redirect/latest/macos/amd64/release/ffmpeg.zip
+ffprobe-macos-x64 = https://ffmpeg.martin-riedl.de/redirect/latest/macos/amd64/release/ffprobe.zip
+ffmpeg-macos-arm64 = https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffmpeg.zip
+ffprobe-macos-arm64 = https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffprobe.zip
+
 # ---------------------------------------------------------------------
 # WEITERES
 #
