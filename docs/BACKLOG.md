@@ -59,6 +59,7 @@
 | Effektclip | offen | [Die Linse kostet 10,9 ms je Bild (21.09.2026)](#die-linse-kostet-109-ms-je-bild-21092026) |
 | Effektclip | offen | [Polarlicht auf den Himmel (21.09.2026)](#polarlicht-auf-den-himmel-21092026) |
 | Suno · Haus | zu planen | [Suno-Alben neben den Abspiellisten (08.10.2026)](#suno-alben-neben-den-abspiellisten-08102026) |
+| Haus | zu planen | [Alte Installationsskripte archivieren (29.10.2026)](#alte-installationsskripte-archivieren-29102026) |
 
 **Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).
 
@@ -3265,3 +3266,31 @@ ein Archiv – nichts wird gelöscht.
 Vor dem Bau: Skizze von Knopf und Streifen zeigen. Eingriff in den Datenfluss (Dateien im Archiv) – im Sandkasten bauen.
 Nebenbefund: bei „Ich, Thiel v2" liegt seit 24.10. 15:55 ein `eigen.jpg` mit dem neuen Motiv (andere Datei als Sunos); die
 Kachel im Raster zeigt noch das alte `cover.jpg` vom 20.10.
+
+## Alte Installationsskripte archivieren (29.10.2026)
+
+**Zustand:** zu planen · **Modul:** Haus
+
+Caspar_D, 29.10.2026: „alle alten installationsscripte, die wir nicht mehr brauchen - falls es die überhaupt gibt -
+mal archivieren und nicht mehr mit ausliefern, wenn sie nicht mehr nötig sind" — und dazu: „nur das, was die neuen
+installer brauchen".
+
+Seit 1.0.134–1.0.139 gibt es die Setup.exe (Windows), das AppImage (Linux) und die Mac-App (gebaut, noch nicht
+ausgeliefert). Im Hauptordner und in `bin/` liegen noch die Wege von davor. Kandidaten, nur aufgezählt, nichts
+geprüft:
+
+- `einrichten-windows.cmd`, `einrichten-macos.command`, `einrichten-linux.sh` und `bin/anlasser.ps1`, `bin/anlasser.sh`
+  (der Weg „Zip entpacken, Skript doppelklicken")
+- `starten-windows.cmd`, `starten-macos.command`, `starten-linux.sh` — **Vorsicht:** `KlangTresor.exe` nimmt
+  `starten-windows.cmd` noch als Rückfall, und ältere Installationen starten damit
+- `einrichten-docker-*` und `bin/einrichten-docker.ps1` — hängt an der Frage, ob Docker ein Weg für Nutzer bleibt
+- `bin/server-start.sh`
+
+**Was bleiben muss, auch wenn es alt aussieht:** `aktualisieren-*` und `bin/aktualisieren.js` — darüber kommen
+ältere Installationen (bis 1.0.133, Zip-Weg) noch an die neue Fassung. Wer heute aus dem Zip lebt, braucht einen
+Übergang, bevor sein Startskript verschwindet.
+
+**Vorgehen:** erst für jede Datei nachsehen, wer sie aufruft (Code, Anleitungen START-HIER/HERE/RU, READMEs,
+Setup/AppImage/DMG-Bau); dann Caspar_D die Liste „weg / bleibt / bleibt bis“ zeigen; Archiv als eigener Ordner
+außerhalb des Pakets (paket.js nimmt nur, was git kennt — also aus dem Baum nehmen, nicht bloß verstecken).
+
