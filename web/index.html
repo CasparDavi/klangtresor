@@ -17895,15 +17895,15 @@ async function sysBeenden(){
      als offene Seite (/api/seite/draht) - der naechste Start holt darum ihn nach vorn statt einen neuen zu oeffnen.
      Er muss sich also selbst erholen: alle 2 s nachsehen, und sobald der Server antwortet, die Startseite laden -
      ohne #song=…, sonst finge beim Neuladen ein Titel an. */
-  let warWeg = false;   /* erst neu laden, wenn er wirklich einmal weg war - nicht in den sterbenden Server hinein */
+  /* Erst nach 3 s fragen: spaetestens 2,3 s nach der Antwort ist der alte Server sicher weg (/api/system/beenden
+     beendet nach 0,3 s, haengende Verbindungen hoechstens 2 s) - was danach antwortet, ist ein neuer. */
   const wieder = async () => {
     let da = false;
     try { da = (await fetch('/api/system/auftrag', { cache: 'no-store' })).ok; } catch (e) {}
-    if (da && warWeg) { location.replace(location.pathname); return; }
-    if (!da) warWeg = true;
+    if (da) { location.replace(location.pathname); return; }
     setTimeout(wieder, 2000);
   };
-  setTimeout(wieder, 1500);
+  setTimeout(wieder, 3000);
 }
 async function sysModellordner(){
   let r = null;
