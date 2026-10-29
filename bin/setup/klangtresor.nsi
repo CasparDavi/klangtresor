@@ -73,6 +73,9 @@ Var Fett
 !define MUI_ICON "${INHALT}\web\symbol\klangtresor.ico"
 !define MUI_UNICON "${INHALT}\web\symbol\klangtresor.ico"
 !define MUI_ABORTWARNING
+; Das Bild links auf der Abschluss- und der Entfernen-Seite (164 x 314, aus web/symbol/klangtresor-1024.png)
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${__FILEDIR__}\seite.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${__FILEDIR__}\seite.bmp"
 !define MUI_CUSTOMFUNCTION_ABORT AbbruchHalt
 
 !define MUI_DIRECTORYPAGE_TEXT_TOP "$(ordner_oben)"
@@ -82,6 +85,8 @@ Page custom BestandSeite
 Page custom HolenSeite HolenVerlassen
 !define MUI_FINISHPAGE_TITLE "$(fertig_titel)"
 !define MUI_FINISHPAGE_TEXT "$(fertig_text)"
+!define MUI_FINISHPAGE_TEXT_LARGE
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW KeinZurueck
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "$(fertig_weiter)"
 !define MUI_FINISHPAGE_RUN_FUNCTION WeiterImBrowser
@@ -133,6 +138,9 @@ LangString bestand_alt ${LANG_RUSSIAN} "В $INSTDIR находится KlangTres
 LangString bestand_archiv ${LANG_GERMAN} "Dein Archiv:  $0 Titel, $1  -  bleibt unberührt"
 LangString bestand_archiv ${LANG_ENGLISH} "Your archive:  $0 songs, $1  -  stays untouched"
 LangString bestand_archiv ${LANG_RUSSIAN} "Ваш архив:  $0 песен, $1  -  останется нетронутым"
+LangString bestand_archiv_leer ${LANG_GERMAN} "Dein Archiv:  noch leer - die Lieder holt gleich die Einrichtung im Browser"
+LangString bestand_archiv_leer ${LANG_ENGLISH} "Your archive:  still empty - the setup in the browser fetches your songs next"
+LangString bestand_archiv_leer ${LANG_RUSSIAN} "Ваш архив:  пока пуст - песни загрузит настройка в браузере"
 LangString bestand_modelle ${LANG_GERMAN} "KI-Modelle:  $0 von $1 da  ($ModellOrdner)"
 LangString bestand_modelle ${LANG_ENGLISH} "AI models:  $0 of $1 present  ($ModellOrdner)"
 LangString bestand_modelle ${LANG_RUSSIAN} "ИИ-модели:  $0 из $1 на месте  ($ModellOrdner)"
@@ -374,6 +382,10 @@ Function BestandSeite
       ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_archiv)"
       Pop $R0
       IntOp $R8 $R8 + 14
+    ${Else}
+      ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_archiv_leer)"
+      Pop $R0
+      IntOp $R8 $R8 + 14
     ${EndIf}
   ${Else}
     ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_neu)"
@@ -574,6 +586,12 @@ Section "-Holen"
     ${EndIf}
   ${EndIf}
 SectionEnd
+
+; Auf der Abschlussseite fuehrt „Zurueck" nirgends mehr hin: kopiert und geholt ist
+Function KeinZurueck
+  GetDlgItem $R0 $HWNDPARENT 3
+  EnableWindow $R0 0
+FunctionEnd
 
 ; Fertig -> die Einrichtung ab dem Suno-Namen, nur als Seite im Browser, ohne Fenster
 Function WeiterImBrowser

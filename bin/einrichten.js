@@ -1265,12 +1265,16 @@ open -a Terminal ${JSON.stringify(starter)}
     matt(T('braucht es aber Chrome. Das lässt sich auch später nachholen.'));
     leer();
   }
-  if (!await jaNein(T('Verstanden, weiter?'))) {
+  /* Nach der Setup.exe steht davor keine Frage mehr - die erste Frage ist der Suno-Name (Caspar_D, 29.10.2026: „ab
+     avatar geht alles im browser"). Der Text oben bleibt im Protokoll; dieselbe Erklaerung kommt im Schritt
+     „Deine Suno-Dateien" noch einmal dort, wo sie gebraucht wird. */
+  if (!NACH_SETUP && !await jaNein(T('Verstanden, weiter?'))) {
     matt(T('Dann bis später. Das Einrichten läuft nicht weg.'));
     wiederkommen(); schluss(0);
   }
 
   leer();
+  if (!NACH_SETUP) {   /* nach der Setup.exe ist schon alles geholt */
   matt(T('Beim ersten Mal werden rund 4,5 GB geholt. Wie lange das dauert, hängt'));
   matt(T('an deiner Leitung — von wenigen Minuten bis zu gut einer Stunde.'));
   leer();
@@ -1278,6 +1282,7 @@ open -a Terminal ${JSON.stringify(starter)}
   matt(T('läuft oder ob es hakt. Bei Abbruch kann man einfach von diesem Stand'));
   matt(T('fortsetzen.'));
   leer();
+  }
   /* Caspar_D, 13.09.2026, nach einer halben Stunde Fehlersuche an einem
      Fenster, das gar nicht haengen geblieben war: „das musst du als
      ausgabe ganz am Anfang hinschreiben, dass sowas passieren kann".
