@@ -386,13 +386,13 @@ Function BestandSeite
       FileClose $R0
     ${EndIf}
     ${If} $0 == "${VERSION}"
-      ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_gleich)"
+      ${NSD_CreateLabel} 0 $R8u 100% 30u "$(bestand_gleich)"
     ${Else}
-      ${NSD_CreateLabel} 0 $R8u 100% 20u "$(bestand_alt)"
+      ${NSD_CreateLabel} 0 $R8u 100% 30u "$(bestand_alt)"
     ${EndIf}
     Pop $R0
     SendMessage $R0 ${WM_SETFONT} $Fett 1
-    IntOp $R8 $R8 + 24
+    IntOp $R8 $R8 + 32
     ${If} ${FileExists} "$INSTDIR\library\*.*"
       StrCpy $0 0
       FindFirst $R0 $R1 "$INSTDIR\library\songs\*"
@@ -630,12 +630,28 @@ Function WeiterImBrowser
 FunctionEnd
 
 ; Groesse eines Ordners in Worten: „3,4 GB" / „120 MB" / „nicht vorhanden". $R0 = Ordner, Ergebnis in $R1.
+; Gezaehlt von PowerShell, nicht mit ${GetSize}: das uebergeht Einzeldateien ueber 2 GB - das Whisper-Modell hat 3,1 GB,
+; und die Schlussseite nannte im Test 1,1 GB statt 4,1 GB (29.10.2026).
 Function un.Groesse
   ${IfNot} ${FileExists} "$R0\*.*"
     StrCpy $R1 "$(nichts_da)"
     Return
   ${EndIf}
-  ${GetSize} "$R0" "/S=0M" $R2 $R3 $R4
+  InitPluginsDir
+  FileOpen $R2 "$PLUGINSDIR\groesse.ps1" w
+  FileWriteWord $R2 0xFEFF
+  FileWriteUTF16LE $R2 "$$s = (Get-ChildItem -LiteralPath '$R0' -Recurse -File -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum$\r$\n"
+  FileWriteUTF16LE $R2 "[math]::Floor([double]$$s / 1MB)$\r$\n"
+  FileClose $R2
+  nsExec::ExecToStack 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\groesse.ps1"'
+  Pop $R3
+  Pop $R2
+  ${un.TrimNewLines} $R2 $R2
+  ${If} $R3 != 0
+  ${OrIf} $R2 == ""
+    StrCpy $R1 "?"
+    Return
+  ${EndIf}
   ${If} $R2 >= 1024
     IntOp $R3 $R2 / 1024
     IntOp $R4 $R2 % 1024
