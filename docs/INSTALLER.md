@@ -61,20 +61,30 @@ Foundation“, Bau müsste in GitHub Actions laufen). Casto kann nicht signieren
 - Apple Silicon kann ich hier nicht testen (der iMac ist Intel).
 - Ob macOS Programme, die aus einer nicht notarisierten App nach `~/KlangTresor` kopiert wurden, ohne weitere Warnung startet: Das Quarantäne-Merkmal wird beim Kopieren entfernt, ist aber zu prüfen.
 
-## Linux: `KlangTresor.AppImage` (Plan)
+## Linux: `KlangTresor-x86_64.AppImage` (gebaut 29.10.2026, Zweig linux-installer)
 
 **Was der Nutzer tut:**
-1. Die Datei laden.
-2. Rechtsklick → Eigenschaften → „Als Programm ausführen“ erlauben. Das verlangt jeder Linux-Dateimanager einmal; manche fragen beim Doppelklick selbst.
-3. Doppelklick. Danach läuft es wie auf dem Mac: Der Browser geht auf, zeigt was schon da ist, holt mit Balken und fragt nach dem Suno-Namen.
-4. Beim ersten Start legt KlangTresor einen Menüeintrag an (`~/.local/share/applications/klangtresor.desktop`). Danach steht es im Anwendungsmenü wie jedes andere Programm.
+1. Die Datei laden. Rechtsklick → Eigenschaften → „Als Programm ausführen“ erlauben (einmal; jeder Dateimanager
+   verlangt das bei einer heruntergeladenen Datei).
+2. Doppelklick. Ein Hinweis „KlangTresor wird nach ~/KlangTresor gelegt …“, dann geht der Browser auf: die Einrichtung
+   zeigt, was da ist, holt ffmpeg (statischer Bau, johnvansickle.com), die KI-Modelle und Whisper mit Balken und fragt
+   nach dem Suno-Namen.
+3. Danach läuft KlangTresor als **Symbol im Panel** (Öffnen, Protokoll anzeigen, Beenden). Wo das Panel keine
+   AppIndicator-Symbole kennt (reines GNOME ohne Erweiterung), läuft es ohne Symbol und wird über **Profil → System →
+   KlangTresor beenden** beendet (Entscheidung „Beides“).
+4. Im Anwendungsmenü steht „KlangTresor“ (zeigt auf das AppImage). Ein neueres AppImage erneuert beim Start das
+   Programm; ein älteres überschreibt nie ein neueres. Läuft KlangTresor gerade, fragt das neuere AppImage, ob es
+   beenden und erneuern darf.
 
-**Wie es gebaut ist:**
-- Dasselbe Prinzip wie auf dem Mac: Das AppImage trägt Programm, Node und `node_modules` (linux x64; arm64 als zweite Datei, wenn gewünscht) und kopiert beim ersten Start nach `~/KlangTresor`.
-- whisper-cli liegt bei whisper.cpp fertig für Linux bereit, wird also geholt wie heute.
-- Für ffmpeg gibt es fertige statische Bauten (johnvansickle.com), die geholt werden. Heute verlangt die Einrichtung `sudo apt install ffmpeg`.
-- Gebaut im Docker auf diesem Mac mit `appimagetool`. Getestet in einem Ubuntu-Container (ohne Oberfläche) und, wenn du eine willst, in einer Linux-VM in Parallels.
-- Hinweis: Neuere Ubuntu-Fassungen haben `libfuse2` nicht mehr vorinstalliert. Das aktuelle AppImage-Laufzeitprogramm kommt ohne aus; das ist beim Bau zu prüfen.
+**Wie es gebaut ist:** `bin/appimage-bauen.js` (aus `bin/paket.js`), auf dem Mac: squashfs (`brew install squashfs`)
+plus das statische Laufzeitprogramm von AppImage/type2-runtime (braucht kein libfuse2). Inhalt: `AppRun`
+(`bin/linux/AppRun`), Programm, Node linux-x64, `node_modules` mit onnxruntime nur linux/x64. 104 MB.
+Das Symbol: `bin/linux/klangtresor-symbol.py` (Python 3 + GTK + AyatanaAppIndicator3 aus dem System, nichts
+nachinstalliert). Der Knopf „KlangTresor beenden“ (`/api/system/beenden`, nur vom Rechner selbst) beendet den Server
+mit Code 0; Symbol (Linux und Windows) und `bin/starten.js` verstehen das als gewollt.
+
+**Nur x64** (Entscheidung 29.10.2026). Getestet in einer Ubuntu-24.04-Desktop-VM (Parallels, „Ubuntu KlangTresor“,
+`Entwicklung/_linux-vm/`).
 
 ## Was danach mit dem Alten passiert
 
