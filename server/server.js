@@ -4791,6 +4791,19 @@ server.on('error', (e) => {
 });
 
 server.on('listening', () => {
+  /* WEITERLADEN NACH DER EINRICHTUNG (Caspar_D, 29.10.2026). Hat jemand dort „Jetzt in den KlangTresor – im
+     Hintergrund weiterladen" gedrueckt, liegt library/weiterladen.json da. Dann laeuft gleich der Teil des Abgleichs,
+     der Bilder, Bewegtbilder und Ton holt - derselbe Lauf wie hinter dem roten Knopf, der darum auch dreht und den
+     Stand zeigt. Die schweren Rechenschritte (Instrumentspuren, Whisper, Klanganalyse) bleiben dem taeglichen Lauf.
+     Die Datei geht vorher weg: ein Absturz soll nicht bei jedem Start wieder anfangen. */
+  { const merk = path.join(WURZEL, 'library', 'weiterladen.json');
+    if (!EINGEFROREN && fs.existsSync(merk)) {
+      try { fs.unlinkSync(merk); } catch (e) {}
+      if (!morgen.laeuft) {
+        morgenLosschicken(MORGEN_SCHRITTE.filter(s => s.pflicht || s.schluessel === 'medien'), 'lauf', MORGEN_SCHRITTE);
+        console.log('  ' + TK('Die Einrichtung war noch nicht fertig — die restlichen Bilder werden jetzt im Hintergrund geladen.'));
+      }
+    } }
   console.log('\n  ' + TK('KlangTresor läuft') + '\n');
   /* Diese Zeile lesen die Startskripte auf dem Stick - Wortlaut ist
      Schnittstelle, nicht Schmuck. */

@@ -230,7 +230,7 @@
         <span class="ueber" data-t="nicht_warten">du musst nicht warten</span>
         <p id="abbrtext"></p>
         <p class="klein" id="abbrklein"></p>
-        <div class="knoepfe"><button class="pille an" type="button" id="abbrknopf"></button><button class="pille" type="button" id="abbrnein" data-t="weiter_warten">Weiter warten</button></div>
+        <div class="knoepfe"><button class="pille an" type="button" id="abbrknopf"></button><button class="pille" type="button" id="abbrhalt"></button></div>
       </div>
 
       <div id="abschluss" hidden>
@@ -240,7 +240,7 @@
         <div class="was" id="nachsatz"></div>
         <div class="karte warte" id="windows" hidden>
           <span class="ueber" data-t="nur_windows">gleich, nur unter Windows</span>
-          <p id="windowstext"></p>
+          <p id="windowstext" style="white-space:pre-line"></p>
         </div>
       </div>
 
@@ -299,7 +299,6 @@ const TX = {
     ru: 'Не видите окно? Значит, оно за этим окном — посмотрите на панели задач или в Dock. Выберите папку там, а здесь всё продолжится дальше.' },
   dialog_text: { de: 'Ein Auswahlfenster ist offen: „{n}"', en: 'A selection window is open: “{n}”', ru: 'Открыто окно выбора: «{n}»' },
   nicht_warten: { de: 'du musst nicht warten', en: 'you do not have to wait', ru: 'ждать необязательно' },
-  weiter_warten: { de: 'Weiter warten', en: 'Keep waiting', ru: 'Подождать' },
   abbrechen: { de: 'Abbrechen', en: 'Cancel', ru: 'Отменить' },
   nur_windows: { de: 'gleich, nur unter Windows', en: 'shortly, Windows only', ru: 'скоро, только в Windows' },
   frage_wahl: { de: 'bitte wählen', en: 'please choose', ru: 'выберите' },
@@ -444,6 +443,9 @@ function malenSchritt(s) {
     $('abbrtext').textContent = A.text || '';
     $('abbrklein').textContent = A.klein || '';
     $('abbrknopf').textContent = A.knopf || t('abbrechen');
+    /* Zwei Wege (Caspar_D, 29.10.2026): weiterladen lassen oder anhalten. Ohne zweiten Text gibt es nur den einen Knopf. */
+    $('abbrhalt').hidden = !A.knopfHalt;
+    $('abbrhalt').textContent = A.knopfHalt || '';
   }
 
   /* Der Schluss: was nur der Mensch selbst holen kann. */
@@ -546,11 +548,15 @@ async function tick() {
   $('fussr').textContent = t('laeuft_seit', { z: Math.floor(sek / 60) + ':' + String(sek % 60).padStart(2, '0') });
 }
 
+/* „Jetzt in den KlangTresor" laesst KlangTresor selbst weiterladen, „Anhalten" haelt nur an. Wer nichts drueckt, wartet. */
 $('abbrknopf').onclick = function () {
+  $('abbrechen').hidden = true;
+  fetch('/abbrechen?weiter=1', { method: 'POST' }).catch(function () {});
+};
+$('abbrhalt').onclick = function () {
   $('abbrechen').hidden = true;
   fetch('/abbrechen', { method: 'POST' }).catch(function () {});
 };
-$('abbrnein').onclick = function () { $('abbrechen').hidden = true; };
 
 malenSprache();
 malenLaschen();

@@ -92,6 +92,12 @@ const jetztSchritt = () => ZUSTAND.schritte[ZUSTAND.aktuell - 1] || null;
    kein Escape, wenn die Einrichtung ohne Terminal laeuft. Die Seite
    setzt diesen Wunsch ueber POST /abbrechen. */
 let ABBRUCHWUNSCH = false;
+/* Zwei Knoepfe statt einem (Caspar_D, 29.10.2026: „warum geht das im Hintergrund nicht einfach automatisch weiter"):
+   „Jetzt in den KlangTresor – im Hintergrund weiterladen" setzt zusaetzlich WEITERLADEN. Dann legt die Einrichtung
+   library/weiterladen.json hin, und der Server startet beim Hochfahren selbst den Medienteil des Abgleichs - derselbe
+   Lauf wie hinter dem roten Knopf, mit dessen Fortschritt. Kein zweites Ladeprogramm, und auf dem Mac (dort startet
+   die App den Server erst nach dieser Einrichtung) geht es genauso. */
+let WEITERLADEN = false;
 
 /* Eine Haken- oder Teilzeile im laufenden Schritt. Gleiche id = dieselbe
    Zeile, sie wird fortgeschrieben (aus "wird durchgesehen" wird "1.146
@@ -819,6 +825,22 @@ open -a Terminal ${JSON.stringify(starter)}
   } catch (e) { return null; }
 }
 
+/* Fragt die Windows-Firewall gleich nach node.exe? Ja, solange es fuer GENAU dieses node.exe noch keine Regel gibt -
+   Windows legt beim ersten Mal je Pfad zwei an (erlaubt oder gesperrt, je nach Antwort) und fragt danach nie wieder.
+   Eine erneute Einrichtung im selben Ordner braucht den Hinweis darum nicht. Lesen geht ohne Administratorrechte;
+   klappt es nicht, wird vorsichtshalber gewarnt. */
+function firewallFragtGleich() {
+  try {
+    const r = spawnSync('netsh', ['advfirewall', 'firewall', 'show', 'rule', 'name=all', 'verbose'],
+      { encoding: 'latin1', windowsHide: true, timeout: 20000, maxBuffer: 64 * 1024 * 1024 });
+    if (r.status !== 0 || !r.stdout) return true;
+    /* netsh schreibt in der OEM-Codeseite (850), Node kennt sie nicht - Umlaute im Benutzernamen („Jörg") kaemen
+       verdreht an. Verglichen wird darum nur der ASCII-Teil beider Seiten. */
+    const nur = (x) => x.toLowerCase().replace(/[^\x20-\x7e]/g, '');
+    return !nur(r.stdout).includes(nur(process.execPath));
+  } catch (e) { return true; }
+}
+
 /* =================================================================== */
 (async function haupt() {
   /* DAS MITGEBRACHTE NODE MUSS IN DEN PATH.
@@ -865,6 +887,7 @@ open -a Terminal ${JSON.stringify(starter)}
         }
         if (u.pathname === '/abbrechen' && req.method === 'POST') {
           ABBRUCHWUNSCH = true;
+          WEITERLADEN = u.searchParams.get('weiter') === '1';
           schreib(HELL(T('     Abbrechen — von der Seite aus.')));
           return antwort(res, 200, 'application/json', JSON.stringify({ ok: true }));
         }
@@ -1950,13 +1973,19 @@ open -a Terminal ${JSON.stringify(starter)}
   {
     const s = jetztSchritt();
     if (s) s.abbrechbar = { text: T('Du musst nicht warten.'),
-      klein: T('KlangTresor kann jetzt schon starten — die Bilder holt der rote Knopf oben rechts später nach, und was da ist, wird nicht noch einmal geladen. Du siehst dann eine vollständige Bibliothek, nur mit ein paar grauen Kacheln.'),
-      knopf: T('Jetzt starten, Rest später') };
+      klein: T('KlangTresor kann jetzt schon starten. Du siehst eine vollständige Bibliothek, nur mit ein paar grauen Kacheln — die Bilder kommen im Hintergrund nach, oder du hältst an und holst sie später mit dem roten Knopf oben rechts. Was schon da ist, wird nicht noch einmal geladen.'),
+      knopf: T('Jetzt in den KlangTresor – im Hintergrund weiterladen'),
+      knopfHalt: T('Anhalten und ansehen – später weiterladen') };
     const e = await laeuftAbbrechbar(process.execPath, [path.join('bin', 'wiederherstellen.js'), ...PROBE]);
     if (s) s.abbrechbar = null;
     if (e.abgebrochen) {
       leer();
-      gut(T('Das Laden ist unterbrochen — der rote Knopf oben rechts holt später den Rest.'));
+      if (WEITERLADEN) {
+        try { fs.writeFileSync(path.join(WURZEL, 'library', 'weiterladen.json'), JSON.stringify({ seit: new Date().toISOString() }) + '\n'); }
+        catch (x) { WEITERLADEN = false; }
+      }
+      if (WEITERLADEN) gut(T('KlangTresor lädt gleich nach dem Start selbst weiter — wie weit es ist, zeigt der rote Knopf oben rechts.'));
+      else gut(T('Das Laden ist unterbrochen — der rote Knopf oben rechts holt später den Rest.'));
     }
   }
 
@@ -2062,8 +2091,8 @@ open -a Terminal ${JSON.stringify(starter)}
                  zeile('wlan', T('Im WLAN, etwa vom Handy'), `http://${netz[0]}:8788`); }
   matt(T('Zum Beenden Strg-C. Später genügt der Starter im Projektordner.'));
   leer();
-  leser.close();
   if (OHNE_START) {
+    leser.close();
     /* Probelauf ohne Serverstart: die Seite bleibt stehen, damit man das
        Ergebnis ansehen kann. Sonst waere sie im selben Augenblick weg. */
     if (SEITENSERVER) { SEITENSERVER.ref(); matt(T('Die Seite bleibt offen — mit Strg-C beenden.')); }
@@ -2078,15 +2107,26 @@ open -a Terminal ${JSON.stringify(starter)}
      nur auf Zulassen klickt, hat KlangTresor im eigenen WLAN nicht
      erreichbar. Am 13.09.2026 im ersten Windows-Lauf gesehen. Also
      vorher sagen, was kommt und was anzuhaken ist. */
-  if (process.platform === 'win32') {
-    { const a = jetztSchritt(); if (a && a.abschluss) a.abschluss.windows =
-      T('Windows fragt in einem Moment, ob „Node.js JavaScript Runtime" ins Netzwerk darf. Das ist der KlangTresor-Server. Hake „Private Netzwerke" an — sonst erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke „Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.'); }
+  if (process.platform === 'win32' && firewallFragtGleich()) {
+    /* VORHER SAGEN UND WARTEN (Caspar_D, 29.10.2026: „bevor der switch stattfindet kommt im datenhol-fenster eine
+       meldung, dass jetzt gleich ein fenster aufgeht, und was man drücken soll"). Bis dahin stand der Hinweis nur
+       kurz da, und KlangTresor startete im selben Augenblick - die Seite war weg, bevor jemand ihn las. Jetzt
+       startet es erst auf den Klick. Beide Antworten sind richtig; „Abbrechen" sperrt nur den Weg von aussen. */
+    const text = T('Sobald KlangTresor startet, öffnet Windows das Fenster „Windows-Sicherheitshinweis" für „Node.js JavaScript Runtime". Das ist normal: KlangTresor kann auch vom Handy im WLAN erreichbar sein, und das muss Windows einmal erlauben.')
+      + '\n\n' + T('Auch vom Handy aus: Haken bei „Private Netzwerke" setzen, Haken bei „Öffentliche Netzwerke" entfernen, dann „Zugriff zulassen".')
+      + '\n\n' + T('Nur an diesem Rechner: „Abbrechen". KlangTresor läuft trotzdem ganz normal.')
+      + '\n\n' + T('Umentscheiden geht später: Windows-Einstellungen → Firewall → „App durch die Firewall zulassen" → Node.js.');
+    { const a = jetztSchritt(); if (a && a.abschluss) a.abschluss.windows = text; }
     wink(T('Gleich fragt Windows, ob „Node.js JavaScript Runtime" ins Netzwerk darf.'));
-    matt(T('Das ist der KlangTresor-Server. Hake „Private Netzwerke" an — sonst'));
-    matt(T('erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke'));
-    matt(T('„Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.'));
+    matt(T('Auch vom Handy aus: „Private Netzwerke" anhaken, „Öffentliche" nicht, „Zugriff zulassen".'));
+    matt(T('Nur an diesem Rechner: „Abbrechen". KlangTresor läuft trotzdem.'));
+    await fragen('     ' + AKZENT(T('Weiter mit der Eingabetaste. ')),
+      { art: 'wahl', text: T('Gleich fragt Windows nach dem Heimnetz'),
+        optionen: [{ wert: 'j', label: T('Verstanden – KlangTresor starten'), vor: true }] });
+    { const a = jetztSchritt(); if (a && a.abschluss) a.abschluss.windows = null; }
     leer();
   }
+  leser.close();
   /* Nach der Setup.exe laeuft diese Einrichtung ohne Fenster - der Server darf nicht in ihr weiterlaufen, sonst
      liefe er unsichtbar und liesse sich nicht beenden. Also ueber den Starter, den auch das Startmenue nimmt: der
      hat sein eigenes Fenster bzw. Symbol und oeffnet den Browser selbst, sobald der Server antwortet. */

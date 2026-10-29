@@ -1351,14 +1351,6 @@
   "en": "You don’t have to wait.",
   "ru": "Ждать не обязательно."
  },
- "KlangTresor kann jetzt schon starten — die Bilder holt der rote Knopf oben rechts später nach, und was da ist, wird nicht noch einmal geladen. Du siehst dann eine vollständige Bibliothek, nur mit ein paar grauen Kacheln.": {
-  "en": "KlangTresor can start right now — the red button at the top right fetches the images later, and what is already there is not downloaded again. You then see a complete library, just with a few grey tiles.",
-  "ru": "KlangTresor может запуститься уже сейчас — изображения позже догрузит красная кнопка в правом верхнем углу, а уже загруженное не загружается повторно. Вы увидите полную библиотеку, лишь с несколькими серыми плитками."
- },
- "Jetzt starten, Rest später": {
-  "en": "Start now, the rest later",
-  "ru": "Запустить сейчас, остальное позже"
- },
  "Das Laden ist unterbrochen — der rote Knopf oben rechts holt später den Rest.": {
   "en": "Downloading is interrupted — the red button at the top right fetches the rest later.",
   "ru": "Загрузка прервана — остальное позже догрузит красная кнопка в правом верхнем углу."
@@ -1587,25 +1579,9 @@
   "en": "The page stays open — stop with Ctrl+C.",
   "ru": "Страница остаётся открытой — остановите клавишами Ctrl+C."
  },
- "Windows fragt in einem Moment, ob „Node.js JavaScript Runtime\" ins Netzwerk darf. Das ist der KlangTresor-Server. Hake „Private Netzwerke\" an — sonst erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke „Zugriff zulassen\". „Öffentliche Netzwerke\" brauchst du nicht.": {
-  "en": "In a moment Windows will ask whether “Node.js JavaScript Runtime” may access the network. That is the KlangTresor server. Tick “Private networks” — otherwise you can’t reach it on your own Wi-Fi, e.g. from your phone — and click “Allow access”. You don’t need “Public networks”.",
-  "ru": "Сейчас Windows спросит, можно ли «Node.js JavaScript Runtime» выходить в сеть. Это сервер KlangTresor. Отметьте «Частные сети» — иначе он будет недоступен в вашей Wi-Fi-сети, например с телефона, — и нажмите «Разрешить доступ». «Общественные сети» не нужны."
- },
  "Gleich fragt Windows, ob „Node.js JavaScript Runtime\" ins Netzwerk darf.": {
   "en": "In a moment Windows asks whether “Node.js JavaScript Runtime” may access the network.",
   "ru": "Сейчас Windows спросит, можно ли «Node.js JavaScript Runtime» выходить в сеть."
- },
- "Das ist der KlangTresor-Server. Hake „Private Netzwerke\" an — sonst": {
-  "en": "That is the KlangTresor server. Tick “Private networks” — otherwise",
-  "ru": "Это сервер KlangTresor. Отметьте «Частные сети» — иначе"
- },
- "erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke": {
-  "en": "you can’t reach it on your own Wi-Fi, e.g. from your phone — and click",
-  "ru": "он будет недоступен в вашей Wi-Fi-сети, например с телефона, — и нажмите"
- },
- "„Zugriff zulassen\". „Öffentliche Netzwerke\" brauchst du nicht.": {
-  "en": "“Allow access”. You don’t need “Public networks”.",
-  "ru": "«Разрешить доступ». «Общественные сети» не нужны."
  },
  "KlangTresor geht in Chrome auf.": {
   "en": "KlangTresor opens in Chrome.",
@@ -1674,5 +1650,57 @@
  "ffmpeg holen — rund 60 MB.": {
   "en": "Fetching ffmpeg — about 60 MB.",
   "ru": "Загрузка ffmpeg — около 60 МБ."
+ },
+ "KlangTresor kann jetzt schon starten. Du siehst eine vollständige Bibliothek, nur mit ein paar grauen Kacheln — die Bilder kommen im Hintergrund nach, oder du hältst an und holst sie später mit dem roten Knopf oben rechts. Was schon da ist, wird nicht noch einmal geladen.": {
+  "en": "KlangTresor can start right now. You will see a complete library, just with a few grey tiles — the images keep arriving in the background, or you pause and fetch them later with the red button at the top right. Nothing that is already here gets downloaded twice.",
+  "ru": "KlangTresor может запуститься уже сейчас. Вы увидите полную библиотеку, только с несколькими серыми плитками — картинки догрузятся в фоне, или вы остановите загрузку и догрузите их позже красной кнопкой справа вверху. То, что уже есть, повторно не загружается."
+ },
+ "Jetzt in den KlangTresor – im Hintergrund weiterladen": {
+  "en": "Open KlangTresor now – keep loading in the background",
+  "ru": "Открыть KlangTresor сейчас – догружать в фоне"
+ },
+ "Anhalten und ansehen – später weiterladen": {
+  "en": "Pause and have a look – continue loading later",
+  "ru": "Остановить и посмотреть – догрузить позже"
+ },
+ "KlangTresor lädt gleich nach dem Start selbst weiter — wie weit es ist, zeigt der rote Knopf oben rechts.": {
+  "en": "KlangTresor will continue loading on its own right after it starts — the red button at the top right shows how far it has got.",
+  "ru": "Сразу после запуска KlangTresor сам продолжит загрузку — как далеко она продвинулась, показывает красная кнопка справа вверху."
+ },
+ "Sobald KlangTresor startet, öffnet Windows das Fenster „Windows-Sicherheitshinweis\" für „Node.js JavaScript Runtime\". Das ist normal: KlangTresor kann auch vom Handy im WLAN erreichbar sein, und das muss Windows einmal erlauben.": {
+  "en": "As soon as KlangTresor starts, Windows opens the “Windows Security Alert” window for “Node.js JavaScript Runtime”. That is normal: KlangTresor can also be reached from your phone over Wi-Fi, and Windows has to allow that once.",
+  "ru": "Как только KlangTresor запустится, Windows откроет окно «Оповещение системы безопасности Windows» для «Node.js JavaScript Runtime». Это нормально: KlangTresor может быть доступен и с телефона по Wi-Fi, и Windows должна один раз это разрешить."
+ },
+ "Auch vom Handy aus: Haken bei „Private Netzwerke\" setzen, Haken bei „Öffentliche Netzwerke\" entfernen, dann „Zugriff zulassen\".": {
+  "en": "From your phone too: tick “Private networks”, untick “Public networks”, then “Allow access”.",
+  "ru": "Чтобы открывать и с телефона: поставьте галочку «Частные сети», снимите галочку «Общественные сети» и нажмите «Разрешить доступ»."
+ },
+ "Nur an diesem Rechner: „Abbrechen\". KlangTresor läuft trotzdem ganz normal.": {
+  "en": "Only on this computer: “Cancel”. KlangTresor still works completely normally.",
+  "ru": "Только на этом компьютере: «Отмена». KlangTresor всё равно работает как обычно."
+ },
+ "Umentscheiden geht später: Windows-Einstellungen → Firewall → „App durch die Firewall zulassen\" → Node.js.": {
+  "en": "You can change your mind later: Windows Settings → Firewall → “Allow an app through firewall” → Node.js.",
+  "ru": "Передумать можно и позже: Параметры Windows → Брандмауэр → «Разрешить работу с приложением через брандмауэр» → Node.js."
+ },
+ "Auch vom Handy aus: „Private Netzwerke\" anhaken, „Öffentliche\" nicht, „Zugriff zulassen\".": {
+  "en": "From your phone too: tick “Private networks”, not “Public”, then “Allow access”.",
+  "ru": "Чтобы и с телефона: галочка «Частные сети», без «Общественные», затем «Разрешить доступ»."
+ },
+ "Nur an diesem Rechner: „Abbrechen\". KlangTresor läuft trotzdem.": {
+  "en": "Only on this computer: “Cancel”. KlangTresor works anyway.",
+  "ru": "Только на этом компьютере: «Отмена». KlangTresor всё равно работает."
+ },
+ "Weiter mit der Eingabetaste. ": {
+  "en": "Press Enter to continue. ",
+  "ru": "Для продолжения нажмите Enter. "
+ },
+ "Gleich fragt Windows nach dem Heimnetz": {
+  "en": "Windows is about to ask about your home network",
+  "ru": "Сейчас Windows спросит о домашней сети"
+ },
+ "Verstanden – KlangTresor starten": {
+  "en": "Got it – start KlangTresor",
+  "ru": "Понятно – запустить KlangTresor"
  }
 }
