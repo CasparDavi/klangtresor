@@ -4869,7 +4869,7 @@ if (process.platform === 'win32' && !EINGEFROREN) {
       fs.renameSync(da, alt);
       fs.copyFileSync(neu, da);
       try { fs.copyFileSync(neu + '.config', da + '.config'); } catch (e) {}
-      console.log('  ' + TK('Das Symbol unten rechts ist erneuert — es startet sich gleich selbst neu.'));
+      console.log('  ' + TK('Das Symbol unten rechts ist erneuert.'));   /* ab 1.0.138 startet es sich dann selbst neu, ein aelteres beim naechsten Start */
     }
   } catch (e) { console.log('  Symbol erneuern: ' + e.message); }
 }

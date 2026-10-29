@@ -1,5 +1,5 @@
 {
-  "Das Symbol unten rechts ist erneuert — es startet sich gleich selbst neu.": { "en": "The icon at the bottom right has been renewed — it restarts itself in a moment.", "ru": "Значок справа внизу обновлён — он сейчас сам перезапустится." },
+  "Das Symbol unten rechts ist erneuert.": { "en": "The icon at the bottom right has been renewed.", "ru": "Значок справа внизу обновлён." },
   "Die Einrichtung war noch nicht fertig — die restlichen Bilder werden jetzt im Hintergrund geladen.": { "en": "Setup had not finished — the remaining images are now loading in the background.", "ru": "Настройка не была завершена — оставшиеся картинки сейчас загружаются в фоне." },
   "KlangTresor läuft": { "en": "KlangTresor is running", "ru": "KlangTresor работает" },
   "Eingefroren: nur lesen, nichts wird geholt oder gespeichert.": { "en": "Frozen: read only, nothing is fetched or saved.", "ru": "Заморожено: только чтение, ничего не загружается и не сохраняется." },

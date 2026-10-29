@@ -32,6 +32,10 @@ static class KlangTresor
 {
     static readonly string Wurzel = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
     const string Adresse = "http://localhost:8788/";
+    // Fuer die eigenen Anfragen 127.0.0.1 und KEIN Proxy (29.10.2026): .NET sucht fuer „localhost" erst einen Proxy
+    // (im Windows-10-Test 2 s) - laenger als die 1,5 s Wartezeit. Jede Anfrage scheiterte so still: das Symbol hielt den
+    // Server fuer stumm, oeffnete trotz offenem Tab einen neuen und erneuerte sich nach einem Update nie.
+    const string Api = "http://127.0.0.1:8788/";
     static string Spr;
     static Process Kind;
     static IntPtr Job = IntPtr.Zero;
@@ -57,6 +61,7 @@ static class KlangTresor
     static void Main(string[] args)
     {
         Spr = Sprache();
+        WebRequest.DefaultWebProxy = null;
         bool ohneBrowser = Array.IndexOf(args, "--ohne-browser") >= 0;
         bool nachfolger = Array.IndexOf(args, "--nachfolger") >= 0;
         bool neu;
@@ -133,7 +138,7 @@ static class KlangTresor
     {
         try
         {
-            var r = (HttpWebRequest)WebRequest.Create(Adresse + "api/system/auftrag");
+            var r = (HttpWebRequest)WebRequest.Create(Api + "api/system/auftrag");
             r.Timeout = 1500;
             using (var a = (HttpWebResponse)r.GetResponse())
             using (var t = new StreamReader(a.GetResponseStream()))
@@ -291,7 +296,7 @@ static class KlangTresor
     {
         try
         {
-            var r = (HttpWebRequest)WebRequest.Create(Adresse + "api/seite/zeigen");
+            var r = (HttpWebRequest)WebRequest.Create(Api + "api/seite/zeigen");
             r.Method = "POST"; r.Timeout = 1500; r.ContentLength = 0;
             using (var a = (HttpWebResponse)r.GetResponse())
             using (var t = new StreamReader(a.GetResponseStream()))
@@ -333,7 +338,7 @@ static class KlangTresor
     {
         try
         {
-            var r = (HttpWebRequest)WebRequest.Create(Adresse);
+            var r = (HttpWebRequest)WebRequest.Create(Api + "api/system/auftrag");   // klein - die Startseite ist gross
             r.Timeout = 1500;
             using (var a = (HttpWebResponse)r.GetResponse()) return a.StatusCode == HttpStatusCode.OK;
         }
