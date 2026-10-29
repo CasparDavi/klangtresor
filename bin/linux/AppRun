@@ -1,0 +1,101 @@
+#!/bin/bash
+# KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE
+# =============================================================
+# DAS APPIMAGE - WAS EIN DOPPELKLICK TUT
+# bin/linux/AppRun - liegt im AppImage oben (gebaut von bin/appimage-bauen.js)
+#
+# Caspar_D, 29.10.2026: „solche installer hätte ich dann auch für die anderen Systeme - das Scriptgefrickel kann
+# keiner". Ein Doppelklick auf KlangTresor-x86_64.AppImage:
+#   1. laeuft KlangTresor schon, geht nur die Seite auf (ist dieses AppImage neuer, fragt es vorher, ob es KlangTresor
+#      beenden und erneuern darf)
+#   2. sonst wird das Programm nach ~/KlangTresor gelegt - beim ersten Mal ganz, spaeter nur, wenn dieses AppImage
+#      neuer ist. library/ und modelle/ werden nie angefasst; aelter ueberschreibt nie neuer (ein Update aus
+#      Profil → System bleibt also stehen)
+#   3. ein Eintrag „KlangTresor" im Anwendungsmenue, der auf dieses AppImage zeigt
+#   4. ist noch kein Archiv da: die Einrichtung als Seite im Browser (bin/einrichten.js --nach-setup) - sie holt ffmpeg,
+#      die KI-Modelle und Whisper mit Balken und fragt nach dem Suno-Namen; danach startet sie das Symbol
+#   5. sonst: das Symbol im Panel (bin/linux/klangtresor-symbol.py), das den Server ohne Terminal startet
+# Warum kopieren statt aus dem AppImage laufen: das AppImage ist nur lesbar eingehaengt, KlangTresor schreibt aber
+# neben sich (Archiv, Werkzeuge, Updates) - und so liegt es unter Linux genau wie unter Windows in ~/KlangTresor.
+# =============================================================
+set -u
+HIER="${APPDIR:-$(dirname "$(readlink -f "$0")")}"
+PROG="$HIER/programm"
+ZIEL="${KT_ORDNER:-$HOME/KlangTresor}"
+export KT_APPIMAGE="${APPIMAGE:-}"
+
+mkdir -p "$ZIEL/protokoll"
+LOG="$ZIEL/protokoll/appimage.log"
+log() { echo "$(date '+%F %T')  $*" >> "$LOG"; }
+melden() { command -v notify-send >/dev/null && notify-send -i "$PROG/web/symbol/klangtresor-256.png" "KlangTresor" "$1" 2>/dev/null; log "$1"; }
+
+case "${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}" in de*) SPR=de ;; ru*) SPR=ru ;; *) SPR=en ;; esac
+export KT_SPRACHE="${KT_SPRACHE:-$SPR}"
+t() { case "$KT_SPRACHE" in de) echo "$1" ;; ru) echo "$3" ;; *) echo "$2" ;; esac; }
+
+fassung() { sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$1/package.json" 2>/dev/null | head -1; }
+NEU=$(fassung "$PROG"); ALT=$(fassung "$ZIEL")
+# neuer? (sort -V kennt 1.0.135 < 1.0.140)
+neuer() { [ -z "$ALT" ] && return 0; [ "$NEU" != "$ALT" ] && [ "$(printf '%s\n%s\n' "$ALT" "$NEU" | sort -V | tail -1)" = "$NEU" ]; }
+# antwortet jemand auf 8788? Ohne curl (fehlt auf manchem Ubuntu) - bash kann TCP selbst
+laeuft() { (exec 3<>/dev/tcp/127.0.0.1/8788) 2>/dev/null; }
+seite() { xdg-open "http://localhost:8788/?sprache=$KT_SPRACHE" >/dev/null 2>&1 & }
+log "--- AppImage $NEU ($KT_APPIMAGE), installiert: ${ALT:-nichts}"
+
+if laeuft; then
+  if neuer && command -v zenity >/dev/null && zenity --question --title=KlangTresor \
+       --text="$(t "KlangTresor $ALT läuft. Dieses AppImage bringt $NEU.\n\nKlangTresor beenden und erneuern? Dein Archiv bleibt, wie es ist." \
+                   "KlangTresor $ALT is running. This AppImage brings $NEU.\n\nQuit KlangTresor and update? Your archive stays as it is." \
+                   "KlangTresor $ALT работает. Этот AppImage содержит $NEU.\n\nЗавершить KlangTresor и обновить? Ваш архив останется как есть.")"; then
+    # dieselbe Stelle wie der Knopf in Profil → System
+    exec 3<>/dev/tcp/127.0.0.1/8788 && printf 'POST /api/system/beenden HTTP/1.0\r\nHost: localhost\r\nContent-Length: 0\r\n\r\n' >&3 && cat <&3 >/dev/null; exec 3>&-
+    for i in $(seq 1 50); do laeuft || break; sleep 0.2; done
+    pkill -f "$ZIEL/bin/linux/klangtresor-symbol.py" 2>/dev/null
+  else
+    seite; exit 0
+  fi
+fi
+
+if neuer; then
+  [ -z "$ALT" ] && melden "$(t "KlangTresor wird nach $ZIEL gelegt …" "Placing KlangTresor in $ZIEL …" "KlangTresor копируется в $ZIEL …")" \
+                || melden "$(t "KlangTresor wird auf $NEU erneuert …" "Updating KlangTresor to $NEU …" "KlangTresor обновляется до $NEU …")"
+  # Node und die Pakete werden ganz ersetzt (genau nach package-lock), der Rest darueber gelegt
+  rm -rf "$ZIEL/werkzeug/node" "$ZIEL/node_modules"
+  mkdir -p "$ZIEL"
+  if ! cp -a "$PROG/." "$ZIEL/" 2>>"$LOG"; then
+    melden "$(t "Kopieren nach $ZIEL ging nicht - Einzelheiten in $LOG" "Copying to $ZIEL failed - details in $LOG" "Не удалось скопировать в $ZIEL - подробности в $LOG")"
+    exit 1
+  fi
+  chmod -R u+w "$ZIEL" 2>/dev/null
+  log "kopiert: $NEU"
+fi
+
+# Der Eintrag im Anwendungsmenue - jedes Mal, damit er auch nach dem Verschieben des AppImage stimmt
+if [ -n "$KT_APPIMAGE" ]; then
+  A="$HOME/.local/share/applications"; mkdir -p "$A"
+  cat > "$A/klangtresor.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=KlangTresor
+Comment=$(t "Dein eigenes Suno-Archiv" "Your own Suno archive" "Ваш собственный архив Suno")
+Exec="$KT_APPIMAGE"
+Icon=$ZIEL/web/symbol/klangtresor-256.png
+Terminal=false
+Categories=AudioVideo;Audio;
+StartupNotify=false
+EOF
+  command -v update-desktop-database >/dev/null && update-desktop-database "$A" 2>/dev/null
+fi
+
+cd "$ZIEL"
+NODE="$ZIEL/werkzeug/node/bin/node"
+if [ ! -f library/katalog.json.gz ] && [ ! -f library/katalog.json ]; then
+  log "noch kein Archiv - Einrichtung im Browser"
+  exec "$NODE" bin/einrichten.js --nach-setup >> "$LOG" 2>&1
+fi
+if command -v python3 >/dev/null; then
+  exec python3 bin/linux/klangtresor-symbol.py >> "$LOG" 2>&1
+fi
+# ohne Python: der Server ohne Symbol; beenden ueber Profil → System
+export PATH="$ZIEL/werkzeug/ffmpeg/bin:$ZIEL/werkzeug/node/bin:$PATH"
+exec "$NODE" bin/starten.js >> "$LOG" 2>&1

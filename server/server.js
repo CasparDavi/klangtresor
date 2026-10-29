@@ -4080,6 +4080,18 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      songs/<id>/, der Server blendet ihn aus (katalogHolen). Steht er bei Suno oeffentlich, holt bin/aufbereiten.js ihn
      beim naechsten Lauf zurueck („oeffentlich bei Suno schlaegt Ablage“). Im Profil: Liste, Zurueckholen, Loeschen. */
   /* DER TAB „SYSTEM" IM PROFIL (28.10.2026): was da ist, was fehlt - nur nachsehen, nichts holen (bin/system.js). */
+  /* KLANGTRESOR BEENDEN (29.10.2026). Caspar_D: Linux und Mac ohne Terminalfenster, beenden ueber „Beides" - das
+     Symbol im Panel und dieser Knopf in Profil → System als Rueckfall (etwa GNOME ohne AppIndicator). Code 0 heisst
+     fuer bin/starten.js und die Symbole (bin/linux/klangtresor-symbol.py, bin/windows/KlangTresor.cs): gewollt, nicht
+     neu starten. Nur am Rechner selbst - nicht vom Handy im WLAN -, nicht im Container (dort beendet man den
+     Container). */
+  if (p === '/api/system/beenden' && req.method === 'POST') {
+    if (!vomRechnerSelbst(req) || IM_CONTAINER) return jsonAntwort(res, { ok: false, grund: IM_CONTAINER ? 'container' : 'nicht_lokal' }, 403);
+    jsonAntwort(res, { ok: true });
+    console.log('\n  KlangTresor wird beendet (Profil → System).\n');
+    setTimeout(() => { server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 2000); }, 300);
+    return;
+  }
   if (p === '/api/system' && req.method === 'GET') {
     const sys = require('../bin/system.js');
     sys.stand().then(s => jsonAntwort(res, { ...s, lokal: vomRechnerSelbst(req), container: IM_CONTAINER, eingefroren: EINGEFROREN, auftrag: sys.auftragStand() }))

@@ -17851,6 +17851,12 @@ function sysErgebnis(a){
     + (a.id === 'update' && gut ? `<button type="button" class="pille" onclick="location.reload()">${esc(t('system.neu_laden'))}</button>` : '')
     + `</div>`;
 }
+async function sysBeenden(){
+  if (!confirm(t('system.beenden_frage'))) return;
+  let r = null; try { r = await (await fetch('/api/system/beenden', { method: 'POST' })).json(); } catch (e) {}
+  if (!r || !r.ok) return;
+  document.body.innerHTML = `<div style="max-width:560px;margin:18vh auto;padding:0 16px;color:var(--text,#ececed);font:16px/1.5 system-ui"><h2>${esc(t('system.beendet_titel'))}</h2><p>${esc(t('system.beendet_text'))}</p></div>`;
+}
 async function sysModellordner(){
   let r = null;
   try { r = await (await fetch('/api/system/modellordner', { method: 'POST' })).json(); } catch (e) {}
@@ -17902,7 +17908,11 @@ async function profilSystemFuellen(){
   h += `<div class="sysauftragplatz">${laeuft ? sysBalken(a) : sysErgebnis(a)}</div></div>`;
   /* Das Programm selbst: dieselbe Auskunft wie im Fenster „Wer" (fassungNachsehen), hier mit der Nummer davor */
   h += `<div class="block"><h3>${esc(t('system.programm'))}</h3><div class="syszeile"><span class="z ok sysprog">✓</span>`
-    + `<span>${esc(paketVersion ? t('wer.version', { v: paketVersion }) : 'KlangTresor')}<div class="fassungstand sysfassung"></div></span><span class="r sysupdate"></span></div></div>`;
+    + `<span>${esc(paketVersion ? t('wer.version', { v: paketVersion }) : 'KlangTresor')}<div class="fassungstand sysfassung"></div></span><span class="r sysupdate"></span></div>`
+    /* Beenden (29.10.2026): ohne Terminalfenster der Weg, den Server anzuhalten - auch ohne Symbol im Panel */
+    + (s.lokal && !s.container && !s.eingefroren ? zeile('offen', esc(t('system.beenden_text')),
+        `<button type="button" class="pille" onclick="sysBeenden()">${esc(t('system.beenden'))}</button>`) : '')
+    + `</div>`;
   h += `<div class="block"><h3>${esc(t('system.werkzeuge'))}</h3>`;
   for (const w of s.werkzeuge){
     const name = w.id === 'node' ? 'Node' : w.id === 'pakete' ? esc(w.anzahl ? t('system.w.pakete', { n: w.anzahl }) : t('system.w.pakete_kurz')) : w.id;

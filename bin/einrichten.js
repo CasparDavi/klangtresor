@@ -807,9 +807,14 @@ open -a Terminal ${JSON.stringify(starter)}
     const d = path.join(desk, 'klangtresor.desktop');
     const starter = path.join(ordner, 'starten-linux.sh');
     try { fs.chmodSync(starter, 0o755); } catch (e) {}
+    /* Aus dem AppImage (29.10.2026): die Verknuepfung startet das AppImage - ohne Terminal; es erneuert bei einer neueren
+       Fassung das Programm und startet dann das Symbol. KT_APPIMAGE setzt bin/linux/AppRun. */
+    const ai = process.env.KT_APPIMAGE && fs.existsSync(process.env.KT_APPIMAGE) ? process.env.KT_APPIMAGE : null;
     fs.writeFileSync(d, ['[Desktop Entry]', 'Type=Application', 'Name=KlangTresor',
-      'Comment=' + T('Dein eigenes Suno-Archiv'), `Exec=${JSON.stringify(starter)}`,
-      `Path=${ordner}`, `Icon=${path.join(ordner, 'web', 'symbol', 'klangtresor-256.png')}`, 'Terminal=true', ''].join('\n'), { mode: 0o755 });
+      'Comment=' + T('Dein eigenes Suno-Archiv'), `Exec=${JSON.stringify(ai || starter)}`,
+      `Path=${ordner}`, `Icon=${path.join(ordner, 'web', 'symbol', 'klangtresor-256.png')}`, ai ? 'Terminal=false' : 'Terminal=true', ''].join('\n'), { mode: 0o755 });
+    /* GNOME startet eine .desktop vom Schreibtisch nur, wenn sie als vertrauenswuerdig markiert ist */
+    if (ai) spawnSync('gio', ['set', d, 'metadata::trusted', 'true'], { stdio: 'ignore' });
     return d;
   } catch (e) { return null; }
 }
@@ -897,7 +902,9 @@ open -a Terminal ${JSON.stringify(starter)}
       /* unref: die Seite haelt die Einrichtung nicht am Leben. Sie endet,
          wenn die Arbeit endet - danach laeuft der KlangTresor-Server
          weiter, und die Seite ist ohnehin nicht mehr gemeint. */
-      srv.unref();
+      /* Nach dem Installer gibt es kein Terminal: stdin ist leer (Linux: /dev/null), nichts sonst haelt den Prozess am
+         Leben - ohne ref() endete er mitten in der ersten Frage. Er endet dort ausdruecklich (process.exit). */
+      if (!NACH_SETUP) srv.unref();
       SEITENSERVER = srv;
     }
   }
@@ -1449,6 +1456,7 @@ open -a Terminal ${JSON.stringify(starter)}
     if (ffDa) zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('ist da'));
     else if (ffLager) zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('liegt auf diesem Rechner, wird kopiert'), 'laeuft');
     else if (process.platform === 'win32') zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt, wird geholt (rund 100 MB)'), 'laeuft');
+    else if (process.platform === 'linux' && process.arch === 'x64') zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt, wird geholt (rund 40 MB)'), 'laeuft');
     else zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt — der Paketverwalter holt es, ein Befehl'), 'wink');
 
     /* ALLE Pakete aus package.json, nicht nur onnxruntime-node (Lutz, 23.10.2026: umap-js fehlte, und
@@ -1463,7 +1471,7 @@ open -a Terminal ${JSON.stringify(starter)}
     if (mDa >= mVon) zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} sind da', { da: mDa, von: mVon }));
     else zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} — der Rest wird geholt (rund 1,2 GB)', { da: mDa, von: mVon }), 'laeuft');
 
-    const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= mVon ? 0 : 1200);
+    const zuHolen = (ffDa || ffLager || (process.platform !== 'win32' && !(process.platform === 'linux' && process.arch === 'x64')) ? 0 : process.platform === 'win32' ? 100 : 40) + (paketeDa ? 0 : 240) + (mDa >= mVon ? 0 : 1200);
     if (zuHolen) zeile('summe', T('Zu holen'), T('rund {mb} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung', { mb: zuHolen }), 'laeuft');
     else zeile('summe', T('Zu holen'), T('nichts — alles liegt schon hier'));
   }
@@ -1488,7 +1496,9 @@ open -a Terminal ${JSON.stringify(starter)}
       ? T('Es wird geholt und nach {ordner} gelegt.', { ordner: path.join(WERKZEUG, 'ffmpeg') })
       : process.platform === 'darwin'
         ? T('Auf dem Mac ist dafür der Paketverwalter zuständig — ein Befehl im Terminal, und es gilt für den ganzen Rechner.')
-        : T('Unter Linux ist dafür der Paketverwalter zuständig — ein Befehl, und es gilt für den ganzen Rechner.')));
+        : process.arch === 'x64'
+          ? T('Es wird geholt und nach {ordner} gelegt.', { ordner: path.join(WERKZEUG, 'ffmpeg') })
+          : T('Unter Linux ist dafür der Paketverwalter zuständig — ein Befehl, und es gilt für den ganzen Rechner.')));
   matt(T('Für Klanganalyse, Wellenformen und den Videoschnitt.'));
 
   const ffEigen = path.join(WERKZEUG, 'ffmpeg', 'bin',
@@ -1500,8 +1510,49 @@ open -a Terminal ${JSON.stringify(starter)}
   if (ffmpeg) {
     gut(T('ffmpeg ist da: {pfad}', { pfad: ffmpeg }));
     zeile('ffmpeg', 'ffmpeg', ffmpeg.startsWith(WERKZEUG) ? T('liegt in werkzeug/ffmpeg') : T('auf diesem Rechner vorhanden'));
+  } else if (process.platform === 'linux' && process.arch === 'x64' && QUELLEN['ffmpeg-linux-x64']) {
+    /* LINUX: HOLEN STATT „sudo apt install" (29.10.2026, Linux-Installer). Caspar_D: „das Scriptgefrickel kann
+       keiner". Ein statischer Bau (johnvansickle.com, GPL - geholt, nicht mitgeliefert, wie unter Windows) nach
+       werkzeug/ffmpeg/bin; ohne Verwalterrechte, ohne Paketverwalter. Darin liegen ffmpeg und ffprobe oben im
+       Ordner, nicht in bin/ - sie werden dorthin gelegt, wo die Starter suchen. */
+    let versuche = true;
+    while (versuche && !ffmpeg) {
+      tut(T('ffmpeg holen — rund 40 MB.'));
+      fs.mkdirSync(WERKZEUG, { recursive: true });
+      const tar = path.join(WERKZEUG, 'ffmpeg.tar.xz');
+      const roh = path.join(WERKZEUG, '_ff_roh');
+      if (await holen(QUELLEN['ffmpeg-linux-x64'], tar, 'ffmpeg')) {
+        try { fs.rmSync(roh, { recursive: true, force: true }); } catch (e) {}
+        fs.mkdirSync(roh, { recursive: true });
+        const e = spawnSync('tar', ['-xJf', tar, '-C', roh], { stdio: 'ignore' });
+        const finden = (d, name) => { for (const n of fs.readdirSync(d, { withFileTypes: true })) {
+          const p = path.join(d, n.name); if (n.isFile() && n.name === name) return p;
+          if (n.isDirectory()) { const t = finden(p, name); if (t) return t; } } return null; };
+        const ff = e.status === 0 && finden(roh, 'ffmpeg'), fp = e.status === 0 && finden(roh, 'ffprobe');
+        if (ff && fp) {
+          const bin = path.join(WERKZEUG, 'ffmpeg', 'bin');
+          fs.rmSync(path.join(WERKZEUG, 'ffmpeg'), { recursive: true, force: true });
+          fs.mkdirSync(bin, { recursive: true });
+          fs.renameSync(ff, path.join(bin, 'ffmpeg')); fs.renameSync(fp, path.join(bin, 'ffprobe'));
+          /* GPL: die Lizenz geht mit */
+          const gpl = finden(roh, 'GPLv3.txt'); if (gpl) fs.renameSync(gpl, path.join(WERKZEUG, 'ffmpeg', 'GPLv3.txt'));
+          fs.chmodSync(path.join(bin, 'ffmpeg'), 0o755); fs.chmodSync(path.join(bin, 'ffprobe'), 0o755);
+        } else boese(T('Auspacken ging nicht ({programm} meldet {status}).', { programm: 'tar', status: e.status }));
+        try { fs.rmSync(roh, { recursive: true, force: true }); fs.rmSync(tar, { force: true }); } catch (x) {}
+        if (fs.existsSync(ffEigen)) {
+          ffmpeg = ffEigen; gut(T('ffmpeg liegt jetzt in werkzeug/ffmpeg.'));
+          zeile('ffmpeg', 'ffmpeg', T('geholt und abgelegt in werkzeug/ffmpeg'));
+        }
+      }
+      if (!ffmpeg) {
+        const w = await wieWeiter(T('ffmpeg holen'),
+          T('Ohne ffmpeg hörst du deine Musik, aber fast alles Rechnen fehlt: Klanganalyse, Instrumentspuren, Whisper, Musikstil, Kacheln und Tiefenkarten.'));
+        if (w === 'schluss') { wiederkommen(); schluss(0); }
+        if (w === 'ueber') { wink(T('Weiter ohne ffmpeg. Starte die Einrichtung später noch einmal, dann holt sie es nach.')); versuche = false; }
+      }
+    }
   } else if (process.platform !== 'win32') {
-    /* Auf Mac und Linux gibt es einen Paketverwalter, der es besser kann
+    /* Auf dem Mac (und Linux ohne x64) gibt es einen Paketverwalter, der es besser kann
        als ein Download an ihm vorbei. */
     wink(T('ffmpeg fehlt.'));
     zeile('ffmpeg', 'ffmpeg', T('fehlt — ein Befehl im Terminal holt es'), 'wink');
@@ -2013,6 +2064,17 @@ open -a Terminal ${JSON.stringify(starter)}
   /* Nach der Setup.exe laeuft diese Einrichtung ohne Fenster - der Server darf nicht in ihr weiterlaufen, sonst
      liefe er unsichtbar und liesse sich nicht beenden. Also ueber den Starter, den auch das Startmenue nimmt: der
      hat sein eigenes Fenster bzw. Symbol und oeffnet den Browser selbst, sobald der Server antwortet. */
+  /* LINUX NACH DEM APPIMAGE (29.10.2026): das Symbol im Panel (bin/linux/klangtresor-symbol.py) startet den Server
+     ohne Terminal; ohne AppIndicator laeuft er ohne Symbol weiter und wird ueber Profil → System beendet. */
+  if (NACH_SETUP && process.platform === 'linux') {
+    const k = require('node:child_process').spawn('python3', [path.join(WURZEL, 'bin', 'linux', 'klangtresor-symbol.py')],
+      { cwd: WURZEL, detached: true, stdio: 'ignore' });
+    k.on('error', () => {});
+    k.unref();
+    gut(T('KlangTresor startet - sein Symbol erscheint im Panel oben bzw. unten, die Seite geht gleich auf.'));
+    setTimeout(() => process.exit(0), 3000);
+    return;
+  }
   if (NACH_SETUP && process.platform === 'win32') {
     /* Seit 29.10.2026 das Symbol unten rechts (KlangTresor.exe, bin/windows/KlangTresor.cs) statt des schwarzen
        Fensters - Caspar_D: „kein konsolenfenster mehr". Es startet bin/starten.js ohne Fenster und oeffnet die Seite. */

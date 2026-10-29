@@ -5,7 +5,7 @@
  *   node bin/paket.js              → ../KlangTresor.zip, ../KlangTresor-Update.zip, ../KlangTresor-Setup.exe
  *
  * Alle drei gehoeren an jede Release:
- *   gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe …
+ *   gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe ../KlangTresor-x86_64.AppImage …
  * Fehlt eines, liefert seine feste Adresse 404.
  *
  * Das ZIP entsteht aus `git archive HEAD`. Damit kommt nur hinein, was
@@ -145,5 +145,8 @@ console.log('  Geprüft: genau die vier Dateien, Mac/Linux ausführbar, .cmd mit
    die feste Adresse .../latest/download/KlangTresor-Setup.exe ins Leere zeigen. */
 const setup = spawnSync(process.execPath, [path.join(__dirname, 'setup-bauen.js')], { stdio: 'inherit' });
 if (setup.status !== 0) { console.error('\n  ABGEBROCHEN — die Setup.exe liess sich nicht bauen (siehe oben).\n'); process.exit(3); }
+/* Und das AppImage fuer Linux (29.10.2026, bin/appimage-bauen.js) - dieselbe Regel: ohne AppImage kein Paket */
+const appimage = spawnSync(process.execPath, [path.join(__dirname, 'appimage-bauen.js')], { stdio: 'inherit' });
+if (appimage.status !== 0) { console.error('\n  ABGEBROCHEN — das AppImage liess sich nicht bauen (siehe oben).\n'); process.exit(4); }
 
-console.log('  Release: gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe …\n');
+console.log('  Release: gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe ../KlangTresor-x86_64.AppImage …\n');

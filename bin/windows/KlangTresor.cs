@@ -163,6 +163,8 @@ static class KlangTresor
         int code = -1;
         try { code = Kind.ExitCode; } catch { }
         Schreiben("--- beendet mit Code " + code);
+        // Code 0: „KlangTresor beenden" in der App (Profil → System) - dann geht auch das Symbol
+        if (code == 0) { Gewollt = true; Application.ExitThread(); return; }
         NeuStarten.Visible = true;
         Tooltip(L("KlangTresor - beendet", "KlangTresor - stopped", "KlangTresor - остановлен"));
         Symbol.ShowBalloonTip(15000, L("KlangTresor hat sich beendet", "KlangTresor has stopped", "KlangTresor остановился"),

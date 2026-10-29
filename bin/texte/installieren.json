@@ -90,5 +90,9 @@
  "{quelle} liefert zu langsam — ich hole ffmpeg von {neu}": {
  "en": "{quelle} is too slow — fetching ffmpeg from {neu}",
  "ru": "{quelle} отдаёт слишком медленно — загружаю ffmpeg с {neu}"
+},
+ "KlangTresor startet - sein Symbol erscheint im Panel oben bzw. unten, die Seite geht gleich auf.": {
+ "en": "KlangTresor is starting - its icon appears in the top or bottom panel, the page opens in a moment.",
+ "ru": "KlangTresor запускается - его значок появится на верхней или нижней панели, страница сейчас откроется."
 }
 }

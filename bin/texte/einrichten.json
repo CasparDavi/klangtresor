@@ -1658,5 +1658,13 @@
  "liegen vollständig da, in der richtigen Fassung — nichts zu holen": {
   "en": "all here, in the right version — nothing to fetch",
   "ru": "все на месте, в нужной версии — загружать нечего"
+ },
+ "fehlt, wird geholt (rund 40 MB)": {
+  "en": "missing, will be fetched (about 40 MB)",
+  "ru": "отсутствует, будет загружен (около 40 МБ)"
+ },
+ "ffmpeg holen — rund 40 MB.": {
+  "en": "Fetching ffmpeg — about 40 MB.",
+  "ru": "Загрузка ffmpeg — около 40 МБ."
  }
 }

@@ -47,6 +47,10 @@ ffmpeg-windows = https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zi
 # kommt eine neue, hier nachziehen: https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest
 ffmpeg-windows-2 = https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-win64-gpl-8.1.zip
 
+# Linux x64: statischer Bau von John Van Sickle (GPL, rund 40 MB, tar.xz; ffmpeg und ffprobe liegen oben im Ordner).
+# Geholt vom Linux-Installer bzw. der Einrichtung nach werkzeug/ffmpeg/bin - kein sudo, kein Paketverwalter.
+ffmpeg-linux-x64 = https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+
 # ---------------------------------------------------------------------
 # WEITERES
 #
