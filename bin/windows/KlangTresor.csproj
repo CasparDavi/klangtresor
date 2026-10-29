@@ -10,6 +10,7 @@
     <RootNamespace>KlangTresor</RootNamespace>
     <LangVersion>latest</LangVersion>
     <ApplicationIcon>klangtresor.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <Product>KlangTresor</Product>
     <Company>Caspar_D</Company>
     <Copyright>Copyright (c) 2026 Caspar_D · MIT</Copyright>

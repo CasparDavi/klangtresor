@@ -124,7 +124,7 @@ sag(`werkzeug/node: ${mb(groesse(path.join(INHALT, 'werkzeug', 'node')))}`);
   if (spawnSync('dotnet', ['--version']).status !== 0) stirb('dotnet fehlt. Einmal: brew install dotnet');
   const T = path.join(BAU, '_starter');
   fs.mkdirSync(T, { recursive: true });
-  for (const f of ['KlangTresor.cs', 'KlangTresor.csproj']) fs.copyFileSync(path.join(__dirname, 'windows', f), path.join(T, f));
+  for (const f of ['KlangTresor.cs', 'KlangTresor.csproj', 'app.manifest']) fs.copyFileSync(path.join(__dirname, 'windows', f), path.join(T, f));
   fs.copyFileSync(path.join(WURZEL, 'web', 'symbol', 'klangtresor.ico'), path.join(T, 'klangtresor.ico'));
   sag('Das Symbol unten rechts (KlangTresor.exe) wird gebaut …');
   lauf('dotnet', ['build', '-c', 'Release', '-o', path.join(T, 'aus'), '-nologo', '-v', 'q', `-p:Version=${VERSION}`],
