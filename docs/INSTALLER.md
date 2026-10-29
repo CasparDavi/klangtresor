@@ -83,12 +83,12 @@ stehen („Neubau neben dem Alten, Altes fällt, wenn Neues gewonnen hat“). We
 durchgelaufen sind, fliegen Handweg, Anlasser (`bin/anlasser.ps1`) und das Windows-Zwischenlager
 (`%LOCALAPPDATA%\KlangTresor`) heraus, und `START-HIER.md` beschreibt nur noch den Installer.
 
-## Entscheidungen für dich
+## Entscheidungen (Caspar_D, 29.10.2026 morgens)
 
-- **A — Das Fenster „KlangTresor läuft“ unter Windows.** Der Server läuft heute in einem schwarzen Konsolenfenster, und wer es schließt, beendet KlangTresor. Soll das so bleiben, oder soll KlangTresor als Symbol unten rechts in der Taskleiste laufen, mit „Öffnen“ und „Beenden“? Das Symbol wäre ein eigenes kleines Projekt, etwa ein Tag.
-- **B — Mac: Fortschritt im Browser.** Auf dem Mac (und unter Linux) gibt es kein Installer-Fenster mit Seiten. Die Balken für ffmpeg, Modelle und Whisper stünden dort im Browser, auf der Seite „KlangTresor wird eingerichtet“. Unter Windows stehen sie im Setup-Fenster. Einverstanden?
-- **C — Mac: Wie beendet man KlangTresor?** Ohne Terminalfenster gibt es nichts, das man schließen könnte. Mein Vorschlag: Solange der Server läuft, steht KlangTresor im Dock; „Beenden“ dort (oder Cmd-Q) beendet den Server. Das verlangt einen kleinen echten Mac-Starter statt eines Skripts, gebaut mit Apples `swiftc`, das hier liegt. Rund ein halber Tag.
-- **D — Reihenfolge:** zuerst Mac, dann Linux. Oder umgekehrt?
+- **A — Windows: kein Konsolenfenster mehr.** KlangTresor läuft als Symbol unten rechts in der Taskleiste („Öffnen“, „Beenden“).
+- **B — Mac und Linux: Fortschritt im Browser.** „wenn das nicht anders geht, dann muß es wohl so sein“
+- **C — Mac: Beenden über das Dock bzw. Cmd-Q.** „genau so“
+- **D — Reihenfolge:** erst Linux, dann Mac.
 
 ## Geprüft (29.10.2026, nachts, Windows 10 in Parallels, angemeldeter Nutzer)
 
