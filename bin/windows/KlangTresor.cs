@@ -129,6 +129,18 @@ static class KlangTresor
     {
         try { var i = new FileInfo(f); return i.Length + "/" + i.LastWriteTimeUtc.Ticks; } catch { return ""; }
     }
+    static bool AuftragLaeuft()
+    {
+        try
+        {
+            var r = (HttpWebRequest)WebRequest.Create(Adresse + "api/system/auftrag");
+            r.Timeout = 1500;
+            using (var a = (HttpWebResponse)r.GetResponse())
+            using (var t = new StreamReader(a.GetResponseStream()))
+                return System.Text.RegularExpressions.Regex.IsMatch(t.ReadToEnd(), "\"laeuft\"\\s*:\\s*true");
+        }
+        catch { return true; }   // im Zweifel warten
+    }
     static void ErneuerungBeobachten()
     {
         string exe = Path.Combine(Wurzel, "KlangTresor.exe"), stand = ExeStand(exe);
@@ -136,7 +148,9 @@ static class KlangTresor
         uhr.Tick += (s, e) =>
         {
             string jetzt = ExeStand(exe);
-            if (jetzt.Length == 0 || jetzt == stand || !Antwortet()) return;
+            // Laeuft das Update noch (etwa npm ci), wird gewartet: das Ende dieses Programms beendet ueber den Job alles,
+            // was der Server gestartet hat - auch den Auftrag, der gerade einspielt.
+            if (jetzt.Length == 0 || jetzt == stand || !Antwortet() || AuftragLaeuft()) return;
             uhr.Stop();
             Schreiben("--- das Symbol ist erneuert, die neue Fassung übernimmt");
             try { Process.Start(new ProcessStartInfo(exe, "--nachfolger --ohne-browser") { UseShellExecute = false, WorkingDirectory = Wurzel }); }
