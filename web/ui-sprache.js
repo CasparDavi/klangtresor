@@ -1087,6 +1087,8 @@
     ['kachel.medien.da', 'Was zu diesem Titel dazugekommen ist: Notiz, Titelbild, Bewegtbild, Tonfassung, Effektclip', 'What has been added to this title: note, cover, motion artwork, audio, effect clip'],
     ['kachel.medien.leer', 'Noch nichts dazugelegt — Notiz, Titelbild, Bewegtbild, Tonfassung oder Effektclip anlegen', 'Nothing added yet — add a note, cover, motion artwork, audio or effect clip'],
     ['kachel.privat.titel', 'nicht auf Suno veröffentlicht', 'not published on Suno'],
+    ['kachel.bild_kommt', 'Bild kommt', 'Image on its way'],
+    ['kachel.bild_fehlt', 'Noch kein Bild — der rote Knopf oben rechts holt es', 'No image yet — the red button at the top right fetches it'],
     ['player.anschluss.aus', 'Anschluss: aus — Titel folgen mit Pause aufeinander', 'Segue: off — titles follow with a gap'],
     ['player.anschluss.an', 'Anschluss: an — wartet auf den nächsten Titel', 'Segue: on — waiting for the next title'],
     ['player.anschluss.blende', 'Anschluss: {grund} — nur Blende', 'Segue: {grund} — fade only'],

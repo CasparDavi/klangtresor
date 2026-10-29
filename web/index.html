@@ -1021,6 +1021,24 @@ select:not([multiple]):not([size]){
 .bild img{width:100%;height:100%;object-fit:cover;display:block;
   transition:transform .35s ease}
 .karte:hover .bild img{transform:scale(1.04)}
+/* KACHEL OHNE BILD (Caspar_D, 29.10.2026: „ein dummy image für songs, die noch nicht da sind" - entschieden: Titel als
+   Schrift auf dunkler Kachel). Der Titel steht gross, damit man den Song auch ohne Bild erkennt; darunter, ob das Bild
+   gerade geholt wird oder nicht. Grau bleibt das Zeichen fuer „noch nicht da". Der Schimmer laeuft nur, solange
+   KlangTresor wirklich laedt (body.medienlauf, gesetzt vom roten Knopf) - ein Schimmer ohne Laden waere gelogen. */
+.bild.wartet img{visibility:hidden}
+.bildwartet{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:.7em;
+  padding:12%;box-sizing:border-box;background:var(--flaeche2);text-align:center;overflow:hidden}
+.bildwartet b{font-weight:600;font-size:clamp(13px,1.15em,22px);line-height:1.2;color:var(--text);
+  display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.bildwartet small{font-size:11px;color:var(--schwach)}
+.bildwartet .kommt{display:none}
+body.medienlauf .bildwartet .kommt{display:inline}
+body.medienlauf .bildwartet .fehlt{display:none}
+body.medienlauf .bildwartet::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.07) 50%,transparent 70%);
+  background-size:250% 100%;animation:bildschimmer 2.4s linear infinite}
+@keyframes bildschimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+@media (prefers-reduced-motion:reduce){body.medienlauf .bildwartet::after{animation:none}}
 
 /* Bewegtes Artwork.
    Regel: Die HÖHE bestimmt die Größe, die Breite ergibt sich aus
@@ -15373,6 +15391,22 @@ function spielenNachId(id){
 const BILD_LEER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#9a9aa0" d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z"/></svg>');
 function bildRueckfall(img){
   if (!img || img.dataset.rueckfall) return;
+  /* Songkachel: statt des Notensymbols der Titel als Schrift (siehe .bildwartet). */
+  const bild = img.closest('.karte[data-id] > .bild');
+  if (bild){
+    img.dataset.rueckfall = '1';
+    bild.classList.add('wartet');
+    if (!bild.querySelector('.bildwartet')){
+      const titel = (bild.parentNode.querySelector('.titel') || {}).firstChild;
+      const w = document.createElement('div'); w.className = 'bildwartet';
+      w.innerHTML = '<b></b><small class="kommt"></small><small class="fehlt"></small>';
+      w.children[0].textContent = (titel && titel.textContent || '').trim();
+      w.children[1].textContent = t('kachel.bild_kommt');
+      w.children[2].textContent = t('kachel.bild_fehlt');
+      bild.insertBefore(w, img.nextSibling);
+    }
+    return;
+  }
   img.dataset.rueckfall = '1';
   img.classList.add('leer');
   img.src = BILD_LEER;
@@ -22015,6 +22049,27 @@ function morgenZu(){
    drehte er nur, solange dasselbe Fenster ihn beobachtete: Wer die Seite neu
    lud, sah einen stillen Knopf, obwohl im Hintergrund alles lief. */
 let morgenKnopfWacht = null;
+/* Waehrend geladen wird, sehen die Kacheln ohne Bild alle 20 s nach, ob ihr Bild inzwischen da ist, und tauschen es
+   still ein - man muss die Seite nicht neu laden. Gefragt wird mit einer frischen Adresse (der Browser hat den
+   Fehlschlag sonst im Vorrat), und nur fuer die Kacheln, die gerade im Raster stehen. */
+let kachelnNachgesehen = 0;
+function kachelnOhneBildNachsehen(){
+  if (Date.now() - kachelnNachgesehen < 20000) return;
+  kachelnNachgesehen = Date.now();
+  document.querySelectorAll('.karte[data-id] > .bild.wartet').forEach((bild) => {
+    const id = bild.parentNode.dataset.id, img = bild.querySelector('img');
+    if (!id || !img) return;
+    const u = artworkKachel(id), probe = new Image();
+    probe.onload = () => {
+      img.onerror = null; img.src = probe.src; delete img.dataset.rueckfall; delete img.dataset.zweiterVersuch;
+      bild.classList.remove('wartet'); const w = bild.querySelector('.bildwartet'); if (w) w.remove();
+    };
+    /* kachel.jpg entsteht erst nach dem Verkleinern - bis dahin tut es das Titelbild selbst, wie beim ersten Laden */
+    const frisch = (x) => x + (x.includes('?') ? '&' : '?') + 'n=' + Date.now();
+    probe.onerror = () => { probe.onerror = null; probe.src = frisch(artworkBild(id)); };
+    probe.src = frisch(u);
+  });
+}
 async function morgenKnopfPruefen(){
   clearTimeout(morgenKnopfWacht); morgenKnopfWacht = null;
   const k = $('morgenknopf'); if (!k) return;
@@ -22023,6 +22078,8 @@ async function morgenKnopfPruefen(){
   try { s = await (await fetch('/api/morgen/stand?spr=' + (typeof window.sprache === 'function' ? window.sprache() : 'de'))).json(); } catch (e) {}
   const laeuft = !!(s && s.laeuft);
   k.classList.toggle('laeuft', laeuft);
+  document.body.classList.toggle('medienlauf', laeuft);
+  if (laeuft) kachelnOhneBildNachsehen();
   k.title = laeuft
     ? t('morgen.laeuft_titel', {
         name: s.name || t('kopf.morgen'),
