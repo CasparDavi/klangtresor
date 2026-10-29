@@ -9964,3 +9964,40 @@ der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach libr
 - Ubuntu-VM „Ubuntu KlangTresor“ (Entwicklung/_linux-vm, ISO 6 GB + VM) – Zugang im Scratchpad, siehe Gedächtnis
   ubuntu-test-vm. Kommt mit auf die Aufräumliste, wenn Linux abgenommen ist.
 - Arbeitsbaum `../KlangTresor-linux` (Zweig linux-installer) ist in main übernommen und kann weg.
+
+## §146 29.10.2026: 1.0.135–1.0.140 – Update bringt alles, Credits mit „Rechtliches“
+
+- **1.0.138:** zwei Knöpfe beim Bilderladen in der Einrichtung („Jetzt in den KlangTresor – im Hintergrund weiterladen“
+  legt `library/weiterladen.json`, der Server startet dann Katalog + Medien laden); Firewall-Hinweis wartet auf
+  „Verstanden“ (nur wenn `netsh` für dieses node.exe keine Regel kennt); Dummykacheln (Titel als Schrift, „Bild kommt“
+  mit Schimmer nur bei laufendem Lauf, Nachsehen alle 20 s); kein zweiter Tab (`/api/seite/draht` SSE, `/api/seite/zeigen`);
+  oranges Tresorrad als Windows-Symbol (`web/symbol/klangtresor-symbol.ico`, 32-Bit-Alpha von Hand geschrieben),
+  `app.manifest` hochauflösend.
+- **Update bringt das Symbol mit:** `KlangTresor.exe` liegt im Zip als `bin/windows/KlangTresor.exe` (nicht unter dem
+  Laufnamen – das alte Update-Skript bräche an der laufenden Datei ab); der Server setzt sie beim Start ein (laufende →
+  `.alt`), das Symbol (ab 1.0.138) bemerkt den Tausch und startet sich als `--nachfolger` neu, nicht während eines Auftrags.
+- **1.0.139:** Symbol-Absturz beim Beenden über Profil → System behoben (BeginInvoke auf nie geöffnetem Menü); Symbol
+  fragt `127.0.0.1` ohne Proxy (.NET suchte für localhost 2 s einen Proxy); Symbol öffnet die Seite selbst und holt einen
+  offenen Tab nach vorn; „beendet“-Seite lädt sich nach 3 s beim ersten Lebenszeichen neu (ohne `#song`).
+- **1.0.140:** Credits-Fenster mit Reitern „Über“ | „Rechtliches“ (Haftungs- und Nutzungshinweis nach Castos Vorlage,
+  von Caspar_D abgenommen; „Deine Daten“ am Code geprüft: nach draußen nur Lesezugriffe). Setup-Schlussseite verweist darauf.
+- Geprüft: Windows 10 (Upgrade 1.0.135→137 per Setup, Update-Kette nachgestellt, Selbst-Neustart, Beenden ohne Absturz),
+  Windows 11 (Upgrade 1.0.134→137 per Setup, Glocke 1.0.137→138).
+- Aufgeräumt: 14 eingemergte Zweige weg; `rechteck-areale-archiv` und `features-dokument-archiv` als Bündel in
+  `/Volumes/Daten/KlangTresor-Sicherung/archivzweige-2026-10-29.bundle`.
+- **VMs ziehen aufs Datengrab** (`/Volumes/DatenNFS/VMs`, Systemplatte hatte nur 18 GB frei): Kopie + Prüfsumme läuft;
+  danach in Parallels neu anmelden, Originale löscht Caspar_D selbst.
+
+**Wiedervorlage:**
+- **Henry in die Credits** – vorbereitet, eingesetzt wird erst nach ihrer Zustimmung (Caspar_D hat ihr den Text gegeben).
+  Suno-Konto `error_henry` (Anzeige „Error_Henry“, geprüft). Block wie Tarja/Casto, Rolle über dem Namen, Link „Songs auf Suno“:
+  - DE: Rolle „Russisch“ · „Bringt die russische Fassung Schritt für Schritt vom KI-Entwurf zu einer guten Übersetzung.
+    Die Arbeit läuft noch: Wo es holpert, ist sie noch nicht angekommen.“
+  - EN: Rolle „Russian“ · „Is step by step turning the AI-drafted Russian version into a proper translation. Work in
+    progress: where it still reads rough, she hasn't got there yet.“
+  - RU: Rolle „Русский язык“ · „Шаг за шагом превращает черновой перевод, сделанный ИИ, в хороший русский текст. Работа
+    продолжается: там, где ещё шероховато, она просто пока не дошла.“ (Henry weiblich – PRAVILA Ж)
+- Mac-App per Glocke testen in einer macOS-VM auf dem Datengrab (nach dem VM-Umzug).
+- Windows 10: Neuinstallation in `KlangTresor-neu` (zwei Knöpfe, Firewall-Hinweis) noch nicht geprüft.
+- Backlog: alte Installationsskripte archivieren (docs/BACKLOG.md).
+- Neue RU-Texte (Rechtliches, Einrichtung, Kacheln) → Henrys nächste Runde.
