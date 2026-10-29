@@ -40,12 +40,31 @@ function antwortet(dann) {
   r.on('error', () => dann(false));
   r.setTimeout(1500, () => { r.destroy(); dann(false); });
 }
+/* KEIN ZWEITER TAB (29.10.2026). Steht noch ein KlangTresor-Tab offen (etwa nach „Neu starten" oder einem Absturz),
+   meldet er sich binnen einer Sekunde wieder beim Server (siehe /api/seite/draht). Darum wird nach dem ersten Antworten
+   bis zu drei Sekunden gefragt; ist dann eine Seite da, bleibt es bei ihr. */
+function offeneSeiten(dann) {
+  const r = http.request(ADRESSE + 'api/seite/zeigen', { method: 'POST' }, (a) => {
+    let s = ''; a.on('data', (c) => { s += c; });
+    a.on('end', () => { let n = 0; try { n = JSON.parse(s).offen | 0; } catch (e) {} dann(n); });
+  });
+  r.on('error', () => dann(0));
+  r.setTimeout(1500, () => { r.destroy(); dann(0); });
+  r.end();
+}
+function erstNachsehen(versuch, weiter) {
+  offeneSeiten((n) => {
+    if (n > 0) { console.log('\n' + T('  KlangTresor ist auf {adresse} — schon im Browser offen, kein neuer Tab.', { adresse: ADRESSE }) + '\n'); return; }
+    if (versuch >= 6) return weiter();
+    setTimeout(() => erstNachsehen(versuch + 1, weiter), 500);
+  });
+}
 function browserSobaldDa(versuch = 0) {
   if (geoeffnet || versuch > 60) return;
   antwortet((ja) => {
-    if (ja) { geoeffnet = true; const chrome = seiteAufmachen(ADRESSE + '?sprache=' + sprache());
+    if (ja) { geoeffnet = true; erstNachsehen(0, () => { const chrome = seiteAufmachen(ADRESSE + '?sprache=' + sprache());
       console.log('\n' + (chrome ? T('  KlangTresor ist auf {adresse} — Browser geht auf (Chrome).', { adresse: ADRESSE })
-        : T('  KlangTresor ist auf {adresse} — Browser geht auf.', { adresse: ADRESSE })) + '\n'); }
+        : T('  KlangTresor ist auf {adresse} — Browser geht auf.', { adresse: ADRESSE })) + '\n'); }); }
     else setTimeout(() => browserSobaldDa(versuch + 1), 500);
   });
 }

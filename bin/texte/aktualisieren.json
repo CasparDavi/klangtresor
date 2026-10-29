@@ -338,5 +338,9 @@
  "  Fertig. Der Server startet von selbst neu – danach die Seite neu laden.": {
   "en": "  Done. The server restarts on its own – then reload the page.",
   "ru": "  Готово. Сервер перезапустится сам – после этого перезагрузите страницу."
+ },
+ "  KlangTresor ist auf {adresse} — schon im Browser offen, kein neuer Tab.": {
+  "en": "  KlangTresor is at {adresse} — already open in your browser, no new tab.",
+  "ru": "  KlangTresor на {adresse} — уже открыт в браузере, новая вкладка не нужна."
  }
 }

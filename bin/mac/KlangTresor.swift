@@ -57,7 +57,18 @@ func beendenAnfragen() {
     URLSession.shared.dataTask(with: r) { _, _, _ in s.signal() }.resume()
     _ = s.wait(timeout: .now() + 4)
 }
-func seiteAuf() { NSWorkspace.shared.open(URL(string: ADRESSE + "?sprache=" + SPR)!) }
+// Kein zweiter Tab (29.10.2026): ist schon eine Seite offen, sagt der Server ihr Bescheid (sie blinkt im Tab, wenn sie im
+// Hintergrund liegt), und es geht kein neuer auf - siehe /api/seite/draht in server/server.js.
+func offeneSeiten() -> Int {
+    var r = URLRequest(url: URL(string: ADRESSE + "api/seite/zeigen")!); r.httpMethod = "POST"; r.timeoutInterval = 1.5
+    let s = DispatchSemaphore(value: 0); var n = 0
+    URLSession.shared.dataTask(with: r) { d, _, _ in
+        if let d = d, let j = try? JSONSerialization.jsonObject(with: d) as? [String: Any], let o = j["offen"] as? Int { n = o }
+        s.signal() }.resume()
+    _ = s.wait(timeout: .now() + 2)
+    return n
+}
+func seiteAuf() { if offeneSeiten() > 0 { return }; NSWorkspace.shared.open(URL(string: ADRESSE + "?sprache=" + SPR)!) }
 
 final class App: NSObject, NSApplicationDelegate {
     var kind: Process?

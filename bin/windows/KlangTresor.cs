@@ -103,7 +103,9 @@ static class KlangTresor
         menue.Items.Add(new ToolStripMenuItem(L("Beenden", "Quit", "Выйти"), null, (s, e) => { Gewollt = true; Application.ExitThread(); }));
 
         Icon bild;
-        try { bild = new Icon(Path.Combine(Wurzel, "web", "symbol", "klangtresor.ico"), SystemInformation.SmallIconSize); }
+        // Orange, das Rad aus dem Seitenkopf ohne Platte (Caspar_D, 29.10.2026: „ich will ein oranges Symbol, das andere
+        // ist zu unauffällig"). Fuer 16 px kraeftiger gezeichnet als im Kopf, sonst verschwimmt es.
+        try { bild = new Icon(Path.Combine(Wurzel, "web", "symbol", "klangtresor-symbol.ico"), SystemInformation.SmallIconSize); }
         catch { bild = Icon.ExtractAssociatedIcon(Application.ExecutablePath); }
         Symbol = new NotifyIcon { Icon = bild, ContextMenuStrip = menue, Text = "KlangTresor", Visible = true };
         Symbol.DoubleClick += (s, e) => SeiteAuf();
@@ -215,9 +217,67 @@ static class KlangTresor
     }
 
     // --- Seite oeffnen und pruefen, ob schon jemand auf 8788 antwortet
+    // KEIN ZWEITER TAB (Caspar_D, 29.10.2026: „klangtresor soll nicht ein extra neuen tab aufmachen im browser, wenn schon
+    // einer da ist ... einfach auf den aktiven wechseln"). Der Server weiss, wie viele Seiten auf diesem Rechner offen sind
+    // (POST /api/seite/zeigen, jede Seite haelt eine Leitung). Ist eine offen, wird ihr Browserfenster nach vorn geholt:
+    // ein Fenster von Chrome, Edge oder Firefox, dessen Titel mit „KlangTresor" beginnt - das ist der Titel der Seite,
+    // und der Browser setzt den Titel des AKTIVEN Tabs ins Fenster. Liegt der Tab im Hintergrund seines Fensters, findet
+    // sich so nichts; dann blinkt die Seite in ihrem Tab (das macht sie selbst) und der Hinweis sagt, wo sie ist.
     static void SeiteAuf()
     {
+        int offen = OffeneSeiten();
+        if (offen > 0)
+        {
+            if (!FensterNachVorn())
+                Symbol.ShowBalloonTip(8000, "KlangTresor",
+                    L("KlangTresor ist schon im Browser offen – der Tab „KlangTresor“ blinkt.",
+                      "KlangTresor is already open in your browser – the “KlangTresor” tab is blinking.",
+                      "KlangTresor уже открыт в браузере – вкладка «KlangTresor» мигает."), ToolTipIcon.Info);
+            return;
+        }
         try { Process.Start(new ProcessStartInfo(Adresse + "?sprache=" + (Spr ?? Sprache())) { UseShellExecute = true }); } catch { }
+    }
+    static int OffeneSeiten()
+    {
+        try
+        {
+            var r = (HttpWebRequest)WebRequest.Create(Adresse + "api/seite/zeigen");
+            r.Method = "POST"; r.Timeout = 1500; r.ContentLength = 0;
+            using (var a = (HttpWebResponse)r.GetResponse())
+            using (var t = new StreamReader(a.GetResponseStream()))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(t.ReadToEnd(), "\"offen\"\\s*:\\s*(\\d+)");
+                return m.Success ? int.Parse(m.Groups[1].Value) : 0;
+            }
+        }
+        catch { return 0; }   // aelterer Server ohne diesen Weg: wie bisher oeffnen
+    }
+    delegate bool FensterRueckruf(IntPtr h, IntPtr p);
+    [DllImport("user32.dll")] static extern bool EnumWindows(FensterRueckruf f, IntPtr p);
+    [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
+    [DllImport("user32.dll")] static extern bool IsIconic(IntPtr h);
+    [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int n);
+    [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
+    static bool FensterNachVorn()
+    {
+        IntPtr ziel = IntPtr.Zero;
+        EnumWindows((h, p) =>
+        {
+            if (!IsWindowVisible(h)) return true;
+            var k = new StringBuilder(256); GetClassName(h, k, 256);
+            string kl = k.ToString();
+            if (kl != "Chrome_WidgetWin_1" && kl != "MozillaWindowClass") return true;   // Chrome und Edge, Firefox
+            var t = new StringBuilder(512); GetWindowText(h, t, 512);
+            string ti = t.ToString();
+            if (ti.StartsWith("KlangTresor") || ti.StartsWith("● KlangTresor")) { ziel = h; return false; }
+            return true;
+        }, IntPtr.Zero);
+        if (ziel == IntPtr.Zero) return false;
+        if (IsIconic(ziel)) ShowWindow(ziel, 9);   // SW_RESTORE
+        SetForegroundWindow(ziel);
+        return true;
     }
     static bool Antwortet()
     {

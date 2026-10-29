@@ -53,7 +53,21 @@ def antwortet():
         return False
 
 
+def offene_seiten():
+    # Kein zweiter Tab (29.10.2026): ist schon eine Seite offen, sagt der Server ihr Bescheid (sie blinkt im Tab, wenn sie
+    # im Hintergrund liegt), und es geht kein neuer auf - siehe /api/seite/draht in server/server.js.
+    try:
+        r = urllib.request.Request(ADRESSE + 'api/seite/zeigen', data=b'', method='POST')
+        with urllib.request.urlopen(r, timeout=1.5) as a:
+            import json
+            return int(json.loads(a.read().decode('utf-8')).get('offen', 0))
+    except Exception:
+        return 0
+
+
 def seite_auf():
+    if offene_seiten() > 0:
+        return
     url = ADRESSE + '?sprache=' + SPR
     try:
         subprocess.Popen(['xdg-open', url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

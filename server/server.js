@@ -450,6 +450,7 @@ const MORGEN_HERKUNFT = 'https://suno.com';
    Was nur mit Anmeldung geht - WAV, Wort-Zeitmarken, Playlists - kann
    der Server nicht; das bleibt beim Lesezeichen auf suno.com. */
 /* Kommt die Anfrage vom Rechner, auf dem KlangTresor laeuft? (Ordnerfenster, Holen, Update) */
+const SEITEN = new Set();   /* offene Seiten, siehe /api/seite/draht */
 const vomRechnerSelbst = (req) => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(String(req.socket.remoteAddress || ''));
 /* Hier stand bis 28.10.2026 MORGEN_SAMMELN - nie benutzt; /api/morgen/sammeln ruft bin/sammeln.js selbst. */
 
@@ -4085,6 +4086,28 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      fuer bin/starten.js und die Symbole (bin/linux/klangtresor-symbol.py, bin/windows/KlangTresor.cs): gewollt, nicht
      neu starten. Nur am Rechner selbst - nicht vom Handy im WLAN -, nicht im Container (dort beendet man den
      Container). */
+  /* DIE OFFENEN SEITEN (Caspar_D, 29.10.2026: „klangtresor soll nicht ein extra neuen tab aufmachen im browser, wenn
+     schon einer da ist"). Jede Seite haelt hier eine Leitung (Server-Sent Events); so weiss der Server genau, wie viele
+     Tabs auf DIESEM Rechner offen sind - ein Handy im WLAN zaehlt nicht, es oeffnet ja keinen Tab am Rechner. Die
+     Starter (KlangTresor.exe, die Mac-App, das Linux-Symbol, bin/starten.js) fragen vor dem Oeffnen POST
+     /api/seite/zeigen: ist eine offen, bekommt sie „zeigen" (sie blinkt im Tab, wenn sie im Hintergrund liegt) und
+     der Starter oeffnet keinen neuen Tab. retry 1000: nach einem Neustart des Servers ist die Leitung binnen einer
+     Sekunde wieder da; der Kommentar alle 25 s haelt sie durch Proxys und Schlafmodi offen. */
+  if (p === '/api/seite/draht') {
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', 'Connection': 'keep-alive' });
+    res.write('retry: 1000\n\n');
+    const eintrag = { res, lokal: vomRechnerSelbst(req) };
+    SEITEN.add(eintrag);
+    const puls = setInterval(() => { try { res.write(': da\n\n'); } catch (e) {} }, 25000);
+    req.on('close', () => { clearInterval(puls); SEITEN.delete(eintrag); });
+    return;
+  }
+  if (p === '/api/seite/zeigen' && req.method === 'POST') {
+    if (!vomRechnerSelbst(req)) return jsonAntwort(res, { fehler: 'nur vom Rechner selbst' }, 403);
+    const lokal = [...SEITEN].filter(e => e.lokal);
+    for (const e of lokal) { try { e.res.write('event: zeigen\ndata: 1\n\n'); } catch (x) {} }
+    return jsonAntwort(res, { offen: lokal.length });
+  }
   if (p === '/api/system/beenden' && req.method === 'POST') {
     if (!vomRechnerSelbst(req) || IM_CONTAINER) return jsonAntwort(res, { ok: false, grund: IM_CONTAINER ? 'container' : 'nicht_lokal' }, 403);
     jsonAntwort(res, { ok: true });

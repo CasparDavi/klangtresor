@@ -22033,6 +22033,24 @@ async function morgenKnopfPruefen(){
   if (laeuft) morgenKnopfWacht = setTimeout(morgenKnopfPruefen, 4000);
 }
 
+/* DIE LEITUNG ZUM SERVER (29.10.2026): solange diese Seite offen ist, weiss der Server davon (/api/seite/draht) - die
+   Starter oeffnen dann keinen zweiten Tab. Wollen sie die Seite zeigen und liegt sie im Hintergrund, blinkt ihr Titel
+   im Tab, bis man hinsieht. window.focus() hilft nur in manchen Browsern; schaden tut es nirgends. */
+(function seitenDraht(){
+  if (!window.EventSource) return;
+  let blink = null;
+  const titelZurueck = () => { clearInterval(blink); blink = null; document.title = 'KlangTresor'; };
+  const q = new EventSource('/api/seite/draht');
+  q.addEventListener('zeigen', () => {
+    try { window.focus(); } catch (e) {}
+    if (!document.hidden || blink) return;
+    let an = false;
+    blink = setInterval(() => { an = !an; document.title = an ? '● KlangTresor' : 'KlangTresor'; }, 700);
+    setTimeout(titelZurueck, 30000);
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && blink) titelZurueck(); });
+})();
+
 /** Fragt den Stand ab, bis nichts mehr läuft. */
 async function morgenSchauen(nachSammeln){
   let s;
