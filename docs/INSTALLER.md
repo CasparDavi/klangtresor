@@ -95,4 +95,24 @@ durchgelaufen sind, fliegen Handweg, Anlasser (`bin/anlasser.ps1`) und das Windo
 | Fall | Ergebnis |
 |---|---|
 | Über eine bestehende Installation (1.0.133, ohne Modelle) | Seite „Was schon da“ zeigt 1.0.133, ffmpeg da, 0 von 16 Modellen, Whisper fehlt, 3,9 GB. Kopieren, Holen mit Balken (rund 6 Min. bei dieser Leitung), danach von allein zur Abschlussseite. „Weiter im Browser“ öffnet Edge, kein Konsolenfenster; Schritte 1 bis 6 sofort „fertig“, Schritt 7 fragt nach dem Suno-Namen. |
-| Frisch in einen neuen Ordner (Pfad mit „ö“) | Seite „Was schon da“: neu, ffmpeg fehlt, 0 von 16, Whisper fehlt, 4,0 GB. ffmpeg von www.gyan.dev mit Balken, … (siehe Bericht) |
+| Frisch in einen neuen Ordner (Pfad mit „ö“) | „Was schon da“: neu, ffmpeg fehlt, 0 von 16, Whisper fehlt, 4,0 GB. ffmpeg von www.gyan.dev mit Balken, dann Modelle, dann Whisper. |
+| Abbrechen mitten im Whisper-Modell | Rückfrage, „Ja“: Setup und Holen enden, das halbe Modell bleibt als `.teil` (1,7 GB). |
+| Zweiter Lauf in denselben Ordner | „Was schon da“: 16 von 16, Whisper fehlt; das Holen macht an der Abbruchstelle weiter (2,2 von 2,9 GB nach einer Minute). |
+| Setup über eine Installation, deren Einrichtung gerade läuft | Rückfrage „KlangTresor läuft noch … Soll ich es beenden?“, „Ja“ beendet nur `node.exe` aus diesem Ordner, dann geht es weiter. |
+| Entfernen | Dieselbe Rückfrage. Danach bleiben `library` und `modelle`; die Schlussseite nennt Ort und Größe (4,0 GB). Startmenü und „Apps“-Eintrag sind weg. |
+| Neu installieren in den Ordner, aus dem entfernt wurde | Geht (vorher war „Weiter“ gesperrt, weil `modelle` als fremd galt); holt nur ffmpeg und das Whisper-Programm (118 MB). |
+| Still (`/S /OHNEHOLEN /D=…`) | Rückgabe 0 nach 22 s; Node 22.11.0, Pakete genau nach package-lock; Entfernen still: Rückgabe 0, nichts übrig. |
+
+Unterwegs gefunden und behoben:
+- Die Rückfrage verlangte, „das schwarze Fenster“ zu schließen, das es nach der Setup.exe nicht gibt.
+- Die Größe der Modelle wurde mit 1,1 statt 4,1 GB angezeigt (NSIS übergeht Dateien über 2 GB).
+- Neu installieren nach dem Entfernen war gesperrt.
+- Nach dem Entfernen blieb einmal `werkzeug` liegen (Virenschutz hielt `node.exe` fest; jetzt mit zweitem Durchgang).
+- Texte waren abgeschnitten.
+
+Nicht geprüft:
+- Englische und russische Oberfläche (die Texte sind da, aber ungesehen).
+- Windows 11 mit angemeldetem Nutzer (die VM steht am Sperrbildschirm).
+- Die Einrichtung im Browser nach dem Suno-Namen bis zum Start von KlangTresor (ich habe keinen Suno-Namen eingegeben).
+- SmartScreen beim Download aus dem Netz (die Datei kam über die Parallels-Freigabe).
+- Zwei Installationen auf demselben Rechner teilen sich einen Eintrag unter „Apps“; wer eine entfernt, nimmt den Eintrag der anderen mit. Bei einer Installation je Nutzer, dem Normalfall, spielt das keine Rolle.
