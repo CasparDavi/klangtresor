@@ -69,6 +69,9 @@ Var LSchluss
 Var KnopfNochmal
 Var HolenLaeuft
 Var Fett
+; Abschlussseite: mit Archiv geht es in die App, ohne in die Einrichtung (Suno-Name)
+Var FertigText
+Var FertigLauf
 
 !define MUI_ICON "${INHALT}\web\symbol\klangtresor.ico"
 !define MUI_UNICON "${INHALT}\web\symbol\klangtresor.ico"
@@ -84,11 +87,12 @@ Page custom BestandSeite
 !insertmacro MUI_PAGE_INSTFILES
 Page custom HolenSeite HolenVerlassen
 !define MUI_FINISHPAGE_TITLE "$(fertig_titel)"
-!define MUI_FINISHPAGE_TEXT "$(fertig_text)"
+!define MUI_FINISHPAGE_TEXT "$FertigText"
 !define MUI_FINISHPAGE_TEXT_LARGE
+!define MUI_PAGE_CUSTOMFUNCTION_PRE FertigVorbereiten
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW KeinZurueck
 !define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "$(fertig_weiter)"
+!define MUI_FINISHPAGE_RUN_TEXT "$FertigLauf"
 !define MUI_FINISHPAGE_RUN_FUNCTION WeiterImBrowser
 !insertmacro MUI_PAGE_FINISH
 
@@ -117,6 +121,12 @@ LangString fertig_text ${LANG_GERMAN} "KlangTresor liegt in $INSTDIR - mit allem
 LangString fertig_text ${LANG_ENGLISH} "KlangTresor is in $INSTDIR - with everything it needs to run.$\r$\n$\r$\nNext your browser opens: there you enter your Suno name, and your songs are fetched.$\r$\n$\r$\nLater: Start menu → KlangTresor."
 LangString fertig_text ${LANG_RUSSIAN} "KlangTresor находится в $INSTDIR - со всем, что нужно для работы.$\r$\n$\r$\nДальше откроется браузер: там вы вводите своё имя в Suno, и ваши песни загружаются.$\r$\n$\r$\nПозже: меню «Пуск» → KlangTresor."
 
+LangString fertig_text_update ${LANG_GERMAN} "KlangTresor ist auf ${VERSION} erneuert - dein Archiv ist unberührt.$\r$\n$\r$\nKlangTresor läuft danach als Symbol unten rechts in der Taskleiste: Doppelklick öffnet die Seite, Rechtsklick beendet."
+LangString fertig_text_update ${LANG_ENGLISH} "KlangTresor has been renewed to ${VERSION} - your archive is untouched.$\r$\n$\r$\nKlangTresor then runs as an icon at the bottom right of the taskbar: double-click opens the page, right-click quits."
+LangString fertig_text_update ${LANG_RUSSIAN} "KlangTresor обновлён до ${VERSION} - ваш архив не тронут.$\r$\n$\r$\nKlangTresor работает как значок справа внизу на панели задач: двойной клик открывает страницу, правый клик - выход."
+LangString fertig_starten ${LANG_GERMAN} "KlangTresor starten"
+LangString fertig_starten ${LANG_ENGLISH} "Start KlangTresor"
+LangString fertig_starten ${LANG_RUSSIAN} "Запустить KlangTresor"
 LangString fertig_weiter ${LANG_GERMAN} "Weiter im Browser: Suno-Name und Lieder"
 LangString fertig_weiter ${LANG_ENGLISH} "Continue in the browser: Suno name and songs"
 LangString fertig_weiter ${LANG_RUSSIAN} "Продолжить в браузере: имя в Suno и песни"
@@ -634,10 +644,27 @@ Function KeinZurueck
   EnableWindow $R0 0
 FunctionEnd
 
-; Fertig -> die Einrichtung ab dem Suno-Namen, nur als Seite im Browser, ohne Fenster
+; Liegt schon ein Archiv da (ein Update), ist die Einrichtung getan - dann startet die App selbst.
+Function FertigVorbereiten
+  ${If} ${FileExists} "$INSTDIR\library\katalog.json.gz"
+  ${OrIf} ${FileExists} "$INSTDIR\library\katalog.json"
+    StrCpy $FertigText "$(fertig_text_update)"
+    StrCpy $FertigLauf "$(fertig_starten)"
+  ${Else}
+    StrCpy $FertigText "$(fertig_text)"
+    StrCpy $FertigLauf "$(fertig_weiter)"
+  ${EndIf}
+FunctionEnd
+
+; Fertig -> mit Archiv: das Symbol (KlangTresor.exe) startet die App; ohne: die Einrichtung ab dem Suno-Namen, nur als
+; Seite im Browser, ohne Fenster
 Function WeiterImBrowser
   Call SpracheSetzen
   SetOutPath "$INSTDIR"
+  ${If} $FertigLauf == "$(fertig_starten)"
+    Exec '"$INSTDIR\KlangTresor.exe"'
+    Return
+  ${EndIf}
   ExecShell "open" "$INSTDIR\werkzeug\node\node.exe" '"$INSTDIR\bin\einrichten.js" --nach-setup' SW_HIDE
 FunctionEnd
 
