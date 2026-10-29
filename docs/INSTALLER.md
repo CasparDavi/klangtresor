@@ -42,26 +42,25 @@ Stiller Lauf für Tests: `KlangTresor-Setup.exe /S /D=C:\Pfad` (`/OHNEHOLEN` lä
 „Trotzdem ausführen“. Kostenloser Ausweg später: SignPath Foundation (Open Source; Herausgeber heißt dann „SignPath
 Foundation“, Bau müsste in GitHub Actions laufen). Casto kann nicht signieren (Voicechat 29.10.2026).
 
-## macOS: `KlangTresor.dmg` (Plan)
+## macOS: `KlangTresor.dmg` (gebaut 29.10.2026, noch nicht gelaufen)
 
-**Was der Nutzer tut:**
-1. Die `.dmg` öffnen. Ein Fenster zeigt `KlangTresor.app`, einen Pfeil und den Ordner „Programme“. Das Hintergrundbild erklärt den einen Klick, den macOS verlangt.
-2. Die App in „Programme“ ziehen und öffnen.
-3. Beim ersten Mal sagt macOS: „KlangTresor kann nicht geöffnet werden.“ Der Nutzer geht zu Systemeinstellungen → Datenschutz & Sicherheit → „Trotzdem öffnen“, einmalig. Ohne Apple-Entwicklerkonto (99 $ im Jahr) geht es nicht anders.
-4. Der Browser geht auf, mit der Seite „KlangTresor wird eingerichtet“: was schon da ist, Balken für ffmpeg, Modelle und Whisper, dann der Suno-Name.
+Gebaut mit `bin/dmg-bauen.js` (aus `bin/paket.js`), 156 MB. **Nicht veröffentlicht:** gestartet hat sie noch niemand.
+Auf Jörgs Mac belegt sein KlangTresor Port 8788; die App würde sich daran hängen. Ein Test braucht entweder sein
+Okay, den eigenen Server kurz zu beenden, oder einen zweiten Mac (Apple Silicon wäre ohnehin ungeprüft).
 
-**Wie es gebaut ist:**
-- `KlangTresor.app/Contents/MacOS/KlangTresor` ist ein kleiner Starter. Er kopiert beim ersten Start (und nach jedem Update der App) das Programm aus `Contents/Resources/` nach `~/KlangTresor`, ohne `library/` und `modelle/` anzufassen. Danach startet er von dort. Damit hat der Mac dieselbe Ordnerordnung wie Windows und Linux, und `server.js` muss nichts über App-Bündel wissen.
-- Mit drin: Node für x64 und arm64 (eine App für beide Macs, der Starter wählt), `node_modules` mit onnxruntime für darwin x64 und arm64, und **whisper-cli, fertig gebaut**. whisper.cpp ist MIT, darf also mit. Heute baut `whisper-holen.js` es beim Nutzer aus dem Quelltext und braucht dafür Apples Entwicklerwerkzeuge. Das fällt weg.
-- Geholt wird ffmpeg (GPL). Auf dem Mac gibt es keinen Hersteller-Bau wie gyan.dev unter Windows. In Frage kommen evermeet.cx (nur Intel) und ffmpeg.martin-riedl.de (Intel und Apple Silicon, signiert). Das ist noch zu prüfen. Heute verlangt die Einrichtung `brew install ffmpeg`, und genau das ist Gefrickel.
-- Die Fortschrittsanzeige ist eine Seite im Browser, ein eigenes Fenster gibt es nicht: Ein Mac-Installer hat keine Assistentenseiten wie NSIS, und `.pkg` kann keinen Balken für Downloads zeigen. Die Seite liest denselben Stand von `installieren.js`.
-- Gebaut auf diesem Mac mit `hdiutil`, ohne fremde Werkzeuge.
+- `KlangTresor.app/Contents/MacOS/KlangTresor`: der Starter (`bin/mac/KlangTresor.swift`), Intel und Apple Silicon
+  in einer Datei. Er legt das Programm nach `~/KlangTresor` (Node und whisper-cli für den eigenen Prozessor), entfernt
+  dort das Quarantäne-Merkmal, startet beim ersten Mal die Einrichtung im Browser und danach den Server.
+  KlangTresor steht im Dock: Klick öffnet die Seite, Rechtsklick „Protokoll anzeigen“ und „Neu starten“, Cmd-Q beendet.
+- `Resources/`: Programm mit `node_modules` (onnxruntime darwin), `node-x64`, `node-arm64`, `whisper-x64`,
+  `whisper-arm64`. whisper-cli wird beim Bau übersetzt (MIT) und zwischengespeichert. Bisher baute die Einrichtung es
+  beim Nutzer und brauchte dafür Apples Entwicklerwerkzeuge.
+- ffmpeg holt die Einrichtung jetzt auch auf dem Mac selbst (ffmpeg.martin-riedl.de, Intel und Apple Silicon) statt
+  `brew install ffmpeg`.
+- Ad-hoc signiert, nicht notarisiert: macOS verlangt einmal „Dennoch öffnen“ in Systemeinstellungen → Datenschutz &
+  Sicherheit. Die DMG enthält dazu „Zuerst lesen“.
 
-**Offen:**
-- Apple Silicon kann ich hier nicht testen (der iMac ist Intel).
-- Ob macOS Programme, die aus einer nicht notarisierten App nach `~/KlangTresor` kopiert wurden, ohne weitere Warnung startet: Das Quarantäne-Merkmal wird beim Kopieren entfernt, ist aber zu prüfen.
-
-## Linux: `KlangTresor-x86_64.AppImage` (gebaut 29.10.2026, Zweig linux-installer)
+## Linux: `KlangTresor-x86_64.AppImage` (gebaut und geprüft 29.10.2026, veröffentlicht mit 1.0.136)
 
 **Was der Nutzer tut:**
 1. Die Datei laden. Rechtsklick → Eigenschaften → „Als Programm ausführen“ erlauben (einmal; jeder Dateimanager
@@ -141,3 +140,18 @@ einer Kopie auf der Windows-Platte und von Hand gesetzter `ZoneId=3`.
 Kostenloser Ausweg, ohne Zertifikat: die Setup.exe bei Microsoft als Softwarehersteller einreichen („Submit a file for
 malware analysis“, Kategorie „Software developer“). Das verkürzt die Zeit, bis SmartScreen sie kennt. Je Release einmal,
 von Hand, mit dem Microsoft-Konto des Herausgebers – das kann nur Caspar_D.
+
+## Geprüft: Linux (29.10.2026, Ubuntu 24.04.5 Desktop in Parallels, Testbenutzer)
+
+| Fall | Ergebnis |
+|---|---|
+| Frisch: AppImage ausführbar machen, starten | Hinweis „wird nach ~/KlangTresor gelegt“, Firefox mit der Einrichtung; ffmpeg 40 MB, Modelle und Whisper 4 GB mit Balken; Suno-Name caspar_d, 268 Titel, Bilder; am Ende das Symbol im Panel und KlangTresor im Browser. Menüeintrag und Schreibtisch-Verknüpfung zeigen auf das AppImage. |
+| Symbol | Als StatusNotifierItem angemeldet; Menü „läuft seit …“, Öffnen, Protokoll, Beenden. „Beenden“ lässt keinen Prozess zurück. |
+| Knopf in Profil → System | Beendet Server und Symbol (Code 0). |
+| Neustart über das Anwendungsmenü | Startet Symbol und Server. |
+| Neueres AppImage, während KlangTresor läuft | Rückfrage „… 1.0.135 läuft. Dieses AppImage bringt 1.0.136 …“, Ja: beendet, erneuert, startet neu. Der erste Versuch scheiterte (das eingehängte AppImage war nach dem Beenden weg); seither liegt das Programm vor der Frage bereit. |
+
+Unterwegs gefunden:
+- Ubuntu 24.04 hat zwar die Symbol-Erweiterung, aber nicht die Python-Bibliothek dazu. Deshalb meldet sich das Symbol jetzt direkt über D-Bus an.
+- Die Einrichtung ohne Terminal endete mitten in der ersten Frage. Jetzt hält sie ihr Seitenserver am Leben.
+- ffmpeg holt die Einrichtung unter Linux jetzt selbst, statt auf `sudo apt install` zu verweisen.

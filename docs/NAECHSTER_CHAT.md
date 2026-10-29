@@ -9952,3 +9952,15 @@ der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach libr
   geprüft in Win10). Windows 11: Installation 1.0.134 steht in der Browser-Einrichtung beim Suno-Namen.
 - Aufräumen (Wiedervorlage): zusätzlich Win11 `C:\Users\joergbernhardt\KlangTresor`, `Desktop-Probe`; Mac-Downloads
   `KlangTresor-Setup.exe`, `Nicht bestätigt *.crdownload`, die vier Bildschirmfotos 03.55–04.07.
+
+### §145 Fortsetzung, 29.10.2026 nachts (Jörg schlief): Linux-AppImage veröffentlicht, Mac-App gebaut
+- **1.0.136**: `KlangTresor-x86_64.AppImage` (bin/appimage-bauen.js, bin/linux/AppRun, bin/linux/klangtresor-symbol.py
+  als StatusNotifierItem über D-Bus), Knopf „KlangTresor beenden“ in Profil → System (/api/system/beenden, nur lokal,
+  Code 0 = gewollt; versteht auch das Windows-Symbol). Einrichtung holt ffmpeg unter Linux (johnvansickle) und auf dem
+  Mac (martin-riedl) selbst. In Ubuntu 24.04 komplett geprüft (docs/INSTALLER.md, Abschnitt „Geprüft: Linux“).
+- **Mac**: `KlangTresor.dmg` gebaut (bin/dmg-bauen.js, bin/mac/KlangTresor.swift), **nicht gelaufen, nicht
+  veröffentlicht**: Port 8788 gehört Jörgs laufendem Server. Test braucht seine Freigabe (Server kurz aus) oder einen
+  anderen Mac; Apple Silicon ungeprüft.
+- Ubuntu-VM „Ubuntu KlangTresor“ (Entwicklung/_linux-vm, ISO 6 GB + VM) – Zugang im Scratchpad, siehe Gedächtnis
+  ubuntu-test-vm. Kommt mit auf die Aufräumliste, wenn Linux abgenommen ist.
+- Arbeitsbaum `../KlangTresor-linux` (Zweig linux-installer) ist in main übernommen und kann weg.
