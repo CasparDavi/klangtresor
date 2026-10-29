@@ -4854,6 +4854,25 @@ server.on('listening', () => {
   else   console.log('\n  Achtung: Katalog fehlt - erst "node bin/aufbereiten.js" laufen lassen.');
   console.log('\n  ' + TK('Beenden mit Strg+C') + '\n');
 });
+/* DAS SYMBOL UNTEN RECHTS ERNEUERN (29.10.2026, Caspar_D: „damit alles übers update kommt"). Das Update bringt die neue
+   KlangTresor.exe als bin/windows/KlangTresor.exe - unter ihrem Laufnamen haette das Kopieren an der laufenden Datei
+   abgebrochen (siehe bin/paket.js). Hier wird sie eingesetzt: die laufende wird umbenannt (das erlaubt Windows, das
+   Ueberschreiben nicht), die neue kommt an ihren Platz. Das Symbol merkt den Tausch und startet sich neu, sobald dieser
+   Server antwortet. Nur, wo schon ein Symbol installiert ist (Setup.exe) - wer das Zip von Hand nutzt, bekommt keins
+   untergeschoben. Alte .alt-Dateien gehen weg, sobald niemand sie mehr ausfuehrt. */
+if (process.platform === 'win32' && !EINGEFROREN) {
+  try {
+    for (const f of fs.readdirSync(WURZEL)) if (/^KlangTresor\.exe\.alt/.test(f)) { try { fs.rmSync(path.join(WURZEL, f)); } catch (e) {} }
+    const neu = path.join(WURZEL, 'bin', 'windows', 'KlangTresor.exe'), da = path.join(WURZEL, 'KlangTresor.exe');
+    if (fs.existsSync(neu) && fs.existsSync(da) && !fs.readFileSync(neu).equals(fs.readFileSync(da))) {
+      const alt = fs.existsSync(da + '.alt') ? da + '.alt-' + Date.now() : da + '.alt';
+      fs.renameSync(da, alt);
+      fs.copyFileSync(neu, da);
+      try { fs.copyFileSync(neu + '.config', da + '.config'); } catch (e) {}
+      console.log('  ' + TK('Das Symbol unten rechts ist erneuert — es startet sich gleich selbst neu.'));
+    }
+  } catch (e) { console.log('  Symbol erneuern: ' + e.message); }
+}
 /* DIE KI-MODELLE AN IHREN ORT (28.10.2026, bin/modellordner.js): bis dahin lagen sie in library/modelle/. Einmal beim
    Start verschieben - sichtbar im Fenster, nie kopiert. Laeuft nach dem ersten Mal ins Leere (der alte Ordner ist weg). */
 if (!EINGEFROREN) { try { require('../bin/modellordner.js').umziehen((t) => console.log(t)); } catch (e) { console.log('  KI-Modelle: ' + e.message); } }

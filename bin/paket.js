@@ -65,7 +65,25 @@ const a = spawnSync('git', ['archive', '--format=zip', '-o', ziel, 'HEAD'],
                     { cwd: WURZEL, encoding: 'utf8' });
 if (a.status !== 0) { console.error('git archive:', a.stderr); process.exit(1); }
 
+/* DAS SYMBOL FUER WINDOWS KOMMT MIT INS ZIP (29.10.2026), damit das Update es erneuert - siehe bin/windows/symbol-bauen.js.
+   NICHT unter seinem Laufnamen im Hauptordner, sondern als bin/windows/KlangTresor.exe: das Update spielt das Skript
+   der ALTEN Fassung ein, und das kopiert stur - auf die laufende KlangTresor.exe gaebe es „Datei in Benutzung", und das
+   Update braeche mittendrin ab (server/ und web/ kommen im Alphabet danach). Eingesetzt wird sie vom neuen Server beim
+   Start (exeEinsetzen in server/server.js). Unter Mac und Linux liegt sie unbenutzt dabei (rund 50 KB). */
+{
+  const T = fs.mkdtempSync(path.join(os.tmpdir(), 'klangtresor-symbol-aus-'));
+  try {
+    require('./windows/symbol-bauen.js').symbolBauen(T, require('../package.json').version);
+    fs.mkdirSync(path.join(T, 'bin', 'windows'), { recursive: true });
+    for (const f of ['KlangTresor.exe', 'KlangTresor.exe.config']) fs.renameSync(path.join(T, f), path.join(T, 'bin', 'windows', f));
+    const z = spawnSync('zip', ['-q', ziel, 'bin/windows/KlangTresor.exe', 'bin/windows/KlangTresor.exe.config'], { cwd: T, encoding: 'utf8' });
+    if (z.status !== 0) { console.error('zip (Symbol):', z.stderr); process.exit(1); }
+  } catch (e) { fs.rmSync(ziel, { force: true }); console.error('\n  ABGEBROCHEN — ' + e.message + '\n'); process.exit(1); }
+  finally { fs.rmSync(T, { recursive: true, force: true }); }
+}
+
 const liste = spawnSync('unzip', ['-Z1', ziel], { encoding: 'utf8' }).stdout.split('\n').filter(Boolean);
+if (!liste.includes('bin/windows/KlangTresor.exe')) { fs.rmSync(ziel, { force: true }); console.error('\n  ABGEBROCHEN — KlangTresor.exe fehlt im Zip.\n'); process.exit(1); }
 const treffer = liste.filter(e => VERBOTEN.some(m => m.test(e)));
 
 if (treffer.length) {

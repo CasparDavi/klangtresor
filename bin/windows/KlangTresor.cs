@@ -58,10 +58,17 @@ static class KlangTresor
     {
         Spr = Sprache();
         bool ohneBrowser = Array.IndexOf(args, "--ohne-browser") >= 0;
+        bool nachfolger = Array.IndexOf(args, "--nachfolger") >= 0;
         bool neu;
         // Ein Symbol je Installationsordner. Der Name haengt am Ordner, nicht an einer Zufallszahl.
         using (var m = new Mutex(true, "KlangTresor-" + Kennung(Wurzel.ToLowerInvariant()), out neu))
         {
+            // Der Nachfolger nach einem Update (siehe Erneuert): warten, bis der Vorgaenger samt Server weg ist
+            if (nachfolger)
+            {
+                if (!neu) { try { neu = m.WaitOne(20000); } catch (AbandonedMutexException) { neu = true; } }
+                for (int i = 0; i < 40 && Antwortet(); i++) Thread.Sleep(250);
+            }
             if (!neu || Antwortet()) { if (!ohneBrowser) SeiteAuf(); return; }
             if (!File.Exists(Path.Combine(Wurzel, "werkzeug", "node", "node.exe")) || !File.Exists(Path.Combine(Wurzel, "bin", "starten.js")))
             {
@@ -76,6 +83,7 @@ static class KlangTresor
             SymbolBauen();
             JobAnlegen();
             Starten(ohneBrowser);
+            ErneuerungBeobachten();
             Application.Run();
             Aufhoeren();
         }
@@ -109,6 +117,34 @@ static class KlangTresor
         catch { bild = Icon.ExtractAssociatedIcon(Application.ExecutablePath); }
         Symbol = new NotifyIcon { Icon = bild, ContextMenuStrip = menue, Text = "KlangTresor", Visible = true };
         Symbol.DoubleClick += (s, e) => SeiteAuf();
+    }
+
+    // SELBST ERNEUERN (29.10.2026, Caspar_D: „damit alles übers update kommt"). Nach einem Update setzt der Server
+    // die neue KlangTresor.exe an diesen Platz (exeEinsetzen in server/server.js) - dieses Programm laeuft dann aus der
+    // umbenannten alten Datei weiter. Alle 10 s wird nachgesehen; ist die Datei getauscht UND antwortet der Server
+    // wieder (das Update ist dann durch, er hat neu gestartet), startet die neue Fassung als Nachfolger, und diese
+    // hier geht. Der Server startet dabei einmal mit; der offene Tab meldet sich von selbst wieder, ein neuer geht
+    // nicht auf (--ohne-browser).
+    static string ExeStand(string f)
+    {
+        try { var i = new FileInfo(f); return i.Length + "/" + i.LastWriteTimeUtc.Ticks; } catch { return ""; }
+    }
+    static void ErneuerungBeobachten()
+    {
+        string exe = Path.Combine(Wurzel, "KlangTresor.exe"), stand = ExeStand(exe);
+        var uhr = new System.Windows.Forms.Timer { Interval = 10000 };
+        uhr.Tick += (s, e) =>
+        {
+            string jetzt = ExeStand(exe);
+            if (jetzt.Length == 0 || jetzt == stand || !Antwortet()) return;
+            uhr.Stop();
+            Schreiben("--- das Symbol ist erneuert, die neue Fassung übernimmt");
+            try { Process.Start(new ProcessStartInfo(exe, "--nachfolger --ohne-browser") { UseShellExecute = false, WorkingDirectory = Wurzel }); }
+            catch (Exception ex) { Schreiben("Nachfolger ließ sich nicht starten: " + ex.Message); return; }
+            Gewollt = true;
+            Application.ExitThread();
+        };
+        uhr.Start();
     }
 
     static void Tooltip(string t)
