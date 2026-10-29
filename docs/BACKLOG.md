@@ -3302,7 +3302,7 @@ löscht nichts – wer heute aus dem Zip lebt, behält seine Startskripte, auch 
 | `einrichten-linux.sh` | nur der Zip-Weg unter Linux; AppImage ersetzt ihn | **weg** |
 | `starten-linux.sh` | alte Zip-Installationen (behalten ihre Kopie) | **weg** aus dem Paket |
 | `einrichten-macos.command`, `starten-macos.command`, `bin/anlasser.sh` | **der Mac lebt noch vom Zip** – die Mac-App ist nicht veröffentlicht | **bleibt, bis die Mac-App draußen ist** |
-| `einrichten-docker-*`, `bin/einrichten-docker.ps1`, `bin/server-start.sh`, `docker/` | Docker-Weg (Tarja); `server-start.sh` im Dockerfile und `browser/morgens.js` | **Entscheidung:** bleibt Docker ein Weg für Nutzer? |
+| `einrichten-docker-*`, `bin/einrichten-docker.ps1`, `bin/server-start.sh`, `docker/` | Docker-Weg (Tarja); `server-start.sh` im Dockerfile und `browser/morgens.js` | **bleibt** – Caspar_D, 29.10.2026: „ja, docker bleibt“ |
 | `aktualisieren-*`, `bin/aktualisieren.js` | ältere Installationen kommen darüber an neue Fassungen | **bleibt** |
 
 Mitzuändern beim Wegnehmen: README.md/.de/.ru, START-HIER/HERE/RU, `docs/EINRICHTUNG-TEXTE.md`, die Textzeilen in
