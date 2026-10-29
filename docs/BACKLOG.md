@@ -3290,6 +3290,24 @@ geprüft:
 ältere Installationen (bis 1.0.133, Zip-Weg) noch an die neue Fassung. Wer heute aus dem Zip lebt, braucht einen
 Übergang, bevor sein Startskript verschwindet.
 
+**Geprüft am 29.10.2026 (wer ruft was auf):** Die neuen Installer rufen keines der alten Skripte auf – Setup.exe,
+AppImage (`bin/linux/AppRun`) und Mac-App (`bin/mac/KlangTresor.swift`) gehen direkt auf `bin/einrichten.js`,
+`bin/starten.js`, `bin/installieren.js`. Wichtig: das Update legt nur Dateien hinzu (`zipUeberlegen`, cpSync), es
+löscht nichts – wer heute aus dem Zip lebt, behält seine Startskripte, auch wenn sie aus dem Paket verschwinden.
+
+| Datei | Wer sie noch braucht | Vorschlag |
+|---|---|---|
+| `einrichten-windows.cmd`, `bin/anlasser.ps1` | nur der Zip-Weg unter Windows; Setup.exe ersetzt ihn | **weg** (Anleitungen umschreiben) |
+| `starten-windows.cmd` | Rückfall in `einrichten.js` (Zeilen 771, 2158), wenn keine `KlangTresor.exe` da ist | **weg** mit dem Rückfall |
+| `einrichten-linux.sh` | nur der Zip-Weg unter Linux; AppImage ersetzt ihn | **weg** |
+| `starten-linux.sh` | alte Zip-Installationen (behalten ihre Kopie) | **weg** aus dem Paket |
+| `einrichten-macos.command`, `starten-macos.command`, `bin/anlasser.sh` | **der Mac lebt noch vom Zip** – die Mac-App ist nicht veröffentlicht | **bleibt, bis die Mac-App draußen ist** |
+| `einrichten-docker-*`, `bin/einrichten-docker.ps1`, `bin/server-start.sh`, `docker/` | Docker-Weg (Tarja); `server-start.sh` im Dockerfile und `browser/morgens.js` | **Entscheidung:** bleibt Docker ein Weg für Nutzer? |
+| `aktualisieren-*`, `bin/aktualisieren.js` | ältere Installationen kommen darüber an neue Fassungen | **bleibt** |
+
+Mitzuändern beim Wegnehmen: README.md/.de/.ru, START-HIER/HERE/RU, `docs/EINRICHTUNG-TEXTE.md`, die Textzeilen in
+`bin/aktualisieren.js` (764, 784) und `bin/texte/aktualisieren.json`, `bin/pruefe-skripte.js`.
+
 **Vorgehen:** erst für jede Datei nachsehen, wer sie aufruft (Code, Anleitungen START-HIER/HERE/RU, READMEs,
 Setup/AppImage/DMG-Bau); dann Caspar_D die Liste „weg / bleibt / bleibt bis“ zeigen; Archiv als eigener Ordner
 außerhalb des Pakets (paket.js nimmt nur, was git kennt — also aus dem Baum nehmen, nicht bloß verstecken).
