@@ -11,9 +11,9 @@
 ;   Ordner        vorgeschlagen %USERPROFILE%\KlangTresor, oder wo die letzte Setup.exe installiert hat
 ;   Was schon da  frisch, oder: welche Fassung, wie gross das Archiv, wie viele KI-Modelle, Whisper - und was jetzt
 ;                 passiert (erneuern, holen). Gerechnet hier in NSIS, denn vorher gibt es dort vielleicht kein Node.
-;   Kopieren      das Programm samt werkzeug\node, werkzeug\ffmpeg und node_modules (alles fuer Windows x64)
-;   Holen         KI-Modelle und Whisper aus dem Netz, an ihrer Quelle - mitliefern verbieten die Lizenzen
-;                 (bin/modelle-holen.js). Das Holen macht bin/installieren.js, unsichtbar; diese Seite zeigt seinen
+;   Kopieren      das Programm samt werkzeug\node und node_modules (alles fuer Windows x64)
+;   Holen         ffmpeg, KI-Modelle und Whisper aus dem Netz, an ihrer Quelle - mitliefern verbieten die Lizenzen
+;                 (ffmpeg: GPL, quellen.txt; Modelle: bin/modelle-holen.js). Das Holen macht bin/installieren.js, unsichtbar; diese Seite zeigt seinen
 ;                 Stand (Balken, was, wie weit, wie lange noch). Nichts fehlt -> die Seite entfaellt.
 ;   Fertig        Haken „Weiter im Browser": bin/einrichten.js --nach-setup, ohne Fenster - die Seite fragt nach dem
 ;                 Suno-Namen und holt die Lieder; danach startet KlangTresor ueber starten-windows.cmd.
@@ -136,25 +136,31 @@ LangString bestand_archiv ${LANG_RUSSIAN} "Ваш архив:  $0 песен, $1
 LangString bestand_modelle ${LANG_GERMAN} "KI-Modelle:  $0 von $1 da  ($ModellOrdner)"
 LangString bestand_modelle ${LANG_ENGLISH} "AI models:  $0 of $1 present  ($ModellOrdner)"
 LangString bestand_modelle ${LANG_RUSSIAN} "ИИ-модели:  $0 из $1 на месте  ($ModellOrdner)"
+LangString bestand_ffmpeg_da ${LANG_GERMAN} "ffmpeg (Ton und Bild):  da"
+LangString bestand_ffmpeg_da ${LANG_ENGLISH} "ffmpeg (sound and image):  present"
+LangString bestand_ffmpeg_da ${LANG_RUSSIAN} "ffmpeg (звук и изображение):  на месте"
+LangString bestand_ffmpeg_fehlt ${LANG_GERMAN} "ffmpeg (Ton und Bild):  fehlt"
+LangString bestand_ffmpeg_fehlt ${LANG_ENGLISH} "ffmpeg (sound and image):  missing"
+LangString bestand_ffmpeg_fehlt ${LANG_RUSSIAN} "ffmpeg (звук и изображение):  отсутствует"
 LangString bestand_whisper_da ${LANG_GERMAN} "Whisper (mitlaufender Liedtext):  da"
 LangString bestand_whisper_da ${LANG_ENGLISH} "Whisper (synced lyrics):  present"
 LangString bestand_whisper_da ${LANG_RUSSIAN} "Whisper (текст песни в такт):  на месте"
 LangString bestand_whisper_fehlt ${LANG_GERMAN} "Whisper (mitlaufender Liedtext):  fehlt"
 LangString bestand_whisper_fehlt ${LANG_ENGLISH} "Whisper (synced lyrics):  missing"
 LangString bestand_whisper_fehlt ${LANG_RUSSIAN} "Whisper (текст песни в такт):  отсутствует"
-LangString bestand_holen ${LANG_GERMAN} "Nach dem Kopieren wird geholt, was fehlt: rund $0 - jedes Modell an seiner Quelle, mit Fortschrittsbalken. Mitliefern lassen das ihre Lizenzen nicht zu."
-LangString bestand_holen ${LANG_ENGLISH} "After copying, whatever is missing is fetched: about $0 - each model from its source, with a progress bar. Their licences do not allow shipping them."
-LangString bestand_holen ${LANG_RUSSIAN} "После копирования загрузится недостающее: около $0 - каждая модель из своего источника, с индикатором прогресса. Их лицензии не разрешают поставлять их вместе с программой."
-LangString bestand_nichts ${LANG_GERMAN} "KI-Modelle und Whisper sind vollständig - aus dem Netz wird nichts geholt."
-LangString bestand_nichts ${LANG_ENGLISH} "AI models and Whisper are complete - nothing will be downloaded."
-LangString bestand_nichts ${LANG_RUSSIAN} "ИИ-модели и Whisper на месте - из сети ничего загружаться не будет."
+LangString bestand_holen ${LANG_GERMAN} "Nach dem Kopieren wird geholt, was fehlt: rund $0 - jedes Teil an seiner Quelle, mit Fortschrittsbalken. Mitliefern lassen das ihre Lizenzen nicht zu."
+LangString bestand_holen ${LANG_ENGLISH} "After copying, whatever is missing is fetched: about $0 - each part from its source, with a progress bar. Their licences do not allow shipping them."
+LangString bestand_holen ${LANG_RUSSIAN} "После копирования загрузится недостающее: около $0 - каждая часть из своего источника, с индикатором прогресса. Их лицензии не разрешают поставлять их вместе с программой."
+LangString bestand_nichts ${LANG_GERMAN} "ffmpeg, KI-Modelle und Whisper sind vollständig - aus dem Netz wird nichts geholt."
+LangString bestand_nichts ${LANG_ENGLISH} "ffmpeg, AI models and Whisper are complete - nothing will be downloaded."
+LangString bestand_nichts ${LANG_RUSSIAN} "ffmpeg, ИИ-модели и Whisper на месте - из сети ничего загружаться не будет."
 LangString bestand_platz ${LANG_GERMAN} "Freier Platz dort: $0"
 LangString bestand_platz ${LANG_ENGLISH} "Free space there: $0"
 LangString bestand_platz ${LANG_RUSSIAN} "Свободно там: $0"
 
-LangString holen_titel ${LANG_GERMAN} "KI-Modelle und Whisper"
-LangString holen_titel ${LANG_ENGLISH} "AI models and Whisper"
-LangString holen_titel ${LANG_RUSSIAN} "ИИ-модели и Whisper"
+LangString holen_titel ${LANG_GERMAN} "ffmpeg, KI-Modelle und Whisper"
+LangString holen_titel ${LANG_ENGLISH} "ffmpeg, AI models and Whisper"
+LangString holen_titel ${LANG_RUSSIAN} "ffmpeg, ИИ-модели и Whisper"
 LangString holen_unter ${LANG_GERMAN} "werden an ihrer Quelle geholt - das dauert je nach Leitung ein paar Minuten bis gut eine Stunde"
 LangString holen_unter ${LANG_ENGLISH} "are fetched from their sources - depending on your connection a few minutes to well over an hour"
 LangString holen_unter ${LANG_RUSSIAN} "загружаются из своих источников - в зависимости от соединения от нескольких минут до часа с лишним"
@@ -376,7 +382,16 @@ Function BestandSeite
     IntOp $R8 $R8 + 24
   ${EndIf}
 
-  ; KI-Modelle und Whisper
+  ; ffmpeg, KI-Modelle und Whisper
+  StrCpy $ZuHolenMB 0
+  ${If} ${FileExists} "$INSTDIR\werkzeug\ffmpeg\bin\ffmpeg.exe"
+    ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_ffmpeg_da)"
+  ${Else}
+    ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_ffmpeg_fehlt)"
+    StrCpy $ZuHolenMB 110
+  ${EndIf}
+  Pop $R0
+  IntOp $R8 $R8 + 14
   StrCpy $MDa 0
   StrCpy $FehltMB 0
   !insertmacro ModellListe
@@ -385,7 +400,7 @@ Function BestandSeite
   ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_modelle)"
   Pop $R0
   IntOp $R8 $R8 + 14
-  StrCpy $ZuHolenMB $FehltMB
+  IntOp $ZuHolenMB $ZuHolenMB + $FehltMB
   ${If} ${FileExists} "$INSTDIR\werkzeug\whisper\Release\whisper-cli.exe"
   ${AndIf} ${FileExists} "$ModellOrdner\ggml-large-v3.bin"
     ${NSD_CreateLabel} 10u $R8u 100% 12u "$(bestand_whisper_da)"

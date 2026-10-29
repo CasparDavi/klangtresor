@@ -1,21 +1,86 @@
 {
- "Abgebrochen.": {"en": "Cancelled.", "ru": "Прервано."},
- "Alles da.": {"en": "Everything is in place.", "ru": "Всё на месте."},
- "Alles schon da.": {"en": "Everything is already here.", "ru": "Всё уже на месте."},
- "Es fehlt: {liste}": {"en": "Missing: {liste}", "ru": "Не хватает: {liste}"},
- "Es geht los …": {"en": "Starting …", "ru": "Начинаем …"},
- "Holen brach ab.": {"en": "Downloading stopped.", "ru": "Загрузка прервалась."},
- "KI-Modelle und Whisper liegen vollständig vor — nichts zu holen.": {"en": "AI models and Whisper are complete — nothing to download.", "ru": "ИИ-модели и Whisper уже на месте — загружать нечего."},
- "KI-Modelle und Whisper werden geholt": {"en": "Downloading AI models and Whisper", "ru": "Загружаются ИИ-модели и Whisper"},
- "KlangTresor läuft trotzdem. Was fehlt, holst du später in KlangTresor unter Profil → System — mit einem Klick, mit Balken. Oder hier gleich noch einmal versuchen.": {"en": "KlangTresor runs anyway. Whatever is missing you can fetch later in KlangTresor under Profile → System — one click, with a progress bar. Or try again here right away.", "ru": "KlangTresor всё равно работает. Недостающее можно загрузить позже в KlangTresor: Профиль → Система — одним кликом, с индикатором. Или попробовать ещё раз прямо здесь."},
- "Nicht alles kam an.": {"en": "Not everything arrived.", "ru": "Загрузилось не всё."},
- "Was schon da ist, bleibt; beim nächsten Mal geht es an derselben Stelle weiter.": {"en": "What is already here stays; next time it continues where it stopped.", "ru": "Всё, что уже загружено, останется; в следующий раз загрузка продолжится с того же места."},
- "noch etwa {n} Min.": {"en": "about {n} min left", "ru": "осталось около {n} мин."},
- "noch etwa {n} Std.": {"en": "about {n} h left", "ru": "осталось около {n} ч."},
- "noch knapp eine Minute": {"en": "less than a minute left", "ru": "осталось меньше минуты"},
- "{ganz} geholt": {"en": "{ganz} downloaded", "ru": "загружено {ganz}"},
- "{ganz} insgesamt": {"en": "{ganz} in total", "ru": "всего {ganz}"},
- "{teil} von {ganz}": {"en": "{teil} of {ganz}", "ru": "{teil} из {ganz}"},
- "KlangTresor ist installiert in {ordner}.": {"en": "KlangTresor is installed in {ordner}.", "ru": "KlangTresor установлен в {ordner}."},
- "KlangTresor startet in seinem eigenen Fenster und öffnet sich gleich im Browser.": {"en": "KlangTresor starts in its own window and opens in your browser in a moment.", "ru": "KlangTresor запускается в собственном окне и сейчас откроется в браузере."}
+ "Abgebrochen.": {
+ "en": "Cancelled.",
+ "ru": "Прервано."
+},
+ "Alles da.": {
+ "en": "Everything is in place.",
+ "ru": "Всё на месте."
+},
+ "Alles schon da.": {
+ "en": "Everything is already here.",
+ "ru": "Всё уже на месте."
+},
+ "Es fehlt: {liste}": {
+ "en": "Missing: {liste}",
+ "ru": "Не хватает: {liste}"
+},
+ "Es geht los …": {
+ "en": "Starting …",
+ "ru": "Начинаем …"
+},
+ "Holen brach ab.": {
+ "en": "Downloading stopped.",
+ "ru": "Загрузка прервалась."
+},
+ "KlangTresor läuft trotzdem. Was fehlt, holst du später in KlangTresor unter Profil → System — mit einem Klick, mit Balken. Oder hier gleich noch einmal versuchen.": {
+ "en": "KlangTresor runs anyway. Whatever is missing you can fetch later in KlangTresor under Profile → System — one click, with a progress bar. Or try again here right away.",
+ "ru": "KlangTresor всё равно работает. Недостающее можно загрузить позже в KlangTresor: Профиль → Система — одним кликом, с индикатором. Или попробовать ещё раз прямо здесь."
+},
+ "Nicht alles kam an.": {
+ "en": "Not everything arrived.",
+ "ru": "Загрузилось не всё."
+},
+ "Was schon da ist, bleibt; beim nächsten Mal geht es an derselben Stelle weiter.": {
+ "en": "What is already here stays; next time it continues where it stopped.",
+ "ru": "Всё, что уже загружено, останется; в следующий раз загрузка продолжится с того же места."
+},
+ "noch etwa {n} Min.": {
+ "en": "about {n} min left",
+ "ru": "осталось около {n} мин."
+},
+ "noch etwa {n} Std.": {
+ "en": "about {n} h left",
+ "ru": "осталось около {n} ч."
+},
+ "noch knapp eine Minute": {
+ "en": "less than a minute left",
+ "ru": "осталось меньше минуты"
+},
+ "{ganz} geholt": {
+ "en": "{ganz} downloaded",
+ "ru": "загружено {ganz}"
+},
+ "{ganz} insgesamt": {
+ "en": "{ganz} in total",
+ "ru": "всего {ganz}"
+},
+ "{teil} von {ganz}": {
+ "en": "{teil} of {ganz}",
+ "ru": "{teil} из {ganz}"
+},
+ "KlangTresor ist installiert in {ordner}.": {
+ "en": "KlangTresor is installed in {ordner}.",
+ "ru": "KlangTresor установлен в {ordner}."
+},
+ "KlangTresor startet in seinem eigenen Fenster und öffnet sich gleich im Browser.": {
+ "en": "KlangTresor starts in its own window and opens in your browser in a moment.",
+ "ru": "KlangTresor запускается в собственном окне и сейчас откроется в браузере."
+},
+ "ffmpeg, KI-Modelle und Whisper liegen vollständig vor — nichts zu holen.": {
+ "en": "ffmpeg, AI models and Whisper are complete — nothing to download.",
+ "ru": "ffmpeg, ИИ-модели и Whisper уже на месте — загружать нечего."
+},
+ "ffmpeg, KI-Modelle und Whisper werden geholt": {
+ "en": "Downloading ffmpeg, AI models and Whisper",
+ "ru": "Загружаются ffmpeg, ИИ-модели и Whisper"
+},
+ "ffmpeg wird ausgepackt": {
+ "en": "Unpacking ffmpeg",
+ "ru": "Распаковка ffmpeg"
+},
+ "Auspacken ging nicht": {
+ "en": "Unpacking failed",
+ "ru": "Не удалось распаковать"
+}
 }

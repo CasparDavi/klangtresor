@@ -7,9 +7,12 @@
    Caspar_D, 29.10.2026: „ich rufe eine setup.exe auf und der Rest passiert von alleine" - und: „das
    Scriptgefrickel kann keiner, ich verliere alle Nutzer schon bevor sie angefangen haben".
 
-   Programm, Node, ffmpeg und Pakete liegen im Installer. Die KI-Modelle und Whisper duerfen es nicht: mehrere
-   Lizenzen verbieten die Weitergabe oder nennen gar keine (bin/modelle-holen.js, Kopf). Jeder holt sie darum selbst
-   an der Quelle - der Installer tut das fuer ihn, in seinem eigenen Fenster, mit Balken.
+   Programm, Node und Pakete liegen im Installer. ffmpeg, die KI-Modelle und Whisper nicht:
+     - ffmpeg ist ein GPL-Bau. Wer es weitergibt, uebernimmt die GPL-Pflichten (Quelltext bereithalten) - KlangTresor
+       verteilt darum kein ffmpeg, es wird beim Nutzer geholt (quellen.txt, Abschnitt FFMPEG). Die erste Setup.exe
+       vom 28.10.2026 hatte es eingepackt; am 29.10.2026 korrigiert, bevor sie jemand bekam.
+     - mehrere Modell-Lizenzen verbieten die Weitergabe oder nennen gar keine (bin/modelle-holen.js, Kopf).
+   Jeder holt sie darum selbst an der Quelle - der Installer tut das fuer ihn, in seinem eigenen Fenster, mit Balken.
 
    Geholt wird nicht hier, sondern von denselben Programmen, die auch der Tab „System" im Profil benutzt
    (bin/modelle-holen.js, bin/whisper-holen.js) - eine Liste, ein Weg. Diese Datei fasst nur ihre Meldezeilen
@@ -45,10 +48,15 @@ const modelle = require('./modelle-holen.js');
 const groesse = (f) => { try { return fs.statSync(f).size; } catch (e) { return 0; } };
 const modellFehlt = modelle.DATEIEN.filter(([n, , m]) => groesse(path.join(modelle.ZIEL, n)) < m);
 const modellBytes = modellFehlt.reduce((s, [, , m]) => s + m, 0);
+/* ffmpeg: nur unter Windows holt es der Installer (auf Mac und Linux: docs/INSTALLER.md). */
+const FF_ORDNER = path.join(WURZEL, 'werkzeug', 'ffmpeg');
+const FF_DA = process.platform !== 'win32' || fs.existsSync(path.join(FF_ORDNER, 'bin', 'ffmpeg.exe'));
+const FF_URL = (() => { try { const m = /^\s*ffmpeg-windows\s*=\s*(\S+)/m.exec(fs.readFileSync(path.join(WURZEL, 'quellen.txt'), 'utf8')); return m && m[1]; } catch (e) { return null; } })();
+const ffBytes = FF_DA ? 0 : 115000000;   /* gyan.dev essentials, 7.x: rund 110 MB */
 const whisper = require('./whisper-holen.js');
 const WHISPER_MODELL = 3095033483, WHISPER_PROGRAMM = 8000000;   /* ggml-large-v3.bin; das Windows-Paket ~8 MB */
 const whisperBytes = (whisper.modellDa() ? 0 : WHISPER_MODELL) + (whisper.programmDa() ? 0 : WHISPER_PROGRAMM);
-const GESAMT = modellBytes + whisperBytes;
+const GESAMT = ffBytes + modellBytes + whisperBytes;
 
 const mb = (n) => n >= 1073741824 ? (n / 1073741824).toFixed(1).replace('.', ',') + ' GB' : Math.round(n / 1048576) + ' MB';
 const dauer = (s) => s >= 5400 ? T('noch etwa {n} Std.', { n: Math.round(s / 3600) }) : s >= 90 ? T('noch etwa {n} Min.', { n: Math.round(s / 60) }) : T('noch knapp eine Minute');
@@ -100,6 +108,50 @@ function kind(skript, args, umrechnen) {
   });
 }
 
+/* ffmpeg fuer Windows: das Zip von gyan.dev (quellen.txt), mit Balken, ausgepackt mit tar.exe (liegt Windows 10 ab 1803
+   und Windows 11 bei, packt Zip) - sonst Expand-Archive. Danach liegt es in werkzeug/ffmpeg, wie es die Starter
+   erwarten. ffplay.exe (ein Abspieler, 106 MB) ruft KlangTresor nirgends auf; es wird nach dem Auspacken entfernt. */
+async function ffmpegHolen() {
+  if (!FF_URL) return false;
+  const werkzeug = path.join(WURZEL, 'werkzeug');
+  fs.mkdirSync(werkzeug, { recursive: true });
+  const zip = path.join(werkzeug, 'ffmpeg.zip'), roh = path.join(werkzeug, '_ff_roh');
+  const quelle = new URL(FF_URL).hostname;
+  for (let versuch = 1; versuch <= 3; versuch++) {
+    try {
+      const r = await fetch(FF_URL, { redirect: 'follow', headers: { 'User-Agent': 'KlangTresor-Installer' } });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const datei = fs.createWriteStream(zip);
+      let n = 0;
+      for await (const stueck of r.body) {
+        n += stueck.length;
+        if (!datei.write(stueck)) await new Promise((f) => datei.once('drain', f));
+        zeigen(Math.min(n, ffBytes), T('{name} wird geladen', { name: 'ffmpeg' }), quelle);
+      }
+      await new Promise((f) => datei.end(f));
+      if (n < 50000000) throw new Error(T('zu klein ({n} Bytes)', { n }));
+      fs.rmSync(roh, { recursive: true, force: true }); fs.mkdirSync(roh, { recursive: true });
+      stand.oben = T('ffmpeg wird ausgepackt');
+      const { spawnSync } = require('node:child_process');
+      let e = spawnSync('tar.exe', ['-xf', zip, '-C', roh], { windowsHide: true });
+      if (e.status !== 0) e = spawnSync('powershell', ['-NoProfile', '-Command', `$ProgressPreference='SilentlyContinue'; Expand-Archive -LiteralPath '${zip}' -DestinationPath '${roh}' -Force`], { windowsHide: true });
+      if (e.status !== 0) throw new Error(T('Auspacken ging nicht'));
+      const drin = fs.readdirSync(roh).filter((x) => fs.statSync(path.join(roh, x)).isDirectory());
+      fs.rmSync(FF_ORDNER, { recursive: true, force: true });
+      fs.renameSync(drin.length === 1 ? path.join(roh, drin[0]) : roh, FF_ORDNER);
+      fs.rmSync(roh, { recursive: true, force: true }); fs.rmSync(zip, { force: true });
+      fs.rmSync(path.join(FF_ORDNER, 'bin', 'ffplay.exe'), { force: true });
+      fs.rmSync(path.join(FF_ORDNER, 'doc'), { recursive: true, force: true });
+      return fs.existsSync(path.join(FF_ORDNER, 'bin', 'ffmpeg.exe')) && fs.existsSync(path.join(FF_ORDNER, 'bin', 'ffprobe.exe'));
+    } catch (e) {
+      stand.unten = String(e.message).slice(0, 160);
+      try { fs.rmSync(zip, { force: true }); } catch (x) {}
+      await new Promise((f) => setTimeout(f, 1500 * versuch));
+    }
+  }
+  return false;
+}
+
 /* Halt vom Installer (Abbrechen): Kind beenden, Stand sagen, raus. */
 const wache = setInterval(() => {
   schreiben();
@@ -118,16 +170,20 @@ const wache = setInterval(() => {
   try { require('./modellordner.js').umziehen(() => {}); } catch (e) {}
 
   if (!GESAMT) {
-    setzen({ promille: 1000, oben: T('Alles schon da.'), unten: T('KI-Modelle und Whisper liegen vollständig vor — nichts zu holen.'), zustand: 'fertig' });
+    setzen({ promille: 1000, oben: T('Alles schon da.'), unten: T('ffmpeg, KI-Modelle und Whisper liegen vollständig vor — nichts zu holen.'), zustand: 'fertig' });
     schreiben(); clearInterval(wache); return;
   }
-  setzen({ oben: T('KI-Modelle und Whisper werden geholt'), unten: T('{ganz} insgesamt', { ganz: mb(GESAMT) }) });
+  setzen({ oben: T('ffmpeg, KI-Modelle und Whisper werden geholt'), unten: T('{ganz} insgesamt', { ganz: mb(GESAMT) }) });
 
   const fehlt = [];
+  if (!FF_DA) {
+    const gut = await ffmpegHolen();
+    if (!gut) fehlt.push('ffmpeg');
+  }
   if (modellFehlt.length) {
     /* modelle-holen.js meldet in bytes alles, was bisher daliegt - auch das, was vor dem Start schon lag */
     const vorher = modelle.DATEIEN.reduce((s, [n, , m]) => { const g = groesse(path.join(modelle.ZIEL, n)); return s + (g >= m ? g : 0); }, 0);
-    const r = await kind('modelle-holen.js', [], (l) => { if (typeof l.bytes === 'number') zeigen(Math.max(0, l.bytes - vorher), l.was, l.quelle); });
+    const r = await kind('modelle-holen.js', [], (l) => { if (typeof l.bytes === 'number') zeigen(ffBytes + Math.max(0, l.bytes - vorher), l.was, l.quelle); });
     if (r.code !== 0) {
       /* „  hole       name … FEHLER (grund)" - der Name steht vor dem „…" */
       const namen = r.protokoll.split('\n').filter((z) => z.includes(T('FEHLER'))).map((z) => (z.split(' … ')[0].trim().split(/\s+/).pop()));
@@ -136,7 +192,7 @@ const wache = setInterval(() => {
   }
   if (whisperBytes) {
     /* whisper-holen.js meldet je Datei (Programm, dann Modell) bytes innerhalb dieser Datei */
-    let basis = modellBytes, letzte = { was: '', bytes: 0 };
+    let basis = ffBytes + modellBytes, letzte = { was: '', bytes: 0 };
     const r = await kind('whisper-holen.js', ['--still'], (l) => {
       if (typeof l.bytes !== 'number') { stand.oben = l.was || stand.oben; return; }
       if (l.was !== letzte.was) { basis += letzte.bytes; letzte = { was: l.was, bytes: 0 }; }

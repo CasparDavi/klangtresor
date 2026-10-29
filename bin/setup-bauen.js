@@ -5,13 +5,13 @@
    bin/setup-bauen.js
 
      node bin/setup-bauen.js            → ../KlangTresor-Setup.exe
-     node bin/setup-bauen.js --frisch   holt Node und ffmpeg neu, statt die zuletzt geholten zu nehmen
+     node bin/setup-bauen.js --frisch   holt Node neu, statt das zuletzt geholte zu nehmen
 
    Laeuft am Ende von bin/paket.js mit - jedes Release traegt die Setup.exe (Entscheidung vom 28.10.2026). Braucht
    makensis (brew install makensis) und das fertige ../KlangTresor.zip: dessen Inhalt hat paket.js schon geprueft
    (keine library/, kein Schluessel), darauf baut die Setup.exe auf, statt eine zweite Pruefung zu fuehren.
 
-   Was dazukommt, steht in bin/setup/klangtresor.nsi oben: werkzeug\node, werkzeug\ffmpeg und node_modules, alle fuer
+   Was dazukommt, steht in bin/setup/klangtresor.nsi oben: werkzeug\node und node_modules, beide fuer
    Windows x64. Die Adressen kommen aus quellen.txt - dieselben, von denen die Einrichtung sonst holen wuerde.
    Die KI-Modelle und Whisper holt die Setup.exe beim Nutzer selbst (bin/installieren.js): mitliefern verbieten ihre
    Lizenzen (bin/modelle-holen.js, Kopf).
@@ -110,17 +110,12 @@ for (const n of ['library', 'modelle', 'werkzeug', 'node_modules'])
   if (fs.existsSync(path.join(INHALT, n))) stirb(`${n}/ liegt im Paket — gehört nicht hinein`);
 sag(`Programm aus KlangTresor.zip: ${mb(groesse(INHALT))}`);
 
-/* 2. Node.js und ffmpeg für Windows x64 */
+/* 2. Node.js für Windows x64 */
 einsetzen(holen('node-windows-x64'), path.join(INHALT, 'werkzeug', 'node'));
 if (!fs.existsSync(path.join(INHALT, 'werkzeug', 'node', 'node.exe'))) stirb('node.exe fehlt nach dem Auspacken');
 sag(`werkzeug/node: ${mb(groesse(path.join(INHALT, 'werkzeug', 'node')))}`);
-einsetzen(holen('ffmpeg-windows'), path.join(INHALT, 'werkzeug', 'ffmpeg'));
-for (const f of ['ffmpeg.exe', 'ffprobe.exe']) if (!fs.existsSync(path.join(INHALT, 'werkzeug', 'ffmpeg', 'bin', f))) stirb(f + ' fehlt nach dem Auspacken');
-/* ffplay.exe (ein Abspieler, 106 MB) und die Handbuchseiten ruft KlangTresor nirgends auf - nur ffmpeg und ffprobe.
-   LICENSE und README.txt bleiben: sie gehoeren zur Weitergabe von ffmpeg dazu. */
-fs.rmSync(path.join(INHALT, 'werkzeug', 'ffmpeg', 'bin', 'ffplay.exe'), { force: true });
-fs.rmSync(path.join(INHALT, 'werkzeug', 'ffmpeg', 'doc'), { recursive: true, force: true });
-sag(`werkzeug/ffmpeg: ${mb(groesse(path.join(INHALT, 'werkzeug', 'ffmpeg')))}`);
+/* ffmpeg NICHT: ein GPL-Bau - KlangTresor verteilt es nicht, die Setup.exe holt es beim Nutzer (bin/installieren.js,
+   quellen.txt Abschnitt FFMPEG). Bis 29.10.2026 lag es hier drin. */
 
 /* 3. Die Pakete, genau nach package-lock.json */
 const NPM = path.join(BAU, '_npm');
