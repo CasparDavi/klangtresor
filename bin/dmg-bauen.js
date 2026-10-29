@@ -107,7 +107,7 @@ for (const a of ['x64', 'arm64']) {
 /* 4. whisper-cli für beide Macs - einmal gebaut, im Zwischenlager aufgehoben (der Bau dauert Minuten) */
 {
   const url = QUELLEN['whisper-quelltext'] || 'https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v1.9.2.tar.gz';
-  const fass = (url.match(/v[\d.]+/) || ['x'])[0];
+  const fass = (url.match(/v\d+(\.\d+)*/) || ['x'])[0];
   for (const a of ['x64', 'arm64']) {
     const fertig = path.join(GEHOLT, `whisper-cli-macos-${a}-${fass}`);
     if (!fs.existsSync(fertig) || frisch) {

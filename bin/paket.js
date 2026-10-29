@@ -5,7 +5,7 @@
  *   node bin/paket.js              → ../KlangTresor.zip, ../KlangTresor-Update.zip, ../KlangTresor-Setup.exe
  *
  * Alle drei gehoeren an jede Release:
- *   gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe ../KlangTresor-x86_64.AppImage …
+ *   gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe ../KlangTresor-x86_64.AppImage ../KlangTresor.dmg …
  * Fehlt eines, liefert seine feste Adresse 404.
  *
  * Das ZIP entsteht aus `git archive HEAD`. Damit kommt nur hinein, was
@@ -148,5 +148,8 @@ if (setup.status !== 0) { console.error('\n  ABGEBROCHEN — die Setup.exe liess
 /* Und das AppImage fuer Linux (29.10.2026, bin/appimage-bauen.js) - dieselbe Regel: ohne AppImage kein Paket */
 const appimage = spawnSync(process.execPath, [path.join(__dirname, 'appimage-bauen.js')], { stdio: 'inherit' });
 if (appimage.status !== 0) { console.error('\n  ABGEBROCHEN — das AppImage liess sich nicht bauen (siehe oben).\n'); process.exit(4); }
+/* Und die Mac-App als DMG (29.10.2026, bin/dmg-bauen.js) */
+const dmg = spawnSync(process.execPath, [path.join(__dirname, 'dmg-bauen.js')], { stdio: 'inherit' });
+if (dmg.status !== 0) { console.error('\n  ABGEBROCHEN — die Mac-App liess sich nicht bauen (siehe oben).\n'); process.exit(5); }
 
-console.log('  Release: gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe ../KlangTresor-x86_64.AppImage …\n');
+console.log('  Release: gh release create vX ../KlangTresor.zip ../KlangTresor-Update.zip ../KlangTresor-Setup.exe ../KlangTresor-x86_64.AppImage ../KlangTresor.dmg …\n');
