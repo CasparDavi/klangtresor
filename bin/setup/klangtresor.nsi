@@ -104,13 +104,10 @@ Page custom HolenSeite HolenVerlassen
 !insertmacro MUI_LANGUAGE "German"
 !insertmacro MUI_LANGUAGE "Russian"
 
-LangString ordner_oben ${LANG_GERMAN} "KlangTresor kommt in diesen Ordner - das Programm und später dein Archiv (Unterordner library), beides an einem Ort. Verwalterrechte braucht es nicht.$\r$\n$\r$\nLiegt hier schon ein KlangTresor, wird nur das Programm erneuert; dein Archiv bleibt unberührt."
-LangString ordner_oben ${LANG_ENGLISH} "KlangTresor goes into this folder - the program and later your archive (subfolder library), both in one place. No administrator rights needed.$\r$\n$\r$\nIf a KlangTresor is already here, only the program is renewed; your archive stays untouched."
-LangString ordner_oben ${LANG_RUSSIAN} "KlangTresor будет установлен в эту папку - программа и позже ваш архив (подпапка library), всё в одном месте. Права администратора не нужны.$\r$\n$\r$\nЕсли здесь уже есть KlangTresor, обновится только программа; ваш архив останется нетронутым."
+LangString ordner_oben ${LANG_GERMAN} "KlangTresor kommt in diesen Ordner - das Programm und später dein Archiv (Unterordner library), beides an einem Ort. Verwalterrechte braucht es nicht.$\r$\n$\r$\nLiegt hier schon ein KlangTresor, wird nur das Programm erneuert; dein Archiv bleibt unberührt.$\r$\n$\r$\nEin Ordner, in dem schon andere Dateien liegen, geht nicht - dann bleibt „Weiter“ gesperrt. Wähle einen leeren oder neuen Ordner."
+LangString ordner_oben ${LANG_ENGLISH} "KlangTresor goes into this folder - the program and later your archive (subfolder library), both in one place. No administrator rights needed.$\r$\n$\r$\nIf a KlangTresor is already here, only the program is renewed; your archive stays untouched.$\r$\n$\r$\nA folder that already holds other files will not do - then „Next“ stays disabled. Choose an empty or new folder."
+LangString ordner_oben ${LANG_RUSSIAN} "KlangTresor будет установлен в эту папку - программа и позже ваш архив (подпапка library), всё в одном месте. Права администратора не нужны.$\r$\n$\r$\nЕсли здесь уже есть KlangTresor, обновится только программа; ваш архив останется нетронутым.$\r$\n$\r$\nПапка, в которой уже есть другие файлы, не подойдёт - тогда кнопка «Далее» неактивна. Выберите пустую или новую папку."
 
-LangString ordner_fremd ${LANG_GERMAN} "In diesem Ordner liegen schon andere Dateien, aber kein KlangTresor.$\r$\n$\r$\nBitte einen leeren oder neuen Ordner wählen - etwa einen Unterordner „KlangTresor“. Sonst könnte das spätere Entfernen fremde Dateien treffen."
-LangString ordner_fremd ${LANG_ENGLISH} "This folder already holds other files, but no KlangTresor.$\r$\n$\r$\nPlease choose an empty or new folder - for example a subfolder „KlangTresor“. Otherwise removing it later could hit files that are not KlangTresor's."
-LangString ordner_fremd ${LANG_RUSSIAN} "В этой папке уже есть другие файлы, но нет KlangTresor.$\r$\n$\r$\nВыберите пустую или новую папку - например, подпапку «KlangTresor». Иначе при удалении могут пострадать чужие файлы."
 
 LangString fertig_titel ${LANG_GERMAN} "KlangTresor ist installiert"
 LangString fertig_titel ${LANG_ENGLISH} "KlangTresor is installed"
@@ -214,15 +211,19 @@ LangString nichts_da ${LANG_ENGLISH} "not present"
 LangString nichts_da ${LANG_RUSSIAN} "отсутствует"
 
 ; ---------------------------------------------------------------
-; Ein Ordner, in dem schon fremde Dateien liegen, wird nicht genommen: das Entfernen loescht spaeter bin\, docs\,
+; Ein Ordner, in dem schon fremde Dateien liegen, wird nicht genommen („Weiter" bleibt gesperrt, ordner_oben sagt warum): das Entfernen loescht spaeter bin\, docs\,
 ; web\ ... - in „Dokumente" gewaehlt, traefe das womoeglich Ordner des Nutzers gleichen Namens.
 Function .onVerifyInstDir
   ${If} ${FileExists} "$INSTDIR\*.*"
   ${AndIfNot} ${FileExists} "$INSTDIR\server\server.js"
     FindFirst $0 $1 "$INSTDIR\*.*"
     ${DoWhile} $1 != ""
+      ; library\ und modelle\ bleiben nach dem Entfernen liegen - dorthin neu zu installieren muss gehen (im Test
+      ; am 29.10.2026 war „Weiter" danach gesperrt)
       ${If} $1 != "."
       ${AndIf} $1 != ".."
+      ${AndIf} $1 != "library"
+      ${AndIf} $1 != "modelle"
         FindClose $0
         Abort
       ${EndIf}
