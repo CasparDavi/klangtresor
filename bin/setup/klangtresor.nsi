@@ -104,9 +104,9 @@ Page custom HolenSeite HolenVerlassen
 !insertmacro MUI_LANGUAGE "German"
 !insertmacro MUI_LANGUAGE "Russian"
 
-LangString ordner_oben ${LANG_GERMAN} "KlangTresor kommt in diesen Ordner - das Programm und später dein Archiv (Unterordner library), beides an einem Ort. Verwalterrechte braucht es nicht.$\r$\n$\r$\nLiegt hier schon ein KlangTresor, wird nur das Programm erneuert; dein Archiv bleibt unberührt.$\r$\n$\r$\nEin Ordner, in dem schon andere Dateien liegen, geht nicht - dann bleibt „Weiter“ gesperrt. Wähle einen leeren oder neuen Ordner."
-LangString ordner_oben ${LANG_ENGLISH} "KlangTresor goes into this folder - the program and later your archive (subfolder library), both in one place. No administrator rights needed.$\r$\n$\r$\nIf a KlangTresor is already here, only the program is renewed; your archive stays untouched.$\r$\n$\r$\nA folder that already holds other files will not do - then „Next“ stays disabled. Choose an empty or new folder."
-LangString ordner_oben ${LANG_RUSSIAN} "KlangTresor будет установлен в эту папку - программа и позже ваш архив (подпапка library), всё в одном месте. Права администратора не нужны.$\r$\n$\r$\nЕсли здесь уже есть KlangTresor, обновится только программа; ваш архив останется нетронутым.$\r$\n$\r$\nПапка, в которой уже есть другие файлы, не подойдёт - тогда кнопка «Далее» неактивна. Выберите пустую или новую папку."
+LangString ordner_oben ${LANG_GERMAN} "KlangTresor kommt in diesen Ordner - das Programm und später dein Archiv (library). Verwalterrechte braucht es nicht.$\r$\n$\r$\nLiegt hier schon ein KlangTresor, wird nur das Programm erneuert; dein Archiv bleibt unberührt. Liegen hier andere Dateien, bleibt „Weiter“ gesperrt - dann einen leeren Ordner wählen."
+LangString ordner_oben ${LANG_ENGLISH} "KlangTresor goes into this folder - the program and later your archive (library). No administrator rights needed.$\r$\n$\r$\nIf a KlangTresor is already here, only the program is renewed; your archive stays untouched. If other files are here, „Next“ stays disabled - then choose an empty folder."
+LangString ordner_oben ${LANG_RUSSIAN} "KlangTresor будет установлен в эту папку - программа и позже ваш архив (library). Права администратора не нужны.$\r$\n$\r$\nЕсли здесь уже есть KlangTresor, обновится только программа; архив останется нетронутым. Если здесь другие файлы, кнопка «Далее» неактивна - выберите пустую папку."
 
 
 LangString fertig_titel ${LANG_GERMAN} "KlangTresor ist installiert"
