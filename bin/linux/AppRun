@@ -42,6 +42,18 @@ laeuft() { (exec 3<>/dev/tcp/127.0.0.1/8788) 2>/dev/null; }
 seite() { xdg-open "http://localhost:8788/?sprache=$KT_SPRACHE" >/dev/null 2>&1 & }
 log "--- AppImage $NEU ($KT_APPIMAGE), installiert: ${ALT:-nichts}"
 
+# ZUERST BEREITLEGEN, DANN FRAGEN (29.10.2026, im Ubuntu-Test gefunden): wartete das Skript auf die Rueckfrage und
+# beendete dann KlangTresor, war das eingehaengte AppImage (/tmp/.mount_...) danach weg, und das Kopieren scheiterte.
+# Darum liegt das neue Programm schon vor jeder Frage in $ZIEL/.neu - danach braucht es das AppImage nicht mehr.
+VORRAT="$ZIEL/.neu"
+if neuer; then
+  rm -rf "$VORRAT"; mkdir -p "$VORRAT"
+  if ! cp -a "$PROG/." "$VORRAT/" 2>>"$LOG"; then
+    melden "$(t "Kopieren nach $ZIEL ging nicht - Einzelheiten in $LOG" "Copying to $ZIEL failed - details in $LOG" "Не удалось скопировать в $ZIEL - подробности в $LOG")"
+    rm -rf "$VORRAT"; exit 1
+  fi
+fi
+
 if laeuft; then
   if neuer && command -v zenity >/dev/null && zenity --question --title=KlangTresor \
        --text="$(t "KlangTresor $ALT läuft. Dieses AppImage bringt $NEU.\n\nKlangTresor beenden und erneuern? Dein Archiv bleibt, wie es ist." \
@@ -50,9 +62,8 @@ if laeuft; then
     # dieselbe Stelle wie der Knopf in Profil → System
     exec 3<>/dev/tcp/127.0.0.1/8788 && printf 'POST /api/system/beenden HTTP/1.0\r\nHost: localhost\r\nContent-Length: 0\r\n\r\n' >&3 && cat <&3 >/dev/null; exec 3>&-
     for i in $(seq 1 50); do laeuft || break; sleep 0.2; done
-    pkill -f "$ZIEL/bin/linux/klangtresor-symbol.py" 2>/dev/null
   else
-    seite; exit 0
+    rm -rf "$VORRAT"; seite; exit 0
   fi
 fi
 
@@ -61,11 +72,12 @@ if neuer; then
                 || melden "$(t "KlangTresor wird auf $NEU erneuert …" "Updating KlangTresor to $NEU …" "KlangTresor обновляется до $NEU …")"
   # Node und die Pakete werden ganz ersetzt (genau nach package-lock), der Rest darueber gelegt
   rm -rf "$ZIEL/werkzeug/node" "$ZIEL/node_modules"
-  mkdir -p "$ZIEL"
-  if ! cp -a "$PROG/." "$ZIEL/" 2>>"$LOG"; then
+  # aus dem Vorrat an seinen Platz (dieselbe Platte, Sekunden)
+  if ! cp -a "$VORRAT/." "$ZIEL/" 2>>"$LOG"; then
     melden "$(t "Kopieren nach $ZIEL ging nicht - Einzelheiten in $LOG" "Copying to $ZIEL failed - details in $LOG" "Не удалось скопировать в $ZIEL - подробности в $LOG")"
     exit 1
   fi
+  rm -rf "$VORRAT"
   chmod -R u+w "$ZIEL" 2>/dev/null
   log "kopiert: $NEU"
 fi
