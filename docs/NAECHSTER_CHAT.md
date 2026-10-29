@@ -9940,3 +9940,15 @@ unseren Tests: `C:\Users\Jörg Bernhardt\KlangTresor` (Installation mit 268 Tite
 in `C:\Users\Jörg Bernhardt\Downloads`, Startmenü-Ordner KlangTresor, Schreibtisch-Verknüpfung, Eintrag unter „Apps“
 (fehlt evtl. – zwei Testinstallationen teilten sich ihn), alte Edge-Tabs, `%LOCALAPPDATA%\KlangTresor` (Zwischenlager
 der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach library/ und modelle/ von Hand – nur auf Wort.
+
+### §145 Fortsetzung, 29.10.2026 morgens: 1.0.134 und 1.0.135 veröffentlicht
+- 1.0.134: erste Setup.exe (Absturz-Fix mLager). 1.0.135: **KlangTresor.exe** (bin/windows/KlangTresor.cs, dotnet →
+  net472) – Symbol unten rechts statt Konsolenfenster, Protokoll in protokoll/klangtresor.log, Kinder im Windows-Job;
+  ffmpeg-Ausweichquelle BtbN (quellen.txt ffmpeg-windows-2); Herzschlag in stand.txt; Download-Hilfe mit vier Bildern
+  (docs/bilder/windows-download/) in START-HIER/HERE/RU und READMEs.
+- Entscheidungen A–D in docs/INSTALLER.md: Windows ohne Konsole (erledigt), Mac/Linux Balken im Browser, Mac-Beenden
+  übers Dock, **als Nächstes Linux (AppImage)**, dann Mac.
+- Ungeprüft in 1.0.135: der frische Weg bis zum Ende der Einrichtung, die das Symbol startet (das Update startet es,
+  geprüft in Win10). Windows 11: Installation 1.0.134 steht in der Browser-Einrichtung beim Suno-Namen.
+- Aufräumen (Wiedervorlage): zusätzlich Win11 `C:\Users\joergbernhardt\KlangTresor`, `Desktop-Probe`; Mac-Downloads
+  `KlangTresor-Setup.exe`, `Nicht bestätigt *.crdownload`, die vier Bildschirmfotos 03.55–04.07.
