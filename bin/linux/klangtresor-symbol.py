@@ -116,6 +116,8 @@ def mitlesen(k):
 
 def aufhoeren():
     global gewollt
+    if gewollt:
+        return
     gewollt = True
     if kind and kind.poll() is None:
         try:
