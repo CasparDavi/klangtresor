@@ -1443,7 +1443,7 @@ open -a Terminal ${JSON.stringify(starter)}
     if (mDa >= mVon) zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} sind da', { da: mDa, von: mVon }));
     else zeile('modelle', T('KI-Modelle für Klang, Text und Tiefe'), T('{da} von {von} — der Rest wird geholt (rund 1,2 GB)', { da: mDa, von: mVon }), 'laeuft');
 
-    const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= mVon || mLager ? 0 : 1200);
+    const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= mVon ? 0 : 1200);
     if (zuHolen) zeile('summe', T('Zu holen'), T('rund {mb} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung', { mb: zuHolen }), 'laeuft');
     else zeile('summe', T('Zu holen'), T('nichts — alles liegt schon hier'));
   }
