@@ -7,6 +7,21 @@
 **[Что умеет KlangTresor → страница возможностей](https://caspardavi.github.io/klangtresor/features/?lang=ru)**\
 Брошюра в PDF: [для экрана (8 МБ)](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-ru.pdf) · [для печати (70 МБ)](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-ru-druck.pdf)
 
+## Скачать (RU\*)
+
+| Система | Файл | |
+|---|---|---|
+| **Windows 10 / 11** (64 бит) | [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) | 87 МБ |
+| **macOS 11 или новее** (Intel и Apple Silicon) | [KlangTresor.dmg](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg) | 164 МБ |
+| **Linux** (64 бит, x86_64) | [KlangTresor-x86_64.AppImage](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage) | 109 МБ |
+
+**Системные требования.** 64-битный компьютер с Windows 10 или 11, macOS 11 или новее либо Linux (x86_64).
+Около 5 ГБ свободного места для программы, моделей ИИ и Whisper, которые установка загружает с индикатором,
+плюс место для вашего архива. Современный браузер; для прослушивания подойдёт любой телефон или планшет в домашней сети.
+Проверено на Windows 10 и 11, macOS 26 (Intel) и Ubuntu 24.04. Apple Silicon поддерживается, но ещё не проверен на
+реальном устройстве. Установщики не подписаны, поэтому Windows и macOS при первом запуске переспрашивают —
+см. [Установка](#установка).
+
 *Сейф для вашей музыки: то, что в нём лежит, принадлежит вам, а ключ есть только у вас.*
 
 **Локальный архив ваших собственных песен на [Suno](https://suno.com)** — с

@@ -7,6 +7,21 @@
 **[Was KlangTresor kann → Feature-Seite](https://caspardavi.github.io/klangtresor/features/?lang=de)**\
 Broschüre als PDF: [für den Bildschirm (8 MB)](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-de.pdf) · [zum Drucken (70 MB)](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-de-druck.pdf)
 
+## Herunterladen
+
+| System | Datei | |
+|---|---|---|
+| **Windows 10 / 11** (64 Bit) | [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) | 87 MB |
+| **macOS 11 oder neuer** (Intel und Apple Silicon) | [KlangTresor.dmg](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg) | 164 MB |
+| **Linux** (64 Bit, x86_64) | [KlangTresor-x86_64.AppImage](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage) | 109 MB |
+
+**Systemanforderungen.** Ein 64-Bit-Rechner mit Windows 10 oder 11, macOS 11 oder neuer oder Linux (x86_64).
+Rund 5 GB frei für Programm, KI-Modelle und Whisper, die die Einrichtung mit Balken holt, dazu Platz für dein
+Archiv. Ein aktueller Browser; zum Hören genügt jedes Handy oder Tablet im Heimnetz.
+Getestet unter Windows 10 und 11, macOS 26 (Intel) und Ubuntu 24.04. Apple Silicon ist eingebaut, aber noch nicht
+auf einem echten Gerät getestet. Die Installer sind nicht signiert; Windows und macOS fragen beim ersten Start
+nach — siehe [Einrichten](#einrichten).
+
 *Ein Tresor für die eigene Musik — was drin liegt, gehört dir, und den
 Schlüssel hast nur du.*
 

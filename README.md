@@ -7,6 +7,20 @@
 **[What KlangTresor can do → feature page](https://caspardavi.github.io/klangtresor/features/)**\
 The brochure as PDF: [for screens (8 MB)](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-en.pdf) · [for print (70 MB)](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-en-druck.pdf)
 
+## Download
+
+| System | File | |
+|---|---|---|
+| **Windows 10 / 11** (64-bit) | [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) | 87 MB |
+| **macOS 11 or newer** (Intel and Apple Silicon) | [KlangTresor.dmg](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg) | 164 MB |
+| **Linux** (64-bit, x86_64) | [KlangTresor-x86_64.AppImage](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage) | 109 MB |
+
+**System requirements.** A 64-bit computer with Windows 10 or 11, macOS 11 or newer, or Linux (x86_64).
+About 5 GB of free space for the program, the AI models and Whisper, which the setup fetches with progress bars,
+plus room for your archive. A current web browser; for listening, any phone or tablet in your home network will do.
+Tested on Windows 10 and 11, macOS 26 (Intel) and Ubuntu 24.04. Apple Silicon is built in but not yet tested on a real device.
+The installers are not signed, so Windows and macOS ask for confirmation on first launch — see [Setting up](#setting-up).
+
 *A vault for your own music — what lies inside is yours, and only you
 hold the key.*
 
