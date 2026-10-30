@@ -42,11 +42,12 @@ Stiller Lauf für Tests: `KlangTresor-Setup.exe /S /D=C:\Pfad` (`/OHNEHOLEN` lä
 „Trotzdem ausführen“. Kostenloser Ausweg später: SignPath Foundation (Open Source; Herausgeber heißt dann „SignPath
 Foundation“, Bau müsste in GitHub Actions laufen). Casto kann nicht signieren (Voicechat 29.10.2026).
 
-## macOS: `KlangTresor.dmg` (gebaut 29.10.2026, noch nicht gelaufen)
+## macOS: `KlangTresor.dmg` (geprüft 30.10.2026, veröffentlicht mit 1.0.142)
 
-Gebaut mit `bin/dmg-bauen.js` (aus `bin/paket.js`), 156 MB. **Nicht veröffentlicht:** gestartet hat sie noch niemand.
-Auf Jörgs Mac belegt sein KlangTresor Port 8788; die App würde sich daran hängen. Ein Test braucht entweder sein
-Okay, den eigenen Server kurz zu beenden, oder einen zweiten Mac (Apple Silicon wäre ohnehin ungeprüft).
+Gebaut mit `bin/dmg-bauen.js` (aus `bin/paket.js`), 164 MB. Geprüft in einer macOS-26-VM (Intel): Erster Start legt
+das Programm nach `~/KlangTresor` und öffnet die Einrichtung; Update per Glocke 1.0.138 → 1.0.141 lief durch. Der
+Absturz beim allerersten Start (Fenster doppelt freigegeben) ist seit 1.0.142 behoben. Apple Silicon ist eingebaut,
+aber noch nicht auf einem echten Gerät geprüft.
 
 - `KlangTresor.app/Contents/MacOS/KlangTresor`: der Starter (`bin/mac/KlangTresor.swift`), Intel und Apple Silicon
   in einer Datei. Er legt das Programm nach `~/KlangTresor` (Node und whisper-cli für den eigenen Prozessor), entfernt

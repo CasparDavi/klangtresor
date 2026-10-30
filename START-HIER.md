@@ -56,7 +56,18 @@ kein eigener Knopf — es versteckt sich hinter dem **kleinen Pfeil ˅ neben „
 Entfernen: Einstellungen → Apps → KlangTresor, oder Startmenü → „KlangTresor entfernen". Dein Archiv (`library`) und
 die KI-Modelle (`modelle`) bleiben liegen; die letzte Seite sagt, wo und wie groß.
 
-Für macOS bleibt vorerst das Zip (übernächster Abschnitt); ein eigener Installer ist in Arbeit.
+## macOS: die DMG — laden, ziehen, öffnen
+
+1. [KlangTresor.dmg](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg) laden (Intel und Apple Silicon in einer Datei) und öffnen.
+2. **KlangTresor** in *Programme* ziehen und von dort starten.
+3. Die App ist nicht notarisiert, darum blockiert macOS den ersten Start einmal: Systemeinstellungen → Datenschutz &
+   Sicherheit → **Dennoch öffnen**.
+4. Ein kleines Fenster sagt „KlangTresor wird nach ~/KlangTresor gelegt …“, dann geht die Einrichtung im Browser auf:
+   Sie holt ffmpeg und die KI-Modelle mit Balken und fragt nach deinem Suno-Namen.
+5. Danach steht KlangTresor im Dock: Klick öffnet die Seite, Rechtsklick bietet *Protokoll anzeigen* und *Neu starten*,
+   Cmd-Q beendet. Eine neuere DMG erneuert das Programm und fasst dein Archiv nie an.
+
+Entfernen: die App in den Papierkorb ziehen. Archiv und KI-Modelle bleiben in `~/KlangTresor`.
 
 ## Linux: das AppImage — herunterladen, ausführbar machen, doppelklicken
 

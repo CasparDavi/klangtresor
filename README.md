@@ -1,460 +1,169 @@
-# KlangTresor #
-
-[Deutsch](README.de.md) · **English** · [Русский](README.ru.md)
-
 <a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/readme-en.jpg" alt="KlangTresor — Your Suno music. At home." width="100%"></a>
 
-**[What KlangTresor can do → feature page](https://caspardavi.github.io/klangtresor/features/)**\
-The brochure as PDF: [for screens (8 MB)](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-en.pdf) · [for print (70 MB)](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-en-druck.pdf)
+<p align="center"><a href="README.de.md">Deutsch</a> · <b>English</b> · <a href="README.ru.md">Русский</a></p>
+
+# KlangTresor
+
+**Your Suno music. At home.**
+Suno makes the songs. KlangTresor keeps them, plays them, measures them and shows them — on every screen in your home.
+Free and open source. No account. Runs on your own computer.
+
+**[See everything it can do → feature page](https://caspardavi.github.io/klangtresor/features/)** · Brochure (PDF): [for screens, 8 MB](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-en.pdf) · [for print, 70 MB](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-en-druck.pdf)
 
 ## Download
 
-| System | File | |
-|---|---|---|
-| **Windows 10 / 11** (64-bit) | [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) | 87 MB |
-| **macOS 11 or newer** (Intel and Apple Silicon) | [KlangTresor.dmg](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg) | 164 MB |
-| **Linux** (64-bit, x86_64) | [KlangTresor-x86_64.AppImage](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage) | 109 MB |
+<p align="center">
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Download for Windows 10/11 (87 MB)" src="https://img.shields.io/badge/Windows_10%2F11-Download-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Download for macOS 11 or newer (164 MB)" src="https://img.shields.io/badge/macOS_11+-Download-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage"><img alt="Download for Linux x86_64 (109 MB)" src="https://img.shields.io/badge/Linux_x86__64-Download-ff8a2a?style=for-the-badge&logo=linux&logoColor=white"></a>
+<br><sub>Setup.exe 87 MB · DMG 164 MB (Intel and Apple Silicon) · AppImage 109 MB</sub>
+</p>
 
-**System requirements.** A 64-bit computer with Windows 10 or 11, macOS 11 or newer, or Linux (x86_64).
-About 5 GB of free space for the program, the AI models and Whisper, which the setup fetches with progress bars,
-plus room for your archive. A current web browser, for the full feature set **Google Chrome**; for listening, any phone or tablet in your home network will do.
-Tested on Windows 10 and 11, macOS 26 (Intel) and Ubuntu 24.04. Apple Silicon is built in but not yet tested on a real device.
-The installers are not signed, so Windows and macOS ask for confirmation on first launch — see [Setting up](#setting-up).
+**System requirements.** A 64-bit computer with Windows 10 or 11, macOS 11 or newer, or Linux (x86_64). About 5 GB
+of free space for the program and the AI models, plus about 15 MB per song (about 70 MB with the WAV original).
+A current browser — for the full feature set **Google Chrome**; for listening, any phone, tablet or TV in your home
+network will do.
 
-*A vault for your own music — what lies inside is yours, and only you
-hold the key.*
-
-**A local archive of your own [Suno](https://suno.com) songs** — with
-lyrics, prompts, artworks, playlists and metadata. Plus a website that
-runs on your home network and plays on every screen with a browser.
-
-<br>
+## What it does
 
 <a href="https://caspardavi.github.io/klangtresor/features/"><img src="docs/features/img/readme-quartett-en.jpg" alt="Every screen at home, a real studio in the browser, sound space, the stage" width="100%"></a>
 
-<br>
+- **Your archive.** Every song you made on Suno — MP3 and WAV, lyrics, covers, moving covers, playlists, comments
+  and hearts — in a folder on your own computer.
+- **A stage for every song.** Karaoke with lyrics that follow word by word, visualisations that take their colours
+  from the cover, full screen on the TV.
+- **A real studio in the browser.** Eight-band equaliser, compressor and room, calibrated at your listening position.
+- **A look inside your songs.** Loudness, key, vocal range, six separated instrument tracks — and a star map that
+  sorts your whole collection by sound or by what the songs are about.
+- **Make something of it.** Poster studio for your complete works, effect clips from a still cover, export to a
+  USB stick or a music folder for the car.
 
+## Getting started
 
-Behind it sits a toolbox that reads from your own tracks what can be
-measured: loudness according to EBU R128, key from the bass, vocal
-range, instrument tracks, a sound studio with equaliser and
-compressor, a star map of your own sound space.
+1. **Download and open** the file for your system. The installers are not signed yet, so the first launch asks for
+   confirmation once:
+   - **Windows:** "Windows protected your PC" → *More info* → *Run anyway*. Edge may ask to *Keep* the download first.
+   - **macOS:** if it is blocked, System Settings → Privacy & Security → *Open Anyway*.
+   - **Linux:** right-click → Properties → allow *Executable as Program*, then double-click. No sudo.
 
-**Runs on Node's built-in tools.** No database, no sign-in except your
-own in the browser, a single npm dependency (and that only for music
-style detection).
+   [START-HERE.md](START-HERE.md) shows every click with pictures.
+2. **Setup runs in your browser.** It fetches ffmpeg and the AI models with progress bars, then asks for your Suno
+   name and collects your public songs.
+3. **KlangTresor runs as an icon** in the taskbar, Dock or panel. The page is at **http://localhost:8788**. For
+   phones, tablets and TVs on the same Wi-Fi, *Profile → On your phone* shows the address and a QR code.
+4. **Private songs, albums and word timestamps** need your Suno login. KlangTresor never sees your password: a
+   bookmark you click in your own Suno tab sends them over. Its address is in the morning window behind the red
+   button.
 
----
+Afterwards the **red button** at the top right fetches what is new.
 
-> **The documents are sorted by module** — the map to them is in
-> [docs/LIESMICH.md](docs/LIESMICH.md) (German).
+## Updates and backup
 
-## What this is *not*
+- **Updates:** when a new version is out, a bell appears next to the red button. One click installs it in the app;
+  running a newer installer does the same. Your archive is never touched.
+- **Backup:** back up **`library/katalog.json.gz`** in your KlangTresor folder. It holds what cannot be fetched again —
+  lyrics, word timestamps, comments, playlists, the counter history. Everything else (media, covers, analyses) is
+  rebuilt by `node bin/wiederherstellen.js`. Instrument tracks are recomputed by the morning run; WAV originals do not
+  come back, so keep `library/songs/` too if you want them.
 
-To avoid any misunderstanding:
+## Your data
 
-- **Not a Suno client and no workaround for the API.** What is publicly
-  available without signing in is fetched publicly. Everything else —
-  private songs, word timestamps, playlists — is fetched by a bookmarklet
-  in your own browser tab, where you are signed in to Suno. Access stays
-  where it belongs: at suno.com.
-- **No way around Suno's terms.** The archive secures your own works,
-  not other people's.
-- **Not a service.** It runs on your own computer, on your own network,
-  without an account and without a server on the internet.
-- **Not a finished application.** It was built for one archive and grew
-  with it. Anyone who wants to use it should be comfortable with a
-  command line.
+Your songs stay on your computer. KlangTresor has no account, no cloud and no tracking. It goes online only to fetch
+your own songs from Suno, to download its tools and models during setup, and to ask GitHub whether there is a new
+version.
 
----
+## Questions
 
-## Rights and contributing
+<details><summary><b>My phone cannot open the page.</b></summary>
 
-The code is released under the **MIT licence** — see [LICENSE](LICENSE). That
-means: take it, change it, pass it on, build something of your own from
-it. The only condition is that the copyright notice travels with it.
+Phone and computer must be on the same Wi-Fi. On the first start your computer's firewall asks whether Node may
+accept connections — allow it.
+</details>
 
-**Caspar_D has the final say** over what flows into this project. That is
-not a licence condition, but simply the consequence of whom the
-repository belongs to: suggestions are welcome, and what gets merged is
-what he merges. Anyone who wants it differently is welcome to fork at any
-time — that is what the licence is for.
+<details><summary><b>Windows or macOS says the app is unsafe.</b></summary>
 
-Not covered by this licence are the third-party components and the AI
-models. What comes from whom and what to watch out for is listed in
-[web/fremd/LIZENZEN.md](web/fremd/LIZENZEN.md). One restriction is worth
-highlighting: the models for music style detection are licensed under
-CC BY-NC-ND and must not be used commercially.
+The installers are not signed yet. Confirm once as described under [Getting started](#getting-started).
+</details>
 
-The songs, lyrics and artworks in an archive built with it belong to
-their creators and are not part of this repository.
+<details><summary><b>"Port 8788 is already in use".</b></summary>
 
-## How this came about
+Another KlangTresor is already running. Quit it via its icon, or open http://localhost:8788 to see whether that is
+the archive you meant.
+</details>
 
-Large parts of this code were written in dialogue with an AI language
-model. Design, selection, review and all design decisions come from
-Caspar_D — see
-[docs/haus/HAUSREGELN.md](docs/haus/HAUSREGELN.md), where every rule is
-listed with its occasion, and the version history.
+<details><summary><b>Some downloads failed during setup.</b></summary>
 
-This is stated here because it is true and because the documents talk
-about it anyway. Anyone who wants to know how something like this comes
-about will also find the detours in
-[docs/haus/HISTORY.md](docs/haus/HISTORY.md).
+Setup says what is missing and offers to try again. KlangTresor runs without it; missing models can be fetched
+later under *Profile → System*.
+</details>
 
----
+<details><summary><b>How do I uninstall it?</b></summary>
 
-## What it can do
+Windows: Settings → Apps → KlangTresor. macOS: drag the app to the Bin. Linux: delete the AppImage. Your archive and
+the AI models stay in the `KlangTresor` folder in your home folder — delete it if you want everything gone.
+</details>
 
-**Archive**
-- All your own songs locally — MP3 and WAV, artwork, video artworks
-- Playlists with their order; other people's songs in them play from the CDN
-- Unpublished songs too, as long as they are in one of your own playlists
-- Comments and reactions, with the people behind them
+## Good to know
 
-**Listening**
-- Karaoke stage with lyrics that follow word by word, and full screen
-- Colour palettes from every cover — the interface takes its colours from
-  the song that is playing, without ever inventing a colour
-- Seven visualisations of its own, plus Butterchurn with 333
-  MilkDrop presets
+- **Not a Suno client.** What is public is fetched publicly; everything else is fetched in your own signed-in Suno
+  tab. It only collects your own songs.
+- **Not affiliated with Suno Inc.** Suno is a trademark of Suno Inc. The program was called *MySuno* until August 2026.
+- **It follows Suno.** If Suno changes its website, the morning run may need a new version. Everything already at
+  home stays playable.
+- **Tested** on Windows 10 and 11, macOS 26 (Intel) and Ubuntu 24.04. Apple Silicon is built in but not yet tested on
+  a real device.
 
-**Measuring**
-- Loudness according to EBU R128 with both gates, true peak, loudness range
-- Key from the bass on the downbeat, mode from the counted third — and
-  where no third occurs, only the root note is shown
-- Vocal range via YIN on the separated vocal track
-- Separation into six instrument tracks, local and without Python
-- Word timestamps and transcript from whisper.cpp
+## Licence
 
-**Tools**
-- Sound studio with equaliser, compressor, room and a notch for
-  interfering frequencies
-- **Spaces**: your own collection as a star map, with flight paths — in
-  two views. The **Sound Space** arranges by sound, the **Story Space**
-  by what the songs are about (from the lyrics, multilingual — German and
-  English ones end up in the same space, without translation). Its groups
-  are named after the **place words**: the words of your own collection
-  that live where the group lies — a group without a clear place says so
-  honestly
-- Author page: your own numbers in relation to the neighbourhood — who
-  here has commented, liked or followed, with public profile figures and
-  h-index. Including an explanation of why almost everyone lands in the
-  lower third in this calculation
+The code is released under the **MIT licence** ([LICENSE](LICENSE)): use it, change it, pass it on. Third-party
+components and AI models keep their own licences — see [web/fremd/LIZENZEN.md](web/fremd/LIZENZEN.md). Note: the
+models for music-style detection are licensed CC BY-NC-ND and must not be used commercially. The songs, lyrics and
+covers in an archive belong to their creators.
 
----
+KlangTresor is made by Caspar_D with Tarja, Casto and Henry. Large parts of the code were written in dialogue with an
+AI language model; design and decisions are Caspar_D's ([docs/haus/HAUSREGELN.md](docs/haus/HAUSREGELN.md)).
 
-## Setting up
+<details><summary><b>Other ways to install</b> — zip, Docker, Git, WSL</summary>
 
-Double-click the setup script for your system:
-`einrichten-macos.command`, `einrichten-windows.cmd` or
-`einrichten-linux.sh`. It fetches what is missing — Node.js, the packages,
-the AI models and Whisper, on Windows also ffmpeg (on Mac and Linux ffmpeg
-comes from the package manager) —, about 4.7 GB in total. Then it asks for
-your Suno name, fetches the public song list, takes over Suno files that
-are already on the computer, loads cover images and motion artwork and
-starts KlangTresor. Every step is explained in [START-HERE.md](START-HERE.md).
+- **Zip:** download `KlangTresor.zip` from the [latest release](https://github.com/CasparDavi/klangtresor/releases/latest),
+  unpack it and double-click `einrichten-windows.cmd`, `einrichten-macos.command` or `einrichten-linux.sh`.
+- **Docker:** the same with `einrichten-docker-*` — everything runs in a container, `library/` stays on your disk.
+- **Git:** `git clone https://github.com/CasparDavi/klangtresor && cd klangtresor && npm ci && npm start`.
+- **Updating** these installations: the bell in the app, or `aktualisieren-*` in the program folder.
+- **WSL:** the browser must run inside WSL too, otherwise the bookmark cannot reach the server.
 
-What only works when signed in — unpublished titles, albums, word
-timestamps, audio files you have already unlocked — is fetched afterwards
-by the bookmark "KlangTresor morgens". Its address is in the morning window
-behind the red button.
+Details: [docs/INSTALL-ADVANCED.md](docs/INSTALL-ADVANCED.md).
+</details>
 
-### On Linux
+<details><summary><b>Coming from MySuno or version 1.0.72 and older</b></summary>
 
-**The AppImage:** download [KlangTresor-x86_64.AppImage](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage), make it executable (right-click → Properties →
-"Executable as Program"), double-click. It fetches ffmpeg, the AI models and Whisper with progress bars, asks for the
-Suno name and then runs as an icon in the panel. No sudo. Details in [START-HERE.md](START-HERE.md).
+These versions have no update script yet. Copy `aktualisieren.js` and the script for your system from
+[KlangTresor-Update.zip](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Update.zip)
+into the folder that contains `library/` and run it. Archive and settings stay; analyses are recalculated once.
+Details: [docs/MIGRATION-MYSUNO.md](docs/MIGRATION-MYSUNO.md).
+</details>
 
-### On Windows
-
-**The Setup.exe:** download [KlangTresor-Setup.exe](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe) and double-click it. It shows what is already there, fetches
-ffmpeg, the AI models and Whisper with progress bars and then opens the browser — only the Suno name is left. KlangTresor
-then runs as an icon at the bottom right of the taskbar. Windows asks three times the first time, because the Setup.exe
-is not signed; [START-HERE.md](START-HERE.md) shows with pictures where to click.
-
-The old way from the zip still works:
-
-
-Double-click **`einrichten-windows.cmd`** — the rest runs by itself:
-check what is missing, fetch Node.js and packages, fetch models, ask for
-your Suno alias, collect songs, start. The setup opens as a page in the
-browser; if none opens, it runs in the window as text.
-
-The `.cmd` calls `bin\anlasser.ps1` — do not click the `.ps1` itself.
-On many computers Windows refuses it, and the window closes before you
-can read the message — you then take the program for broken. The `.cmd`
-avoids both; it keeps the window open and allows the script only for this
-one call, without changing anything in the system settings.
-
-If ffmpeg is missing, the script tells you how to get it — with `winget`
-in one line, and for computers without `winget` step by step by hand.
-
-### On WSL
-
-If the server runs in the Linux environment, the browser must run there
-too — a Chrome started under Windows cannot reach it. Everything else
-works, only the bookmarklet does not find the server.
-
----
-
-## Day-to-day operation
-
-The red button at the top right fetches what is new: first show, then
-apply. It needs no sign-in.
-
-For what is only visible when signed in — word timestamps, private songs,
-playlists, who has reacted — there is the **bookmarklet**. It runs in your
-own Suno tab, saves immediately and sends the harvest to the server in
-packets. An access key never lands on the disk in the process.
-
-The neighbourhood figures are fetched by two runs, to be started from the
-*Neighbourhood* panel on the author page or by hand:
+<details><summary><b>For developers</b></summary>
 
 ```
-node bin/community-profile.js    Profile figures of the people who appear here
-node bin/community-hirsch.js     their h-indexes (takes considerably longer)
+git clone https://github.com/CasparDavi/klangtresor && cd klangtresor && npm ci
+npm start                      # server/server.js → http://localhost:8788
 ```
 
-Both fetch only what is still missing; a second run therefore costs
-nothing. They read publicly and without sign-in — and keep to the
-etiquette from [docs/haus/HAUSREGELN.md](docs/haus/HAUSREGELN.md): one
-request at a time, a 1.5 s pause, an honest user agent, and stopping
-immediately if the service puts on the brakes.
-
----
-
-## Installing an update
-
-The red button fetches song data, not the code. New versions of the
-program are on [GitHub](https://github.com/CasparDavi/klangtresor).
-KlangTresor checks by itself whether a new one is there: when the page is
-opened and, as long as it stays open, every 12 hours (2 hours after a
-failure) the page asks your own server — and every time the
-"KlangTresor" window opens (click on the name at the top). The server asks
-GitHub and keeps the answer for half an hour. If a higher number is there,
-a bell appears to the left of the red button; a click opens the window
-with the notice: which version is available, in which folder KlangTresor
-is running and which script installs the update. **Show folder** opens
-that folder in the file window (only on the computer where KlangTresor
-runs, not in the container). The frozen copy on the stick never asks.
-
-To install, in the **project folder** (where `bin/` and `library/` are,
-one level above `docker/`):
-
-```bash
-./aktualisieren-linux.sh          # Mac: aktualisieren-macos.command
-                                  # Windows: aktualisieren-windows.cmd
-```
-
-From a subfolder: `npm run aktualisieren` (npm finds the `package.json`
-above). To only look, without writing anything:
-
-```bash
-npm run aktualisieren -- --nur-stand
-```
-
-- **Git clone:** `git pull --rebase origin main` (aborts on a dirty
-  working tree or a branch other than `main`). Files copied in from the
-  update package do not hold up the pull. If the history is unrelated to
-  the one on GitHub (a clone from the MySuno days), the release zip is
-  used instead; uncommitted changes are put in `git stash` beforehand.
-- **Zip installation:** fetches `KlangTresor.zip` of the latest release
-  and lays the program files over the existing ones.
-- **Docker:** then `compose up --build`. `library/` is a volume and
-  stays. CUDA overlay only if the running container already has
-  `KLANG_CUDA`.
-- **Without Docker:** if `package-lock.json` has changed, run `npm ci`,
-  then restart the server via `starten-*`.
-
-`library/`, `werkzeug/` and `.git/` are left untouched.
-
----
-
-## Older versions without an update script
-
-Up to version 1.0.72 — and from the time when the program was called
-*MySuno* — the folder does not yet contain an update script. For that,
-every release has the update package attached, always in the latest
-version:
-
-```
-https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Update.zip
-```
-
-Copy `aktualisieren.js` and the script for your system into your
-KlangTresor or MySuno folder (where `library/` is) and double-click the
-script:
-
-| System | copy | start |
-|---|---|---|
-| Windows | `aktualisieren.js`, `aktualisieren-windows.cmd` | double-click `aktualisieren-windows.cmd` |
-| macOS | `aktualisieren.js`, `aktualisieren-macos.command` | double-click `aktualisieren-macos.command` |
-| Linux | `aktualisieren.js`, `aktualisieren-linux.sh` | `./aktualisieren-linux.sh` |
-
-The package is flat, without subfolders: when copying, the Finder replaces
-an existing `bin/` folder instead of merging it. The update then runs as
-usual — `library/` stays —, after which all `aktualisieren-*` files are in
-the folder, and the copy `aktualisieren.js` removes itself. From version
-1.0.73 on, the package is not needed.
-
-On the first start the system complains that the package is not signed:
-Windows says "The publisher could not be verified" — **Run**. macOS says
-"unverified developer" — the first time, right-click → **Open**; from
-macOS 15 on that is no longer offered there, then System Settings →
-Privacy & Security → **Open Anyway**. Linux: if the execute permission is
-missing, `chmod +x aktualisieren-linux.sh`.
-
-Anyone who runs KlangTresor only in the container, without Node on the
-computer, does not need the package: copy the contents of the new
-`KlangTresor.zip` into the folder (replace files, never the whole folder —
-`library/` is inside it) and run `einrichten-docker-*` once more. If the
-container `mysuno` from the MySuno days is still running there, first run
-`docker stop mysuno`.
-
----
-
-## If you already have an installation
-
-The program was called *MySuno* until 24 Aug 2026. You install the update
-as described under
-[Older versions without an update script](#older-versions-without-an-update-script);
-nothing is lost:
-
-- **Settings stay.** Equaliser, volume, display mode, map view — all 52
-  storage keys in the browser keep their names. Renaming them would have
-  reset everything for every user, and outwardly they mark nothing.
-- **The archive stays.** `library/` is not touched, the storage format is
-  unchanged, no server endpoint has been dropped.
-- **The directory may keep its name.** All scripts work relative to
-  themselves; nobody has to rename anything.
-
-Two things change visibly:
-
-**The analyses are recalculated once.** Since the old key-detection method
-was removed, the stores carry a measurement-path stamp. Anyone who still
-has analyses from before gets them recalculated on next opening — once,
-and then it is quiet again.
-
-**Five display modes are gone.** `audioMotion` was under the AGPL and does
-not go with this project's MIT licence. Anyone who had one of its modes
-selected is rewritten to **Spectrum** at the next start — the same
-frequency bars, only radial instead of on a baseline.
-
-After updating, restart the server once.
-
----
-
-## What must be backed up
-
-**`library/katalog.json.gz`** — around 47 MB. It holds everything that
-does not come back from a file: lyrics, word timestamps, comments with
-their replies, the counter history over months, the playlists.
-
-Plus `library/roh/`, if something happens to be in it.
-
-> **Attention, this instruction was wrong here for a long time.** It named
-> `library/roh/` as the only irreplaceable thing. That was true once —
-> today `aufbereiten.js` clears away the processed raw data as soon as its
-> content is in the catalogue (intended: "why carry that along and waste
-> storage space"). In healthy operation the folder is therefore almost
-> empty, and anyone who backs up only it backs up nothing.
-
-Everything else — media, artworks, tiles, palettes, analyses — is rebuilt
-by `node bin/wiederherstellen.js`, without any sign-in.
-
-**It does not bring back two things, though:** the WAV originals
-(`node bin/wav.js` — **out of service since 3 Sep 2026**, the route via
-`cdn1.suno.ai` is closed, see `docs/suno/AUDIO-BEZUG.md`) and the
-instrument tracks (the morning run recomputes them, at most half an hour per morning, newest first).
-Anyone who wants to keep those should back up `library/songs/` as well —
-though that then amounts to dozens of gigabytes.
-
----
-
-## Directory
-
-```
-einrichten-windows.cmd         set up on Windows (double-click)
-einrichten-macos.command       set up on the Mac (double-click)
-einrichten-linux.sh            set up on Linux
-einrichten-docker-*            the same, without installation - everything in the container
-aktualisieren-*                update to the new version from GitHub (Git or zip)
-starten-windows.cmd / -macos.command / -linux.sh   only start, do not set up
-docker/    Dockerfile, docker-compose.yml, entry script of the container
-bin/       collecting, processing, measuring, colours, restoring
-  einrichten.js  the setup in ten steps; melden.js supplies it with the figures
-browser/   scripts for the Suno console and the bookmarklet
-server/    website for the home network, port 8788
-web/       the whole interface in one file
-  einrichtung/  the setup page (bar, ticks, result figures)
-  fremd/   Analyzer, Butterchurn
-library/   catalogue, raw data, media — not in the repo
-docs/      specialist documents
-```
-
----
-
-## Documentation
+Node 20 or newer; two dependencies (`onnxruntime-node`, `umap-js`). Layout: `server/` the home-network server ·
+`web/` the interface · `bin/` collecting, measuring, setup, update · `browser/` the bookmarklet · `docker/`.
+Installers: `node bin/paket.js` builds zip, Setup.exe, AppImage and DMG.
 
 | | |
 |---|---|
-| [docs/archiv/UEBERGABE.md](https://github.com/CasparDavi/klangtresor/blob/main/docs/archiv/UEBERGABE.md) | Entry point, procedures, pitfalls |
-| [docs/haus/HAUSREGELN.md](docs/haus/HAUSREGELN.md) | The design rules, each with its occasion |
+| [docs/LIESMICH.md](docs/LIESMICH.md) | Map of all documents (German) |
+| [docs/haus/HAUSREGELN.md](docs/haus/HAUSREGELN.md) | Design rules, each with its occasion |
 | [docs/analyse/NORMEN.md](docs/analyse/NORMEN.md) | Loudness standards, gates, target levels |
-| [docs/analyse/VISUALIZER.md](docs/analyse/VISUALIZER.md) | Stage, analysis, display rules |
-| [docs/analyse/FARBHANDLING.md](docs/analyse/FARBHANDLING.md) | Colour extraction, colour spaces, every rule with a measured value |
+| [docs/analyse/FARBHANDLING.md](docs/analyse/FARBHANDLING.md) | Colour extraction and colour spaces |
 | [docs/ton/TONSTUDIO.md](docs/ton/TONSTUDIO.md) | Equaliser, compressor, room |
-| [docs/ton/EINMESSEN.md](docs/ton/EINMESSEN.md) | Calibrating at the listening position: signals, procedure, evaluation, findings |
 | [docs/suno/WHISPER.md](docs/suno/WHISPER.md) | Word timestamps from listening |
-| [docs/suno/WEGE.md](docs/suno/WEGE.md) | The routes of the web API — what we use, what is worthwhile, what changes the account |
-| [docs/forschung/VERGLEICH-HUB.md](docs/forschung/VERGLEICH-HUB.md) | Feature comparison with a related tool — do we have it, better, or did we discard it? |
-| [docs/haus/ZUSAMMENARBEIT.md](docs/haus/ZUSAMMENARBEIT.md) | Two people on the repo: checking other people's commits before pulling |
-| [docs/BACKLOG.md](https://github.com/CasparDavi/klangtresor/blob/main/docs/BACKLOG.md) | What is open — and what was discarded, with reasons |
-| [docs/haus/HISTORY.md](docs/haus/HISTORY.md) | Chronology including all the detours |
+| [docs/BACKLOG.md](docs/BACKLOG.md) | What is open, and what was discarded |
+| [docs/haus/HISTORY.md](docs/haus/HISTORY.md) | Chronology, including the detours and the name change |
 
-The specialist documents came about with the archive of their author
-([@caspar_d](https://suno.com/@caspar_d)) and quote his measured values
-and examples. They nevertheless describe the program, not the
-collection — the figures are evidence for the decisions taken.
-
-Anyone who wants to know why something is built this way and not another
-will usually find the answer as a comment on the spot in the source code.
-That is intentional: reasons do not migrate into a file nobody opens.
-
----
-
-## Limits
-
-- **Developed on macOS** with Chrome and Safari; run by testers on Linux
-  and WSL.
-- The collection scripts depend on Suno's interfaces. If Suno changes
-  something, `browser/01-erkundung.js` helps to follow suit.
-- On exFAT drives every small file occupies a full 1 MB block — that is
-  why all the small stuff lives in collection files.
-- Stem separation needs a model of 246 MB
-  (`npm run modelle`) and computes in roughly twice real time.
-
----
-
-## About the name
-
-The project was called *MySuno* until 24 Aug 2026. The name was dropped
-because **SUNO** has been a registered trademark of Suno Inc. since 6 Jan
-2026
-([US Reg. 8096778](https://tsdr.uspto.gov/statusview/sn98407583)) — and
-expressly for *"downloadable software to enable users to edit
-and playback of audio content"*, that is, for exactly this kind of
-program. International registration IR 1930809 of 22 May 2026 also
-designates Germany and the EU.
-
-A third-party trademark in the **name** of a project is delicate; naming
-it in the **description** is not — that is why the top still says what
-this is good for. Where the old name still appears in quotations and in
-`docs/haus/HISTORY.md`, it stays: what was once said is not rewritten
-afterwards.
-
-The storage keys in the browser (`mysuno-…`), the CSS class
-`.sunoanalyzer` and `window.SunoAnalyzer` also still carry the old name.
-Renaming them would throw away the saved settings of every user, and
-outwardly they mark nothing.
+Why something is built the way it is usually stands as a comment right in the source code.
+</details>

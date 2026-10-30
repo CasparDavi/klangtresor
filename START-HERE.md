@@ -56,7 +56,18 @@ button of its own — it hides behind the **small arrow ˅ next to "Delete"**.
 Removing: Settings → Apps → KlangTresor, or Start menu → "KlangTresor entfernen". Your archive (`library`) and the AI
 models (`modelle`) stay; the last page says where and how big.
 
-For macOS the zip stays for now (the section after next); an installer of its own is in the works.
+## macOS: the DMG — download, drag, open
+
+1. Download [KlangTresor.dmg](https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg) (Intel and Apple Silicon in one file) and open it.
+2. Drag **KlangTresor** into *Applications* and start it from there.
+3. The app is not notarised, so macOS blocks the first start once: System Settings → Privacy & Security →
+   **Open Anyway**.
+4. A small window says "KlangTresor is being placed in ~/KlangTresor …", then the setup opens in the browser: it
+   fetches ffmpeg and the AI models with progress bars and asks for your Suno name.
+5. Afterwards KlangTresor sits in the Dock: a click opens the page, right-click offers *Show log* and *Restart*,
+   Cmd-Q quits it. A newer DMG renews the program and never touches your archive.
+
+Removing: drag the app to the Bin. Your archive and the AI models stay in `~/KlangTresor`.
 
 ## Linux: the AppImage — download, make executable, double-click
 
