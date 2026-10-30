@@ -17,7 +17,7 @@ The brochure as PDF: [for screens (8 MB)](https://caspardavi.github.io/klangtres
 
 **System requirements.** A 64-bit computer with Windows 10 or 11, macOS 11 or newer, or Linux (x86_64).
 About 5 GB of free space for the program, the AI models and Whisper, which the setup fetches with progress bars,
-plus room for your archive. A current web browser; for listening, any phone or tablet in your home network will do.
+plus room for your archive. A current web browser, for the full feature set **Google Chrome**; for listening, any phone or tablet in your home network will do.
 Tested on Windows 10 and 11, macOS 26 (Intel) and Ubuntu 24.04. Apple Silicon is built in but not yet tested on a real device.
 The installers are not signed, so Windows and macOS ask for confirmation on first launch — see [Setting up](#setting-up).
 

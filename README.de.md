@@ -17,7 +17,7 @@ Broschüre als PDF: [für den Bildschirm (8 MB)](https://caspardavi.github.io/kl
 
 **Systemanforderungen.** Ein 64-Bit-Rechner mit Windows 10 oder 11, macOS 11 oder neuer oder Linux (x86_64).
 Rund 5 GB frei für Programm, KI-Modelle und Whisper, die die Einrichtung mit Balken holt, dazu Platz für dein
-Archiv. Ein aktueller Browser; zum Hören genügt jedes Handy oder Tablet im Heimnetz.
+Archiv. Ein aktueller Browser, für den vollen Funktionsumfang **Google Chrome**; zum Hören genügt jedes Handy oder Tablet im Heimnetz.
 Getestet unter Windows 10 und 11, macOS 26 (Intel) und Ubuntu 24.04. Apple Silicon ist eingebaut, aber noch nicht
 auf einem echten Gerät getestet. Die Installer sind nicht signiert; Windows und macOS fragen beim ersten Start
 nach — siehe [Einrichten](#einrichten).
