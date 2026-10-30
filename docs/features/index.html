@@ -266,6 +266,16 @@ footer a:hover{color:var(--akzent);border-color:var(--akzent)}
   .grenzen{margin:12mm 0 0;break-inside:avoid}
   footer{break-before:avoid}
 }
+.held .knoepfe{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:-26px 0 38px}
+.held .knoepfe a,.laden a.knopf{display:inline-block;padding:9px 20px;border-radius:980px;background:var(--akzent);color:#000;font-weight:600;font-size:16px;text-decoration:none}
+.held .knoepfe a:hover,.laden a.knopf:hover{background:#ffa255}
+.held .knoepfe a small{font-weight:500;opacity:.75;margin-left:6px}
+.laden .k{display:flex;flex-direction:column}
+.laden .k .text{display:flex;flex-direction:column;flex:1;padding:30px 32px 30px}
+.laden a.knopf{align-self:flex-start;margin-top:auto;padding:10px 22px;font-size:17px}
+.laden .k p{margin-bottom:20px}
+.laden .anf{max-width:900px;margin:28px 0 0;color:var(--leise);font-size:15px;text-wrap:pretty}
+.laden .anf b{color:var(--text)}
 </style>
 <link rel="icon" href="data:,">
 </head>
@@ -304,12 +314,16 @@ function bild(id, L){
   if (/\.mp4(\?|$)/.test(q)) return `<div class="bild"><video src="${q}"${POSTER[id] ? ` poster="${POSTER[id]}"` : ''} autoplay muted loop playsinline data-tempo="${TEMPO[id] || 1}" onloadedmetadata="this.defaultPlaybackRate=this.playbackRate=+this.dataset.tempo"></video></div>`;
   return `<div class="bild"${FORMAT[id] ? ` style="aspect-ratio:${FORMAT[id]}"` : ''}><img src="${q}" alt="" loading="lazy"></div>`;
 }
+const LADEN = 'https://github.com/CasparDavi/klangtresor/releases/latest/download/';
+const mbL = (n) => (L === 'ru' ? n + ' МБ' : n + ' MB');
+/* Die drei Knöpfe im Kopf: direkt die Datei; die Einzelheiten stehen unten im Abschnitt „Herunterladen“. */
+function knoepfe(){ return `<div class="knoepfe">${S.laden.systeme.map(x => `<a href="${LADEN}${x.datei}">${x.name} ↓<small>${mbL(x.mb)}</small></a>`).join('')}</div>`; }
 let L, KACHELN = {};
 function bauen(){
   document.documentElement.lang = L;
   document.querySelectorAll('.sprache button').forEach(b => b.classList.toggle('an', b.dataset.l === L));
   KACHELN = {};
-  let h = `<section class="held"><h1><span class="rad" aria-hidden="true"></span>${S.kopf.marke[L]}</h1><p class="spruch">${S.kopf.h[L]}</p><p>${S.kopf.p[L]}</p><a class="pdf" href="KlangTresor-Broschuere-${L}.pdf">${S.kopf.pdf[L]} <span aria-hidden="true">↓</span></a>${bild('titel', L)}</section>`;
+  let h = `<section class="held"><h1><span class="rad" aria-hidden="true"></span>${S.kopf.marke[L]}</h1><p class="spruch">${S.kopf.h[L]}</p><p>${S.kopf.p[L]}</p><a class="pdf" href="KlangTresor-Broschuere-${L}.pdf">${S.kopf.pdf[L]} <span aria-hidden="true">↓</span></a>${knoepfe()}${bild('titel', L)}</section>`;
   for (const a of S.abschnitte){
     const kopf = `<div class="kopf"><p class="augenbraue">${a.augenbraue[L]}</p><h2>${a.h[L]}</h2><p>${a.p[L]}</p></div>`;
     h += `<section class="abschnitt${a.fahrt ? ' mit-fahrt' : ''}">${kopf}<div class="raster">`;
@@ -327,6 +341,9 @@ function bauen(){
   { const g = S.lieder;
     h += `<section class="abschnitt lieder"><div class="kopf"><p class="augenbraue">${g.augenbraue[L]}</p><h2>${g.h[L]}</h2><p>${g.p[L]}</p></div><div class="liste">${
       g.liste.map(x => `<a class="lied" href="${x.url}" target="_blank" rel="noopener"><img src="${x.bild}?v=${BV}" alt=""><span class="stil">${x.stil[L]} · ${x.dauer}</span><b>${x.t}</b><span class="hoeren">${g.hoeren[L]} ↗</span></a>`).join('')}</div></section>`; }
+  { const g = S.laden;
+    h += `<section class="abschnitt laden" id="laden"><div class="kopf"><p class="augenbraue">${g.augenbraue[L]}</p><h2>${g.h[L]}</h2><p>${g.p[L]}</p></div><div class="raster">${
+      g.systeme.map(x => `<article class="k w4"><div class="text"><p class="klein">${x.name}</p><h3>${x.typ}</h3><p>${x.zeile[L]}<br>${mbL(x.mb)}</p><a class="knopf" href="${LADEN}${x.datei}">${g.knopf[L]} ↓</a></div></article>`).join('')}</div><p class="anf">${g.anf[L]}</p></section>`; }
   h += `<section class="grenzen"><h2>${S.grenzen.h[L]}</h2><ul>${S.grenzen.l[L].map(x => `<li>${x}</li>`).join('')}</ul></section>`;
   const pt = PDF.text[L], mb = (n) => (L === 'ru' ? n + ' МБ' : n + ' MB');
   h += `<footer>${ghLink(S.fuss[L])}<br>${pt[0]}: <a href="${PDF.bildschirm(L)}">${pt[1]}</a> (${mb(PDF.mb.bildschirm)}) · <a href="${PDF.druck(L)}">${pt[2]}</a> (${mb(PDF.mb.druck)})${S.stern[L] ? `<br>${S.stern[L]}` : ''}</footer>`;

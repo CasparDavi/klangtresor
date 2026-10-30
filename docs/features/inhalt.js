@@ -280,6 +280,23 @@ const S = {
  stern:{en:'',de:'',ru:'* Русский текст — машинный перевод, ещё не проверенный носителем языка.'}
 };
 
+/* HERUNTERLADEN (30.10.2026, Caspar_D: Variante C) - oben drei Knöpfe im Kopf, unten der Abschnitt mit den
+   Systemanforderungen. Die Dateien liegen fest unter releases/latest/download/; mb = Größe der Release-Datei. */
+S.laden = {
+ augenbraue:{en:'Download',de:'Herunterladen',ru:'Скачать'},
+ h:{en:'For your computer.',de:'Für deinen Rechner.',ru:'Для твоего компьютера.'},
+ p:{en:'One file, double-click, done. The setup fetches the rest with progress bars.',de:'Eine Datei, Doppelklick, fertig. Den Rest holt die Einrichtung mit Balken.',ru:'Один файл, двойной щелчок — готово. Остальное установка загрузит с индикатором.'},
+ knopf:{en:'Download',de:'Herunterladen',ru:'Скачать'},
+ systeme:[
+  {name:'Windows',typ:'Setup.exe',zeile:{en:'Windows 10 / 11 · 64-bit',de:'Windows 10 / 11 · 64 Bit',ru:'Windows 10 / 11 · 64 бит'},datei:'KlangTresor-Setup.exe',mb:87},
+  {name:'macOS',typ:'DMG',zeile:{en:'macOS 11 or newer · Intel and Apple Silicon',de:'macOS 11 oder neuer · Intel und Apple Silicon',ru:'macOS 11 или новее · Intel и Apple Silicon'},datei:'KlangTresor.dmg',mb:164},
+  {name:'Linux',typ:'AppImage',zeile:{en:'64-bit (x86_64) · AppImage, no sudo',de:'64 Bit (x86_64) · AppImage, ohne sudo',ru:'64 бит (x86_64) · AppImage, без sudo'},datei:'KlangTresor-x86_64.AppImage',mb:109}
+ ],
+ anf:{en:'<b>System requirements.</b> About 5 GB free for program, AI models and Whisper, plus room for your archive. A current browser, for the full feature set Google Chrome; any phone or tablet in your home network can listen. Tested on Windows 10 and 11, macOS 26 (Intel), Ubuntu 24.04; Apple Silicon not yet on a real device. Not signed: on first launch Windows and macOS ask for confirmation.',
+      de:'<b>Systemanforderungen.</b> Rund 5 GB frei für Programm, KI-Modelle und Whisper, dazu Platz für dein Archiv. Ein aktueller Browser, für den vollen Funktionsumfang Google Chrome; hören kann jedes Handy oder Tablet im Heimnetz. Getestet unter Windows 10 und 11, macOS 26 (Intel), Ubuntu 24.04; Apple Silicon noch nicht auf einem echten Gerät. Nicht signiert: Beim ersten Start fragen Windows und macOS nach.',
+      ru:'<b>Системные требования.</b> Около 5 ГБ свободного места для программы, моделей ИИ и Whisper, плюс место для архива. Современный браузер, для полной функциональности — Google Chrome; слушать можно с любого телефона или планшета в домашней сети. Проверено на Windows 10 и 11, macOS 26 (Intel), Ubuntu 24.04; Apple Silicon ещё не на реальном устройстве. Без подписи: при первом запуске Windows и macOS переспрашивают.'}
+};
+
 const BV = '67';   // Bildstand: hochzählen, wenn Bilder ersetzt werden (sonst zeigt der Browser alte)
 const BILDER = Object.fromEntries(['titel','morgenlauf','buehne','visualisierung',
   'klangschaum','plakat','sichern','leser','tablet','fernseher','laptop'].map(id => [id, `img/${id}.webp?v=${BV}`]));
