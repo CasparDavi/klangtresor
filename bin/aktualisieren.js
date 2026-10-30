@@ -561,7 +561,12 @@ async function main() {
      hiess das „Hier: —“ und „Release und lokale Nummer sind gleich. Nichts zu holen.“ */
   const neuer = stand.neuer || (!stand.hier && !!stand.github);
   const dz = stand.docker || { art: 'keins' };
-  if (dz.art === 'unerreichbar' && !OHNE_DOCKER && !NUR_STAND) {
+  /* AUS DER APP GESTARTET (Glocke, Tab „System"; KT_AUFTRAG aus bin/auftrag.js): dann laeuft KlangTresor gerade direkt
+     aus diesem Ordner - der Container verweigert das Update ja selbst (server.js, grund 'container'). Ein Docker, das
+     nicht antwortet, darf dann nicht abbrechen. Im Mac-Test vom 30.10.2026 gefunden: die Release-Zip traegt docker/,
+     Docker Desktop war installiert, aber aus - und die Glocke endete nach 2 s mit „Starte Docker". */
+  const ausDerApp = process.env.KT_AUFTRAG === '1';
+  if (dz.art === 'unerreichbar' && !OHNE_DOCKER && !NUR_STAND && !ausDerApp) {
     sag(T('  Docker antwortet nicht. Ob dein KlangTresor im Container laeuft, laesst\n  sich so nicht klaeren – und ohne Neubau bliebe ein Container alt.\n  Starte Docker (Docker Desktop) und rufe noch einmal auf.'));
     sag(T('  Laeuft dein KlangTresor ohne Docker: --ohne-docker'));
     sag('');
@@ -594,7 +599,7 @@ async function main() {
     sag(T('  Hinweis:  die Git-Geschichte hier stammt nicht von github.com/CasparDavi/klangtresor\n            (etwa ein Klon aus der MySuno-Zeit) - ein Git-Zug geht so nicht. Darum das\n            Release-Zip; .git/ und library/ bleiben, wie sie sind.'));
   }
   if (dz.art === 'fremd') sag(T('  Hinweis:  der Container „klangtresor" gehoert zu einem anderen Ordner – er bleibt unberuehrt.'));
-  if (dz.art === 'unerreichbar' && !OHNE_DOCKER) sag(T('  Hinweis:  Docker antwortet nicht – einspielen ginge so nicht (Docker starten oder --ohne-docker).'));
+  if (dz.art === 'unerreichbar' && !OHNE_DOCKER && !ausDerApp) sag(T('  Hinweis:  Docker antwortet nicht – einspielen ginge so nicht (Docker starten oder --ohne-docker).'));
   if (mysuno) sag(T('  Hinweis:  der Container „mysuno“ aus der MySuno-Zeit gehoert zu diesem Ordner ({status}).', { status: mysuno }));
   sag('');
 
