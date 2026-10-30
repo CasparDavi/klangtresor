@@ -109,6 +109,9 @@ final class App: NSObject, NSApplicationDelegate {
     func legen(neu: String) -> Bool {
         let f = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 90), styleMask: [.titled], backing: .buffered, defer: false)
         f.title = "KlangTresor"
+        // Im Code gebaute Fenster geben sich beim close() selbst frei, Swift gibt sie danach ein zweites Mal frei -
+        // das war der Absturz beim allerersten Start (objc_release im Autorelease-Pool, Mac-Test vom 30.10.2026).
+        f.isReleasedWhenClosed = false
         let t = NSTextField(labelWithString: L("KlangTresor \(neu) wird nach \(ZIEL.path) gelegt …", "Placing KlangTresor \(neu) in \(ZIEL.path) …", "KlangTresor \(neu) копируется в \(ZIEL.path) …"))
         t.frame = NSRect(x: 20, y: 50, width: 380, height: 20)
         let b = NSProgressIndicator(frame: NSRect(x: 20, y: 20, width: 380, height: 16)); b.isIndeterminate = true; b.startAnimation(nil)
