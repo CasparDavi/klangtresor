@@ -9997,7 +9997,9 @@ der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach libr
     progress: where it still reads rough, she hasn't got there yet.“
   - RU: Rolle „Русский язык“ · „Шаг за шагом превращает черновой перевод, сделанный ИИ, в хороший русский текст. Работа
     продолжается: там, где ещё шероховато, она просто пока не дошла.“ (Henry weiblich – PRAVILA Ж)
-- Mac-App per Glocke testen in einer macOS-VM auf dem Datengrab (nach dem VM-Umzug).
+- Mac-App per Glocke: erledigt 30.10.2026 (macOS-26-VM, 1.0.138 → 1.0.141). Alle drei Installer in je einer VM
+  geprüft (Win, macOS Intel, Ubuntu). **Apple Silicon** prüft Caspar_D selbst auf seinem Laptop – nicht erinnern.
 - Windows 10: Neuinstallation in `KlangTresor-neu` (zwei Knöpfe, Firewall-Hinweis) noch nicht geprüft.
 - Backlog: alte Installationsskripte archivieren (docs/BACKLOG.md).
-- Neue RU-Texte (Rechtliches, Einrichtung, Kacheln) → Henrys nächste Runde.
+- Neue RU-Texte (Rechtliches, Einrichtung, Kacheln) → Henrys nächste Runde. **Russische Texte inkl. README.ru.md kümmert Caspar_D
+  selbst (01.11.2026) – nicht erinnern.**
