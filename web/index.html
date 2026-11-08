@@ -1693,6 +1693,11 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #bprompts .ta-fremd{color:var(--schwach)}
 #bprompts .ta-m{display:flex;gap:8px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--schwach);white-space:nowrap}
 #bprompts .ta-rl{font-weight:700;min-width:1ch}
+#bprompts .ta-mu{display:inline-flex;align-items:flex-end;gap:1px;height:9px;align-self:center}
+#bprompts .ta-mu i{display:block;width:3px;border-radius:1px}
+#bprompts .ta-mu i.heb{height:9px;background:var(--heb)}
+#bprompts .ta-mu i.senk{height:3px;background:var(--senk)}
+#bprompts .ta-mu i.prall{height:9px;background:var(--prall)}
 #bprompts .ta-legende{margin-top:14px;font-size:11px;line-height:1.5;color:var(--schwach)}
 #bprompts .ta-leg{margin:4px 0 16px;padding:8px 0 10px;border-top:1px solid var(--rand);border-bottom:1px solid var(--rand);
   font-size:11.5px;color:var(--schwach)}
@@ -23038,6 +23043,13 @@ function taZeileHtml(roh, z){
     return h;
   }).join('');
 }
+/* DIE HEBUNGSFIGUR RECHTS (Caspar_D, 08.11.2026: „kannst du das hebungsdiagramm auch wieder anzeigen" - gemeint die
+   Figur aus der KlangFeder): das Muster der Zeile als Reihe kleiner Saeulen, hoch = betont, flach = unbetont, rot =
+   Prall. Sie macht Zeilen gleichen Masses auf einen Blick vergleichbar, ohne den Text zu lesen. */
+function taMuster(silben){
+  return '<span class="ta-mu">' + silben.map((sb, j) =>
+    '<i class="' + (sb.m === 'S' ? (j > 0 && silben[j - 1].m === 'S' ? 'prall' : 'heb') : 'senk') + '"></i>').join('') + '</span>';
+}
 /* Der Satz oben: was am haeufigsten vorkommt, aus denselben Zeilen gezaehlt, die man darunter sieht. */
 function taKurz(zeilen){
   const Z = zeilen.filter(z => z.typ === 'zeile' && z.n);
@@ -23068,7 +23080,7 @@ function taLegende(){
     + zeile('<span class="ta-r" style="color:' + taFarbe('A') + '">Mond</span> <span class="ta-r" style="color:' + taFarbe('B') + '">Wind</span>', t('ta.leg.farbe'))
     + zeile('<span class="ta-r unrein" style="color:' + taFarbe('A') + '">Haus</span>', t('ta.leg.unrein'))
     + zeile('<span class="ta-bin" style="text-decoration-color:' + taFarbe('C') + '">Herz</span>', t('ta.leg.binnen'))
-    + zeile('<span class="ta-rl" style="color:' + taFarbe('A') + '">A</span> <span class="ta-h">4</span>', t('ta.leg.rechts'))
+    + zeile(taMuster([{ m: 'W' }, { m: 'S' }, { m: 'W' }, { m: 'S' }, { m: 'S' }]) + ' <span class="ta-rl" style="color:' + taFarbe('A') + '">A</span> <span class="ta-h">3</span>', t('ta.leg.rechts'))
     + zeile('<span class="ta-fremd">[Chorus]</span>', t('ta.leg.grau'))
     + '</div>';
 }
@@ -23095,7 +23107,8 @@ async function textanalyseEinsetzen(id){
   const zeilen = roh.map((r, i) => {
     const z = d.zeilen[i];
     const rechts = z && z.typ === 'zeile' && z.n
-      ? '<span class="ta-rl" style="color:' + (z.reim ? taFarbe(z.reim) : 'var(--schwach)') + '">' + (z.reim || '') + '</span>'
+      ? taMuster(z.silben)
+        + '<span class="ta-rl" style="color:' + (z.reim ? taFarbe(z.reim) : 'var(--schwach)') + '">' + (z.reim || '') + '</span>'
         + '<span class="ta-h" title="' + esc(t('ta.h_titel', { h: z.h, n: z.n })) + '">' + z.h + '</span>'
       : '';
     return '<div class="ta-z"><div class="ta-t">' + taZeileHtml(r, z) + '</div><div class="ta-m">' + rechts + '</div></div>';

@@ -1634,7 +1634,7 @@
     ['ta.leg.farbe', 'gleiche Farbe = reimt sich; jede Reimfamilie hat ihre Farbe', 'same colour = rhymes; each rhyme family has its colour'],
     ['ta.leg.unrein', 'gestrichelt: unreiner Reim – klingt nur ähnlich', 'dashed: imperfect rhyme – only sounds similar'],
     ['ta.leg.binnen', 'unterstrichen: Binnenreim – reimt innerhalb der Zeile', 'underlined: internal rhyme – rhymes within the line'],
-    ['ta.leg.rechts', 'rechts: Reimbuchstabe (gleicher Buchstabe reimt) und Zahl der betonten Silben', 'right: rhyme letter (same letter rhymes) and number of stressed syllables'],
+    ['ta.leg.rechts', 'rechts: Muster der Zeile (hoch = betont), Reimbuchstabe (gleicher Buchstabe reimt) und Zahl der betonten Silben', 'right: pattern of the line (tall = stressed), rhyme letter (same letter rhymes) and number of stressed syllables'],
     ['ta.leg.grau', 'grau: Angaben in eckigen Klammern und fremde Schrift – nicht vermessen', 'grey: notes in square brackets and other scripts – not measured'],
     ['ta.grenze', 'Gerechnet ohne KI aus Wörterbüchern und Regeln für Deutsch und Englisch; an Gedichten geprüft, trifft sie 96 % der deutschen und 91 % der englischen Silben. Wie gesungen wird, weiß sie nicht.', 'Calculated without AI from dictionaries and rules for German and English; tested on poems, it gets 96 % of German and 91 % of English syllables right. It does not know how the song is sung.'],
     ['ta.fremd', 'Dieser Text steht in einer Schrift, die die Analyse nicht kennt – sie liest Deutsch und Englisch.', 'This text is in a script the analysis does not know – it reads German and English.'],
