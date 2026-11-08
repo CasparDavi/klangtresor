@@ -45,8 +45,10 @@ export function wortBetonung(roh, tiefe = 0) {
     const b = wortBetonung(w.slice(0, -2), tiefe);
     return { ...b, quelle: b.quelle + "+'s" };
   }
-  if (w !== ohneApo) {
-    // Auslassung: steh'n = stehen, hab' = habe – volles Wort nachschlagen, eine unbetonte Silbe weniger
+  // Satzzeichen zählen nicht: gibt es das Wort ohne Apostroph, gilt es so (hab', Haus' als Anführung)
+  if (w !== ohneApo) { const bar = nachschlagen(ohneApo); if (bar) st = bar; }
+  if (!st && w !== ohneApo) {
+    // Auslassung: steh'n = stehen, soll'n = sollen – volles Wort nachschlagen, eine unbetonte Silbe weniger
     const voll = w.includes("'") && !/'$/.test(w) ? w.replace("'", 'e') : ohneApo + 'e';
     const v = nachschlagen(voll);
     if (v && v.length > 1) {

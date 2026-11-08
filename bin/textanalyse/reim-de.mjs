@@ -13,7 +13,11 @@ const VOK = 'aɑɐeɛəiɪoɔuʊyʏøœæɜʌɒ';
 export function ipaWort(roh) {
   const w = roh.replace(/[^A-Za-zÄÖÜäöüß']/g, '');
   const L = ipaLexikon();
-  if (w.includes("'")) {                      // steh'n → stehen, Schwa der Endung entfällt
+  if (w.includes("'")) {
+    // Satzzeichen zählen nicht: steht das Wort ohne Apostroph im Wörterbuch (hab', Haus' als Anführung), gilt
+    // genau diese Form, so wie gesungen; nur sonst ist es eine Auslassung (steh'n → stehen ohne Schwa)
+    const bar = w.replace(/'/g, ''), b = L.get(bar) || L.get(bar.toLowerCase());
+    if (b) return b;
     const voll = /'$/.test(w) ? w.slice(0, -1) + 'e' : w.replace("'", 'e');
     const v = L.get(voll) || L.get(voll.toLowerCase());
     if (v) return v.replace(/ə(?=[^ə]*$)/, '');
@@ -52,7 +56,10 @@ export function reimteil(ipa) {
   let rest = ab >= 0 ? s.slice(ab + 1) : s;
   const i = [...rest].findIndex(c => VOK.includes(c));
   if (i < 0) return null;
-  rest = [...rest].slice(i).join('').replace(/[ˈˌ]/g, '');
+  rest = [...rest].slice(i).join('').replace(/[ˈˌ]/g, '')
+    // unbetonte Endsilben vereinheitlichen: -en als n̩, m̩ (Farben /ˈfaʁbm̩/) oder ŋ̩ (Regen) und -el als l̩ sind
+    // Aussprachevarianten derselben Endung – sonst reimt Farben nicht auf Narben (/ˈnaʁbn̩/)
+    .replace(/[mnŋ][\u0329\u030D]/g, 'ən').replace(/l[\u0329\u030D]/g, 'əl');
   const m = rest.match(new RegExp(`^([${VOK}][ːˑ\\u0300-\\u036F]*(?:[${VOK}]\\u032F)?)(.*)$`));
   return m ? { voll: rest, vokal: m[1], koda: m[2] } : null;
 }

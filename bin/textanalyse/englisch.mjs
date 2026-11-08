@@ -74,6 +74,7 @@ export function wortBetonungEn(roh, tiefe = 0) {
   let w = roh.toLowerCase().replace(/’/g, "'").replace(/[^a-z']/g, '').replace(/^'+(?!(cause|bout|til|em|course)$)/, '');
   if (!w.replace(/'/g, '')) return { stufen: [], quelle: 'leer' };
   if (/in'$/.test(w) && !lexikonEn().has(w)) w = w.slice(0, -1) + 'g';      // goin' → going
+  if (/'$/.test(w) && !lexikonEn().has(w)) w = w.replace(/'+$/, '');            // schließendes Hochkomma (‘here’) zählt nicht
   if (klasseEinsilberEn(w) !== 'c' && (stufenEn(w) || [0]).length <= 1)
     return { stufen: [0], quelle: 'kleinwort', einsilberKlasse: klasseEinsilberEn(w) };
   let st = stufenEn(w), quelle = 'lexikon';

@@ -83,6 +83,8 @@ export function anzeige(text) {
     if (!ohneRegie.trim()) return { typ: 'abschnitt', name: t.replace(/^\[|\]$/g, '').trim() };
     // Fremde Schrift (kyrillisch, japanisch …) wird nicht analysiert; sonst deutsch oder englisch je Zeile
     if (spr[zi] === 'fremd') return { typ: 'fremd' };
+    // Zeilen nur aus Satzzeichen („…“, „– – –“) zählen wie Leerzeilen: Satzzeichen spielen keine Rolle
+    if (!/[A-Za-zÄÖÜäöüß]/.test(ohneRegie)) return { typ: 'leer' };
     const sprache = spr[zi] === 'en' ? 'en' : 'de';
     const betone = sprache === 'en' ? wortBetonungEn : wortBetonung;
     const treffer = [...ohneRegie.matchAll(/[A-Za-zÄÖÜäöüß'’]+/g)];
