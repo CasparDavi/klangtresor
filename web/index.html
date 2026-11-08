@@ -15931,7 +15931,7 @@ async function profilCommunityFuellen(){
      Punkt im Streubild und der Saeule in der Rangfolge (siehe
      nachbarHervorheben). */
   const person = (l) => ({ name: l.name || l.handle, titel: '@' + l.handle, handle: l.handle,
-    klick: () => { $('detail').classList.remove('auf'); reaktPersonAlleine(l.handle); } });
+    klick: () => { detailZu(); reaktPersonAlleine(l.handle); } });
   const bestenZeichnen = () => {
     localStorage.setItem('bestenFenster', fenster);
     [...schalter.children].forEach(c => c.classList.toggle('an', c.dataset.f === fenster));
@@ -15980,7 +15980,7 @@ async function profilCommunityFuellen(){
     const h = document.createElement('div'); h.className = klasse; h.textContent = vortext;
     liste.slice(0, 12).forEach((e, i) => {
       const sp = document.createElement('span'); sp.className = 'rwer'; sp.textContent = e.name || e.handle;
-      sp.onclick = () => { $('detail').classList.remove('auf'); reaktPersonAlleine(e.handle); };
+      sp.onclick = () => { detailZu(); reaktPersonAlleine(e.handle); };
       if (i) h.appendChild(document.createTextNode(', '));
       h.appendChild(sp);
     });
@@ -16015,7 +16015,7 @@ async function profilCommunityFuellen(){
     h.textContent = t('profil.beobachter.strom', { n: folgende.length });
     folgende.slice(0, 12).forEach((e, i) => {
       const sp = document.createElement('span'); sp.className = 'rwer'; sp.textContent = e.name || e.handle;
-      sp.onclick = () => { $('detail').classList.remove('auf'); reaktPersonAlleine(e.handle); };
+      sp.onclick = () => { detailZu(); reaktPersonAlleine(e.handle); };
       if (i) h.appendChild(document.createTextNode(', '));
       h.appendChild(sp);
     });
@@ -16157,7 +16157,7 @@ function befundSeiten(eigene){
         const alt = Date.now() - 30 * 86400000;
         const e = eigene.filter(s => s.oeffentlich && s.erstellt && new Date(s.erstellt).getTime() < alt)
           .sort((a,b) => (a.plays||0) - (b.plays||0)).slice(0, 10)
-          .map(s => ({ name: s.titel, n: s.plays || 0, klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }));
+          .map(s => ({ name: s.titel, n: s.plays || 0, klick: () => { detailZu(); spielenNachId(s.id); } }));
         return balken(t('profil.befund.stille.balken'), e, DIA_1, t('profil.befund.stille.hinweis'), 'plays');
       } },
   ];
@@ -16206,11 +16206,11 @@ function kuriosSeiten(eigene){
           /* "Name" = die Zeichen des Titelnamens; "Längster Titel" weiter
              unten ist die Spieldauer. Zweimal dasselbe Wort fuer zwei
              Dinge stand hier bis 09.09.2026 (Gegenleser). */
-          { name: t('profil.kurios.name_lang'), n: (lang.titel||'').length, anzeige: `${lang.titel} (${(lang.titel||'').length})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(lang.id); } },
-          { name: t('profil.kurios.name_kurz'), n: (kurz.titel||'').length, anzeige: `${kurz.titel} (${(kurz.titel||'').length})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(kurz.id); } },
-          { name: t('profil.kurios.prompt'), n: (prompt.stilPrompt||'').length, anzeige: t('profil.kurios.prompt.n', { titel: prompt.titel, n: (prompt.stilPrompt||'').length }), klick: () => { $('detail').classList.remove('auf'); spielenNachId(prompt.id); } },
-          { name: t('profil.kurios.verbote'), n: ((verbote.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length, anzeige: t('profil.kurios.verbote.n', { titel: verbote.titel, n: ((verbote.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length }), klick: () => { $('detail').classList.remove('auf'); spielenNachId(verbote.id); } },
-          { name: t('profil.kurios.dauer'), n: byLen(s => s.dauer||0)[0].dauer, anzeige: `${byLen(s => s.dauer||0)[0].titel} (${Math.floor(byLen(s => s.dauer||0)[0].dauer/60)}:${String(Math.round(byLen(s => s.dauer||0)[0].dauer%60)).padStart(2,'0')})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(byLen(s => s.dauer||0)[0].id); } },
+          { name: t('profil.kurios.name_lang'), n: (lang.titel||'').length, anzeige: `${lang.titel} (${(lang.titel||'').length})`, klick: () => { detailZu(); spielenNachId(lang.id); } },
+          { name: t('profil.kurios.name_kurz'), n: (kurz.titel||'').length, anzeige: `${kurz.titel} (${(kurz.titel||'').length})`, klick: () => { detailZu(); spielenNachId(kurz.id); } },
+          { name: t('profil.kurios.prompt'), n: (prompt.stilPrompt||'').length, anzeige: t('profil.kurios.prompt.n', { titel: prompt.titel, n: (prompt.stilPrompt||'').length }), klick: () => { detailZu(); spielenNachId(prompt.id); } },
+          { name: t('profil.kurios.verbote'), n: ((verbote.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length, anzeige: t('profil.kurios.verbote.n', { titel: verbote.titel, n: ((verbote.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length }), klick: () => { detailZu(); spielenNachId(verbote.id); } },
+          { name: t('profil.kurios.dauer'), n: byLen(s => s.dauer||0)[0].dauer, anzeige: `${byLen(s => s.dauer||0)[0].titel} (${Math.floor(byLen(s => s.dauer||0)[0].dauer/60)}:${String(Math.round(byLen(s => s.dauer||0)[0].dauer%60)).padStart(2,'0')})`, klick: () => { detailZu(); spielenNachId(byLen(s => s.dauer||0)[0].id); } },
         ];
         const box = document.createElement('div');
         for (const x of e){ const z = document.createElement('div'); z.className = 'bz klick'; z.style.gridTemplateColumns = '170px 1fr';
@@ -16230,7 +16230,7 @@ function kuriosSeiten(eigene){
         const r = document.createElement('div'); r.className = 'topreihe'; r.style.maxWidth = treffer.length * 90 + 'px';
         for (const s of treffer){ const z = document.createElement('div'); z.className = 'topk'; z.title = s.titel;
           z.innerHTML = `<img src="${artworkKachel(s.id)}" alt="" onerror="this.src='${artworkBild(s.id)}'"><span>${s.erstellt.slice(0,4)}</span>`;
-          z.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(s.id); }; r.appendChild(z); }
+          z.onclick = () => { detailZu(); spielenNachId(s.id); }; r.appendChild(z); }
         box.appendChild(r); return box;
       } },
     { titel: t('profil.kurios.laut'), bau: () => {
@@ -16328,7 +16328,7 @@ function kuriosSeiten(eigene){
           b.textContent = `${x.s.titel} (${Math.round(x.d)})`;
           b.style.cssText = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
           r.append(a, b);
-          r.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(x.s.id); };
+          r.onclick = () => { detailZu(); spielenNachId(x.s.id); };
           return r;
         };
         /* KEIN UNTERER EXTREMWERT (07.09.2026). Das duennste Lied waere
@@ -16551,7 +16551,7 @@ function profilZahlenFuellen(){
   const g = document.createElement('div'); g.className = 'diagitter'; ziel.appendChild(g);
   const songEintrag = (k) => (s) => ({ name: s.titel, n: s[k] || 0,
     teile: [ (s.bewegung28 && s.bewegung28[k]) || 0, (s.bewegung && s.bewegung[k]) || 0 ],
-    klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } });
+    klick: () => { detailZu(); spielenNachId(s.id); } });
   const hatBewegung = eigene.some(s => s.bewegung && (s.bewegung.plays || s.bewegung.likes || s.bewegung.kommentare));
   const stufenHinweis = '';
 
@@ -16602,7 +16602,7 @@ function profilZahlenFuellen(){
         const neuMalen = () => { const b = feld.clientWidth; if (b > 0 && b !== zuletzt){ zuletzt = b; malen(); } };
         if (window.ResizeObserver) new ResizeObserver(neuMalen).observe(feld);
         neuMalen();
-        feld.onclick = (e) => { const b = e.target.closest && e.target.closest('.hsband'); if (b){ $('detail').classList.remove('auf'); spielenNachId(b.dataset.id); } };
+        feld.onclick = (e) => { const b = e.target.closest && e.target.closest('.hsband'); if (b){ detailZu(); spielenNachId(b.dataset.id); } };
       } catch (e) { console.log('Hitstrom:', e); w.remove(); }
     })();
   }
@@ -16634,7 +16634,7 @@ function profilZahlenFuellen(){
             plays: b.plays||0, likes: b.likes||0, komm: b.kommentare||0
           });
           z.innerHTML = topBildHtml(s.id) + `<b>+${bew(s, fenb)}</b>`;
-          z.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(s.id); };
+          z.onclick = () => { detailZu(); spielenNachId(s.id); };
           reihe.appendChild(z);
         }
       };
@@ -16673,7 +16673,7 @@ function profilZahlenFuellen(){
           ? t('profil.herzen.tipp_neu', { titel: s.titel, n: wert(s), seit: s.bewegung28.seit, gesamt: s.likes||0 })
           : t('profil.herzen.tipp', { titel: s.titel, n: s.likes||0 });
         z.innerHTML = topBildHtml(s.id) + `<span>${SYM('herz')}${fen === 'w4' ? '+' : ''}${wert(s)}</span>`;
-        z.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(s.id); };
+        z.onclick = () => { detailZu(); spielenNachId(s.id); };
         reihe.appendChild(z);
       }
     };
@@ -16737,7 +16737,7 @@ function profilZahlenFuellen(){
      gewinnt der Song mit 3 Plays und 2 Likes. */
   g.appendChild(balken(t('profil.herzen_100'), eigene.filter(s => (s.plays||0) >= 50)
     .map(s => ({ name: s.titel, n: 100 * (s.likes||0) / s.plays, anzeige: dezimal((100 * (s.likes||0) / s.plays).toFixed(1)),
-                 klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }))
+                 klick: () => { detailZu(); spielenNachId(s.id); } }))
     .sort((a,b) => b.n - a.n), DIA_1, t('profil.herzen_100.hinweis'), 'herz'));
 
   /* Likes je drei Minuten Songlaenge - Likes bezogen auf die Laenge,
@@ -16748,14 +16748,14 @@ function profilZahlenFuellen(){
   g.appendChild(balken(t('profil.herzen_3min'), eigene.filter(s => s.dauer > 0 && s.likes)
     .map(s => { const v = (s.likes||0) / (s.dauer / 180);
       return { name: s.titel, n: v, anzeige: dezimal(v.toFixed(1)), titel: t('profil.herzen_3min.tipp', { titel: s.titel, n: s.likes, mm: Math.floor(s.dauer/60), ss: String(Math.round(s.dauer%60)).padStart(2,'0') }),
-               klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }; })
+               klick: () => { detailZu(); spielenNachId(s.id); } }; })
     .sort((a,b) => b.n - a.n), DIA_1, t('profil.herzen_3min.hinweis'), 'herz'));
 
   /* Laengste Lyrics - Woerter ohne [Regieanweisungen], gezaehlt vom
      Server (katalog.js). */
   if (eigene.some(s => s.lyricsWorte))
     g.appendChild(balken(t('profil.lyrics_lang'), eigene.filter(s => s.lyricsWorte)
-      .map(s => ({ name: s.titel, n: s.lyricsWorte, klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }))
+      .map(s => ({ name: s.titel, n: s.lyricsWorte, klick: () => { detailZu(); spielenNachId(s.id); } }))
       .sort((a,b) => b.n - a.n), DIA_1, t('profil.lyrics_lang.hinweis'), 'lyrics'));
 
   /* Zwei Karussells: Befunde und Kuriosa - viele Seiten, eine sichtbar.
@@ -31233,6 +31233,10 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && document.getElementById('hirschinfo')?.classList.contains('auf')) hirschZu();
 });
 
+/* DER EINE WEG ZU (08.11.2026). Klickziele im Profil (Hitstrom, Hitparaden, Kuriositaeten, Personen, Listen)
+   nahmen nur die Klasse „auf" weg - das Profil verschwand, der Schliessen-Knopf #zu blieb mitten im Bild stehen
+   (Caspar_D: „wenn ich in den streamgraph im profil clicke, spielt der song entsprechend aber die x-Schaltfläche
+   bleibt stehn"). Seitdem schliesst jedes Ziel ueber detailZu(). */
 function detailZu(){
   $('detail').classList.remove('auf');
   /* .autor bleibt sonst stehen. Der Sprachwechsel hat daran erkannt,
