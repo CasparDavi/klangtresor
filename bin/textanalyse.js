@@ -80,16 +80,22 @@ function schreiben(daten) {
 /* Der Server fragt hier an. Ein Kindprozess fuer alle Anfragen; er startet beim ersten Bedarf und endet nach
    LEERLAUF von selbst. Antwort: Promise mit dem Ergebnis, oder Fehler mit Grund (z. B. Woerterbuecher fehlen). */
 let kind = null, nummer = 0;
-const offen = new Map();
 function anfrage(auftrag) {
   if (fehlend().length) return Promise.reject(Object.assign(new Error('Wörterbücher fehlen'), { fehlen: fehlend() }));
+  /* Neue Rechnung eingespielt (Update), der Helfer laeuft aber noch mit der alten im Speicher: dann neu starten,
+     sonst rechnete er bis zu zehn Minuten lang nach dem alten Stand (08.11.2026, Kern .5 → .6). Jeder Helfer fuehrt
+     seine eigenen offenen Anfragen - endet der alte, trifft das nur seine. */
+  if (kind && kind.kern !== kernVersion()) { try { kind.kill(); } catch (e) {} kind = null; }
   if (!kind) {
-    kind = require('node:child_process').fork(__filename, ['--dienst'], { stdio: ['ignore', 'inherit', 'inherit', 'ipc'], windowsHide: true });
-    kind.on('message', (m) => { const o = offen.get(m.nr); if (!o) return; offen.delete(m.nr);
+    const k = require('node:child_process').fork(__filename, ['--dienst'], { stdio: ['ignore', 'inherit', 'inherit', 'ipc'], windowsHide: true });
+    k.kern = kernVersion(); k.offen = new Map();
+    k.on('message', (m) => { const o = k.offen.get(m.nr); if (!o) return; k.offen.delete(m.nr);
       if (m.fehler) o.nein(new Error(m.fehler)); else o.ja(m.ergebnis); });
-    kind.on('exit', () => { kind = null; for (const o of offen.values()) o.nein(new Error('Textanalyse beendet')); offen.clear(); });
+    k.on('exit', () => { if (kind === k) kind = null; for (const o of k.offen.values()) o.nein(new Error('Textanalyse beendet')); k.offen.clear(); });
+    kind = k;
   }
-  return new Promise((ja, nein) => { const nr = ++nummer; offen.set(nr, { ja, nein }); kind.send({ nr, ...auftrag }); });
+  const k = kind;
+  return new Promise((ja, nein) => { const nr = ++nummer; k.offen.set(nr, { ja, nein }); k.send({ nr, ...auftrag }); });
 }
 
 async function dienst() {
