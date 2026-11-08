@@ -10001,5 +10001,15 @@ der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach libr
   geprüft (Win, macOS Intel, Ubuntu). **Apple Silicon** prüft Caspar_D selbst auf seinem Laptop – nicht erinnern.
 - Windows 10: Neuinstallation in `KlangTresor-neu` (zwei Knöpfe, Firewall-Hinweis) noch nicht geprüft.
 - Backlog: alte Installationsskripte archivieren (docs/BACKLOG.md).
+- **Textanalyse aus der KlangFeder (08.11.2026, wartet auf Englisch).** Paket + Bauanleitung:
+  `../KlangFeder/docs/an-klangtresor/BAUANLEITUNG.md` (Kern 2026-11-08.2, KI-frei, Wörterbuch ipa-dict 30 MB CC BY-SA,
+  geladen 1,2 s / 320 MB). Caspar_D entschied: Lasche „Lyrics-Analyse“ **ganz hinten, hinter „Bereinigt“**; analysiert
+  werden die **eingereichten Lyrics**; zuerst ruhende Ansicht, Mitlaufen beim Abspielen danach. **Gebaut wird erst, wenn
+  Englisch im Paket ist** (Caspar_D: „sollten wir noch warten, bis Englisch geht, ich denke ja“). Plan: Kern nach
+  `bin/textanalyse/`, Wörterbücher nach `modelle/textanalyse/` (holen wie Modelle), Rechnen im Morgenlauf in einem
+  Helferprozess (nicht im server.js, 10 min Leerlauf), Ergebnis `library/textanalyse.json.gz` (Lyrics-Hash + KERN_VERSION),
+  Schnittstellen `GET /api/textanalyse/<id>`, `POST /api/textanalyse`, `GET /api/steckbrief`; erst Sandkasten + Soll-Test
+  `labor/rusalka-soll.mjs`, Lasche Caspar_D zeigen, dann Release. Rückmeldung zu den Schnittstellen an die Sitzung
+  „Versflow-Analyse für Klangtresor-Add-on“.
 - Neue RU-Texte (Rechtliches, Einrichtung, Kacheln) → Henrys nächste Runde. **Russische Texte inkl. README.ru.md kümmert Caspar_D
   selbst (01.11.2026) – nicht erinnern.**
