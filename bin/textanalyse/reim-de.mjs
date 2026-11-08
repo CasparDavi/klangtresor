@@ -2,7 +2,9 @@
 // bis zum Wortende (Wiktionary-Definition; Burdorf, Gedichtanalyse). Stufen:
 //   rein       – Reimteile gleich (Auslautverhärtung steckt schon in der IPA: Rad/Rat)
 //   fast rein  – gleich bis auf Vokallänge
-//   unrein     – Vokal verschieden, Konsonanten danach gleich (Konsonanz: Song/lang)
+//   unrein     – Vokal nur leicht verschieden (Liebe/trübe, ekeln/räkeln, reichen/keuchen) oder Konsonant nur
+//                stimmhaft/stimmlos verschieden (rasen/saßen) – Burdorf, Gedichtanalyse 2.2.1
+//   Konsonanz  – Vokal verschieden, Konsonanten danach gleich (Song/lang)
 //   Assonanz   – Vokal gleich, Konsonanten verschieden
 import { lexikon } from './lexikon-de.mjs';
 import { silbenkerne } from './ipa.mjs';
@@ -65,8 +67,10 @@ export function reimteil(ipa) {
 }
 
 const ohneLaenge = s => s.replace(/[ːˑ]/g, '');
+const STIMMLOS = { b: 'p', d: 't', g: 'k', 'ɡ': 'k', z: 's', v: 'f', 'ʒ': 'ʃ' };
+const entstimmt = s => s.replace(/[bdgɡzvʒ]/g, c => STIMMLOS[c]);
 // Unreiner Reim im engeren Sinn: Vokale nur leicht verschieden (Rundung, e/ä, ei/eu) –
-// nach Burdorf und Wagenknecht. Gleiche Konsonanten bei fremdem Vokal sind Konsonanz.
+// nach Burdorf. Gleiche Konsonanten bei fremdem Vokal sind Konsonanz.
 const AEHNLICH = [['i', 'y'], ['ɪ', 'ʏ'], ['e', 'ø'], ['ɛ', 'œ'], ['e', 'ɛ'], ['aɪ̯', 'ɔʏ̯'], ['aɪ̯', 'ɔɪ̯'],
   ['o', 'ɔ'], ['i', 'ɪ'], ['u', 'ʊ'], ['y', 'ʏ'], ['ø', 'œ'], ['a', 'ɑ']];  // gespannt/ungespannt: schon/davon
 const aehnlich = (x, y) => { const a = ohneLaenge(x), b = ohneLaenge(y); return AEHNLICH.some(([p, q]) => (a === p && b === q) || (a === q && b === p)); };
@@ -75,6 +79,10 @@ export function reimStufe(a, b) {
   if (a.voll === b.voll) return 'rein';
   if (ohneLaenge(a.voll) === ohneLaenge(b.voll)) return 'fast rein';
   if (a.koda === b.koda && aehnlich(a.vokal, b.vokal)) return 'unrein';
+  // Konsonanten nur in stimmhaft/stimmlos verschieden (rasen/saßen, melden/gelten): unreiner Reim (Burdorf,
+  // Gedichtanalyse, 2.2.1) – nicht bloß Assonanz. Am Wortende steckt die Auslautverhärtung schon in der IPA.
+  if (a.koda !== b.koda && entstimmt(a.koda) === entstimmt(b.koda) &&
+      (ohneLaenge(a.vokal) === ohneLaenge(b.vokal) || aehnlich(a.vokal, b.vokal))) return 'unrein';
   if (a.koda && a.koda === b.koda) return 'Konsonanz';
   if (ohneLaenge(a.vokal) === ohneLaenge(b.vokal)) return 'Assonanz';
   return null;

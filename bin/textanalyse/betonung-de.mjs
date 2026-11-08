@@ -15,6 +15,7 @@ const UNBETONTE_PRAEFIXE = ['be', 'ge', 'er', 'ver', 'zer', 'ent', 'emp'];
 const ENDUNGEN = ['ern', 'ens', 'en', 'em', 'er', 'es', 'est', 'et', 'st', 'e', 'n', 's', 't'];
 const BETONTE_SUFFIXE = [['ieren', -2], ['ierst', -1], ['iert', -1], ['ität', -1], ['tät', -1], ['ion', -1], ['ei', -1]];
 
+const ZAHL_UND = /^(ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun)und(zwanzig|dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig)/i;
 const nachschlagen = w => stufenVon(w) || stufenVon(w.toLowerCase()) || stufenVon(w[0].toUpperCase() + w.slice(1).toLowerCase()) || null;
 
 function regel(w) {
@@ -90,6 +91,12 @@ export function wortBetonung(roh, tiefe = 0) {
   if (!st) { st = regel(ohneApo); quelle = 'regel'; }
 
   st = st.slice();
+  // Zahlwörter mit „und“ (dreiundzwánzig): Hauptakzent auf dem letzten Glied, Nebenakzent vorn (Krech 2009);
+  // ipa-dict betont hier durchweg das erste Glied
+  if (ZAHL_UND.test(ohneApo)) {
+    const vorn = st.indexOf(2), hinten = st.reduce((x, v, j) => (v ? j : x), -1);
+    if (vorn >= 0 && hinten > vorn) { st[vorn] = 1; st[hinten] = 2; }
+  }
   if (st.length > 1 && !st.includes(2)) { const r = regel(ohneApo); if (r.length === st.length) st = r; else st[0] = 2; }
   const out = { stufen: st, quelle };
   if (st.length === 1) out.einsilberKlasse = klasseEinsilber(ohneApo);
