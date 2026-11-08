@@ -2,7 +2,7 @@
 // Betonung und Reim lesen beide hier (vorher zweimal eingelesen, ≈ 530 MB). Betonungsstufen werden erst
 // beim Nachschlagen aus der Lautschrift abgeleitet und nur für tatsächlich gebrauchte Wörter gemerkt.
 import fs from 'node:fs';
-import { daten } from './pfade.mjs';
+import { daten, korrekturen } from './pfade.mjs';
 import { betonungAusIpa } from './ipa.mjs';
 
 const HAT_KERN = /[aɑɐeɛəiɪoɔuʊyʏøœæɜʌɒɨɵʉɘɤɯɚ]|̩|̍/;
@@ -21,6 +21,11 @@ export function lexikon() {
     const k = w.toLowerCase(); if (k !== w && !klein.has(k)) klein.set(k, ipa);
   }
   for (const [k, v] of klein) if (!LEX.has(k)) LEX.set(k, v);
+  // eigene Korrekturen überstimmen das Original (kern/korrekturen-de.tsv)
+  for (const [w, ipa] of korrekturen('korrekturen-de.tsv')) {
+    const v = ipa.replace(/^\/|\/$/g, '');
+    LEX.set(w, v); if (!LEX.has(w.toLowerCase()) || w === w.toLowerCase()) LEX.set(w.toLowerCase(), v);
+  }
   return LEX;
 }
 

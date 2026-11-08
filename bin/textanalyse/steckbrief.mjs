@@ -3,7 +3,7 @@
 import { anzeige, BAUTEIL } from './analyse.mjs';
 import { klasseEinsilber } from './kleinwoerter-de.mjs';
 import { klasseEinsilberEn } from './englisch.mjs';
-import { spracheText } from './sprache.mjs';
+import { spracheText, ohneKlammern } from './sprache.mjs';
 
 const median = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); return s[s.length >> 1]; };
 const anteil = (a, b) => (b ? Math.round((100 * a) / b) : 0);
@@ -11,7 +11,7 @@ const zaehle = (liste) => { const m = new Map(); liste.forEach(x => m.set(x, (m.
 
 // Rohzahlen eines Textes – werden für Sets zusammengelegt
 function erfassen(text) {
-  const z = anzeige(text), roh = text.split('\n');
+  const z = anzeige(text), roh = ohneKlammern(text).split('\n');   // Klammerinhalt zählt auch im Wortschatz nicht
   const zeilen = [], abschnitte = [];
   let akt = null;
   z.forEach((x, i) => {

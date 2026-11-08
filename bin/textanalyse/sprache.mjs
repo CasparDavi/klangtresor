@@ -17,6 +17,24 @@ never ever only now then than through love baby oh yeah`.split(/\s+/));
 // Wörter, die es in beiden Sprachen gibt (in, so, was …), entscheiden nichts
 for (const w of [...DE]) if (EN.has(w)) { DE.delete(w); EN.delete(w); }
 
+// Alles in eckigen Klammern wird nicht analysiert (Jörg: „alles was in eckigen Klammern steht, wird nicht
+// mitanalysiert“) – auch über Zeilengrenzen ([Verse 1 – clean guitar,⏎ slow build]). Eine Klammer, die vor der
+// nächsten „[“ nicht geschlossen wird, gilt bis zum Zeilenende. Ersetzt durch Leerzeichen: Länge und
+// Zeilenumbrüche bleiben, Zeichenpositionen stimmen weiter.
+export function ohneKlammern(text) {
+  const z = [...text];
+  for (let i = 0; i < z.length; i++) {
+    if (z[i] !== '[') continue;
+    let zu = -1, naechste = -1;
+    for (let j = i + 1; j < z.length; j++) { if (z[j] === ']') { zu = j; break; } if (z[j] === '[') { naechste = j; break; } }
+    let ende = zu;
+    if (zu < 0) { ende = i; while (ende + 1 < z.length && z[ende + 1] !== '\n') ende++; }
+    for (let k = i; k <= ende; k++) if (z[k] !== '\n') z[k] = ' ';
+    i = ende;
+  }
+  return z.join('');
+}
+
 const woerter = z => (z.replace(/\[[^\]]*\]/g, ' ').match(/[A-Za-zÄÖÜäöüß'’]+/g) || []).map(w => w.replace(/’/g, "'"));
 
 export function spracheZeile(zeile) {
@@ -41,7 +59,7 @@ export function spracheZeile(zeile) {
 
 // Gesamter Text: Sprache je Zeile (Lücken gefüllt) und Gesamturteil de / en / gemischt / fremd
 export function spracheText(text) {
-  const zeilen = text.split('\n').map(z => (/^\s*\[.*\]\s*$/.test(z) || !z.trim() ? undefined : spracheZeile(z)));
+  const zeilen = ohneKlammern(text).split('\n').map(z => (!z.trim() ? undefined : spracheZeile(z)));
   const zaehl = { de: 0, en: 0, fremd: 0 };
   zeilen.forEach(s => { if (s) zaehl[s]++; });
   const mehrheit = zaehl.de >= zaehl.en ? (zaehl.de ? 'de' : zaehl.en ? 'en' : null) : 'en';

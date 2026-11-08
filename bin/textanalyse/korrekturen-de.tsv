@@ -1,0 +1,3 @@
+# Korrekturen zum deutschen Wörterbuch (ipa-dict) – überstimmen das Original, gehören zur Kern-Version.
+# Format: Wort<TAB>Lautschrift (IPA wie in ipa-dict, ˈ vor der Hauptbetonung, ˌ vor der Nebenbetonung)
+# Leere Zeilen und Zeilen mit # werden übergangen.

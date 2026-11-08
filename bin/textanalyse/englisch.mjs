@@ -2,7 +2,7 @@
 // CMU: ARPAbet, Vokale tragen 1 (Haupt-), 2 (Neben-), 0 (unbetont) → Stufen 2/1/0 wie im Deutschen.
 // Daten: <daten>/en/cmudict.dict (nur über pfade.mjs).
 import fs from 'node:fs';
-import { daten } from './pfade.mjs';
+import { daten, korrekturen } from './pfade.mjs';
 
 let CMU = null;
 export function lexikonEn() {
@@ -16,6 +16,8 @@ export function lexikonEn() {
     if (/\(\d+\)$/.test(w)) continue;                        // nur erste Aussprache
     CMU.set(w, zeile.slice(leer + 1));
   }
+  // eigene Korrekturen überstimmen das Original (kern/korrekturen-en.tsv)
+  for (const [w, ph] of korrekturen('korrekturen-en.tsv')) CMU.set(w.toLowerCase(), ph);
   return CMU;
 }
 const VOKAL = /^(AA|AE|AH|AO|AW|AY|EH|ER|EY|IH|IY|OW|OY|UH|UW)([012])$/;

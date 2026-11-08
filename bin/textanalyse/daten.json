@@ -1,0 +1,21 @@
+{
+  "zweck": "Wörterbücher des Kerns – feste Fassungen. KlangFeder und KlangTresor laden nur genau diese Dateien.",
+  "dateien": [
+    {
+      "pfad": "de/ipa-dict-de.txt",
+      "adresse": "https://raw.githubusercontent.com/open-dict-data/ipa-dict/43c3570eb3553bdd19fccd2bd0091534889af023/data/de.txt",
+      "sha256": "d36d11dbcc226468a22f0fb3a0794ee0ce142bf277e26e517a8bfd0de1ec2653",
+      "groesse": 30726400,
+      "quelle": "open-dict-data/ipa-dict, Commit 43c3570 (2025-05-24), Daten aus de.wiktionary",
+      "lizenz": "CC BY-SA (Wiktionary) – Namensnennung, abgeleitete Wörterbuchdaten unter gleicher Lizenz"
+    },
+    {
+      "pfad": "en/cmudict.dict",
+      "adresse": "https://raw.githubusercontent.com/cmusphinx/cmudict/0f8072f814306c5ee4fbf992ed853601b12c01f9/cmudict.dict",
+      "sha256": "81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22",
+      "groesse": 3618488,
+      "quelle": "cmusphinx/cmudict, Commit 0f8072f (2024-12-17)",
+      "lizenz": "BSD-artig, Copyright Carnegie Mellon University (LICENSE im Repository)"
+    }
+  ]
+}

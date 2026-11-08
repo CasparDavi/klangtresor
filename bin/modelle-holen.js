@@ -57,6 +57,17 @@ const ZIEL = require('./modellordner.js').modellOrdner();   /* bin/modellordner.
    wie viel vor ihr schon lag, und wie viel es zusammen wird. */
 let NUMMER_JETZT = 0, GEHOLT_VORHER = 0, SOLL_GESAMT = 0;
 const E = 'https://essentia.upf.edu/models';
+const TEXTANALYSE = JSON.parse(fs.readFileSync(path.join(__dirname, 'textanalyse', 'daten.json'), 'utf8')).dateien;
+/* Dateien mit fester Fassung: Name → { groesse, sha256 }. Fuer sie gilt die GENAUE Groesse, nicht „mindestens". */
+const FEST = new Map(TEXTANALYSE.map(d => ['textanalyse/' + d.pfad, { groesse: d.groesse, sha256: d.sha256 }]));
+const sha256 = (f) => require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+/* Liegt die richtige Datei da? Feste Fassungen: genaue Groesse, mit pruefen=true auch die Pruefsumme. */
+function passt(name, mindestens, pruefen) {
+  let g = -1; try { g = fs.statSync(path.join(ZIEL, name)).size; } catch (e) { return false; }
+  const fest = FEST.get(name);
+  if (!fest) return g >= mindestens;
+  return g === fest.groesse && (!pruefen || sha256(path.join(ZIEL, name)) === fest.sha256);
+}
 const DATEIEN = [
   /* Die Stemtrennung. Mit Abstand die groesste Datei - wer nur den
      Klangraum will, kann sie sich sparen; bin/stems.js sagt dann, dass
@@ -130,12 +141,13 @@ const DATEIEN = [
    'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/tokenizer.json', 10000000],
   /* Liedtext-Analyse (bin/textanalyse.js): keine Modelle, sondern zwei Woerterbuecher mit Lautschrift, aus
      denen Silben, Betonung und Reim kommen. Sie liegen in einem Unterordner, weil die Rechnung aus der
-     KlangFeder sie dort sucht (<daten>/de/…, <daten>/en/…). ipa-dict: Daten aus de.wiktionary, CC BY-SA;
-     CMUdict: Carnegie Mellon University, BSD-artige Lizenz - beide in web/fremd/LIZENZEN.md (08.11.2026). */
-  ['textanalyse/de/ipa-dict-de.txt',
-   'https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/de.txt', 30000000],
-  ['textanalyse/en/cmudict.dict',
-   'https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict', 3500000],
+     KlangFeder sie dort sucht (<daten>/de/…, <daten>/en/…); die KlangFeder liest dieselbe Kopie mit (der
+     Ordnername „textanalyse" ist mit ihr abgesprochen - nicht ohne sie aendern). ipa-dict: Daten aus
+     de.wiktionary, CC BY-SA; CMUdict: Carnegie Mellon University, BSD-artige Lizenz - beide in
+     web/fremd/LIZENZEN.md. Adresse, Groesse und Pruefsumme stehen NICHT hier, sondern im Datenausweis des
+     Kerns (bin/textanalyse/daten.json, aus der KlangFeder): feste Fassungen statt master, damit beide
+     Werkzeuge genau dieselben Woerterbuecher rechnen (08.11.2026). Eine andere Fassung wird verworfen. */
+  ...TEXTANALYSE.map(d => ['textanalyse/' + d.pfad, d.adresse, d.groesse]),
 ];
 
 /* --nur a,b: nur diese Eintraege aus DATEIEN. Ein unbekannter Name ist
@@ -149,7 +161,7 @@ const LISTE = NUR ? DATEIEN.filter(([n]) => NUR.includes(n)) : DATEIEN;
 /* Wie viele Modelle vollstaendig daliegen - dieselbe Zaehlung fuer die
    Schlusszeile hier und fuer bin/einrichten.js. */
 function bestand() {
-  const da = DATEIEN.filter(([n, , m]) => { try { return fs.statSync(path.join(ZIEL, n)).size >= m; } catch (e) { return false; } }).length;
+  const da = DATEIEN.filter(([n, , m]) => passt(n, m, false)).length;
   return { da, von: DATEIEN.length };
 }
 
@@ -290,7 +302,7 @@ const ZWECKE = [
   { id: 'geschichten', dateien: ['paraphrase-multilingual-mpnet.onnx', 'paraphrase-multilingual-mpnet-tokenizer.json'] },
   { id: 'textanalyse', dateien: ['textanalyse/de/ipa-dict-de.txt', 'textanalyse/en/cmudict.dict'] },
 ];
-if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL }; return; }
+if (require.main !== module) { module.exports = { bestand, passt, DATEIEN, ZWECKE, ZIEL }; return; }
 
 (async () => {
   const unbekannt = NUR ? NUR.filter(n => !DATEIEN.some(([d]) => d === n)) : [];
@@ -302,7 +314,7 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL
     NUMMER_JETZT++;
     const f = path.join(ZIEL, name);
     fs.mkdirSync(path.dirname(f), { recursive: true });   /* textanalyse/de/… liegt in Unterordnern */
-    if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  ${T('vorhanden').padEnd(11)}${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
+    if (passt(name, mindestens, true)) { console.log(`  ${T('vorhanden').padEnd(11)}${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
     melden.lauf({ was: T('{name} wird geladen', { name }), n: NUMMER_JETZT, von: LISTE.length,
       nEinheit: T('Datei'), quelle: QUELLE_JETZT = new URL(url).hostname, bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });
     NAME_JETZT = name;
@@ -314,8 +326,14 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL
     /* Aus einem Zip: das Paket landet erst neben dem Ziel, dann wird der eine Eintrag ausgepackt */
     const auspacken = (zip) => { try { const d = ausZip(zip, zipEintrag); if (d.length < mindestens) return 'zu klein ausgepackt';
       fs.writeFileSync(f + '.teil', d); fs.renameSync(f + '.teil', f); return null; } catch (e) { return e.message; } };
+    /* Feste Fassung: erst pruefen, dann schreiben - eine andere Fassung kommt gar nicht erst auf die Platte. */
+    const fest = FEST.get(name);
+    if (a.buf && fest) {
+      const sha = require('node:crypto').createHash('sha256').update(a.buf).digest('hex');
+      if (sha !== fest.sha256) { a.fehler = T('andere Fassung (Prüfsumme {sha}…)', { sha: sha.slice(0, 12) }); a.buf = null; }
+    }
     if (a.buf) {
-      const schief = zipEintrag ? auspacken(a.buf) : (fs.writeFileSync(f, a.buf), null);
+      const schief = zipEintrag ? auspacken(a.buf) : (fest ? (fs.writeFileSync(f + '.teil', a.buf), fs.renameSync(f + '.teil', f), null) : (fs.writeFileSync(f, a.buf), null));
       if (!schief) { geholt++; GEHOLT_VORHER += a.buf.length; console.log(mb(a.buf.length)); continue; }
       a.fehler = schief;
     }
@@ -323,6 +341,7 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL
     const zf = zipEintrag ? f + '.zip' : f;
     const b = perCurl(url, zf, mindestens);
     if (b.n && zipEintrag) { b.fehler = auspacken(fs.readFileSync(zf)); try { fs.rmSync(zf); } catch (e) {} if (b.fehler) b.n = 0; }
+    if (b.n && fest && !passt(name, mindestens, true)) { try { fs.rmSync(f); } catch (e) {} b.n = 0; b.fehler = T('andere Fassung (Prüfsumme passt nicht)'); }
     if (b.n) { geholt++; GEHOLT_VORHER += b.n; console.log(mb(b.n)); continue; }
     console.log(`${T('FEHLER')} (${b.fehler})`); offen.push([name, url]); process.exitCode = 1;
   }

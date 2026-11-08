@@ -68,7 +68,8 @@ function modelle() {
     let bytes = 0; const fehlen = [];
     for (const n of z.dateien) {
       let g = 0; try { g = fs.statSync(path.join(mh.ZIEL, n)).size; } catch (e) {}
-      if (g >= (soll.get(n) || 1)) bytes += g; else { fehlen.push(n); bytes += soll.get(n) || 0; }
+      /* passt: Mindestgroesse, bei fester Fassung (Woerterbuecher der Lyrics-Analyse) die genaue Groesse */
+      if (mh.passt(n, soll.get(n) || 1, false)) bytes += g; else { fehlen.push(n); bytes += soll.get(n) || 0; }
     }
     return { id: z.id, da: !fehlen.length, fehlen, bytes };
   });

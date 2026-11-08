@@ -1366,5 +1366,13 @@
  "{n} in fremder Schrift": {
   "en": "{n} in another script",
   "ru": "{n} в другой письменности"
+ },
+ "andere Fassung (Prüfsumme {sha}…)": {
+  "en": "different version (checksum {sha}…)",
+  "ru": "другая версия (контрольная сумма {sha}…)"
+ },
+ "andere Fassung (Prüfsumme passt nicht)": {
+  "en": "different version (checksum does not match)",
+  "ru": "другая версия (контрольная сумма не совпадает)"
  }
 }

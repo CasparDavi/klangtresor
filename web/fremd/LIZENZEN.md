@@ -297,8 +297,11 @@ aus der Lautschrift zweier Wörterbücher. Sie liegen unter
 
 | Datei | aus | Lizenz |
 |---|---|---|
-| `textanalyse/de/ipa-dict-de.txt` | `data/de.txt` in [github.com/open-dict-data/ipa-dict](https://github.com/open-dict-data/ipa-dict) (30 726 400 Byte) | CC BY-SA |
-| `textanalyse/en/cmudict.dict` | `cmudict.dict` in [github.com/cmusphinx/cmudict](https://github.com/cmusphinx/cmudict) (3 618 488 Byte) | BSD-artig |
+| `textanalyse/de/ipa-dict-de.txt` | `data/de.txt` in [github.com/open-dict-data/ipa-dict](https://github.com/open-dict-data/ipa-dict), Commit `43c3570` (30 726 400 Byte, SHA-256 `d36d11dbcc226468a22f0fb3a0794ee0ce142bf277e26e517a8bfd0de1ec2653`) | CC BY-SA |
+| `textanalyse/en/cmudict.dict` | `cmudict.dict` in [github.com/cmusphinx/cmudict](https://github.com/cmusphinx/cmudict), Commit `0f8072f` (3 618 488 Byte, SHA-256 `81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22`) | BSD-artig |
+
+Geholt wird genau diese Fassung (Datenausweis `bin/textanalyse/daten.json`); eine andere wird verworfen.
+Eigene Korrekturen am Wörterbuch stehen in `bin/textanalyse/korrekturen-de.tsv` und `-en.tsv`.
 
 > Deutsch: ipa-dict, Open Dictionary Data; die deutschen Daten stammen aus
 > [german-ipa-dict](https://github.com/devio-at/german-ipa-dict) von devio-at,

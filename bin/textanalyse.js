@@ -37,7 +37,6 @@ const { pathToFileURL } = require('node:url');
 const WURZEL = path.join(__dirname, '..');
 const DATEI = path.join(WURZEL, 'library', 'textanalyse.json.gz');
 const DATEN = path.join(require('./modellordner.js').modellOrdner(), 'textanalyse');
-const WOERTERBUECHER = ['de/ipa-dict-de.txt', 'en/cmudict.dict'];
 const LEERLAUF = 10 * 60 * 1000;
 
 /* Die Version, ohne den Kern zu laden - der Server braucht sie, um gespeicherte Ergebnisse zu pruefen. */
@@ -45,7 +44,11 @@ function kernVersion() {
   try { return (fs.readFileSync(path.join(__dirname, 'textanalyse', 'version.mjs'), 'utf8').match(/KERN_VERSION\s*=\s*'([^']+)'/) || [])[1] || null; }
   catch (e) { return null; }
 }
-const fehlend = () => WOERTERBUECHER.filter(f => { try { return !fs.statSync(path.join(DATEN, f)).size; } catch (e) { return true; } });
+/* Fehlt ein Woerterbuch oder liegt eine andere Fassung da (andere Groesse als im Datenausweis daten.json)?
+   Die Pruefsumme rechnet bin/modelle-holen.js beim Holen; hier genuegt die Groesse, das kostet nichts. */
+const AUSWEIS = JSON.parse(fs.readFileSync(path.join(__dirname, 'textanalyse', 'daten.json'), 'utf8')).dateien;
+const WOERTERBUECHER = AUSWEIS.map(d => d.pfad);
+const fehlend = () => AUSWEIS.filter(d => { try { return fs.statSync(path.join(DATEN, d.pfad)).size !== d.groesse; } catch (e) { return true; } }).map(d => d.pfad);
 const hash = (text) => crypto.createHash('sha1').update(String(text || ''), 'utf8').digest('hex').slice(0, 16);
 
 let kern = null;

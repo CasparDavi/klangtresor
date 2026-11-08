@@ -4,7 +4,7 @@
 import { wortBetonung } from './betonung-de.mjs';
 import { hebungen } from './metrik.mjs';
 import { wortBetonungEn, letzteSilbeVollEn, phonesWortEn, reimteilEn, reimStufeEn } from './englisch.mjs';
-import { spracheText } from './sprache.mjs';
+import { spracheText, ohneKlammern } from './sprache.mjs';
 
 // Schreibsilben für die Anzeige: Wort in n Stücke teilen, Grenze vor dem letzten Konsonanten
 // zwischen zwei Vokalgruppen (ch, sch, ck, ph, th, qu bleiben zusammen).
@@ -74,12 +74,13 @@ function reimschema(enden) {
 export const BAUTEIL = /^(verse|strophe|chorus|refrain|pre-?chorus|post-?chorus|bridge|intro|outro|interlude|break|drop|hook|final|instrumental|solo)/i;
 export function anzeige(text) {
   const spr = spracheText(text).zeilen;     // 'de' | 'en' | 'fremd' je Zeile
+  const maskiert = ohneKlammern(text).split('\n');   // alles in [ ] durch Leerzeichen ersetzt, Positionen bleiben
   const zeilen = text.split('\n').map((roh, zi) => {
     const t = roh.trim();
     if (!t) return { typ: 'leer' };
-    if (/^\[.*\]$/.test(t)) return { typ: 'abschnitt', name: t.slice(1, -1) };
-    // Regieangaben in der Zeile ([Pause], (Oh)) zählen nicht mit – durch Leerzeichen ersetzen, Positionen bleiben
-    const ohneRegie = roh.replace(/\[[^\]]*\]/g, m => ' '.repeat(m.length));
+    const ohneRegie = maskiert[zi];
+    // nur Klammerinhalt in der Zeile → Regie-/Abschnittszeile (auch Fortsetzung einer mehrzeiligen Angabe)
+    if (!ohneRegie.trim()) return { typ: 'abschnitt', name: t.replace(/^\[|\]$/g, '').trim() };
     // Fremde Schrift (kyrillisch, japanisch …) wird nicht analysiert; sonst deutsch oder englisch je Zeile
     if (spr[zi] === 'fremd') return { typ: 'fremd' };
     const sprache = spr[zi] === 'en' ? 'en' : 'de';
