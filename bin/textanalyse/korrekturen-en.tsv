@@ -1,3 +1,5 @@
 # Korrekturen zum englischen Wörterbuch (CMUdict) – überstimmen das Original, gehören zur Kern-Version.
 # Format: wort<TAB>ARPAbet wie in cmudict (Vokale mit 1 Haupt-, 2 Neben-, 0 unbetont), Wort klein geschrieben
 # Leere Zeilen und Zeilen mit # werden übergangen.
+# WICHTIG: Jede Änderung hier braucht eine neue KERN_VERSION (kern/version.mjs) – sonst rechnet der KlangTresor
+# seinen gespeicherten Bestand nicht neu (er rechnet nur bei geändertem Lyrics-Hash oder neuer Kern-Version).

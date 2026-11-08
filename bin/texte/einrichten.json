@@ -1067,21 +1067,21 @@
   "en": "19 packages downloaded, missing ones fetched",
   "ru": "19 пакетов загружено, недостающие догружены"
  },
- "KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — {n} Dateien, rund 1,2 GB": {
-  "en": "AI models: stem separation, music style, lyric understanding and depth — {n} files, about 1.2 GB",
-  "ru": "Модели ИИ: разделение на дорожки, музыкальный стиль, понимание текста и глубина — файлов: {n}, около 1,2 ГБ"
+ "KI-Modelle und Wörterbücher: Stemtrennung, Musikstil, Textverständnis, Tiefe und Lyrics-Analyse — {n} Dateien, rund 1,2 GB": {
+  "en": "AI models and dictionaries: stem separation, music style, lyric understanding, depth and lyrics analysis — {n} files, about 1.2 GB",
+  "ru": "Модели ИИ и словари: разделение на дорожки, музыкальный стиль, понимание текста, глубина и анализ текста — файлов: {n}, около 1,2 ГБ"
  },
- "Stemtrennung, Musikstil, Textverständnis und Tiefe. Klappt das nicht, läuft alles andere trotzdem.": {
-  "en": "Stem separation, music style, lyric understanding and depth. If this fails, everything else still works.",
-  "ru": "Разделение на дорожки, музыкальный стиль, понимание текста и глубина. Если не получится, всё остальное всё равно работает."
+ "Stemtrennung, Musikstil, Textverständnis, Tiefe und die Wörterbücher der Lyrics-Analyse. Klappt das nicht, läuft alles andere trotzdem.": {
+  "en": "Stem separation, music style, lyric understanding, depth and the dictionaries for lyrics analysis. If this fails, everything else still works.",
+  "ru": "Разделение на дорожки, музыкальный стиль, понимание текста, глубина и словари для анализа текста. Если не получится, всё остальное всё равно работает."
  },
  "Modelle holen": {
   "en": "Downloading models",
   "ru": "Загрузка моделей"
  },
- "Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.": {
-  "en": "Without them stem separation and music style are missing — nothing else.",
-  "ru": "Без них не будет разделения на дорожки и музыкального стиля — больше ничего."
+ "Ohne sie fehlen Stemtrennung, Musikstil, Tiefe und Lyrics-Analyse — der Rest läuft.": {
+  "en": "Without them, stem separation, music style, depth and lyrics analysis are missing — the rest works.",
+  "ru": "Без них не будет разделения на дорожки, музыкального стиля, глубины и анализа текста — остальное работает."
  },
  "Modelle sind da.": {
   "en": "Models are here.",
