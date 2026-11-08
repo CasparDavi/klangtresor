@@ -33,6 +33,16 @@
    Seitenlänge fiel das erst weit unten auf. */
 html{height:100%}
 body{min-height:100%}
+/* SCROLLBALKEN IM DUNKLEN STIL (Caspar_D, 08.11.2026: „die scrollbalken im Klangtresor passen im stil so gar nicht
+   zum dunklen Look and feel"). Bis dahin zeichnete der Browser seine hellen Systembalken. Jetzt: ein halbdurchsichtiger
+   grauer Griff ohne Spur, auf jedem Grund und unter jeder Coverfarbe gleich ruhig. scrollbar-color erbt und gilt fuer
+   Chrome und Firefox; Safari kennt nur die ::-webkit-scrollbar-Regeln (Chrome uebergeht sie, sobald scrollbar-color
+   gesetzt ist). */
+html{scrollbar-color:rgba(255,255,255,.2) transparent}
+::-webkit-scrollbar{width:10px;height:10px;background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:6px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background-color:rgba(255,255,255,.34)}
+::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
 /* Die Grundfarben sind veränderlich: uiFaerben() setzt sie auf die
    Palette des laufenden Songs. Der Übergang wird weich geblendet,
    damit ein Songwechsel nicht springt. */
@@ -1684,6 +1694,13 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #bprompts .ta-m{display:flex;gap:8px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--schwach);white-space:nowrap}
 #bprompts .ta-rl{font-weight:700;min-width:1ch}
 #bprompts .ta-legende{margin-top:14px;font-size:11px;line-height:1.5;color:var(--schwach)}
+#bprompts .ta-leg{margin:4px 0 16px;padding:8px 0 10px;border-top:1px solid var(--rand);border-bottom:1px solid var(--rand);
+  font-size:11.5px;color:var(--schwach)}
+#bprompts .ta-lz{display:grid;grid-template-columns:64px 1fr;column-gap:10px;align-items:center;line-height:1.45;padding:3px 0}
+#bprompts .ta-lb{white-space:nowrap;color:var(--text);font-size:12.5px;line-height:1.4}
+/* Beispielbalken: eine leere Silbe, der Balken steht auf ihrer Grundlinie statt darueber (sonst ragte er in die Zeile davor) */
+#bprompts .ta-lb .ta-s{display:inline-block;width:15px;height:9px;margin-right:2px;vertical-align:middle}
+#bprompts .ta-lb .ta-s::before{bottom:0}
 #bprompts .ta-holen{margin-top:8px;background:none;border:1px solid var(--rand);border-radius:6px;padding:5px 10px;
   color:var(--text);font:inherit;font-size:12px;cursor:pointer}
 #bprompts .ta-holen:hover{border-color:var(--akzent)}
@@ -23038,6 +23055,23 @@ function taKurz(zeilen){
     r: proz(reimend.length, Z.length), rein: proz(rein.length, reimend.length) })
     + (schema && schema[1] > 1 ? ' · ' + t('ta.schema', { s: schema[0] }) : '');
 }
+/* DIE LEGENDE (Caspar_D, 08.11.2026: „es braucht eine legende unter der Lyricsanalyse - was bedeuten die balken, die
+   Farben"). Gezeichnet mit denselben Klassen wie der Text darunter, damit Bild und Erklaerung nicht auseinanderlaufen.
+   Sie steht OBEN, gleich unter dem Satz: Die erste Fassung erklaerte das in einem Absatz am Ende des Textes - bei
+   76 Zeilen fand ihn niemand. */
+function taLegende(){
+  const balken = (art) => '<span class="ta-s ' + art + '">&nbsp;&nbsp;</span>';
+  const zeile = (bild, text) => '<div class="ta-lz"><span class="ta-lb">' + bild + '</span><span>' + esc(text) + '</span></div>';
+  return '<div class="ta ta-leg">'
+    + zeile(balken('heb') + balken('senk') + balken('heb') + balken('senk'), t('ta.leg.balken'))
+    + zeile(balken('heb') + balken('prall'), t('ta.leg.prall'))
+    + zeile('<span class="ta-r" style="color:' + taFarbe('A') + '">Mond</span> <span class="ta-r" style="color:' + taFarbe('B') + '">Wind</span>', t('ta.leg.farbe'))
+    + zeile('<span class="ta-r unrein" style="color:' + taFarbe('A') + '">Haus</span>', t('ta.leg.unrein'))
+    + zeile('<span class="ta-bin" style="text-decoration-color:' + taFarbe('C') + '">Herz</span>', t('ta.leg.binnen'))
+    + zeile('<span class="ta-rl" style="color:' + taFarbe('A') + '">A</span> <span class="ta-h">4</span>', t('ta.leg.rechts'))
+    + zeile('<span class="ta-fremd">[Chorus]</span>', t('ta.leg.grau'))
+    + '</div>';
+}
 async function textanalyseEinsetzen(id){
   let d = null, status = 0;
   try { const r = await fetch('/api/textanalyse/' + id, { cache: 'no-store' }); status = r.status; d = await r.json(); }
@@ -23067,8 +23101,9 @@ async function textanalyseEinsetzen(id){
     return '<div class="ta-z"><div class="ta-t">' + taZeileHtml(r, z) + '</div><div class="ta-m">' + rechts + '</div></div>';
   }).join('');
   seite.innerHTML = '<div class="herkunft">' + esc(taKurz(d.zeilen)) + '</div>'
+    + taLegende()
     + '<div class="ta">' + zeilen + '</div>'
-    + '<div class="ta-legende">' + esc(t('ta.legende')) + '</div>';
+    + '<div class="ta-legende">' + esc(t('ta.grenze')) + '</div>';
   knopf.disabled = false; knopf.title = '';
 }
 
