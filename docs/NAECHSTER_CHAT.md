@@ -10001,6 +10001,11 @@ der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach libr
   geprüft (Win, macOS Intel, Ubuntu). **Apple Silicon** prüft Caspar_D selbst auf seinem Laptop – nicht erinnern.
 - Windows 10: Neuinstallation in `KlangTresor-neu` (zwei Knöpfe, Firewall-Hinweis) noch nicht geprüft.
 - Backlog: alte Installationsskripte archivieren (docs/BACKLOG.md).
+- **Arbeitsteilung Lyrics-Analyse (Caspar_D, 08.11.2026, „A1 und B1“):** Kern, Messung und Wörterbuch-Verbesserungen
+  macht die KlangFeder; der KlangTresor übernimmt fertige Kern-Versionen byte-gleich aus
+  `../KlangFeder/docs/an-klangtresor/` (Soll-Test grün, neue KERN_VERSION). Beide lesen dieselben Wörterbücher in
+  `<Modellordner>/textanalyse/` – Ordnername nicht ohne die KlangFeder ändern. Wörterbücher nach Datenausweis
+  `bin/textanalyse/daten.json` (feste Commits, SHA-256), seit 1.0.144.
 - **Lyrics-Analyse eingebaut (1.0.143, 08.11.2026).** Kern aus der KlangFeder (2026-11-08.3) in `bin/textanalyse/`,
   Prozess `bin/textanalyse.js` (Morgenschritt + `--dienst`), `library/textanalyse.json.gz`, Wörterbücher in
   `modelle/textanalyse/` (Profil → System), Lasche ganz hinten, Laschen ↔ Dropdown gemessen (Hausregel 19).
