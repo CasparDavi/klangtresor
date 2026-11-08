@@ -289,6 +289,34 @@ KlangTresor bleibt nichtkommerziell (Caspar_D, 07.10.2026). Wer KlangTresor
 kommerziell nutzen will, klärt die Gewichte vorher mit den Autoren oder lässt
 das Skizzenbuch weg — alles andere hängt nicht daran.
 
+### Wörterbücher für die Liedtext-Analyse — CC BY-SA und CMU-Lizenz
+
+Die Liedtext-Analyse (`bin/textanalyse.js`) liest Silben, Betonung und Reim
+aus der Lautschrift zweier Wörterbücher. Sie liegen unter
+`textanalyse/` im Modellordner.
+
+| Datei | aus | Lizenz |
+|---|---|---|
+| `textanalyse/de/ipa-dict-de.txt` | `data/de.txt` in [github.com/open-dict-data/ipa-dict](https://github.com/open-dict-data/ipa-dict) (30 726 400 Byte) | CC BY-SA |
+| `textanalyse/en/cmudict.dict` | `cmudict.dict` in [github.com/cmusphinx/cmudict](https://github.com/cmusphinx/cmudict) (3 618 488 Byte) | BSD-artig |
+
+> Deutsch: ipa-dict, Open Dictionary Data; die deutschen Daten stammen aus
+> [german-ipa-dict](https://github.com/devio-at/german-ipa-dict) von devio-at,
+> beruhen auf dem Wiktionary und stehen unter einer
+> [CC-BY-SA-Lizenz](https://github.com/devio-at/german-ipa-dict/blob/main/LICENSE.md).
+> KlangTresor verändert die Datei nicht; wer daraus ein eigenes Wörterbuch
+> ableitet und weitergibt, gibt es unter derselben Lizenz weiter.
+
+> Englisch: The CMU Pronouncing Dictionary — Copyright (C) 1993-2015 Carnegie
+> Mellon University. All rights reserved. Weitergabe mit oder ohne Änderung
+> erlaubt, wenn dieser Vermerk und der Haftungsausschluss mitgehen
+> ([LICENSE](https://github.com/cmusphinx/cmudict/blob/master/LICENSE)).
+> THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY "AS IS" AND ANY
+> EXPRESSED OR IMPLIED WARRANTIES ARE DISCLAIMED.
+
+Die Rechnung selbst (`bin/textanalyse/`) ist eigener Code unter MIT; sie ist
+in der KlangFeder entstanden, Caspar_Ds Liedtext-Werkstatt.
+
 ### npm-Pakete
 
 Nicht im Repositorium (`node_modules/` ist ausgeschlossen), werden über

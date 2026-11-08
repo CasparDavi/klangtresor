@@ -1649,9 +1649,13 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
    2-px-Unterstrich an beiden Enden und aus der Reihe wird eine
    geschweifte Klammer (im Analyzer einmal passiert). */
 #promptregz{display:flex;gap:2px;margin:0 0 10px;border-bottom:1px solid var(--rand);
-  align-items:center;flex-wrap:wrap}
+  align-items:center;flex-wrap:nowrap}
+#promptregz.wahl{height:auto;overflow:visible}
+#promptregz .wahl-p{gap:0}
+#promptregz select{font:inherit;font-size:12px;font-weight:600;max-width:100%;min-width:0;margin:0 0 7px;padding:4px 8px;
+  border-radius:6px;border:1px solid var(--rand);background:var(--flaeche);color:var(--text);cursor:pointer}
 #promptregz .preg{background:none;border:none;border-bottom:2px solid transparent;
-  border-radius:0;padding:6px 9px;margin-bottom:-1px;cursor:pointer;
+  border-radius:0;padding:6px 7px;margin-bottom:-1px;cursor:pointer;
   color:var(--schwach);font-size:12px;font-weight:600;font-family:inherit}
 #promptregz .preg.an{color:var(--text);border-bottom-color:var(--akzent)}
 #promptregz .preg:hover:not(:disabled){color:var(--text)}
@@ -1659,6 +1663,30 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
    dann sehen, wenn dieser Song keines hat. Der Grund steht im Tooltip. */
 #promptregz .preg:disabled{color:#6e6e73;cursor:default}
 #bprompts .pseite[hidden]{display:none}
+/* Lyrics-Analyse: Platz ueber jeder Zeile fuer die Silbenbalken (line-height), rechts eine schmale Spalte
+   fuer Reimbuchstabe und Zahl der Betonungen. Grau = nicht vermessen (Regieangaben, fremde Schrift). */
+#bprompts .ta{--heb:#c9c9cd;--senk:#4a4a50;--prall:#e66767}
+#bprompts .ta-z{display:grid;grid-template-columns:1fr auto;column-gap:10px;align-items:end;line-height:2.25}
+#bprompts .ta-t{white-space:pre-wrap;min-width:0}
+#bprompts .ta-s{position:relative}
+#bprompts .ta-s::before{content:"";position:absolute;left:1px;right:1px;bottom:calc(100% + 1px);border-radius:1px}
+#bprompts .ta-s.heb::before{height:8px;background:var(--heb)}
+#bprompts .ta-s.senk::before{height:2px;background:var(--senk)}
+#bprompts .ta-s.prall::before{height:8px;background:var(--prall)}
+#bprompts .ta-r.unrein{text-decoration:underline dashed;text-underline-offset:4px;text-decoration-thickness:1px}
+#bprompts .ta-bin{text-decoration-line:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+/* Regiezeilen („[Verse 1 – Clean guitar arpeggios, …]") brechen nicht um und ziehen die Spalte nicht auf: grau, eine
+   Zeile, seitlich verschiebbar (Caspar_D, 08.11.2026: „regiespalten sollten das nicht tun dürfen / mach sie grau und
+   scrollable horizontal"). */
+#bprompts .ta-abs{display:block;color:var(--schwach);font-size:11px;letter-spacing:.04em;white-space:pre;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;line-height:1.6;padding-top:6px}
+#bprompts .ta-fremd{color:var(--schwach)}
+#bprompts .ta-m{display:flex;gap:8px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--schwach);white-space:nowrap}
+#bprompts .ta-rl{font-weight:700;min-width:1ch}
+#bprompts .ta-legende{margin-top:14px;font-size:11px;line-height:1.5;color:var(--schwach)}
+#bprompts .ta-holen{margin-top:8px;background:none;border:1px solid var(--rand);border-radius:6px;padding:5px 10px;
+  color:var(--text);font:inherit;font-size:12px;cursor:pointer}
+#bprompts .ta-holen:hover{border-color:var(--akzent)}
 /* DAS KOPIERSYMBOL SCHWEBT IM TEXTFELD, oben links (Caspar_D,
    26.08.2026: "als schwebendes Symbol, wie in deinem Chat"). Es lag
    zuerst in der Ueberschrift - dort ist es zwar immer sichtbar, aber
@@ -22807,7 +22835,10 @@ function promptsFuellen(){
      (Caspar_D, 25.08.2026). Gelöscht wird davon nichts. */
   if (bSong.lyrics && !istInstrumental(bSong)){
     teile.push('<div class="stueck">'
-      + '<div id="promptregz">'
+      /* Laschen oder Dropdown, gemessen (Hausregel 19, auf Laschen ausgedehnt 08.11.2026 - Caspar_D: „wenn im UI nicht
+         genug horizontaler Platz ist, dann werden Pillen in ein Dropdown umgewandelt, so könnte man es auch mit zu vielen
+         Laschen machen"). Die Laschen stehen in .wahl-p, das Dropdown fuellt promptWahlNachziehen aus ihnen. */
+      + '<div id="promptregz" class="wahl' + (wahlListe.get('prompt-lasche') ? ' liste' : '') + '" data-wahl="prompt-lasche"><span class="wahl-p">'
       /* DIE REIHENFOLGE IST DER RECHENWEG (Caspar_D, 07.09.2026: „die
          bereinigte Lyrik muss als letzte Registerlasche stehen, weil sie
          das Ergebnis des Vergleichs ist"). Links steht, was eingereicht
@@ -22817,7 +22848,10 @@ function promptsFuellen(){
       +   '<button class="preg" data-preg="transkript" disabled>' + t('buehne.transkript') + '</button>'
       +   '<button class="preg" data-preg="vergleich" disabled>' + t('buehne.lasche.vergleich') + '</button>'
       +   '<button class="preg" data-preg="rein" disabled>' + t('buehne.rein') + '</button>'
-      + '</div>'
+      /* Ganz hinten, hinter der bereinigten Lyrik (Caspar_D, 08.11.2026) - sie vermisst den eingereichten Text,
+         nicht den bereinigten, steht aber am Ende des Rechenwegs. */
+      +   '<button class="preg" data-preg="analyse" disabled>' + t('buehne.lasche.analyse') + '</button>'
+      + '</span><select></select></div>'
       /* Der Kopierknopf schwebt IM Textfeld, oben links (Caspar_D,
          26.08.2026: "mir wäre tatsächlich das kleine copy symbol in der
          oberen linken Ecke des tatsächlichen Textfeldes lieb gewesen …
@@ -22829,6 +22863,7 @@ function promptsFuellen(){
       + '<div class="pseite" data-pseite="transkript" hidden></div>'
       + '<div class="pseite" data-pseite="vergleich" hidden></div>'
       + '<div class="pseite" data-pseite="rein" hidden></div>'
+      + '<div class="pseite" data-pseite="analyse" hidden></div>'
       + '</div>');
   }
   /* Bei instrumentalen Stücken ausdrücklich sagen, warum hier nichts
@@ -22843,9 +22878,16 @@ function promptsFuellen(){
     document.querySelectorAll('#promptregz .preg').forEach(b => {
       b.onclick = () => promptLasche(b.dataset.preg);
     });
+    /* Das Dropdown folgt den Laschen: frei geschaltet, grau mit Grund, gewaehlt - wer immer das an den Laschen aendert
+       (whisperEinsetzen, lyrikEinsetzen, textanalyseEinsetzen). Ein Dropdown kennt keinen Tooltip; der Grund steht im Eintrag. */
+    const reg = $('promptregz');
+    promptWahlNachziehen();
+    new MutationObserver(promptWahlNachziehen).observe(reg.firstElementChild, { subtree: true, attributes: true, attributeFilter: ['disabled', 'title', 'class'] });
+    wahlenBeobachten(reg.parentElement);
     promptLasche('lyrics');                 // bis das Transkript da ist
     whisperEinsetzen(bSong.id);             // laeuft nach, schaltet frei
     lyrikEinsetzen(bSong.id);               // dito, aus library/lyrik.json
+    textanalyseEinsetzen(bSong.id);         // dito, aus library/textanalyse.json.gz
   }
 }
 
@@ -22912,6 +22954,14 @@ async function promptKopieren(knopf){
 /* Die drei Laschen. Wie im Tonstudio: Knopf hell, Seite sichtbar,
    alles andere aus. Die gewaehlte Lasche wird gemerkt - aber nur,
    wenn es sie fuer den naechsten Song auch wirklich gibt. */
+wahlTun['prompt-lasche'] = (name) => promptLasche(name);
+function promptWahlNachziehen(){
+  const reg = $('promptregz'); if (!reg) return;
+  const sel = reg.querySelector('select'), knoepfe = [...reg.querySelectorAll('.preg')];
+  sel.innerHTML = knoepfe.map(b => '<option value="' + esc(b.dataset.preg) + '"' + (b.disabled ? ' disabled' : '')
+    + (b.classList.contains('an') ? ' selected' : '') + '>'
+    + esc(b.textContent + (b.disabled && b.title ? ' – ' + b.title : '')) + '</option>').join('');
+}
 function promptLasche(name){
   const knopf = document.querySelector('#promptregz .preg[data-preg="' + name + '"]');
   if (!knopf || knopf.disabled) name = 'lyrics';
@@ -22944,6 +22994,84 @@ function promptLasche(name){
  *  kaum versteht, oder japanische Schrift gegen lateinische Umschrift -
  *  bleibt die Lasche aus und sagt im Titel, warum. Lieber nichts zeigen
  *  als einen Text, dem Zeilen fehlen. */
+/* LYRICS-ANALYSE (08.11.2026, Rechnung aus der KlangFeder, bin/textanalyse.js). Je Silbe ein Balken darueber:
+   hoch = betont (Hebung), flach = unbetont (Senkung), rot = zwei betonte direkt nacheinander (Hebungsprall).
+   Der Reimteil am Zeilenende in der Farbe seiner Reimfamilie, gestrichelt = unrein, unterstrichen = Binnenreim;
+   rechts Reimbuchstabe und Zahl der Betonungen. Oben ein Satz, der den Text zusammenfasst.
+   Vermessen wird der EINGEREICHTE Text (Caspar_D, 08.11.2026), Zeile fuer Zeile wie in der Lasche „Lyrics".
+   Die Rechnung kennt Deutsch und Englisch; Zeilen in anderer Schrift bleiben grau und ungezaehlt. */
+const TA_FARBEN = ['#ff7a1a', '#3fc1a5', '#9d8cff', '#e8c27a', '#e0619a', '#7fb2ff', '#c5e05a', '#ff9e9e'];
+const taFarbe = (b) => TA_FARBEN[(String(b).charCodeAt(0) - 65) % TA_FARBEN.length];
+function taZeileHtml(roh, z){
+  if (!z || z.typ === 'leer') return esc(roh) || ' ';
+  if (z.typ === 'abschnitt') return '<span class="ta-abs">' + esc(roh) + '</span>';
+  if (z.typ === 'fremd' || !z.silben) return '<span class="ta-fremd">' + esc(roh) + '</span>';
+  const teile = []; let pos = 0;
+  z.silben.forEach((sb, i) => { if (sb.von > pos) teile.push([pos, sb.von, null, i]); teile.push([sb.von, sb.bis, sb, i]); pos = sb.bis; });
+  if (pos < roh.length) teile.push([pos, roh.length, null, 0]);
+  return teile.map(([a, b, sb, i]) => {
+    let h = esc(roh.slice(a, b));
+    if (!sb) return h.replace(/\[[^\]]*\]/g, m => '<span class="ta-fremd">' + m + '</span>');
+    const prall = sb.m === 'S' && i > 0 && z.silben[i - 1].m === 'S';
+    h = '<span class="ta-s ' + (prall ? 'prall' : sb.m === 'S' ? 'heb' : 'senk') + '">' + h + '</span>';
+    if (z.reim && a >= z.reimVon && b <= z.reimBis)
+      h = '<span class="ta-r' + (z.reimArt === 'unrein' ? ' unrein' : '') + '" style="color:' + taFarbe(z.reim) + '">' + h + '</span>';
+    const bin = (z.binnen || []).find(x => a >= x.von && b <= x.bis);
+    if (bin) h = '<span class="ta-bin" style="text-decoration-color:' + taFarbe(bin.r) + '">' + h + '</span>';
+    return h;
+  }).join('');
+}
+/* Der Satz oben: was am haeufigsten vorkommt, aus denselben Zeilen gezaehlt, die man darunter sieht. */
+function taKurz(zeilen){
+  const Z = zeilen.filter(z => z.typ === 'zeile' && z.n);
+  if (!Z.length) return '';
+  const zaehl = new Map(); Z.forEach(z => zaehl.set(z.h, (zaehl.get(z.h) || 0) + 1));
+  const [h, nh] = [...zaehl].sort((x, y) => y[1] - x[1])[0];
+  const proz = (a, b) => b ? Math.round(100 * a / b) : 0;
+  const reimend = Z.filter(z => z.reim), rein = reimend.filter(z => z.reimArt === 'rein');
+  const schemata = new Map(); let akt = [];
+  const ab = () => { if (akt.length >= 2) { const k = akt.join(''); schemata.set(k, (schemata.get(k) || 0) + 1); } akt = []; };
+  zeilen.forEach(z => { if (z.typ === 'abschnitt') ab(); else if (z.typ === 'zeile' && z.n) akt.push(z.reim || '–'); });
+  ab();
+  const schema = [...schemata].sort((x, y) => y[1] - x[1])[0];
+  return t('ta.kurz', { p: proz(nh, Z.length), h, m: proz(Z.filter(z => z.k === 'm').length, Z.length),
+    r: proz(reimend.length, Z.length), rein: proz(rein.length, reimend.length) })
+    + (schema && schema[1] > 1 ? ' · ' + t('ta.schema', { s: schema[0] }) : '');
+}
+async function textanalyseEinsetzen(id){
+  let d = null, status = 0;
+  try { const r = await fetch('/api/textanalyse/' + id, { cache: 'no-store' }); status = r.status; d = await r.json(); }
+  catch (e) { d = null; }
+  if (!$('promptregz') || !bSong || bSong.id !== id) return;
+  const seite = document.querySelector('#bprompts .pseite[data-pseite="analyse"]');
+  const knopf = document.querySelector('#promptregz .preg[data-preg="analyse"]');
+  if (!seite || !knopf) return;
+  /* Fehlen die Woerterbuecher, steht der Weg dorthin in der Lasche selbst - mit Knopf, nicht nur als Satz. */
+  if (status === 409 && d && d.grund === 'woerterbuecher'){
+    knopf.disabled = false;
+    seite.innerHTML = '<div class="herkunft">' + esc(t('ta.fehlt')) + '</div>'
+      + '<button class="ta-holen">' + esc(t('ta.holen')) + '</button>';
+    seite.querySelector('.ta-holen').onclick = () => systemAuf();
+    return;
+  }
+  if (!d || !d.ok){ knopf.title = t('ta.fehler', { grund: (d && d.grund) || '–' }); return; }
+  if (d.sprache === 'fremd'){ knopf.title = t('ta.fremd'); return; }
+  if (!d.zeilen || !d.zeilen.some(z => z.typ === 'zeile')) return;
+  const roh = bSong.lyrics.split('\n');
+  const zeilen = roh.map((r, i) => {
+    const z = d.zeilen[i];
+    const rechts = z && z.typ === 'zeile' && z.n
+      ? '<span class="ta-rl" style="color:' + (z.reim ? taFarbe(z.reim) : 'var(--schwach)') + '">' + (z.reim || '') + '</span>'
+        + '<span class="ta-h" title="' + esc(t('ta.h_titel', { h: z.h, n: z.n })) + '">' + z.h + '</span>'
+      : '';
+    return '<div class="ta-z"><div class="ta-t">' + taZeileHtml(r, z) + '</div><div class="ta-m">' + rechts + '</div></div>';
+  }).join('');
+  seite.innerHTML = '<div class="herkunft">' + esc(taKurz(d.zeilen)) + '</div>'
+    + '<div class="ta">' + zeilen + '</div>'
+    + '<div class="ta-legende">' + esc(t('ta.legende')) + '</div>';
+  knopf.disabled = false; knopf.title = '';
+}
+
 async function lyrikEinsetzen(id){
   let d = null;
   try { d = await (await fetch('/api/lyrik/' + id, { cache: 'no-store' })).json(); }

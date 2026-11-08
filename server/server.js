@@ -164,6 +164,7 @@ function jsonAntwort(res, daten, status) {
 
 let zonenSpeicher = null;   /* library/notenzonen.json, einmal gelesen */
 let lyrikSpeicher = null;   /* library/lyrik.json, einmal gelesen */
+let textanalyseSpeicher = null, textanalyseStand = -1;   /* library/textanalyse.json.gz, neu gelesen bei neuem Stand */
 let whisperSpeicher = null; /* library/whisper.ndjson, einmal geparst */
 const TYPEN = {
   '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8',
@@ -653,6 +654,9 @@ const MORGEN_SCHRITTE = [
   { id: 'geschichten-wortschatz', schluessel: 'geschichten', name: 'Geschichten-Raum: Wortschatz für die Namen der Gegenden', befehl: ['bin/ortsbegriffe.js'] },
   { id: 'geschichten-zeichnen', schluessel: 'geschichten', name: 'Geschichten-Raum neu zeichnen (nur wenn offen)', befehl: ['bin/karte.js', '--raum', 'geschichten'] },
   { id: 'geschichten-einordnung', schluessel: 'geschichten', name: 'Geschichten-Raum: Einordnung nach Stoff, Haltung und Ton', befehl: ['bin/geschichten-achsen.js'] },
+  /* Liedtexte vermessen (bin/textanalyse.js, 08.11.2026): nur neue und geaenderte Texte, ein paar Sekunden.
+     Kein eigenes Kreuz im Morgenfenster - zu kurz, um es abzuwaehlen. */
+  { id: 'textanalyse', schluessel: 'textanalyse', name: 'Liedtexte vermessen — Silben, Hebungen, Reime für neue und geänderte Texte', befehl: ['bin/textanalyse.js'] },
   /* DIE NACHBARSCHAFT GANZ ZUM SCHLUSS (Caspar_D, 26.08.2026). Zwei
      Schritte, gemeinsamer Schluessel - denn hirsch liest die Datei, die
      profile schreibt; einzeln abgewaehlt ergaebe der zweite keinen Sinn.
@@ -4382,6 +4386,52 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
           if (z.trim()) { try { const e = JSON.parse(z); if (e.id === id) aus.whisper = e.worte; } catch (x) {} }
     } catch (e) {}
     return jsonAntwort(res, aus);
+  }
+
+  /* LIEDTEXT-ANALYSE (bin/textanalyse.js, 08.11.2026): Silben, Hebungen, Reime, Steckbrief - ohne KI.
+     GET  /api/textanalyse/<id>   der gespeicherte Stand aus library/textanalyse.json.gz; fehlt er oder ist der
+                                  Liedtext seither geaendert, wird frisch gerechnet (gespeichert: false).
+     POST /api/textanalyse        { text } - ein beliebiger Text (Editor der KlangFeder), nicht gespeichert.
+     GET  /api/steckbrief?ids=a,b,…[&titel=…]   Steckbrief fuer eine Auswahl; WELCHE Songs, entscheidet der
+                                  Aufrufer mit den vorhandenen Wegen (Playlists, Raeume, Nachbarn).
+     Gerechnet wird in einem eigenen Prozess (Woerterbuecher 340 MB), den bin/textanalyse.js bei Bedarf startet.
+     Fehlen die Woerterbuecher: 409 mit der Liste - geholt wird in Profil → System. */
+  if (p === '/api/textanalyse' || p.startsWith('/api/textanalyse/') || p === '/api/steckbrief') {
+    const TA = require('../bin/textanalyse.js');
+    const fehler = (e) => e && e.fehlen
+      ? jsonAntwort(res, { ok: false, grund: 'woerterbuecher', fehlen: e.fehlen }, 409)
+      : jsonAntwort(res, { ok: false, grund: (e && e.message) || String(e) }, 500);
+    if (p === '/api/textanalyse') {
+      if (req.method !== 'POST') return jsonAntwort(res, { ok: false, grund: 'nur POST' }, 405);
+      if (!eigeneSeite(req)) return jsonAntwort(res, { ok: false, grund: 'Nur von der eigenen Seite.' }, 403);
+      let roh = '';
+      req.on('data', c => { roh += c; if (roh.length > 200000) req.destroy(); });
+      return req.on('end', () => {
+        let text = '';
+        try { text = String(JSON.parse(roh || '{}').text || ''); } catch (e) {}
+        if (!text.trim()) return jsonAntwort(res, { ok: false, grund: 'kein Text' }, 400);
+        TA.anfrage({ art: 'text', text }).then(e => jsonAntwort(res, { ok: true, gespeichert: false, ...e }), fehler);
+      });
+    }
+    const k = katalogHolen();
+    if (!k) return jsonAntwort(res, { ok: false, grund: 'kein Katalog' }, 503);
+    if (p === '/api/steckbrief') {
+      const ids = String(u.searchParams.get('ids') || '').split(',').map(x => x.trim()).filter(x => k.songs[x]);
+      const texte = ids.map(id => k.songs[id].lyrics).filter(t => t && t.trim());
+      if (!texte.length) return jsonAntwort(res, { ok: false, grund: 'keine Songs mit Liedtext' }, 400);
+      return TA.anfrage({ art: 'set', texte, titel: u.searchParams.get('titel') || 'Set' })
+        .then(e => jsonAntwort(res, { ok: true, songs: texte.length, ...e }), fehler);
+    }
+    const id = p.slice('/api/textanalyse/'.length);
+    if (!/^[0-9a-f-]{36}$/.test(id)) { res.writeHead(400); return res.end(); }
+    const s = k.songs[id];
+    if (!s) return jsonAntwort(res, { ok: false, grund: 'unbekannter Song' }, 404);
+    if (!s.lyrics || !s.lyrics.trim()) return jsonAntwort(res, { ok: true, sprache: null, zeilen: [] });
+    const m = mtimeOder0(TA.DATEI);
+    if (m !== textanalyseStand) { textanalyseSpeicher = TA.lesen(); textanalyseStand = m; }
+    const e = textanalyseSpeicher && textanalyseSpeicher.kern === TA.kernVersion() && textanalyseSpeicher.songs[id];
+    if (e && e.hash === TA.hash(s.lyrics)) return jsonAntwort(res, { ok: true, gespeichert: true, kern: textanalyseSpeicher.kern, ...e });
+    return TA.anfrage({ art: 'text', text: s.lyrics }).then(e => jsonAntwort(res, { ok: true, gespeichert: false, ...e }), fehler);
   }
 
   // Einzelner Song mit allem: Lyrics, Prompts, Zählerverlauf

@@ -128,6 +128,14 @@ const DATEIEN = [
    'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/onnx/model_quantized.onnx', 200000000],
   ['paraphrase-multilingual-mpnet-tokenizer.json',
    'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/tokenizer.json', 10000000],
+  /* Liedtext-Analyse (bin/textanalyse.js): keine Modelle, sondern zwei Woerterbuecher mit Lautschrift, aus
+     denen Silben, Betonung und Reim kommen. Sie liegen in einem Unterordner, weil die Rechnung aus der
+     KlangFeder sie dort sucht (<daten>/de/…, <daten>/en/…). ipa-dict: Daten aus de.wiktionary, CC BY-SA;
+     CMUdict: Carnegie Mellon University, BSD-artige Lizenz - beide in web/fremd/LIZENZEN.md (08.11.2026). */
+  ['textanalyse/de/ipa-dict-de.txt',
+   'https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/de.txt', 30000000],
+  ['textanalyse/en/cmudict.dict',
+   'https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict', 3500000],
 ];
 
 /* --nur a,b: nur diese Eintraege aus DATEIEN. Ein unbekannter Name ist
@@ -280,6 +288,7 @@ const ZWECKE = [
   { id: 'gesichter',   dateien: ['scrfd_500m.onnx', 'text_detection_en_ppocrv3_2023may.onnx'] },
   { id: 'feder',       dateien: ['informative-drawings.onnx'] },
   { id: 'geschichten', dateien: ['paraphrase-multilingual-mpnet.onnx', 'paraphrase-multilingual-mpnet-tokenizer.json'] },
+  { id: 'textanalyse', dateien: ['textanalyse/de/ipa-dict-de.txt', 'textanalyse/en/cmudict.dict'] },
 ];
 if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL }; return; }
 
@@ -292,6 +301,7 @@ if (require.main !== module) { module.exports = { bestand, DATEIEN, ZWECKE, ZIEL
   for (const [name, url, mindestens, zipEintrag] of LISTE) {
     NUMMER_JETZT++;
     const f = path.join(ZIEL, name);
+    fs.mkdirSync(path.dirname(f), { recursive: true });   /* textanalyse/de/… liegt in Unterordnern */
     if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  ${T('vorhanden').padEnd(11)}${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
     melden.lauf({ was: T('{name} wird geladen', { name }), n: NUMMER_JETZT, von: LISTE.length,
       nEinheit: T('Datei'), quelle: QUELLE_JETZT = new URL(url).hostname, bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });

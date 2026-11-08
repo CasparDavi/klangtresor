@@ -1350,5 +1350,21 @@
  "Nicht gelungen: {liste}. Die fertigen Schritte bleiben erhalten; der nächste Lauf holt nur nach, was fehlt.": {
   "en": "Did not work: {liste}. Finished steps are kept; the next run only catches up on what is missing.",
   "ru": "Не получилось: {liste}. Готовые шаги сохраняются; следующий запуск доделает только недостающее."
+ },
+ "Liedtext-Analyse": {
+  "en": "Lyrics analysis",
+  "ru": "Анализ текстов песен"
+ },
+ "Kein Katalog.": {
+  "en": "No catalogue.",
+  "ru": "Каталога нет."
+ },
+ "Liedtexte: {neu} neu gerechnet, {gleich} unverändert, {weg} entfallen (Rechnung {kern})": {
+  "en": "Lyrics: {neu} newly calculated, {gleich} unchanged, {weg} dropped (calculation {kern})",
+  "ru": "Тексты песен: заново рассчитано {neu}, без изменений {gleich}, отпало {weg} (расчёт {kern})"
+ },
+ "{n} in fremder Schrift": {
+  "en": "{n} in another script",
+  "ru": "{n} в другой письменности"
  }
 }
