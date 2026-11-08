@@ -119,6 +119,13 @@ Auszeichnungssprache des Boten.
     Zeile, sonst gibt es keine eigene Breite. Gebaut wird mit der
     einen Komponente wahlHtml/wahlSetzen in web/index.html, nicht je
     Ansicht kopiert.
+    **Dasselbe gilt für Registerlaschen** (Caspar_D, 08.11.2026: „wenn
+    im UI nicht genug horizontaler Platz ist, dann werden Pillen in ein
+    Dropdown umgewandelt, so könnte man es auch mit zu vielen Laschen
+    machen"): passt die Laschenreihe nicht in eine Zeile, wird sie ein
+    Dropdown; graue Laschen werden gesperrte Einträge mit dem Grund im
+    Text (ein Dropdown kennt keinen Tooltip). Erstes Beispiel: die
+    Textlaschen im Analyzer (#promptregz, promptWahlNachziehen).
     **Legenden ein- oder zweispaltig, ebenso gemessen** (Caspar_D,
     15.10.2026: „ich hätte gern noch die Legende ebenfalls conditional
     ein oder zweispaltig, die ist jetzt mal so mal so"): Jede Liste
