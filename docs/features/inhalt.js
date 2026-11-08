@@ -359,7 +359,7 @@ BILDER.uebersicht = { sprachen: { de: `img/uebersicht-de.webp?v=${BV}`, en: `img
 BILDER.filtern = { liste: [
   { k:{en:'In the search field',de:'Im Suchfeld',ru:'В поле поиска'}, w:{en:['Title','Style','Lyrics'],de:['Titel','Stil','Liedtext'],ru:['Название','Стиль','Текст']} },
   { k:{en:'As a tag',de:'Als Marke',ru:'Как метка'}, w:{en:['Year','Month','Since','Until','Model','Origin','Commented by','Missing: WAV, timestamps, analysis, comments, lyrics'],
-      de:['Jahr','Monat','Seit','Bis','Modell','Entstehung','Kommentiert von','Fehlt: WAV, Zeitmarken, Analyse, Kommentare, Lyrics'],
+      de:['Jahr','Monat','Seit','Bis','Modell','Entstehung','Kommentiert von','Fehlt: WAV, Zeitmarken, Analyse, Kommentare, Lyrik'],
       ru:['Год','Месяц','С','По','Модель','Происхождение','Автор комментария','Отсутствует: WAV, временные метки, анализ, комментарии, текст песни']} },
   { k:{en:'Choices',de:'Auswahl',ru:'Выбор'}, w:{en:['With / without motion artwork','Public / private / both','Model'],de:['Mit / ohne Bewegtbild','Öffentlich / privat / beides','Modell'],ru:['С / без анимированной обложки','Публичные / приватные / все','Модель']} },
   { k:{en:'Sort',de:'Sortieren',ru:'Сортировка'}, w:{en:['Newest','Oldest','Most plays','Most hearts','Most comments','Title A–Z','Longest','Fastest','Loudest','Most dynamic','Widest loudness range','Widest stereo'],

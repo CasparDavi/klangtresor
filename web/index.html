@@ -4452,7 +4452,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <details id="morgenlesezeichen">
       <summary data-i18n="morgen.lz.summary">Willst Du auch die nur Dir zugänglichen Daten im KlangTresor sehen?</summary>
       <p class="lzgross" data-i18n="morgen.lz.install">Installiere das KlangTresor-Lesezeichen im Chrome-Browser.</p>
-      <p data-i18n="morgen.lz.was">Damit gliederst Du Suno-Assets ein, die nur Du sehen kannst — Lyrics mit
+      <p data-i18n="morgen.lz.was">Damit gliederst Du Suno-Assets ein, die nur Du sehen kannst — Lyrik mit
          Zeit-Verankerung, Wellenhüllkurven, Abschnitt/Zeit-Verankerungen, deine
          privaten Titel, und wer auf deine Titel reagiert hat.</p>
       <p data-i18n="morgen.lz.vor" data-i18n-html><b>Voraussetzung:</b> Du mußt in demselben Chrome bei suno.com angemeldet
@@ -4967,7 +4967,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <button id="pmodiAuf" onclick="pmodiKlappe(event)" title="Bühne" data-i18n-title="player.buehne"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg></button>
       <div class="pmodiliste">
         <button data-modus="karaoke"  onclick="pmodiWaehlen('karaoke')"  title="Karaoke" data-i18n-title="player.karaoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg></button>
-        <button data-modus="lyrics"   onclick="pmodiWaehlen('lyrics')"   title="Lyrics" data-i18n-title="filter.ohne.lyrics"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg></button>
+        <button data-modus="lyrics"   onclick="pmodiWaehlen('lyrics')"   title="Lyrik" data-i18n-title="filter.ohne.lyrics"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg></button>
         <button data-modus="analyzer" onclick="pmodiWaehlen('analyzer')" title="Titel-Analyse" data-i18n-title="player.analyse"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-analyse"/></svg></button>
         <button type="button" id="pipknopf" hidden onclick="pipUmschalten()" title="Bewegtbild rauslösen" data-i18n-title="player.pip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pip"/></svg></button>
       </div>
@@ -22866,7 +22866,7 @@ function promptsFuellen(){
          das Ergebnis des Vergleichs ist"). Links steht, was eingereicht
          wurde, dann was gehoert wurde, dann die Gegenueberstellung -
          und ganz rechts, was dabei herauskommt. */
-      +   '<button class="preg" data-preg="lyrics">Lyrics</button>'
+      +   '<button class="preg" data-preg="lyrics">' + t('player.lyrics') + '</button>'
       +   '<button class="preg" data-preg="transkript" disabled>' + t('buehne.transkript') + '</button>'
       +   '<button class="preg" data-preg="vergleich" disabled>' + t('buehne.lasche.vergleich') + '</button>'
       +   '<button class="preg" data-preg="rein" disabled>' + t('buehne.rein') + '</button>'

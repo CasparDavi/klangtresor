@@ -5,7 +5,7 @@
 > **Namenswechsel:** Das Projekt hieß bis zum 24.08.2026 *MySuno*. Es heißt jetzt **KlangTresor** — „Suno" ist seit dem 06.01.2026 eingetragene Marke von Suno Inc., ausdrücklich für Software zum Abspielen und Bearbeiten von Audioinhalten. Wo in Zitaten und in der Chronik noch der alte Name steht, bleibt er stehen.
 
 Das hier ist ein lokales Archiv deiner auf Suno veröffentlichten Songs.
-Es lädt deine Musik, Artworks, Lyrics und Playlists auf deinen Rechner
+Es lädt deine Musik, Artworks, Lyrik und Playlists auf deinen Rechner
 und gibt dir eine Website dafür, die im eigenen WLAN läuft — auch auf
 iPhone und iPad.
 
@@ -321,7 +321,7 @@ node bin/sammeln.js dein-handle
 
 Das war es. Kein Anmelden, keine Browserkonsole, kein Kopieren: Sunos
 Profil-Schnittstelle antwortet ohne Token und liefert die vollständigen
-Songdaten samt Lyrics. Die Rohdatei legt das Programm selbst an der
+Songdaten samt Lyrik. Die Rohdatei legt das Programm selbst an der
 richtigen Stelle ab.
 
 Es sagt dir am Ende, was es gefunden hat — und beim zweiten Mal auch,
@@ -371,12 +371,12 @@ drei Knöpfe für die Bühne:
 | | |
 |---|---|
 | **Mikrofon** | Karaoke — der Text läuft wortgenau mit |
-| **Textblock** | Lyrics — ganzes Lied auf geteiltem Schirm |
+| **Textblock** | Lyrik — ganzes Lied auf geteiltem Schirm |
 | **Balken** | Analyse — siehe unten |
 
 Ein Klick auf die **Kachel** öffnet die Bühne so, wie du sie zuletzt
 hattest. Ist ein Knopf grau, fehlt dem Song die Voraussetzung — ohne
-Wort-Zeitmarken kein Karaoke, ohne Text keine Lyrics.
+Wort-Zeitmarken kein Karaoke, ohne Text keine Lyrik.
 
 **Whisper, dein Wunsch:** Für Songs, denen Suno keine Zeitmarken gibt,
 rechnet KlangTresor sie mit Whisper `large-v3` nach — über Nacht, neueste
@@ -595,7 +595,7 @@ Ein Klick setzt sie ins Feld; mehrere lassen sich kombinieren.
 ## Was du sichern solltest
 
 **`library/katalog.json.gz`** — rund 47 MB. Dort steckt alles, was
-nicht aus einer Datei zurückkommt: Lyrics, Zeitmarken, Kommentare, der
+nicht aus einer Datei zurückkommt: Lyrik, Zeitmarken, Kommentare, der
 Zählerverlauf, die Playlists. Dazu `library/roh/`, falls dort gerade
 etwas liegt — der Ordner ist meist leer, weil `aufbereiten.js` die
 verarbeiteten Rohdaten wegräumt, sobald ihr Inhalt im Katalog steht.

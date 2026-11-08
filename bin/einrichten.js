@@ -1763,9 +1763,9 @@ function firewallFragtGleich() {
     } }
 
   /* ================================================================ */
-  schritt(T('KI-Modelle'), T('KI-Modelle und Wörterbücher: Stemtrennung, Musikstil, Textverständnis, Tiefe und Lyrics-Analyse — {n} Dateien, rund 1,2 GB', { n: require('./modelle-holen.js').DATEIEN.length }),
+  schritt(T('KI-Modelle'), T('KI-Modelle und Wörterbücher: Stemtrennung, Musikstil, Textverständnis, Tiefe und Lyrik-Analyse — {n} Dateien, rund 1,2 GB', { n: require('./modelle-holen.js').DATEIEN.length }),
     T('Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird einmal, in einen Ordner — deinen eigenen für KI-Modelle, wenn du einen hast, sonst in KlangTresors. Drei Gruppen: Musikstil (hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).'));
-  matt(T('Stemtrennung, Musikstil, Textverständnis, Tiefe und die Wörterbücher der Lyrics-Analyse. Klappt das nicht, läuft alles andere trotzdem.'));
+  matt(T('Stemtrennung, Musikstil, Textverständnis, Tiefe und die Wörterbücher der Lyrik-Analyse. Klappt das nicht, läuft alles andere trotzdem.'));
   /* DER EINE ORT FUER KI-MODELLE (Caspar_D, 28.10.2026: „wir fragen den Nutzer, ob er einen Ort für seine KI-Modelle
      hat, da packen wir alle anderen dazu, gibt er nichts an, dann wandert alles unter KlangTresor/modelle").
      Gefragt wird nur, solange es noch keinen Ort gibt - eine zweite Einrichtung fragt nicht noch einmal; aendern geht
@@ -1783,7 +1783,7 @@ function firewallFragtGleich() {
   mo.umziehen((t) => tut(t.trim()));
   zeile('modellordner', T('Ordner der KI-Modelle'), mo.modellOrdner());
   if (!await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')])) {
-    const w = await wieWeiter(T('Modelle holen'), T('Ohne sie fehlen Stemtrennung, Musikstil, Tiefe und Lyrics-Analyse — der Rest läuft.'));
+    const w = await wieWeiter(T('Modelle holen'), T('Ohne sie fehlen Stemtrennung, Musikstil, Tiefe und Lyrik-Analyse — der Rest läuft.'));
     if (w === 'schluss') { wiederkommen(); schluss(0); }
     if (w === 'wieder') await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
   } else {

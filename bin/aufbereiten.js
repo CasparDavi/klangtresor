@@ -1312,7 +1312,7 @@ console.log(kopf(T('privat:')) + liste.filter(s => !s.oeffentlich).length);
 console.log(kopf(T('Alben:')) + Object.keys(playlists).length
           + ' ' + T('mit {n} Einträgen', { n: albenSumme(playlists) })
           + ` (${Object.values(playlists).filter(p => !p.oeffentlich).length} ${T('privat')})`);
-console.log(kopf(T('mit Lyrics:')) + liste.filter(s => s.lyrics && s.lyrics.trim()).length);
+console.log(kopf(T('mit Lyrik:')) + liste.filter(s => s.lyrics && s.lyrics.trim()).length);
 console.log(kopf(T('mit Video:')) + liste.filter(s => s.videoUrl).length);
 console.log(kopf(T('Remixes:')) + liste.filter(s => s.istRemix).length);
 console.log(kopf(T('Spielzeit:')) + T('{h} Stunden', { h: (summe(s => s.dauer)/3600).toFixed(1) }));
