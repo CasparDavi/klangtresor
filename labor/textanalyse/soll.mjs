@@ -1,5 +1,5 @@
 // Soll-Test für beide Sprachen: der eingebaute Kern muss für diese Songs aus Jörgs Bestand genau diese
-// Werte liefern (Kern 2026-11-09.1, gleiche Werte wie .3). Liest die Texte über die KlangTresor-API.
+// Werte liefern (Kern 2026-11-09.2, gleiche Werte wie .3). Liest die Texte über die KlangTresor-API.
 // Aufruf: node labor/textanalyse/soll.mjs [http://127.0.0.1:8788]   (in der KlangFeder: labor/soll.mjs)
 // Im KlangTresor: Kern aus bin/textanalyse/, Woerterbuecher aus dem Modellordner (bin/modellordner.js).
 import { createRequire } from 'node:module';

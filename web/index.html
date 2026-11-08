@@ -1685,6 +1685,9 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #bprompts .ta-s.prall::before{height:8px;background:var(--prall)}
 #bprompts .ta-r.unrein{text-decoration:underline dashed;text-underline-offset:4px;text-decoration-thickness:1px}
 #bprompts .ta-bin{text-decoration-line:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+#bprompts .ta-asso{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-underline-offset:4px;
+  text-decoration-color:var(--schwach)}
+#bprompts .ta-rl.ta-asso{color:var(--schwach);font-weight:600}
 /* Regiezeilen („[Verse 1 – Clean guitar arpeggios, …]") brechen nicht um und ziehen die Spalte nicht auf: grau, eine
    Zeile, seitlich verschiebbar (Caspar_D, 08.11.2026: „regiespalten sollten das nicht tun dürfen / mach sie grau und
    scrollable horizontal"). */
@@ -23038,6 +23041,9 @@ function taZeileHtml(roh, z){
     h = '<span class="ta-s ' + (prall ? 'prall' : sb.m === 'S' ? 'heb' : 'senk') + '">' + h + '</span>';
     if (z.reim && a >= z.reimVon && b <= z.reimBis)
       h = '<span class="ta-r' + (z.reimArt === 'unrein' ? ' unrein' : '') + '" style="color:' + taFarbe(z.reim) + '">' + h + '</span>';
+    /* Assonanz (Kern 2026-11-09.2): nur die Vokale klingen gleich (blind/ertrinkt) - kein Reim, darum ohne Farbe,
+       gepunktet unterstrichen, rechts ein kleiner Buchstabe; die Endreim-Anteile oben zaehlen sie nicht mit. */
+    else if (z.assonanz && a >= z.reimVon && b <= z.reimBis) h = '<span class="ta-asso">' + h + '</span>';
     const bin = (z.binnen || []).find(x => a >= x.von && b <= x.bis);
     if (bin) h = '<span class="ta-bin" style="text-decoration-color:' + taFarbe(bin.r) + '">' + h + '</span>';
     return h;
@@ -23080,6 +23086,7 @@ function taLegende(){
     + zeile('<span class="ta-r" style="color:' + taFarbe('A') + '">Mond</span> <span class="ta-r" style="color:' + taFarbe('B') + '">Wind</span>', t('ta.leg.farbe'))
     + zeile('<span class="ta-r unrein" style="color:' + taFarbe('A') + '">Haus</span>', t('ta.leg.unrein'))
     + zeile('<span class="ta-bin" style="text-decoration-color:' + taFarbe('C') + '">Herz</span>', t('ta.leg.binnen'))
+    + zeile('<span class="ta-asso">blind</span> <span class="ta-rl ta-asso">a</span>', t('ta.leg.asso'))
     + zeile(taMuster([{ m: 'W' }, { m: 'S' }, { m: 'W' }, { m: 'S' }, { m: 'S' }]) + ' <span class="ta-rl" style="color:' + taFarbe('A') + '">A</span> <span class="ta-h">3</span>', t('ta.leg.rechts'))
     + zeile('<span class="ta-fremd">[Chorus]</span>', t('ta.leg.grau'))
     + '</div>';
@@ -23108,7 +23115,9 @@ async function textanalyseEinsetzen(id){
     const z = d.zeilen[i];
     const rechts = z && z.typ === 'zeile' && z.n
       ? taMuster(z.silben)
-        + '<span class="ta-rl" style="color:' + (z.reim ? taFarbe(z.reim) : 'var(--schwach)') + '">' + (z.reim || '') + '</span>'
+        + (z.reim || !z.assonanz
+          ? '<span class="ta-rl" style="color:' + (z.reim ? taFarbe(z.reim) : 'var(--schwach)') + '">' + (z.reim || '') + '</span>'
+          : '<span class="ta-rl ta-asso">' + z.assonanz + '</span>')
         + '<span class="ta-h" title="' + esc(t('ta.h_titel', { h: z.h, n: z.n })) + '">' + z.h + '</span>'
       : '';
     return '<div class="ta-z"><div class="ta-t">' + taZeileHtml(r, z) + '</div><div class="ta-m">' + rechts + '</div></div>';

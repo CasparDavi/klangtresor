@@ -68,7 +68,29 @@ function reimschema(enden) {
       }
     }
   }
-  return { buchst, art };
+  // Assonanz (Burdorf 2.2.1, Breuer § 38): nur die Vokale ab dem letzten Ton stimmen überein (Himmel/Stille,
+  // blind/ertrinkt). Eigene Kennung (kleine Buchstaben), zählt nicht als Endreim. Nur für Zeilen ohne Endreim,
+  // Partner direkt davor oder eine Zeile dazwischen (Paar- oder Kreuzstellung) – sonst klingt fast alles an.
+  const asso = new Array(teile.length).fill(null), naechsteA = {};
+  for (let i = 0; i < teile.length; i++) {
+    if (!teile[i] || !teile[i].rp || buchst[i]) continue;
+    for (let j = i - 1, gezaehlt = 0; j >= 0 && gezaehlt < 2 && abschnitt[j] === abschnitt[i]; j--) {
+      if (!teile[j] || !teile[j].rp) continue;
+      gezaehlt++;
+      if (buchst[j] || reimVergleich(teile[i], teile[j]) !== 'Assonanz' || vokalGeruest(teile[i]) !== vokalGeruest(teile[j])) continue;
+      if (!asso[j]) { naechsteA[abschnitt[i]] = (naechsteA[abschnitt[i]] || 0) + 1; asso[j] = String.fromCharCode(96 + naechsteA[abschnitt[i]]); }
+      asso[i] = asso[j]; break;
+    }
+  }
+  return { buchst, art, asso };
+}
+// Vokalfolge ab dem Ton, ohne Länge; Schwa und vokalisches r gelten gleich (Wasser/Gassen)
+const VOK_DE = 'aɑɐeɛəiɪoɔuʊyʏøœæɜʌɒ';
+const VOK_EN = /^(AA|AE|AH|AO|AW|AY|EH|ER|EY|IH|IY|OW|OY|UH|UW)$/;
+function vokalGeruest(t) {
+  if (t.sprache === 'en') return t.rp.voll.split(' ').filter(x => VOK_EN.test(x)).join(' ');
+  return (t.rp.voll.replace(/[ːˑ]/g, '').match(new RegExp(`[${VOK_DE}](?:[${VOK_DE}]\u032F)?`, 'g')) || [])
+    .map((v, k) => (k && /^[əɐ]$/.test(v) ? 'ə' : v)).join(' ');
 }
 // Nur Bauteile trennen Reimabschnitte; Vortragsangaben wie [whisper] oder [baritone] nicht
 export const BAUTEIL = /^(verse|strophe|chorus|refrain|pre-?chorus|post-?chorus|bridge|intro|outro|interlude|break|drop|hook|final|instrumental|solo)/i;
@@ -121,10 +143,10 @@ export function anzeige(text) {
     const hebung = imWort.map(s => s.m).lastIndexOf('S'), akzent = imWort.map(s => s.st).lastIndexOf(2);
     return { w: z.letztesWort, sprache: z.sprache, ab: hebung > akzent && akzent >= 0 ? hebung : null };
   });
-  const { buchst, art } = reimschema(enden);
+  const { buchst, art, asso } = reimschema(enden);
   zeilen.forEach((z, i) => {
-    if (z.typ !== 'zeile' || !buchst[i]) return;
-    z.reim = buchst[i]; z.reimArt = art[i];
+    if (z.typ !== 'zeile' || (!buchst[i] && !asso[i])) return;
+    if (buchst[i]) { z.reim = buchst[i]; z.reimArt = art[i]; } else z.assonanz = asso[i];
     // Reimteil ab der letzten Hebung im letzten Wort bis Wortende
     const imWort = z.silben.filter(s => s.von >= z.letztesVon);
     const ab = [...imWort].reverse().find(s => s.m === 'S') || imWort[0];
@@ -143,8 +165,8 @@ export function anzeige(text) {
   return zeilen;
 }
 
-// Binnenreime: betonte Inhaltswörter, die rein auf ein Wort derselben oder der Nachbarzeile
-// reimen (im selben Abschnitt). Reimt das Partnerwort am Zeilenende, gilt dessen Buchstabe;
+// Binnenreime: betonte Inhaltswörter, die rein (oder in der betonten Silbe) auf ein Wort derselben oder der
+// Nachbarzeile reimen (im selben Abschnitt); beide Seiten werden markiert. Reimt das Partnerwort am Zeilenende, gilt dessen Buchstabe;
 // sonst bekommt die Gruppe den nächsten freien Buchstaben des Abschnitts.
 // Englisch: Vokal plus Konsonanten bis zum nächsten Vokal (ARPAbet)
 const silbeEn = rp => [rp.vokal, ...rp.koda.split(' ').filter(Boolean).filter((_, i, a) => !/^(AA|AE|AH|AO|AW|AY|EH|ER|EY|IH|IY|OW|OY|UH|UW)$/.test(a[i]) && a.slice(0, i).every(x => !/^(AA|AE|AH|AO|AW|AY|EH|ER|EY|IH|IY|OW|OY|UH|UW)$/.test(x)))].join(' ');
@@ -163,22 +185,30 @@ function binnenreime(zeilen) {
       if (!rs) return;
       const rp = reimteilWort(x.w, z.sprache);
       // Silbenreim: Vokal der betonten Silbe plus Konsonanten bis zum nächsten Vokal (fal|len ~ Hall)
-      if (rp) posten.push({ i, abschnitt, sprache: z.sprache, w: x.w.toLowerCase(), ende, inhalt: x.inhalt, von: rs.von, bis: x.bis, voll: rp.voll,
+      // bei bloßem Silbenreim nur die betonte Silbe bis vor den nächsten Vokal markieren (Bräut|igam, Wass|er)
+      const silbeBis = rs.von + ((x.w.slice(rs.von - x.von).match(/^[^aeiouäöüy]*[aeiouäöüy]+[^aeiouäöüy]*/i) || [''])[0].length || (rs.bis - rs.von));
+      if (rp) posten.push({ i, abschnitt, sprache: z.sprache, w: x.w.toLowerCase(), ende, inhalt: x.inhalt, von: rs.von, bis: x.bis, silbeBis, markBis: 0, voll: rp.voll,
         silbe: z.sprache === 'en' ? silbeEn(rp) : rp.voll.replace(/^([^aɑɐeɛəiɪoɔuʊyʏøœ]*[aɑɐeɛəiɪoɔuʊyʏøœ][ːˑ\u0300-\u036F]*(?:[aɑɐeɛəiɪoɔuʊyʏøœ]\u032F)?[^aɑɐeɛəiɪoɔuʊyʏøœ]*).*$/, '$1'),
         r: ende ? z.reim : null, z });
     });
   });
   const naechster = {};   // je Abschnitt: höchster schon vergebener Buchstabe
   let ab = 0; zeilen.forEach(z => { if (z.typ === 'abschnitt' && BAUTEIL.test(z.name)) ab++; if (z.reim) naechster[ab] = Math.max(naechster[ab] || 0, z.reim.charCodeAt(0) - 64); });
+  // Zeilenenden mit Endreim sind schon gefärbt; Enden ohne Endreim können Binnenreim-Partner sein –
+  // auch untereinander (naß / Wass|er: reimen nur in der betonten Silbe)
+  const frei = p => !p.ende || !p.z.reim;
   for (const x of posten) {
-    if (x.ende) continue;
+    if (!frei(x)) continue;
     for (const y of posten) {
       if (y === x || !y.inhalt || y.sprache !== x.sprache || y.abschnitt !== x.abschnitt || Math.abs(y.i - x.i) > 1 || y.w === x.w || (y.voll !== x.voll && y.silbe !== x.silbe)) continue;
+      if (x.ende && y.ende && y.voll === x.voll) continue;   // ganzer Reim zweier Enden ist Sache des Endreims
       if (!x.r) x.r = y.r || (naechster[x.abschnitt] = (naechster[x.abschnitt] || 0) + 1, String.fromCharCode(64 + naechster[x.abschnitt]));
-      if (!y.ende && !y.r) y.r = x.r;
+      if (!y.r) y.r = x.r;
+      const bis = p => (y.voll === x.voll ? p.bis : p.silbeBis);
+      x.markBis = Math.max(x.markBis, bis(x)); y.markBis = Math.max(y.markBis, bis(y));
     }
   }
-  for (const x of posten) if (!x.ende && x.r) (x.z.binnen = x.z.binnen || []).push({ von: x.von, bis: x.bis, r: x.r });
+  for (const x of posten) if (frei(x) && x.r && x.markBis) (x.z.binnen = x.z.binnen || []).push({ von: x.von, bis: x.markBis, r: x.r });
 }
 
 // Kommandozeile – steht am Ende, weil sie die Konstanten oben braucht

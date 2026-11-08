@@ -21,6 +21,13 @@ export function lexikon() {
     const k = w.toLowerCase(); if (k !== w && !klein.has(k)) klein.set(k, ipa);
   }
   for (const [k, v] of klein) if (!LEX.has(k)) LEX.set(k, v);
+  // alte Rechtschreibung: ß statt ss am Silbenende (naß, daß, Kuß, mußt, Schloßgarten) – gleiche Aussprache;
+  // ss zwischen Vokalen (Wasser, küssen) war auch früher ss
+  for (const [w, v] of [...LEX]) {
+    if (!w.includes('ss')) continue;
+    const alt = w.replace(/ss(?![aeiouäöüy])/g, 'ß');
+    if (alt !== w && !LEX.has(alt)) LEX.set(alt, v);
+  }
   // eigene Korrekturen überstimmen das Original (kern/korrekturen-de.tsv)
   for (const [w, ipa] of korrekturen('korrekturen-de.tsv')) {
     const v = ipa.replace(/^\/|\/$/g, '');
