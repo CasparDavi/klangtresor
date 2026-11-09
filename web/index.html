@@ -2252,8 +2252,12 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
    nur, was die Albumleiste eigen hat. */
 .psteuer button:hover,.pextra button:hover{background:var(--flaeche2)}
 /* Fluechtiger Abhoer-Zustand im Studio (Original, Solo, Stufe stumm, Tempo): Lampe am EQ-Knopf (22.08.2026) */
-#studioknopf{position:relative}
-#studioknopf.fluechtig::after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--akzent);box-shadow:0 0 6px var(--akzent)}
+/* EQ-SCHALTER UND PFEIL (Caspar_D, 09.11.2026): „EQ" schaltet deinen Klang an und aus und traegt dann die
+   Akzentfarbe wie Zufall und Schleife; der Pfeil daneben oeffnet das Tonstudio und bleibt neutral. */
+.bsteuer .eqpfeil,.pextra .eqpfeil{width:20px!important;min-width:20px!important;margin-left:-3px}
+.eqpfeil .ico{width:14px;height:14px}
+#klangknopf,#bklang{position:relative}
+#klangknopf.fluechtig::after,#bklang.fluechtig::after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--akzent);box-shadow:0 0 6px var(--akzent)}
 /* Die drei Buehnenmodi als EIN Feld, nicht als drei Knoepfe.
 
    Sie sind damit nicht nur Ausloeser, sondern Anzeige: Das gefuellte
@@ -2522,7 +2526,7 @@ html.handy:not(.quer) #buehne.text-lyrics .bwrap{padding-top:calc(70px + env(saf
 html.handy #buehne:not(.text-analyzer) #bmodi,
 html.handy #buehne:not(.text-analyzer) #bversatzgruppe,
 html.handy #buehne:not(.text-analyzer) #blautgruppe,
-html.handy #buehne:not(.text-analyzer) #bstudio{display:none!important}
+html.handy #buehne:not(.text-analyzer) #bstudio,html.handy #buehne:not(.text-analyzer) #bklang{display:none!important}
 html.handy #buehne:not(.text-analyzer):not(.text-lyrics) #bzu,
 html.handy #buehne:not(.text-analyzer):not(.text-lyrics) #bvoll{transition:opacity .35s ease}
 html.handy #buehne:not(.pultAuf):not(.text-analyzer):not(.text-lyrics) #bzu,
@@ -3743,6 +3747,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <option value="mp3" data-i18n="studio.quelle.mp3">Quelle: MP3</option>
         <option value="wav" data-i18n="studio.quelle.wav">Quelle: WAV</option>
       </select>
+      <!-- Derselbe Schalter wie „EQ" im Player (09.11.2026): an = Grund-EQ und Kennlinie fuer alle Titel. -->
+      <button id="eqziel" class="pille" onclick="klangSchalten()" aria-pressed="false" title="An: Equalizer und Kompressor gelten für alle Titel (wie der EQ-Knopf im Player). Aus: die Equalizer-Regler gelten nur für diesen Titel, der Kompressor ruht." data-i18n-title="studio.klang.titel" data-i18n="studio.klang">für alle Titel</button>
       <!-- Reihenfolge = die Kette (Caspar_D, 23.08.): EQ -> Kompressor -> Effekte -->
       <button id="bypeq" class="pille an" title="Die EQ-Stufe (Bänder/Glockenstuhl) wirkt oder wirkt nicht – der Ton läuft in beiden Fällen weiter, die Einstellungen bleiben" data-i18n-title="studio.byp.eq">EQ</button>
       <button id="bypkomp" class="pille an" title="Die Kompressor-Stufe (Kompressor/Gradationskompressor) wirkt oder wirkt nicht – der Ton läuft in beiden Fällen weiter, die Kennlinie bleibt" data-i18n-title="studio.byp.komp" data-i18n="studio.byp.komp.knopf">Kompressor</button>
@@ -4892,7 +4898,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <button class="schaltknopf" onclick="anschlussSchalten()" id="banschluss" title="Anschluss" data-i18n-title="player.anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
         <button class="schaltknopf" onclick="schleifen()" id="bschleif" title="Schleife: dieser Titel wiederholt sich" data-i18n-title="player.schleife"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
         <button class="schaltknopf" type="button" id="bmehr" onclick="mehrAuf('buehne')" title="Mehr" data-i18n-title="handy.jetzt.mehr"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg></button>
-        <button class="schaltknopf" onclick="studioAuf()" id="bstudio" title="Tonstudio — Equalizer" data-i18n-title="player.eq">EQ</button>
+        <button class="schaltknopf" onclick="klangSchalten()" id="bklang" aria-pressed="false" title="EQ: dein Klang für alle Titel – an/aus" data-i18n-title="player.klang">EQ</button><button class="eqpfeil" onclick="studioAuf()" id="bstudio" title="Tonstudio öffnen" data-i18n-title="player.studio_auf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>
         </span>
       </div>
       <label class="versatz" id="blautgruppe" title="Lautstärke" data-i18n-title="player.laut">
@@ -4950,7 +4956,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <button class="schaltknopf" onclick="mischen()" id="mischknopf" title="Zufall" data-i18n-title="player.zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
       <button class="schaltknopf" onclick="anschlussSchalten()" id="anschlussknopf" title="Anschluss" data-i18n-title="player.anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
       <button class="schaltknopf" onclick="schleifen()" id="schleifknopf" title="Schleife: dieser Titel wiederholt sich" data-i18n-title="player.schleife"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
-      <button class="schaltknopf" onclick="studioAuf()" id="studioknopf" title="Tonstudio — Equalizer" data-i18n-title="player.eq">EQ</button>
+      <button class="schaltknopf" onclick="klangSchalten()" id="klangknopf" aria-pressed="false" title="EQ: dein Klang für alle Titel – an/aus" data-i18n-title="player.klang">EQ</button><button class="eqpfeil" onclick="studioAuf()" id="studioknopf" title="Tonstudio öffnen" data-i18n-title="player.studio_auf"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>
     </div>
     <div class="laut nuranbreit">
       <button class="schaltknopf" onclick="stumm()" id="stummknopf" title="Stumm (m)" data-i18n-title="player.stumm"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg></button>
@@ -5018,6 +5024,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <button type="button" class="msch" data-tu="zufall" aria-pressed="false"><span class="k"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></span><span data-i18n="player.zufall">Zufall</span></button>
     <button type="button" class="msch" data-tu="schleife" aria-pressed="false"><span class="k"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></span><span data-i18n="handy.mehr.schleife">Schleife</span></button>
     <button type="button" class="msch" data-tu="anschluss" aria-pressed="false"><span class="k"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></span><span data-i18n="player.anschluss">Anschluss</span></button>
+    <button type="button" class="msch" data-tu="klang" aria-pressed="false"><span class="k"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 4v16M12 4v16M18 4v16"/><circle cx="6" cy="14" r="2.2" fill="currentColor"/><circle cx="12" cy="8" r="2.2" fill="currentColor"/><circle cx="18" cy="15" r="2.2" fill="currentColor"/></svg></span><span>EQ</span></button>
   </div>
   <div class="mlaut"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg><input type="range" id="mlaut" min="0" max="100" step="1" value="100" data-i18n-aria="player.laut" aria-label="Lautstärke"></div>
   <div class="mziele">
@@ -5035,7 +5042,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
   <div class="mkopf"><b>EQ</b><button type="button" class="knopf" id="eqzu" data-i18n="handy.fertig">Fertig</button></div>
   <div class="eqpillen" id="eqpillen"></div>
   <div class="eqregler" id="eqregler"></div>
-  <div class="eqfuss" data-i18n="handy.eq.fuss">gilt für diesen Titel</div>
+  <div class="eqfuss" id="eqfuss" data-i18n="handy.eq.fuss">gilt für diesen Titel</div>
 </div>
 <audio id="audio" crossorigin="anonymous"></audio>
 <video id="pipfilm" muted loop playsinline></video>
@@ -5097,8 +5104,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=21"></script>
-<script src="/ui-sprache.js?v=33"></script>
+<script src="/ui-sprache-ru.js?v=22"></script>
+<script src="/ui-sprache.js?v=34"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -5624,6 +5631,13 @@ let eqQ    = JSON.parse(localStorage.getItem('mysuno-eq-q')    || 'null') || [0,
 let eqParametrisch = localStorage.getItem('mysuno-eq-param') === '1';
 let eqDeckel = localStorage.getItem('mysuno-eq-deckel') === '1';   // "Decke halten": nie ueber die Grenze (Caspar_D, 20.08.2026)
 let eqAnsichtHz = localStorage.getItem('mysuno-eq-ansicht') === 'hz';  // Bandansicht oder Glockenstuhl - EIN Geraet, zwei Sichten (Caspar_D, 20.08.2026)
+/* DEIN KLANG (Caspar_D, 09.11.2026: „ich dachte, man könne ihn einfach einschalten und er überstimmt dann die
+   individuellen Soundeinstellungen"). Ein Schalter fuer alle Titel, gemerkt wie Lautstaerke und Anschluss (1a):
+   an = der Grund-EQ ueberstimmt den Song-EQ, Kerben gegen Stoertoene bleiben (2a), und die Kennlinie
+   (Kompressor/Gradation/Limiter) wirkt (3a); aus = Song-EQ wie bisher, Kennlinie ruht. */
+let klangAn = (() => { try { return localStorage.getItem('mysuno-klang') === '1'; } catch (e) { return false; } })();
+let eqGrund = (() => { try { const g = JSON.parse(localStorage.getItem('mysuno-eq-grund') || 'null');
+  return Array.isArray(g) && g.length === 8 ? g.map(v => Math.max(-12, Math.min(12, +v || 0))) : [0,0,0,0,0,0,0,0]; } catch (e) { return [0,0,0,0,0,0,0,0]; } })();
 let anEq = true, anFx = true, anKomp = true;   // die drei Stufen-Schalter im Kopf (Caspar_D, 21.08.2026) - fluechtig, Standard an
 let eqSoloBaender = new Set(), eqSoloInvers = false;   // Solo im Glockenstuhl: die gewaehlten Baender spielen (Invers: alle anderen)
 let megaBassAn = false;   // MEGA BASS: fluechtiger AUFSATZ (23.08.2026) - Bass+-Kurve zusaetzlich zu den gemerkten Gains, nichts wird ueberschrieben ("drauf, weg, alles wie vorher")
@@ -5732,7 +5746,7 @@ function songEqAnzeigen(){
   const p = $('psongeq'); if (!p) return;
   const e = eqJeSong[aktuellId];
   const teile = [];
-  if (e && e.gains && e.gains.some(g => g)) teile.push('EQ');
+  if (!klangAn && e && e.gains && e.gains.some(g => g)) teile.push('EQ');
   if (e && e.kerbe) teile.push(t('studio.songeq.kerbe'));
   p.hidden = !teile.length;
   if (!teile.length) return;
@@ -5747,12 +5761,36 @@ function songEqUmschalten(){
   if ($('studio') && $('studio').style.display !== 'none' && typeof studioSongLaden === 'function'){
     studioSongLaden();
   } else {
-    const e = songEqAn ? eqJeSong[aktuellId] : null;
-    eqGains = (e && e.gains) ? e.gains.slice() : [0,0,0,0,0,0,0,0];
-    eqKerbe = (e && e.kerbe) ? { ...e.kerbe, db: Math.max(-12, Math.min(12, e.kerbe.db)) } : null;
+    const k = songKlang(aktuellId);
+    eqGains = k.gains; eqKerbe = k.kerbe;
     if (typeof eqAnwenden === 'function') eqAnwenden();
   }
   songEqAnzeigen();
+}
+/* Was fuer einen Titel klingt: Gains aus dem Grund-EQ (Klang an) oder aus dem Song, die Kerbe immer aus dem Song. */
+function songKlang(id){
+  const e = songEqAn ? eqJeSong[id] : null;
+  return { gains: klangAn ? eqGrund.slice() : ((e && e.gains) ? e.gains.slice() : [0,0,0,0,0,0,0,0]),
+           kerbe: (e && e.kerbe) ? { ...e.kerbe, db: Math.max(-12, Math.min(12, e.kerbe.db)) } : null };
+}
+function klangSchalten(){
+  klangAn = !klangAn;
+  try { localStorage.setItem('mysuno-klang', klangAn ? '1' : '0'); } catch (e) {}
+  handyKlangFrei = true;                      /* ein Fingertipp auf den Schalter gibt die Klangbearbeitung am Handy frei */
+  if ($('studio') && $('studio').style.display !== 'none') studioSongLaden();
+  else { const k = songKlang(aktuellId); eqGains = k.gains; eqKerbe = k.kerbe; eqAnwenden(); }
+  gradSenden();
+  klangAnzeigen();
+  if (document.documentElement.classList.contains('eq-offen')) eqBlattZeigen();
+  if (document.documentElement.classList.contains('mehr-offen')) mehrStand();
+}
+function klangAnzeigen(){
+  for (const id of ['klangknopf', 'bklang', 'eqziel']){ const k = $(id); if (!k) continue;
+    k.classList.toggle('an', klangAn); k.setAttribute('aria-pressed', klangAn ? 'true' : 'false'); }
+  const f = $('eqfuss'); if (f){ f.dataset.i18n = klangAn ? 'handy.eq.fuss_alle' : 'handy.eq.fuss'; f.textContent = t(f.dataset.i18n); }
+  songEqAnzeigen();
+  studioMarke();
+  if ($('jmehrknopf')) mehrPunkte();
 }
 /* FRÜH LADEN, nicht erst beim Öffnen des Tonstudios (25.08.2026). Der
    Zweig für das geschlossene Studio liest beim Songwechsel aus dieser
@@ -5794,9 +5832,14 @@ function kerbeAnwenden(){
 
 let eqMerkzeit = null;
 function eqMerken(){
+  /* Klang an: die Regler sind der Grund-EQ fuer alle Titel (im Browser gemerkt wie der Kompressor). Beim Titel
+     bleibt dann nur, was ihm gehoert - seine Kerbe und ein frueherer Song-EQ, der wiederkommt, wenn der Klang aus ist. */
+  if (klangAn){ eqGrund = eqGains.slice(); try { localStorage.setItem('mysuno-eq-grund', JSON.stringify(eqGrund)); } catch (e) {} }
   if (!aktuellId) return;
   clearTimeout(eqMerkzeit);
-  const id = aktuellId, gains = eqGains.slice(), kerbe = eqKerbe ? { ...eqKerbe } : null;
+  const id = aktuellId, alt = eqJeSong[id], kerbe = eqKerbe ? { ...eqKerbe } : null,
+        gains = klangAn ? ((alt && alt.gains) ? alt.gains.slice() : [0,0,0,0,0,0,0,0]) : eqGains.slice();
+  if (klangAn && JSON.stringify((alt && alt.kerbe) || null) === JSON.stringify(kerbe)){ songEqAnzeigen(); return; }
   eqMerkzeit = setTimeout(() => {
     if (gains.some(g => g) || kerbe) eqJeSong[id] = { gains, ...(kerbe ? { kerbe } : {}) };
     else delete eqJeSong[id];
@@ -6055,9 +6098,18 @@ function gradMerken(){
   localStorage.setItem('mysuno-grad-form', gradForm); localStorage.setItem('mysuno-grad-tone', String(gradTone));
   localStorage.setItem('mysuno-grad-sw', String(gradSW)); localStorage.setItem('mysuno-grad-ws', String(gradWS));
 }
+/* Die Werte des klassischen Kompressors stehen in den Reglern des Studios. Bis zum ersten Oeffnen trugen die ihre
+   Startwerte (Schwelle 0 = aus) - Kompressor und Limiter wirkten nach dem Neuladen also erst, wenn man das Studio
+   einmal aufgemacht hatte (gefunden 09.11.2026). Darum hier aus dem Gemerkten vorbelegen. */
+function kompWerteLaden(){
+  if (kompWerteLaden.fertig) return; kompWerteLaden.fertig = true;
+  for (const [k, st] of [['thr', 0], ['ratio', 1], ['att', 10], ['rel', 250], ['auf', 0]]){
+    const r = $('komp' + k); if (r) r.value = localStorage.getItem('mysuno-komp-' + k) || st; }
+}
 function gradSenden(){
   if (!hörer || !hörer.gradation) return;
-  const neutral = eqAus || !anKomp;          /* Kompressor-Schalter im Kopf */
+  kompWerteLaden();
+  const neutral = eqAus || !anKomp || !klangAn;   /* Kompressor-Schalter im Kopf; ohne „EQ" ruht die Kennlinie (09.11.2026) */
   hörer.gradation.port.postMessage({
     kurve: neutral ? Array.from({ length: 61 }, (_, i) => i - 60) : Array.from(gradTabelle()),
     attack: (+($('kompatt') || { value: 10 }).value) / 1000,
@@ -6562,7 +6614,6 @@ function studioZiehenEinrichten(){
 }
 
 async function studioAuf(){
-  for (const id of ['studioknopf','bstudio']){ const k = $(id); if (k) k.classList.add('an'); }
   if (hörer && hörer.ctx && hörer.ctx.state === 'suspended') hörer.ctx.resume().catch(() => {});   /* Autoplay-Regel: ein Klick darf wecken */
   if (!eqProfil) {
     try { eqProfil = await (await fetch('/api/eq-profil', { cache: 'no-store' })).json(); } catch (e) { eqProfil = { songs: {}, mittel: null }; }   /* no-store: der HTTP-Cache hielt die Datei ohne Histogramme fest (21.08.2026) */
@@ -6697,7 +6748,7 @@ async function studioAuf(){
   studioSpitze(true);
 }
 function studioZu(){ $('studio').style.display = 'none'; blasterLcd(false);
-  for (const id of ['studioknopf','bstudio']){ const k = $(id); if (k) k.classList.remove('an'); } kompAnzeige(false); parSpektrum(false); studioSpitze(false); studioMarke(); }
+  kompAnzeige(false); parSpektrum(false); studioSpitze(false); studioMarke(); }
 /* Was FLUECHTIG wirkt (nicht je Song gemerkt, nach dem Schliessen unsichtbar):
    A/B Original, Solo, eine stumme Stufe, Tempo. Eine Wahrheitsquelle; der
    EQ-Knopf im Player traegt dafuer eine Lampe (Review 22.08.2026: "Solo und
@@ -6713,10 +6764,10 @@ function studioFluechtig(){
   return teile;
 }
 function studioMarke(){
-  const k = $('studioknopf'); if (!k) return;
   const teile = studioFluechtig();
-  k.classList.toggle('fluechtig', teile.length > 0);
-  k.title = teile.length ? t('studio.eq.wirkt', { was: teile.join(', ') }) : t('player.eq');
+  for (const id of ['klangknopf', 'bklang']){ const k = $(id); if (!k) continue;
+    k.classList.toggle('fluechtig', teile.length > 0);
+    k.title = t('player.klang') + (teile.length ? ' · ' + t('studio.eq.wirkt', { was: teile.join(', ') }) : ''); }
 }
 
 /* MP3/WAV als Dropdown (Caspar_D, 20.08.2026) - derselbe Weg wie in der
@@ -6807,12 +6858,9 @@ function eqPresetAnzeigen(gewaehlt){
 /* Beim Songwechsel: gemerkte Gains laden (oder neutral), Kurve neu.
    Respektiert den Song-Klang-Schalter: abgeschaltet laedt alles neutral. */
 function studioSongLaden(){
-  const merk = songEqAn ? eqJeSong[aktuellId] : null;
-  const g = (merk && merk.gains) || [0,0,0,0,0,0,0,0];
-  eqGains = g.slice();
-  eqKerbe = (merk && merk.kerbe) || null;
-  songEqAnzeigen();
-  if (eqKerbe) eqKerbe.db = Math.max(-12, Math.min(12, eqKerbe.db));   /* Achse des Bildes (Altbestand -18) */
+  const k = songKlang(aktuellId);              /* Kerbe auf die Achse des Bildes geklemmt (Altbestand -18) */
+  eqGains = k.gains; eqKerbe = k.kerbe;
+  klangAnzeigen();
   kerbeAktiv = false; eqStoerHoeren = null;
   kerbeZeigen();
   eqPresetAnzeigen();
@@ -15293,9 +15341,9 @@ function spielen(i, uebernahme){
        garantiert. Und der Song-Klang-Schalter gilt auch hier. */
     const e = songEqAn ? eqJeSong[s.id] : null, vorher = !!(eqStoerHoeren || eqKerbe || eqGains.some(g => g));
     eqStoerHoeren = null; kerbeAktiv = false;
-    eqGains = (e && e.gains) ? e.gains.slice() : [0,0,0,0,0,0,0,0];
-    eqKerbe = (e && e.kerbe) ? { ...e.kerbe, db: Math.max(-12, Math.min(12, e.kerbe.db)) } : null;
-    if (vorher || e) eqAnwenden();
+    const k = songKlang(s.id);                  /* Klang an: Grund-EQ statt Song-EQ (09.11.2026) */
+    eqGains = k.gains; eqKerbe = k.kerbe;
+    if (vorher || e || klangAn) eqAnwenden();
     songEqAnzeigen();
   }
 
@@ -19842,6 +19890,9 @@ function analyseStarten(){
       const p = Math.max(0, Math.min(100, +($('lautstaerke')||{value:100}).value)) / 100;
       lautstaerkeAnwenden(p * p);
     } } catch (e) {}
+    /* DEN GELTENDEN KLANG ANLEGEN (09.11.2026). Die frischen Filter stehen auf 0 dB und auf den Standardfrequenzen;
+       entstand die Kette ueber die Anzeige statt ueber eqAnwenden, blieb der EQ stumm bis zum naechsten Reglerzug. */
+    setTimeout(() => { try { eqFrequenzenAnwenden(); eqAnwenden(); } catch (e) {} }, 0);
   }catch(e){
     console.log('Audioanalyse nicht verfügbar:', e.message);
     /* NOTWEG (Caspar_D, 23.08.2026: "Ton verstummt, wenn ich das Tonstudio
@@ -31687,7 +31738,7 @@ $('jmehrknopf').onclick = () => mehrAuf('jetzt');
 /* Das Blatt „Mehr“: Schalter schalten und bleiben offen; was in einen anderen Raum fuehrt, schliesst Blatt und
    „Jetzt laeuft“. Kein eigener Zustand - gelesen wird an den Knoepfen des grossen Players. */
 let mehrVon = null;
-const mehrSchalter = { zufall: 'mischknopf', schleife: 'schleifknopf', anschluss: 'anschlussknopf' };
+const mehrSchalter = { zufall: 'mischknopf', schleife: 'schleifknopf', anschluss: 'anschlussknopf', klang: 'klangknopf' };
 function mehrPunkte(){
   const an = Object.values(mehrSchalter).some(id => $(id) && $(id).classList.contains('an'));
   $('jmehrknopf').classList.toggle('punkt', an); $('bmehr').classList.toggle('punkt', an);
@@ -31704,6 +31755,7 @@ function mehrStand(){
   /* Kein EQ auf iPhone/iPad (Caspar_D, 24.10.2026: „dann sollte man EQ auf iPhones gar nicht anzeigen“): Dort geht Ton
      aus der Klangbearbeitung nie ueber AirPlay - mit EQ schwiegen die HomePods. Android behaelt ihn. */
   $('mehrblatt').querySelector('[data-tu="eq"]').hidden = istIos();
+  $('mehrblatt').querySelector('[data-tu="klang"]').hidden = istIos();
   mehrPunkte();
 }
 function mehrAuf(von){ mehrVon = von; mehrStand(); document.documentElement.classList.add('mehr-offen'); }
@@ -31748,11 +31800,13 @@ $('eqregler').addEventListener('input', (e) => {
   const d = $('studiopreset'), jetzt = d ? d.value : 'frei';
   $('eqpillen').querySelectorAll('button').forEach(x => x.classList.toggle('an', x.dataset.p === jetzt));
 });
+if (klangAn && !istIos()) handyKlangFrei = true;
+klangAnzeigen();
 $('mlaut').oninput = () => { const r = $('lautstaerke'); r.value = $('mlaut').value; r.dispatchEvent(new Event('input', { bubbles: true })); };
 $('mehrblatt').addEventListener('click', (e) => {
   const z = e.target.closest('[data-tu]'); if (!z) return;
   const tu = z.dataset.tu, weg = () => { mehrZu(); if ($('jetzt').classList.contains('auf')) jetztZu(); };
-  if (tu === 'zufall') mischen(); else if (tu === 'schleife') schleifen(); else if (tu === 'anschluss') anschlussSchalten();
+  if (tu === 'zufall') mischen(); else if (tu === 'schleife') schleifen(); else if (tu === 'anschluss') anschlussSchalten(); else if (tu === 'klang') klangSchalten();
   else if (tu === 'karaoke' || tu === 'text'){ weg(); pmodiWaehlen(tu === 'text' ? 'lyrics' : 'karaoke'); return; }
   else if (tu === 'details'){ const id = aktuellId; weg(); if (id) detailAuf(id); return; }
   else if (tu === 'pip'){ mehrZu(); pipUmschalten(); return; }
