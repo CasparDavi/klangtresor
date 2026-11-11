@@ -1,4 +1,4 @@
-// Gemeinsamer Lexikon-Lader: ipa-dict einmal einlesen, eine Map Wort → Lautschrift (erste Variante).
+// Gemeinsamer Lexikon-Lader: ipa-dict einmal einlesen, eine Map Wort → Lautschrift (erste Variante), ergänzt um Viëtor 1921.
 // Betonung und Reim lesen beide hier (vorher zweimal eingelesen, ≈ 530 MB). Betonungsstufen werden erst
 // beim Nachschlagen aus der Lautschrift abgeleitet und nur für tatsächlich gebrauchte Wörter gemerkt.
 import fs from 'node:fs';
@@ -28,6 +28,9 @@ export function lexikon() {
     const alt = w.replace(/ss(?![aeiouäöüy])/g, 'ß');
     if (alt !== w && !LEX.has(alt)) LEX.set(alt, v);
   }
+  // Viëtor 1921 (gemeinfrei, kern/vietor-de.tsv, bin/vietor-lautschrift.mjs; Jörg, 11.11.2026): nur Wörter, die
+  // ipa-dict nicht kennt – damit vor Duden-Betonungsliste, Beugung, Kompositum und Regel
+  if (!process.env.KLANGFEDER_OHNE_VIETOR) for (const [w, ipa] of korrekturen('vietor-de.tsv')) if (!LEX.has(w)) LEX.set(w, ipa);
   // eigene Korrekturen überstimmen das Original (kern/korrekturen-de.tsv)
   for (const [w, ipa] of korrekturen('korrekturen-de.tsv')) {
     const v = ipa.replace(/^\/|\/$/g, '');

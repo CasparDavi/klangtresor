@@ -1,5 +1,5 @@
 // Wortbetonung Deutsch: Wort → Betonungsstufe je Silbe (2 Haupt, 1 Neben, 0 unbetont).
-// Reihenfolge: Lexikon (ipa-dict, aus Wiktionary) → Betonungsliste aus dem Duden (kern/betonung-korrektur-de.tsv) →
+// Reihenfolge: Lexikon (ipa-dict, aus Wiktionary; dahinter Viëtor 1921, kern/vietor-de.tsv) → Betonungsliste aus dem Duden (kern/betonung-korrektur-de.tsv) →
 // Beugungsendung abtrennen → Kompositum zerlegen (Hauptakzent aufs Erstglied) → Regel (Stammsilbe, unbetonte Präfixe).
 import { lexikon, stufenVon } from './lexikon-de.mjs';
 import { klasseEinsilber } from './kleinwoerter-de.mjs';

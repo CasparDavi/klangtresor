@@ -303,6 +303,11 @@ aus der Lautschrift zweier Wörterbücher. Sie liegen unter
 Geholt wird genau diese Fassung (Datenausweis `bin/textanalyse/daten.json`); eine andere wird verworfen.
 Eigene Korrekturen am Wörterbuch stehen in `bin/textanalyse/korrekturen-de.tsv` und `-en.tsv`.
 
+Zweites deutsches Aussprachelexikon, im Paket enthalten: `bin/textanalyse/vietor-de.tsv` – nur Wörter, die
+ipa-dict nicht kennt (11 223).
+
+> Viëtor, Deutsches Aussprachewörterbuch, 3. Aufl. 1921, gemeinfrei; digitalisiert für die KlangFeder, CC0.
+
 > Deutsch: ipa-dict, Open Dictionary Data; die deutschen Daten stammen aus
 > [german-ipa-dict](https://github.com/devio-at/german-ipa-dict) von devio-at,
 > beruhen auf dem Wiktionary und stehen unter einer
