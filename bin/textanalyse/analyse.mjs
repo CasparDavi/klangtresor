@@ -93,8 +93,9 @@ function vokalGeruest(t) {
   return (t.rp.voll.replace(/[ːˑ]/g, '').match(new RegExp(`[${VOK_DE}](?:[${VOK_DE}]\u032F)?`, 'g')) || [])
     .map((v, k) => (k && /^[əɐ]$/.test(v) ? 'ə' : v)).join(' ');
 }
-// Nur Bauteile trennen Reimabschnitte; Vortragsangaben wie [whisper] oder [baritone] nicht
-export const BAUTEIL = /^(verse|strophe|chorus|refrain|pre-?chorus|post-?chorus|bridge|intro|outro|interlude|break|drop|hook|final|instrumental|solo)/i;
+// Nur Bauteile trennen Reimabschnitte; Vortragsangaben wie [whisper] oder [baritone] nicht. Seit 2026-11-11.2 auch „Vers 1“
+// (deutsch), „Pre Chorus“ mit Leerzeichen, Epilog/Prolog/Prelude/Coda (im Archiv 19/10/12/7-mal nicht erkannt)
+export const BAUTEIL = /^(verse?\b|strophe|chorus|refrain|pre[\s-]?(?:chorus|refrain)|post[\s-]?(?:chorus|refrain)|bridge|intro|outro|interlude|break|drop|hook|final|instrumental|solo|epilog|prolog|prelude|coda)/i;
 export function anzeige(text) {
   const spr = spracheText(text).zeilen;     // 'de' | 'en' | 'fremd' je Zeile
   const maskiert = ohneKlammern(text).split('\n');   // alles in [ ] durch Leerzeichen ersetzt, Positionen bleiben

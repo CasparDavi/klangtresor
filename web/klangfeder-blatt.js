@@ -17,10 +17,10 @@
   const reimFarbe = b => FARBEN[(b.charCodeAt(0) - 65) % FARBEN.length];
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   // Abschnitte: Art aus der Überschrift; Farben des Suno-Editors (Caspar_D, 18.08.2026)
-  const BAUTEIL = /^(verse|strophe|chorus|refrain|pre-?chorus|post-?chorus|bridge|intro|outro|interlude|break|drop|hook|final|instrumental|solo)/i;
+  const BAUTEIL = /^(verse?\b|strophe|chorus|refrain|pre[\s-]?(?:chorus|refrain)|post[\s-]?(?:chorus|refrain)|bridge|intro|outro|interlude|break|drop|hook|final|instrumental|solo|epilog|prolog|prelude|coda)/i;
   const ABS_FARBE = { strophe: '#e31c79', refrain: '#f97b14', bruecke: '#d8d81c', rand: '#16be5c' };
   // Art nach dem Namen vorn, nicht nach der Anweisung dahinter („[Verse 1 – slow build into the chorus]“ ist eine Strophe)
-  const abschnittArt = name => { const n = String(name).toLowerCase().split(/\s[–—-]\s|[,:;(]/)[0]; return /pre[\s-]?chorus|pre[\s-]?refrain/.test(n) ? 'rand' : /chorus|refrain|hook/.test(n) ? 'refrain' : /verse|strophe/.test(n) ? 'strophe' : /bridge|break/.test(n) ? 'bruecke' : 'rand'; };
+  const abschnittArt = name => { const n = String(name).toLowerCase().split(/\s[–—-]\s|[,:;(]/)[0]; return /pre[\s-]?chorus|pre[\s-]?refrain/.test(n) ? 'rand' : /chorus|refrain|hook/.test(n) ? 'refrain' : /\bverse?\b|strophe/.test(n) ? 'strophe' : /bridge|break/.test(n) ? 'bruecke' : 'rand'; };
   function abschnittsKarte(zeilen) {
     let akt = null, nr = 0;
     return zeilen.map((roh, i) => {
