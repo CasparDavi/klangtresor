@@ -31,14 +31,23 @@ export const K_FREI = { ...K, monoU: [0.8, 0], monoC: [0, 1.5], monoB: [0.3, 0.2
 // Abgestimmt auf EPG64-dev: 88,7 → 91,5 % Silben, 64,2 → 69,2 % Zeilen. Übergangskosten mitabzustimmen brachte
 // nur Zehntel (Rauschen bei 260 Zeilen) – sie bleiben wie im Deutschen.
 export const K_EN = { ...K, lern: 0.5, endeEin: 0.9 };
-export const K_EN_FREI = { ...K_EN, monoU: [0.8, 0], monoC: [0, 1.5], monoB: [0.3, 0.2], doppelsenkung: 0.2, poly0: [2, 0] };
+// Freie Fassung: Liedregel vor dem gelernten Versanteil (Jörg, 11.11.2026: „Ja, Lieder zuerst“). Inhaltswörter kosten in der
+// Senkung mindestens monoC, kleine Wörter in der Hebung mindestens monoU – sonst rechnet die freie Fassung wie die strenge
+// und Verben fallen in die Senkung (KlangTresor: „light HELD in her hand“, „FISherman SEES“ seit Kern 11.1 verloren).
+// Preis, bewusst in Kauf genommen: Haider en dev 91,4 → 90,8 % Silben, 68,8 → 66,5 % Zeilen; test 91,5 → 91,4 % / 68,4 →
+// 68,9 %. Ein Gitter über 20 Wertepaare fand keine Einstellung, die eine der Zeilen ohne Verlust auf dev richtet – Gedicht-Gold
+// und Liedzeilen ziehen hier in verschiedene Richtungen.
+export const K_EN_FREI = { ...K_EN, monoU: [0.8, 0], monoC: [0, 1.5], monoB: [0.3, 0.2], doppelsenkung: 0.2, poly0: [2, 0], liedregel: true };
 const KOSTEN = { de: [K, K_FREI], en: [K_EN, K_EN_FREI] };
 
 const wortKosten = (s, k) => {
   // gelernter Anteil Hebung (Englisch, s.p): Kosten aus dem Log-Verhältnis
   if (k.lern && s.p != null) {
     const p = Math.min(0.97, Math.max(0.03, s.p)), lo = k.lern * Math.log(p / (1 - p));
-    return lo >= 0 ? [0, lo] : [-lo, 0];
+    const c = lo >= 0 ? [0, lo] : [-lo, 0];
+    if (k.liedregel && !s.mehrsilbig && s.klasse === 'c') return [c[0], Math.max(c[1], k.monoC[1])];
+    if (k.liedregel && !s.mehrsilbig && s.klasse === 'u') return [Math.max(c[0], k.monoU[0]), c[1]];
+    return c;
   }
   if (s.mehrsilbig) return s.stufe === 2 ? k.poly2 : s.stufe === 1 ? k.poly1 : k.poly0;
   return s.klasse === 'u' ? k.monoU : s.klasse === 'b' ? k.monoB : k.monoC;
