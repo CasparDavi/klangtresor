@@ -99,11 +99,17 @@ export const BAUTEIL = /^(verse?\b|strophe|chorus|refrain|pre[\s-]?(?:chorus|ref
 export function anzeige(text) {
   const spr = spracheText(text).zeilen;     // 'de' | 'en' | 'fremd' je Zeile
   const maskiert = ohneKlammern(text).split('\n');   // alles in [ ] durch Leerzeichen ersetzt, Positionen bleiben
+  // Vorspann (Caspar_D, KlangTresor: „Vorspann raus — alles vor der ersten Klammer“; KlangFeder seit 2026-11-11.5):
+  // Was vor der ersten Zeile mit „[“ steht, ist kein Liedtext, sondern eine Notiz im Textfeld – Hinweis auf die
+  // Playlist, Dank, „English text at the bottom“. Niemand singt es (Abgleich mit Whisper im KlangTresor). Es wird
+  // angezeigt wie ein #-Kommentar und nicht gezählt. Ohne jede Klammer im Text zählt alles wie bisher.
+  const ersteKlammer = text.split('\n').findIndex(r => r.trim().startsWith('['));
   const zeilen = text.split('\n').map((roh, zi) => {
     const t = roh.trim();
     if (!t) return { typ: 'leer' };
     const ohneRegie = maskiert[zi];
     if (t.startsWith('#')) return { typ: 'kommentar' };   // Kommentarzeile: Notiz, kein Vers
+    if (zi < ersteKlammer) return { typ: 'kommentar', vorspann: true };
     // nur Klammerinhalt in der Zeile → Regie-/Abschnittszeile (auch Fortsetzung einer mehrzeiligen Angabe)
     if (!ohneRegie.trim()) return { typ: 'abschnitt', name: t.replace(/^\[|\]$/g, '').trim() };
     // Platzhalter aus dem Gerüst (Jörg, 10.11.2026): „x-X-x-X“ – je Silbe x (unbetont) oder X (betont), mit Bindestrich
