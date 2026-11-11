@@ -1557,6 +1557,18 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
   grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);
   gap:10px;align-content:start}
 #buehne.text-analyzer .brechts{flex:0 0 clamp(230px,26%,430px)}
+/* DIE LYRICS-SPALTE LAESST SICH BREITER ZIEHEN (Caspar_D, 11.11.2026: „kann man das Textfenster nicht einfach breiter
+   ziehen“ - das Arbeitsblatt der KlangFeder in der Lasche „Lyrik-Analyse“ braucht gut 600 px). Der Griff ist der linke
+   Rand der Spalte; die Breite bleibt gemerkt (mysuno-lyrikbreite), Doppelklick stellt die alte Regel wieder her.
+   Links bleiben immer 360 px fuer die Messwerte. */
+#buehne.text-analyzer.breite-eigen .brechts{flex-basis:clamp(230px,var(--lyrikbreite),calc(100% - 360px))}
+#bgriff{display:none}
+#buehne.text-analyzer #bgriff{display:block;position:absolute;left:0;top:0;bottom:0;width:10px;z-index:3;cursor:col-resize;
+  touch-action:none}
+#buehne.text-analyzer #bgriff::after{content:"";position:absolute;left:3px;top:0;bottom:0;width:1px;background:var(--rand);
+  transition:background .15s}
+#buehne.text-analyzer #bgriff:hover::after,#buehne.text-analyzer #bgriff.zieht::after{background:var(--akzent);width:2px}
+#buehne.text-analyzer #bprompts{left:14px}
 #buehne.text-analyzer .bpult{grid-column:1;grid-row:1;margin-top:0;min-width:0}
 
 /* Die Bildfläche entfällt hier ganz. Video-Artwork und Visualizer
@@ -1673,42 +1685,18 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
    dann sehen, wenn dieser Song keines hat. Der Grund steht im Tooltip. */
 #promptregz .preg:disabled{color:#6e6e73;cursor:default}
 #bprompts .pseite[hidden]{display:none}
-/* Lyrics-Analyse: Platz ueber jeder Zeile fuer die Silbenbalken (line-height), rechts eine schmale Spalte
-   fuer Reimbuchstabe und Zahl der Betonungen. Grau = nicht vermessen (Regieangaben, fremde Schrift). */
-#bprompts .ta{--heb:#c9c9cd;--senk:#4a4a50;--prall:#e66767}
-#bprompts .ta-z{display:grid;grid-template-columns:1fr auto;column-gap:10px;align-items:end;line-height:2.25}
-#bprompts .ta-t{white-space:pre-wrap;min-width:0}
-#bprompts .ta-s{position:relative}
-#bprompts .ta-s::before{content:"";position:absolute;left:1px;right:1px;bottom:calc(100% + 1px);border-radius:1px}
-#bprompts .ta-s.heb::before{height:8px;background:var(--heb)}
-#bprompts .ta-s.senk::before{height:2px;background:var(--senk)}
-#bprompts .ta-s.prall::before{height:8px;background:var(--prall)}
-#bprompts .ta-r.unrein{text-decoration:underline dashed;text-underline-offset:4px;text-decoration-thickness:1px}
-#bprompts .ta-bin{text-decoration-line:underline;text-decoration-thickness:2px;text-underline-offset:4px}
-#bprompts .ta-asso{text-decoration:underline dotted;text-decoration-thickness:1.5px;text-underline-offset:4px;
-  text-decoration-color:var(--schwach)}
-#bprompts .ta-rl.ta-asso{color:var(--schwach);font-weight:600}
-/* Regiezeilen („[Verse 1 – Clean guitar arpeggios, …]") brechen nicht um und ziehen die Spalte nicht auf: grau, eine
-   Zeile, seitlich verschiebbar (Caspar_D, 08.11.2026: „regiespalten sollten das nicht tun dürfen / mach sie grau und
-   scrollable horizontal"). */
-#bprompts .ta-abs{display:block;color:var(--schwach);font-size:11px;letter-spacing:.04em;white-space:pre;
-  overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;line-height:1.6;padding-top:6px}
-#bprompts .ta-fremd{color:var(--schwach)}
-#bprompts .ta-m{display:flex;gap:8px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--schwach);white-space:nowrap}
-#bprompts .ta-rl{font-weight:700;min-width:1ch}
-#bprompts .ta-mu{display:inline-flex;align-items:flex-end;gap:1px;height:9px;align-self:center}
-#bprompts .ta-mu i{display:block;width:3px;border-radius:1px}
-#bprompts .ta-mu i.heb{height:9px;background:var(--heb)}
-#bprompts .ta-mu i.senk{height:3px;background:var(--senk)}
-#bprompts .ta-mu i.prall{height:9px;background:var(--prall)}
+/* Lyrics-Analyse: das Arbeitsblatt der KlangFeder (web/klangfeder-blatt.js, Kern 2026-11-11.1; Caspar_D, 11.11.2026:
+   „mir wäre es lieber, wenn er tatsächlich die view aus der Klangfeder reproduziert“). Das Blatt bringt seine Stile
+   selbst mit, gekapselt unter .kf-blatt. Es braucht gut 700 px; ist die Spalte schmaler, schiebt man es seitlich. */
+#bprompts .ta-rahmen{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;padding-bottom:6px}
 #bprompts .ta-legende{margin-top:14px;font-size:11px;line-height:1.5;color:var(--schwach)}
 #bprompts .ta-leg{margin:4px 0 16px;padding:8px 0 10px;border-top:1px solid var(--rand);border-bottom:1px solid var(--rand);
   font-size:11.5px;color:var(--schwach)}
-#bprompts .ta-lz{display:grid;grid-template-columns:64px 1fr;column-gap:10px;align-items:center;line-height:1.45;padding:3px 0}
-#bprompts .ta-lb{white-space:nowrap;color:var(--text);font-size:12.5px;line-height:1.4}
-/* Beispielbalken: eine leere Silbe, der Balken steht auf ihrer Grundlinie statt darueber (sonst ragte er in die Zeile davor) */
-#bprompts .ta-lb .ta-s{display:inline-block;width:15px;height:9px;margin-right:2px;vertical-align:middle}
-#bprompts .ta-lb .ta-s::before{bottom:0}
+/* Die Legende zeichnet mit den Klassen des Blatts (.kf-blatt), aber als Liste statt als dessen Raster. */
+#bprompts .ta-leg.kf-blatt{display:block;font-size:11.5px;line-height:1.45;color:var(--schwach)}
+#bprompts .ta-lz{display:grid;grid-template-columns:118px 1fr;column-gap:10px;align-items:center;padding:3px 0}
+#bprompts .ta-lb{white-space:nowrap;color:var(--kfb-text);font-size:14px;line-height:1.4;display:flex;align-items:flex-end;gap:6px}
+#bprompts .ta-streifen{display:inline-block;width:3px;height:14px;margin-right:3px}
 #bprompts .ta-holen{margin-top:8px;background:none;border:1px solid var(--rand);border-radius:6px;padding:5px 10px;
   color:var(--text);font:inherit;font-size:12px;cursor:pointer}
 #bprompts .ta-holen:hover{border-color:var(--akzent)}
@@ -1775,6 +1763,8 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
 @media (orientation:portrait){
   #buehne.text-analyzer .bwrap{flex-direction:column}
   #buehne.text-analyzer .brechts{flex:0 0 auto;max-height:38vh}
+  #buehne.text-analyzer #bgriff{display:none}
+  #buehne.text-analyzer #bprompts{left:0}
   #bprompts{position:relative;inset:auto}
 }
 
@@ -4922,7 +4912,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
            web/fremd/analyzer.js. -->
       <div id="banalyse"></div>
     </div>
-    <div class="brechts"><div id="btext"></div><div id="bprompts"></div></div>
+    <div class="brechts"><div id="bgriff" title="Ziehen: Spalte breiter oder schmaler · Doppelklick: zurück" data-i18n-title="analyse.spaltenbreite"></div><div id="btext"></div><div id="bprompts"></div></div>
   </div>
 </div>
 
@@ -5105,7 +5095,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
 <script src="/ui-sprache-ru.js?v=22"></script>
-<script src="/ui-sprache.js?v=34"></script>
+<script src="/ui-sprache.js?v=35"></script>
+<!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
+<script src="/klangfeder-blatt.js?v=2026-11-11.1"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
@@ -23038,6 +23030,28 @@ function promptWahlNachziehen(){
     + (b.classList.contains('an') ? ' selected' : '') + '>'
     + esc(b.textContent + (b.disabled && b.title ? ' – ' + b.title : '')) + '</option>').join('');
 }
+/* Ziehrand der Lyrics-Spalte (siehe CSS #bgriff). Gemerkt wird die Breite in Pixeln; die Grenzen setzt das CSS, damit
+   auch ein kleineres Fenster spaeter nichts Unbrauchbares bekommt. */
+(function lyrikBreite(){
+  const b = $('buehne'), g = $('bgriff');
+  if (!b || !g) return;
+  const setzen = (px) => { if (px) { b.style.setProperty('--lyrikbreite', px + 'px'); b.classList.add('breite-eigen'); }
+                           else { b.style.removeProperty('--lyrikbreite'); b.classList.remove('breite-eigen'); } };
+  try { setzen(+localStorage.getItem('mysuno-lyrikbreite') || 0); } catch (e) {}
+  g.addEventListener('pointerdown', (e) => {
+    e.preventDefault(); try { g.setPointerCapture(e.pointerId); } catch (x) {} g.classList.add('zieht');
+    const rechts = g.parentElement.getBoundingClientRect().right;
+    const zug = (ev) => setzen(Math.round(Math.max(230, rechts - ev.clientX)));
+    const los = () => { g.classList.remove('zieht'); g.removeEventListener('pointermove', zug);
+      const w = Math.round(g.parentElement.getBoundingClientRect().width);   // was das CSS daraus gemacht hat
+      setzen(w); try { localStorage.setItem('mysuno-lyrikbreite', String(w)); } catch (e) {} };
+    g.addEventListener('pointermove', zug);
+    g.addEventListener('pointerup', los, { once: true });
+    g.addEventListener('pointercancel', los, { once: true });
+  });
+  g.addEventListener('dblclick', () => { setzen(0); try { localStorage.removeItem('mysuno-lyrikbreite'); } catch (e) {} });
+})();
+
 function promptLasche(name){
   const knopf = document.querySelector('#promptregz .preg[data-preg="' + name + '"]');
   if (!knopf || knopf.disabled) name = 'lyrics';
@@ -23070,43 +23084,13 @@ function promptLasche(name){
  *  kaum versteht, oder japanische Schrift gegen lateinische Umschrift -
  *  bleibt die Lasche aus und sagt im Titel, warum. Lieber nichts zeigen
  *  als einen Text, dem Zeilen fehlen. */
-/* LYRICS-ANALYSE (08.11.2026, Rechnung aus der KlangFeder, bin/textanalyse.js). Je Silbe ein Balken darueber:
-   hoch = betont (Hebung), flach = unbetont (Senkung), rot = zwei betonte direkt nacheinander (Hebungsprall).
-   Der Reimteil am Zeilenende in der Farbe seiner Reimfamilie, gestrichelt = unrein, unterstrichen = Binnenreim;
-   rechts Reimbuchstabe und Zahl der Betonungen. Oben ein Satz, der den Text zusammenfasst.
+/* LYRICS-ANALYSE (08.11.2026, Rechnung aus der KlangFeder, bin/textanalyse.js). Seit dem 11.11.2026 zeichnet sie das
+   Arbeitsblatt der KlangFeder selbst (web/klangfeder-blatt.js, kommt mit jedem Kern mit; Caspar_D: „B, Paket“ - eine
+   Datei statt Nachbau, damit beide Ansichten gleich bleiben). Vorher eigene Balken ueber den Silben; die sind weg.
    Vermessen wird der EINGEREICHTE Text (Caspar_D, 08.11.2026), Zeile fuer Zeile wie in der Lasche „Lyrics".
-   Die Rechnung kennt Deutsch und Englisch; Zeilen in anderer Schrift bleiben grau und ungezaehlt. */
-const TA_FARBEN = ['#ff7a1a', '#3fc1a5', '#9d8cff', '#e8c27a', '#e0619a', '#7fb2ff', '#c5e05a', '#ff9e9e'];
-const taFarbe = (b) => TA_FARBEN[(String(b).charCodeAt(0) - 65) % TA_FARBEN.length];
-function taZeileHtml(roh, z){
-  if (!z || z.typ === 'leer') return esc(roh) || ' ';
-  if (z.typ === 'abschnitt') return '<span class="ta-abs">' + esc(roh) + '</span>';
-  if (z.typ === 'fremd' || !z.silben) return '<span class="ta-fremd">' + esc(roh) + '</span>';
-  const teile = []; let pos = 0;
-  z.silben.forEach((sb, i) => { if (sb.von > pos) teile.push([pos, sb.von, null, i]); teile.push([sb.von, sb.bis, sb, i]); pos = sb.bis; });
-  if (pos < roh.length) teile.push([pos, roh.length, null, 0]);
-  return teile.map(([a, b, sb, i]) => {
-    let h = esc(roh.slice(a, b));
-    if (!sb) return h.replace(/\[[^\]]*\]/g, m => '<span class="ta-fremd">' + m + '</span>');
-    const prall = sb.m === 'S' && i > 0 && z.silben[i - 1].m === 'S';
-    h = '<span class="ta-s ' + (prall ? 'prall' : sb.m === 'S' ? 'heb' : 'senk') + '">' + h + '</span>';
-    if (z.reim && a >= z.reimVon && b <= z.reimBis)
-      h = '<span class="ta-r' + (z.reimArt === 'unrein' ? ' unrein' : '') + '" style="color:' + taFarbe(z.reim) + '">' + h + '</span>';
-    /* Assonanz (Kern 2026-11-09.2): nur die Vokale klingen gleich (blind/ertrinkt) - kein Reim, darum ohne Farbe,
-       gepunktet unterstrichen, rechts ein kleiner Buchstabe; die Endreim-Anteile oben zaehlen sie nicht mit. */
-    else if (z.assonanz && a >= z.reimVon && b <= z.reimBis) h = '<span class="ta-asso">' + h + '</span>';
-    const bin = (z.binnen || []).find(x => a >= x.von && b <= x.bis);
-    if (bin) h = '<span class="ta-bin" style="text-decoration-color:' + taFarbe(bin.r) + '">' + h + '</span>';
-    return h;
-  }).join('');
-}
-/* DIE HEBUNGSFIGUR RECHTS (Caspar_D, 08.11.2026: „kannst du das hebungsdiagramm auch wieder anzeigen" - gemeint die
-   Figur aus der KlangFeder): das Muster der Zeile als Reihe kleiner Saeulen, hoch = betont, flach = unbetont, rot =
-   Prall. Sie macht Zeilen gleichen Masses auf einen Blick vergleichbar, ohne den Text zu lesen. */
-function taMuster(silben){
-  return '<span class="ta-mu">' + silben.map((sb, j) =>
-    '<i class="' + (sb.m === 'S' ? (j > 0 && silben[j - 1].m === 'S' ? 'prall' : 'heb') : 'senk') + '"></i>').join('') + '</span>';
-}
+   Die Rechnung kennt Deutsch und Englisch; Zeilen in anderer Schrift bleiben grau und ungezaehlt.
+   Hinweistexte des Blatts kommen aus unserem Sprachsystem (Schluessel kfb.*), damit sie der Oberflaechensprache folgen. */
+const taBlattOptionen = () => ({ sprache: sprache() === 'de' ? 'de' : 'en', t: (k, v) => t('kfb.' + k, v) });
 /* Der Satz oben: was am haeufigsten vorkommt, aus denselben Zeilen gezaehlt, die man darunter sieht. */
 function taKurz(zeilen){
   const Z = zeilen.filter(z => z.typ === 'zeile' && z.n);
@@ -23116,7 +23100,7 @@ function taKurz(zeilen){
   const proz = (a, b) => b ? Math.round(100 * a / b) : 0;
   const reimend = Z.filter(z => z.reim), rein = reimend.filter(z => z.reimArt === 'rein');
   const schemata = new Map(); let akt = [];
-  const ab = () => { if (akt.length >= 2) { const k = akt.join(''); schemata.set(k, (schemata.get(k) || 0) + 1); } akt = []; };
+  const ab = () => { if (akt.length >= 2 && akt.some(r => r !== '–')) { const k = akt.join(''); schemata.set(k, (schemata.get(k) || 0) + 1); } akt = []; };
   zeilen.forEach(z => { if (z.typ === 'abschnitt') ab(); else if (z.typ === 'zeile' && z.n) akt.push(z.reim || '–'); });
   ab();
   const schema = [...schemata].sort((x, y) => y[1] - x[1])[0];
@@ -23125,21 +23109,25 @@ function taKurz(zeilen){
     + (schema && schema[1] > 1 ? ' · ' + t('ta.schema', { s: schema[0] }) : '');
 }
 /* DIE LEGENDE (Caspar_D, 08.11.2026: „es braucht eine legende unter der Lyricsanalyse - was bedeuten die balken, die
-   Farben"). Gezeichnet mit denselben Klassen wie der Text darunter, damit Bild und Erklaerung nicht auseinanderlaufen.
-   Sie steht OBEN, gleich unter dem Satz: Die erste Fassung erklaerte das in einem Absatz am Ende des Textes - bei
-   76 Zeilen fand ihn niemand. */
+   Farben"). Gezeichnet mit den Bausteinen des Blatts, damit Bild und Erklaerung nicht auseinanderlaufen. Sie steht
+   OBEN, gleich unter dem Satz: bei 76 Zeilen fand eine Erklaerung am Ende niemand. */
 function taLegende(){
-  const balken = (art) => '<span class="ta-s ' + art + '">&nbsp;&nbsp;</span>';
+  const KB = window.KlangfederBlatt, f = KB.reimFarbe, o = taBlattOptionen();
+  const s = (k, w) => '<span class="s ' + k + '">' + w + '</span>';
   const zeile = (bild, text) => '<div class="ta-lz"><span class="ta-lb">' + bild + '</span><span>' + esc(text) + '</span></div>';
-  return '<div class="ta ta-leg">'
-    + zeile(balken('heb') + balken('senk') + balken('heb') + balken('senk'), t('ta.leg.balken'))
-    + zeile(balken('heb') + balken('prall'), t('ta.leg.prall'))
-    + zeile('<span class="ta-r" style="color:' + taFarbe('A') + '">Mond</span> <span class="ta-r" style="color:' + taFarbe('B') + '">Wind</span>', t('ta.leg.farbe'))
-    + zeile('<span class="ta-r unrein" style="color:' + taFarbe('A') + '">Haus</span>', t('ta.leg.unrein'))
-    + zeile('<span class="ta-bin" style="text-decoration-color:' + taFarbe('C') + '">Herz</span>', t('ta.leg.binnen'))
-    + zeile('<span class="ta-asso">blind</span> <span class="ta-rl ta-asso">a</span>', t('ta.leg.asso'))
-    + zeile(taMuster([{ m: 'W' }, { m: 'S' }, { m: 'W' }, { m: 'S' }, { m: 'S' }]) + ' <span class="ta-rl" style="color:' + taFarbe('A') + '">A</span> <span class="ta-h">3</span>', t('ta.leg.rechts'))
-    + zeile('<span class="ta-fremd">[Chorus]</span>', t('ta.leg.grau'))
+  const muster = { h: 3, k: 'm', reim: 'A' };
+  const streifen = ['strophe', 'refrain', 'bruecke', 'rand'].map(a => '<i class="ta-streifen" style="background:' + KB.ABS_FARBE[a] + '"></i>').join('');
+  return '<div class="ta-leg kf-blatt">'
+    + zeile(s('h2', 'hell') + ' ' + s('h1', 'mit') + ' ' + s('h0', 'matt'), t('ta.leg.hell'))
+    + zeile(s('h2', 'Herz') + s('prall', 'schlag'), t('ta.leg.prall'))
+    + zeile('<span class="r" style="color:' + f('A') + '">Mond</span> <span class="r" style="color:' + f('B') + '">Wind</span>', t('ta.leg.farbe'))
+    + zeile('<span class="r unrein" style="color:' + f('A') + ';text-decoration-color:' + f('A') + '">Tür</span>', t('ta.leg.unrein'))
+    + zeile('<span class="binnen" style="text-decoration-color:' + f('C') + '">Herz</span>', t('ta.leg.binnen'))
+    + zeile('<span class="asso">blind</span>', t('ta.leg.asso'))
+    + zeile(streifen, t('ta.leg.streifen'))
+    + zeile(KB.reimHtml(muster, o) + KB.hebungHtml(muster, o), t('ta.leg.rechts'))
+    + zeile('<span class="wdh">↺</span>', t('ta.leg.wdh'))
+    + zeile('<span class="regie">[Chorus]</span> <span class="kommentar"># …</span>', t('ta.leg.grau'))
     + '</div>';
 }
 async function textanalyseEinsetzen(id){
@@ -23161,22 +23149,13 @@ async function textanalyseEinsetzen(id){
   if (!d || !d.ok){ knopf.title = t('ta.fehler', { grund: (d && d.grund) || '–' }); return; }
   if (d.sprache === 'fremd'){ knopf.title = t('ta.fremd'); return; }
   if (!d.zeilen || !d.zeilen.some(z => z.typ === 'zeile')) return;
-  const roh = bSong.lyrics.split('\n');
-  const zeilen = roh.map((r, i) => {
-    const z = d.zeilen[i];
-    const rechts = z && z.typ === 'zeile' && z.n
-      ? taMuster(z.silben)
-        + (z.reim || !z.assonanz
-          ? '<span class="ta-rl" style="color:' + (z.reim ? taFarbe(z.reim) : 'var(--schwach)') + '">' + (z.reim || '') + '</span>'
-          : '<span class="ta-rl ta-asso">' + z.assonanz + '</span>')
-        + '<span class="ta-h" title="' + esc(t('ta.h_titel', { h: z.h, n: z.n })) + '">' + z.h + '</span>'
-      : '';
-    return '<div class="ta-z"><div class="ta-t">' + taZeileHtml(r, z) + '</div><div class="ta-m">' + rechts + '</div></div>';
-  }).join('');
+  /* Fehlt das Blatt (Skript nicht geladen), bleibt die Lasche grau mit Grund statt leer. */
+  if (!window.KlangfederBlatt){ knopf.title = t('ta.fehler', { grund: 'klangfeder-blatt.js' }); return; }
   seite.innerHTML = '<div class="herkunft">' + esc(taKurz(d.zeilen)) + '</div>'
     + taLegende()
-    + '<div class="ta">' + zeilen + '</div>'
+    + '<div class="ta-rahmen"><div class="ta-blatt"></div></div>'
     + '<div class="ta-legende">' + esc(t('ta.grenze')) + '</div>';
+  window.KlangfederBlatt.zeichnen(seite.querySelector('.ta-blatt'), bSong.lyrics, d.zeilen, taBlattOptionen());
   knopf.disabled = false; knopf.title = '';
 }
 
