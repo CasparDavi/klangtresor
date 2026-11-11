@@ -1,8 +1,9 @@
 // Wortbetonung Deutsch: Wort → Betonungsstufe je Silbe (2 Haupt, 1 Neben, 0 unbetont).
-// Reihenfolge: Lexikon (ipa-dict, aus Wiktionary) → Beugungsendung abtrennen →
-// Kompositum zerlegen (Hauptakzent aufs Erstglied) → Regel (Stammsilbe, unbetonte Präfixe).
+// Reihenfolge: Lexikon (ipa-dict, aus Wiktionary) → Betonungsliste aus dem Duden (kern/betonung-korrektur-de.tsv) →
+// Beugungsendung abtrennen → Kompositum zerlegen (Hauptakzent aufs Erstglied) → Regel (Stammsilbe, unbetonte Präfixe).
 import { lexikon, stufenVon } from './lexikon-de.mjs';
 import { klasseEinsilber } from './kleinwoerter-de.mjs';
+import { korrekturen } from './pfade.mjs';
 
 // Lexikon: gemeinsamer Lader (lexikon-de.mjs) – Betonung wird beim Nachschlagen abgeleitet
 export const lexikonDe = lexikon;
@@ -16,7 +17,16 @@ const ENDUNGEN = ['ern', 'ens', 'en', 'em', 'er', 'es', 'est', 'et', 'st', 'e', 
 const BETONTE_SUFFIXE = [['ieren', -2], ['ierst', -1], ['iert', -1], ['ität', -1], ['tät', -1], ['ion', -1], ['ei', -1]];
 
 const ZAHL_UND = /^(ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun)und(zwanzig|dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig)/i;
-const nachschlagen = w => stufenVon(w) || stufenVon(w.toLowerCase()) || stufenVon(w[0].toUpperCase() + w.slice(1).toLowerCase()) || null;
+const imLexikon = w => stufenVon(w) || stufenVon(w.toLowerCase()) || stufenVon(w[0].toUpperCase() + w.slice(1).toLowerCase()) || null;
+// Betonungsliste aus dem Duden (bin/duden-betonung.mjs; Jörg, 11.11.2026): Wort → betonte Silbe, nur wo das Lexikon das
+// Wort nicht kennt. Silben wie schreibSilben gezählt; die Liste enthält nur Wörter, deren Silbenzahl der Kern ebenso zählt.
+const DUDEN = new Map(process.env.KLANGFEDER_OHNE_BETONUNGSKORREKTUR ? [] : korrekturen('betonung-korrektur-de.tsv').map(([w, s]) => [w.toLowerCase(), +s - 1]));
+function ausDuden(w) {
+  const i = DUDEN.get(w.toLowerCase()); if (i == null) return null;
+  const n = schreibSilben(w); if (!(i >= 0 && i < n)) return null;
+  const st = new Array(n).fill(0); st[i] = 2; return st;
+}
+const nachschlagen = w => imLexikon(w) || ausDuden(w);
 
 function regel(w) {
   const n = Math.max(1, schreibSilben(w));
@@ -58,7 +68,8 @@ export function wortBetonung(roh, tiefe = 0) {
       quelle = 'auslassung';
     }
   }
-  if (!st) st = nachschlagen(ohneApo);
+  if (!st) st = imLexikon(ohneApo);
+  if (!st) { st = ausDuden(ohneApo); if (st) quelle = 'duden'; }
 
   if (!st) {
     // Beugungsendung abtrennen

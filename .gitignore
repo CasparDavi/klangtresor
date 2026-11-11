@@ -120,3 +120,7 @@ docs/features/img/tanz-tarja.webp
 docs/features/img/auto-tarja.webp
 # KI-Modelle (bin/modellordner.js) - gehoeren zum Rechner, nicht zum Projekt
 /modelle/
+
+# Betonungsliste der KlangFeder aus dem Duden-Wissensnetz (Kern 2026-11-11.3): bleibt bewusst draussen -
+# Caspar_D, 11.11.2026: „b“ (Kern ja, Liste nein). Ohne sie rechnet der Kern wie 11.2; siehe bin/textanalyse.js.
+/bin/textanalyse/betonung-korrektur-de.tsv

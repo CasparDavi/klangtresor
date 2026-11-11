@@ -4,4 +4,6 @@
 // (kern/betonung-vers-en.json), unreine Reime nach der Verslehre (mir/Tür, u:ü, Dehnungs-h, g:ch), Kommentarzeilen (#),
 // Platzhalter/Lücken, Vers- und Strophenformen (formen.mjs)
 // 2026-11-11.2: weitere Abschnittsnamen (Vers, Pre Chorus mit Leerzeichen, Post Chorus, Epilog, Prolog, Prelude, Coda)
-export const KERN_VERSION = '2026-11-11.2';
+// 2026-11-11.3: Betonungsliste aus dem Duden-Wissensnetz (kern/betonung-korrektur-de.tsv, bin/duden-betonung.mjs) –
+// 13 417 Wörter, die das Lexikon nicht kennt und deren gerechnete Betonung der Duden anders setzt (Fremd-/Fachwörter, Namen)
+export const KERN_VERSION = '2026-11-11.3';

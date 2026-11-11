@@ -12,6 +12,10 @@
    Gemessen gegen Haiders Golddaten (Gedichte): Deutsch 95,7 % der Silben richtig, Englisch
    91,5 (Messreihe in KlangFeder/docs/PRUEFSTAND.md). Fuer Liedtexte gibt es noch keine Pruefmenge.
    Wer die Rechnung aendert, aendert sie in der KlangFeder und holt sie hierher - eine Rechnung, nicht zwei.
+   Eine Datei des KlangFeder-Pakets fehlt hier mit Absicht: betonung-korrektur-de.tsv (Kern 2026-11-11.3, 13 417
+   Betonungen aus dem Duden-Wissensnetz des macOS-Lexikons). Ob eine so grosse Auszugsliste in ein oeffentliches
+   MIT-Repo und in die Releases darf, ist ungeklaert; Caspar_D, 11.11.2026: Kern ja, Liste nein. Fehlt sie, rechnet
+   der Kern wie 11.2 (am ganzen Archiv nachgerechnet: gleich). .gitignore haelt sie draussen.
 
    WARUM EIN EIGENER PROZESS: Die Woerterbuecher belegen geladen gut 340 MB und brauchen gut eine Sekunde
    (gemessen 08.11.2026). Im server.js laegen sie meist ungenutzt; darum rechnet dieser Prozess - im Morgenlauf
