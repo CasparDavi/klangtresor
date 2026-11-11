@@ -1,5 +1,7 @@
 // Soll-Test für beide Sprachen: der eingebaute Kern muss für diese Songs aus Jörgs Bestand genau diese
 // Werte liefern (Kern 2026-11-09.2, gleiche Werte wie .3). Liest die Texte über die KlangTresor-API.
+// Stars of the deep: vierHebungen 29 → 32 seit Kern 2026-11-11.1 (Einsilber am Zeilenende, englische Verstabelle), Zeile
+// für Zeile nachgesehen und von Caspar_D am 11.11.2026 bestätigt: die drei neuen Vier-Heber stimmen.
 // Aufruf: node labor/textanalyse/soll.mjs [http://127.0.0.1:8788]   (in der KlangFeder: labor/soll.mjs)
 // Im KlangTresor: Kern aus bin/textanalyse/, Woerterbuecher aus dem Modellordner (bin/modellordner.js).
 import { createRequire } from 'node:module';
@@ -12,7 +14,7 @@ const TRESOR = process.argv[2] || 'http://127.0.0.1:8788';
 const SOLL = [
   { id: '24dd6816-3393-41cc-a109-4b2ab7baf726', titel: 'Rusalka / Русалка', sprache: 'de', zeilen: 76, fremd: 21, deutsch: 76, englisch: 0, vierHebungen: 58, silben: 547,
     reime: 'AABBCCDDEEFFGGAA--ABABAABBAABBAAAABBCCDD-E-EAABBCCAABBCC-AA-A-B-B----AABB---' },
-  { id: '6250449b-8780-4231-a17a-d0d2c621b06c', titel: 'Stars of the deep', sprache: 'en', zeilen: 75, fremd: 0, deutsch: 0, englisch: 75, vierHebungen: 29, silben: 464,
+  { id: '6250449b-8780-4231-a17a-d0d2c621b06c', titel: 'Stars of the deep', sprache: 'en', zeilen: 75, fremd: 0, deutsch: 0, englisch: 75, vierHebungen: 32, silben: 464,
     reime: '-A-A----AABBAABB-A-A-----AA---AA---A-A-----AA---AA--AABBAABB-AA------------' },
 ];
 let ok = true;
