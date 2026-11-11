@@ -19,7 +19,8 @@
   // Abschnitte: Art aus der Überschrift; Farben des Suno-Editors (Caspar_D, 18.08.2026)
   const BAUTEIL = /^(verse|strophe|chorus|refrain|pre-?chorus|post-?chorus|bridge|intro|outro|interlude|break|drop|hook|final|instrumental|solo)/i;
   const ABS_FARBE = { strophe: '#e31c79', refrain: '#f97b14', bruecke: '#d8d81c', rand: '#16be5c' };
-  const abschnittArt = name => { const n = String(name).toLowerCase(); return /pre[\s-]?chorus|pre[\s-]?refrain/.test(n) ? 'rand' : /chorus|refrain|hook/.test(n) ? 'refrain' : /verse|strophe/.test(n) ? 'strophe' : /bridge|break/.test(n) ? 'bruecke' : 'rand'; };
+  // Art nach dem Namen vorn, nicht nach der Anweisung dahinter („[Verse 1 – slow build into the chorus]“ ist eine Strophe)
+  const abschnittArt = name => { const n = String(name).toLowerCase().split(/\s[–—-]\s|[,:;(]/)[0]; return /pre[\s-]?chorus|pre[\s-]?refrain/.test(n) ? 'rand' : /chorus|refrain|hook/.test(n) ? 'refrain' : /verse|strophe/.test(n) ? 'strophe' : /bridge|break/.test(n) ? 'bruecke' : 'rand'; };
   function abschnittsKarte(zeilen) {
     let akt = null, nr = 0;
     return zeilen.map((roh, i) => {
@@ -144,7 +145,14 @@
         const schema = verse[k.nr].map(b => (b === 'x' ? 'x' : (map[b] = map[b] || String.fromCharCode(65 + n++)))).join('');
         rechts = `<span class="kfb-schema">${esc(op.t('reim'))} · ${schema}</span>`;
       }
-      h += `<div class="kfb-n${st}">${links}</div><div class="kfb-t">${textZelleHtml(r, z, nach, o)}</div><div class="kfb-r">${rechts}</div>`;
+      // Anweisungszeilen ([Verse 1 – clean guitar …]) brechen innerhalb der Spalte um (Caspar_D, 11.11.2026: „anweisungszeilen
+      // dürfen umgebrochen werden“); Liedzeilen nie. Die Strophenform-Marke steht in einer eigenen Zeile darunter
+      // (Caspar_D sah zwischen „dahinter“ und „eigene Zeile“ kaum Unterschied – eigene Zeile trennt Anweisung und Messung);
+      // { markeEigeneZeile: false } hängt sie wieder hinter die Anweisung.
+      const istKopf = z && z.typ === 'abschnitt';
+      let zelle = textZelleHtml(r, z, nach, o);
+      if (istKopf && o.markeEigeneZeile !== false && nach && nach.strophe) zelle = `${zeileHtml(r, z)}<span class="kfb-marke">${formMarkeHtml(nach.strophe, o)}</span>`;
+      h += `<div class="kfb-n${istKopf ? ' kfb-kopf' : ''}">${links}</div><div class="kfb-t${istKopf ? ' kfb-kopf' : ''}${st}">${zelle}</div><div class="kfb-r${istKopf ? ' kfb-kopf' : ''}">${rechts}</div>`;
     });
     ziel.classList.add('kf-blatt');
     ziel.innerHTML = h;
@@ -154,14 +162,25 @@
   const CSS = `
 .kf-blatt{--kfb-text:#ececed;--kfb-mittel:#c4c4c9;--kfb-schwach:#8b8b90;--kfb-prall:#e66767;--kfb-hebung:#c9c9cd;--kfb-senkung:#4a4a50;
   --kfb-zh:28px;--kfb-schrift:17px;--kfb-textbreite:420px;display:grid;grid-template-columns:44px minmax(var(--kfb-textbreite),max-content) max-content;column-gap:28px;
-  font-size:var(--kfb-schrift);line-height:var(--kfb-zh);color:var(--kfb-text)}
-.kf-blatt .kfb-n,.kf-blatt .kfb-r{height:var(--kfb-zh);display:flex;align-items:flex-end;padding-bottom:7px;box-sizing:border-box;
-  font-size:12px;line-height:normal;color:var(--kfb-schwach);font-variant-numeric:tabular-nums}
-.kf-blatt .kfb-n{justify-content:flex-end;position:relative}
-.kf-blatt .kfb-n.st::after{content:"";position:absolute;right:-17px;top:0;bottom:0;width:3px;background:var(--st)}
+  font-size:var(--kfb-schrift);line-height:var(--kfb-zh);color:var(--kfb-text);align-items:baseline}
+/* Silbenzahl und Kennzahlen stehen auf der Grundlinie des Liedtextes (Caspar_D, 11.11.2026: „trotzdem fluchten die
+   baselines nicht“) – Grid-Ausrichtung an der Grundlinie statt fester Abstände, gilt mit jeder Schrift */
+.kf-blatt .kfb-n,.kf-blatt .kfb-r{display:flex;align-items:baseline;font-size:12px;line-height:normal;color:var(--kfb-schwach);
+  font-variant-numeric:tabular-nums}
+.kf-blatt .kfb-n{justify-content:flex-end}
 .kf-blatt .kfb-r{gap:10px}
-.kf-blatt .kfb-t{height:var(--kfb-zh);white-space:pre;tab-size:4}
+.kf-blatt .kfb-t{height:var(--kfb-zh);white-space:pre;tab-size:4;position:relative}
+/* Abschnittsstreifen an der Textzelle (volle Zeilenhöhe), im Spaltenabstand links daneben */
+.kf-blatt .kfb-t.st::before{content:"";position:absolute;left:-14px;top:0;bottom:0;width:3px;background:var(--st)}
 .kf-blatt .kfb-schema{color:var(--kfb-schwach);font-size:12px}
+.kf-blatt .kfb-t.kfb-kopf{width:0;min-width:100%;height:auto;min-height:var(--kfb-zh);white-space:normal;padding-top:7px;font-size:13.5px;line-height:1.3}
+.kf-blatt .kfb-kopf .abs{display:inline;width:auto;white-space:normal}
+.kf-blatt .kfb-kopf .formmarke{white-space:normal}
+.kf-blatt .kfb-marke{display:block;color:var(--kfb-schwach);font-style:normal;font-size:12px;letter-spacing:.01em;margin-top:2px}
+.kf-blatt .kfb-marke b{font-weight:600;color:var(--kfb-mittel)}
+/* „Reim · AABB“ auf der Grundlinie der letzten Kopfzeile (neben „Hebungen 4-4-4-4“), nicht der ersten (Caspar_D, 11.11.2026) */
+.kf-blatt .kfb-t.kfb-kopf,.kf-blatt .kfb-r.kfb-kopf{align-self:last baseline}
+.kf-blatt .kfb-r.kfb-kopf{height:auto;min-height:0;padding:0}
 .kf-blatt .s.h2{color:var(--kfb-text)}.kf-blatt .s.h1{color:var(--kfb-mittel)}.kf-blatt .s.h0{color:var(--kfb-schwach)}.kf-blatt .s.prall{color:var(--kfb-prall)}
 .kf-blatt .r .s{color:inherit}.kf-blatt .r .s.h1{opacity:.82}.kf-blatt .r .s.h0{opacity:.62}
 .kf-blatt .r{text-decoration-line:none}
@@ -178,6 +197,7 @@
 .kf-blatt .mu{display:flex;align-items:flex-end;gap:2px;width:104px;height:14px;overflow:hidden}
 .kf-blatt .mu i{width:5px;flex:none;border-radius:1px 1px 0 0}
 .kf-blatt .rl{width:12px;font-weight:600;font-size:13px}
+.kf-blatt .rl:empty::before{content:"\\200b"}
 .kf-blatt .rl.plan{font-style:italic;font-weight:500}
 .kf-blatt .wdh{color:var(--kfb-schwach);font-size:12px;margin-left:3px;cursor:default}.kf-blatt .wdh.stark{color:var(--kfb-mittel)}
 `;
