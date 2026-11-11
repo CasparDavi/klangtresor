@@ -25,7 +25,10 @@
    Ergebnis: library/textanalyse.json.gz, eine Datei (exFAT belegt je Datei ein ganzes Megabyte):
      { kern, stand, songs: { <id>: { hash, sprache, zeilen, steckbrief } } }
    Neu gerechnet wird ein Song nur, wenn sich sein Liedtext (hash) oder die KERN_VERSION geaendert hat.
-   Analysiert werden die eingereichten Lyrics (Caspar_D, 08.11.2026: 2a), nicht der bereinigte Text.
+   Analysiert werden die eingereichten Lyrics (Caspar_D, 08.11.2026: 2a), nicht der bereinigte Text - und zwar erst ab
+   [Intro]: Caspar_D, 11.11.2026: „alles was vor dem [intro] steht, fliegt aus der analyse". Davor stehen Vorreden,
+   Playlist-Hinweise, Links (87 Titel; laut bereinigter Lyrik wird davon nichts gesungen). Ohne [Intro] bleibt der
+   ganze Text. Die bereinigte Lyrik selbst kam nicht in Frage: wo Whisper Zeilen ueberhoert, fehlen sie dort.
    Texte in fremder Schrift (kyrillisch, japanisch …) stehen mit sprache 'fremd' und ohne Zeilen drin.
 
      node bin/textanalyse.js            den Bestand nachrechnen (Morgenlauf)
@@ -54,6 +57,14 @@ const AUSWEIS = JSON.parse(fs.readFileSync(path.join(__dirname, 'textanalyse', '
 const WOERTERBUECHER = AUSWEIS.map(d => d.pfad);
 const fehlend = () => AUSWEIS.filter(d => { try { return fs.statSync(path.join(DATEN, d.pfad)).size !== d.groesse; } catch (e) { return true; } }).map(d => d.pfad);
 const hash = (text) => crypto.createHash('sha1').update(String(text || ''), 'utf8').digest('hex').slice(0, 16);
+
+/* Der analysierte Text: ab der ersten Zeile [Intro …]; ohne [Intro] alles. vorrede = Zahl der Zeilen davor mit Text. */
+function analyseText(lyrics) {
+  const z = String(lyrics || '').split(/\r?\n/);
+  const i = z.findIndex(x => /^\s*\[\s*intro\b/i.test(x));
+  if (i <= 0) return { text: String(lyrics || ''), vorrede: 0 };
+  return { text: z.slice(i).join('\n'), vorrede: z.slice(0, i).filter(x => x.trim()).length };
+}
 
 let kern = null;
 async function kernLaden() {
@@ -133,9 +144,10 @@ async function bestand() {
   let neu = 0, gleich = 0, fremd = 0;
   for (const s of Object.values(katalog.songs)) {
     if (!s.lyrics || !s.lyrics.trim()) continue;
-    const h = hash(s.lyrics);
+    const text = analyseText(s.lyrics).text;
+    const h = hash(text);
     if (altSongs[s.id] && altSongs[s.id].hash === h) { songs[s.id] = altSongs[s.id]; gleich++; continue; }
-    songs[s.id] = { hash: h, ...rechnen(k, s.lyrics) };
+    songs[s.id] = { hash: h, ...rechnen(k, text) };
     if (songs[s.id].sprache === 'fremd') fremd++;
     neu++;
   }
@@ -146,7 +158,7 @@ async function bestand() {
 }
 
 if (require.main !== module) {
-  module.exports = { anfrage, lesen, hash, kernVersion, fehlend, DATEI, DATEN, WOERTERBUECHER };
+  module.exports = { anfrage, lesen, hash, kernVersion, fehlend, analyseText, DATEI, DATEN, WOERTERBUECHER };
 } else if (process.argv.includes('--dienst')) {
   dienst();
 } else {

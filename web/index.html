@@ -5095,7 +5095,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
 <script src="/ui-sprache-ru.js?v=22"></script>
-<script src="/ui-sprache.js?v=35"></script>
+<script src="/ui-sprache.js?v=36"></script>
 <!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
 <script src="/klangfeder-blatt.js?v=2026-11-11.2"></script>
 <script src="/qr.js?v=1"></script>
@@ -23152,10 +23152,11 @@ async function textanalyseEinsetzen(id){
   /* Fehlt das Blatt (Skript nicht geladen), bleibt die Lasche grau mit Grund statt leer. */
   if (!window.KlangfederBlatt){ knopf.title = t('ta.fehler', { grund: 'klangfeder-blatt.js' }); return; }
   seite.innerHTML = '<div class="herkunft">' + esc(taKurz(d.zeilen)) + '</div>'
+    + (d.vorrede ? '<div class="herkunft">' + esc(t('ta.vorrede', { n: d.vorrede })) + '</div>' : '')
     + taLegende()
     + '<div class="ta-rahmen"><div class="ta-blatt"></div></div>'
     + '<div class="ta-legende">' + esc(t('ta.grenze')) + '</div>';
-  window.KlangfederBlatt.zeichnen(seite.querySelector('.ta-blatt'), bSong.lyrics, d.zeilen, taBlattOptionen());
+  window.KlangfederBlatt.zeichnen(seite.querySelector('.ta-blatt'), d.text != null ? d.text : bSong.lyrics, d.zeilen, taBlattOptionen());
   knopf.disabled = false; knopf.title = '';
 }
 

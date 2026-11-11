@@ -4417,7 +4417,7 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     if (!k) return jsonAntwort(res, { ok: false, grund: 'kein Katalog' }, 503);
     if (p === '/api/steckbrief') {
       const ids = String(u.searchParams.get('ids') || '').split(',').map(x => x.trim()).filter(x => k.songs[x]);
-      const texte = ids.map(id => k.songs[id].lyrics).filter(t => t && t.trim());
+      const texte = ids.map(id => TA.analyseText(k.songs[id].lyrics).text).filter(t => t && t.trim());
       if (!texte.length) return jsonAntwort(res, { ok: false, grund: 'keine Songs mit Liedtext' }, 400);
       return TA.anfrage({ art: 'set', texte, titel: u.searchParams.get('titel') || 'Set' })
         .then(e => jsonAntwort(res, { ok: true, songs: texte.length, ...e }), fehler);
@@ -4427,11 +4427,14 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     const s = k.songs[id];
     if (!s) return jsonAntwort(res, { ok: false, grund: 'unbekannter Song' }, 404);
     if (!s.lyrics || !s.lyrics.trim()) return jsonAntwort(res, { ok: true, sprache: null, zeilen: [] });
+    /* Analysiert wird erst ab [Intro] (TA.analyseText, Caspar_D 11.11.2026); den Text schickt die Antwort mit,
+       denn die Lasche zeichnet genau ihn. */
+    const q = TA.analyseText(s.lyrics);
     const m = mtimeOder0(TA.DATEI);
     if (m !== textanalyseStand) { textanalyseSpeicher = TA.lesen(); textanalyseStand = m; }
     const e = textanalyseSpeicher && textanalyseSpeicher.kern === TA.kernVersion() && textanalyseSpeicher.songs[id];
-    if (e && e.hash === TA.hash(s.lyrics)) return jsonAntwort(res, { ok: true, gespeichert: true, kern: textanalyseSpeicher.kern, ...e });
-    return TA.anfrage({ art: 'text', text: s.lyrics }).then(e => jsonAntwort(res, { ok: true, gespeichert: false, ...e }), fehler);
+    if (e && e.hash === TA.hash(q.text)) return jsonAntwort(res, { ok: true, gespeichert: true, kern: textanalyseSpeicher.kern, ...e, ...q });
+    return TA.anfrage({ art: 'text', text: q.text }).then(e => jsonAntwort(res, { ok: true, gespeichert: false, ...e, ...q }), fehler);
   }
 
   // Einzelner Song mit allem: Lyrics, Prompts, Zählerverlauf
