@@ -15,6 +15,9 @@ export const K = {
   monoC: [0, 0.8], monoB: [0.2, 0.14], monoU: [0.2, 0],
   // Übergänge
   prall: 2, doppelsenkung: 1, dreifach: 6, auftakt2: 0.3, ausklang2: 0.3,
+  // Einsilber am Zeilenende in die Hebung (seit 10.11.2026, Jörg: „alles was im Deutschen hilft, machen wir da auch“):
+  // Haider dev 95,2 → 95,5 % / 80,7 → 81,6 %, test 95,6 → 95,7 % / 82,8 → 82,9 %
+  endeEin: 0.9,
 };
 
 // Freie Fassung für Liedverse mit Füllungsfreiheit (von Hand gesetzt, nicht abgestimmt):
@@ -23,11 +26,20 @@ export const K_FREI = { ...K, monoU: [0.8, 0], monoC: [0, 1.5], monoB: [0.3, 0.2
 
 // Englisch: Werte wie Deutsch. Abstimmung auf Haiders EPG64-dev (08.11.2026) brachte keinen Gewinn
 // (89,1 statt 88,2 % Silben, Zeilen −0,3) – Fehler liegen im Wortschatz, nicht in den Kosten.
-export const K_EN = { ...K };
+// Seit 10.11.2026 (Jörg: „weg 2, los“): Einsilber nach gelerntem Anteil Hebung aus Gutenberg-Versen (lern = Gewicht
+// des Log-Verhältnisses, s. bin/betonung-lernen-en.mjs) und Einsilber am Zeilenende in die Hebung (endeEin).
+// Abgestimmt auf EPG64-dev: 88,7 → 91,5 % Silben, 64,2 → 69,2 % Zeilen. Übergangskosten mitabzustimmen brachte
+// nur Zehntel (Rauschen bei 260 Zeilen) – sie bleiben wie im Deutschen.
+export const K_EN = { ...K, lern: 0.5, endeEin: 0.9 };
 export const K_EN_FREI = { ...K_EN, monoU: [0.8, 0], monoC: [0, 1.5], monoB: [0.3, 0.2], doppelsenkung: 0.2, poly0: [2, 0] };
 const KOSTEN = { de: [K, K_FREI], en: [K_EN, K_EN_FREI] };
 
 const wortKosten = (s, k) => {
+  // gelernter Anteil Hebung (Englisch, s.p): Kosten aus dem Log-Verhältnis
+  if (k.lern && s.p != null) {
+    const p = Math.min(0.97, Math.max(0.03, s.p)), lo = k.lern * Math.log(p / (1 - p));
+    return lo >= 0 ? [0, lo] : [-lo, 0];
+  }
   if (s.mehrsilbig) return s.stufe === 2 ? k.poly2 : s.stufe === 1 ? k.poly1 : k.poly0;
   return s.klasse === 'u' ? k.monoU : s.klasse === 'b' ? k.monoB : k.monoC;
 };
@@ -43,6 +55,9 @@ export function hebungen(eingabe, sprache = 'de') {
   const silben = eingabe.slice();
   const l = silben.length - 1;
   if (l > 0 && silben[l].mehrsilbig && silben[l].stufe === 1 && !silben[l].weich) silben[l] = { ...silben[l], stufe: 2 };
+  // Einsilber am Zeilenende trägt den Reim und damit die Hebung – auch ein kleines Wort („what thou and I“).
+  // Haider-Gold Englisch: 340 von 358 Fällen Hebung; gilt für beide Sprachen.
+  if (l > 0 && !silben[l].mehrsilbig && kStreng.endeEin) silben[l] = { ...silben[l], klasse: 'c', p: Math.max(silben[l].p ?? 0, kStreng.endeEin) };
   const streng = hebungenMit(silben, kStreng);
   const frei = hebungenMit(silben, kFrei);
   const vs = verstoesse(silben, streng.muster), vf = verstoesse(silben, frei.muster);

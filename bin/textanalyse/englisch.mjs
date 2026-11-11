@@ -68,6 +68,24 @@ function regelEn(w) {
   return st;
 }
 
+// Wie oft steht ein Einsilber im Vers auf der Hebung? Gelernt aus dem Gutenberg Poetry Corpus,
+// bin/betonung-lernen-en.mjs. Nur Wörter mit genug Belegen; fehlt die Datei, bleibt alles wie zuvor.
+// Versucht und verworfen (10.11.2026): Anteil je Wort mit linkem/rechtem Nachbarn – die Hebungssuche erzwingt den
+// Wechsel schon selbst, der Nachbarwert zählt ihn doppelt (Haider dev 90,5 statt 91,6 % Silben).
+// Ebenso verworfen: gelernte Silbenanteile mehrsilbiger Wörter (memory SWS, unto WS …) – auf dev −0,4 bis −0,7 Punkte,
+// das Wörterbuch trifft mehrsilbige Wörter schon besser. Gelernt werden nur noch Einsilber.
+export const VERS = { minEin: 20 };
+let VERSDATEN;
+function versAnteilEn(w, n) {
+  if (VERSDATEN === undefined) {
+    // liegt neben dem Code (wie die Korrekturdateien): reist mit dem Kern in den KlangTresor und in jede Installation
+    try { VERSDATEN = JSON.parse(fs.readFileSync(new URL('./betonung-vers-en.json', import.meta.url), 'utf8')); } catch { VERSDATEN = null; }
+  }
+  if (!VERSDATEN) return null;
+  if (n !== 1) return null;
+  const e = VERSDATEN.ein[w]; return e && e[1] >= VERS.minEin ? [e[0]] : null;
+}
+
 const ENDUNGEN_EN = ["'s", 'ing', 'ed', 'es', 's', 'er', 'est', 'ly', 'ness', 'ful', 'less', 'd'];
 // Wort → { stufen, quelle, einsilberKlasse } wie wortBetonung (deutsch)
 export function wortBetonungEn(roh, tiefe = 0) {
@@ -76,7 +94,7 @@ export function wortBetonungEn(roh, tiefe = 0) {
   if (/in'$/.test(w) && !lexikonEn().has(w)) w = w.slice(0, -1) + 'g';      // goin' → going
   if (/'$/.test(w) && !lexikonEn().has(w)) w = w.replace(/'+$/, '');            // schließendes Hochkomma (‘here’) zählt nicht
   if (klasseEinsilberEn(w) !== 'c' && (stufenEn(w) || [0]).length <= 1)
-    return { stufen: [0], quelle: 'kleinwort', einsilberKlasse: klasseEinsilberEn(w) };
+    return { stufen: [0], quelle: 'kleinwort', einsilberKlasse: klasseEinsilberEn(w), vers: versAnteilEn(w, 1) };
   let st = stufenEn(w), quelle = 'lexikon';
   if (!st) {
     for (const e of ENDUNGEN_EN) {
@@ -97,7 +115,7 @@ export function wortBetonungEn(roh, tiefe = 0) {
   if (!st) { st = regelEn(w); quelle = 'regel'; }
   st = st.slice();
   if (st.length > 1 && !st.includes(2)) st[Math.max(0, st.indexOf(1))] = 2;
-  const out = { stufen: st, quelle };
+  const out = { stufen: st, quelle, vers: versAnteilEn(w, st.length) };
   if (st.length === 1) out.einsilberKlasse = klasseEinsilberEn(w);
   return out;
 }

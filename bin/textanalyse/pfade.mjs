@@ -7,6 +7,10 @@ import { fileURLToPath } from 'node:url';
 let DATEN = process.env.KLANGFEDER_DATEN || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'daten');
 export const daten = (...teile) => path.join(DATEN, ...teile);
 export function setzeDaten(ordner) { DATEN = ordner; }
+// Daten nur der KlangFeder (Lautdatenbank, Reimpaare, Wortfolgen): immer <KlangFeder>/daten, auch wenn die
+// Wörterbücher woanders liegen (gemeinsame Kopie, KLANGFEDER_DATEN)
+const EIGEN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'daten');
+export const eigeneDaten = (...teile) => path.join(EIGEN, ...teile);
 
 // Korrekturdateien gehören zum Code (liegen neben dem Kern), nicht zu den Wörterbüchern
 const HIER = path.dirname(fileURLToPath(import.meta.url));

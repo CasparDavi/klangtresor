@@ -32,10 +32,12 @@ export function ohneKlammern(text) {
     for (let k = i; k <= ende; k++) if (z[k] !== '\n') z[k] = ' ';
     i = ende;
   }
+  // Kommentare (Jörg, 10.11.2026): ab „#“ bis Zeilenende – für Notizen, nie gesungen, nie an Suno
+  for (let i = 0; i < z.length; i++) if (z[i] === '#') { while (i < z.length && z[i] !== '\n') z[i++] = ' '; }
   return z.join('');
 }
 
-const woerter = z => (z.replace(/\[[^\]]*\]/g, ' ').match(/[A-Za-zÄÖÜäöüß'’]+/g) || []).map(w => w.replace(/’/g, "'"));
+const woerter = z => (z.replace(/\[[^\]]*\]/g, ' ').replace(/#.*$/, ' ').match(/[A-Za-zÄÖÜäöüß'’]+/g) || []).map(w => w.replace(/’/g, "'"));
 
 export function spracheZeile(zeile) {
   const ohne = zeile.replace(/\[[^\]]*\]/g, ' ');

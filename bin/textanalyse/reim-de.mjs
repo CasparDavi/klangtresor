@@ -71,17 +71,31 @@ const STIMMLOS = { b: 'p', d: 't', g: 'k', 'ɡ': 'k', z: 's', v: 'f', 'ʒ': 'ʃ'
 const entstimmt = s => s.replace(/[bdgɡzvʒ]/g, c => STIMMLOS[c]);
 // Unreiner Reim im engeren Sinn: Vokale nur leicht verschieden (Rundung, e/ä, ei/eu) –
 // nach Burdorf. Gleiche Konsonanten bei fremdem Vokal sind Konsonanz.
-const AEHNLICH = [['i', 'y'], ['ɪ', 'ʏ'], ['e', 'ø'], ['ɛ', 'œ'], ['e', 'ɛ'], ['aɪ̯', 'ɔʏ̯'], ['aɪ̯', 'ɔɪ̯'],
+// u:ü (gefunden/Sünden) nennt die Verslehre ausdrücklich unter den üblichen (Minor 397, Kayser 84–85; Recherche
+// docs/recherche/2026-11-10_songformen/deutsche-verslehre.md, Regel R4).
+const AEHNLICH = [['i', 'y'], ['ɪ', 'ʏ'], ['e', 'ø'], ['ɛ', 'œ'], ['e', 'ɛ'], ['aɪ̯', 'ɔʏ̯'], ['aɪ̯', 'ɔɪ̯'], ['u', 'y'], ['ʊ', 'ʏ'],
   ['o', 'ɔ'], ['i', 'ɪ'], ['u', 'ʊ'], ['y', 'ʏ'], ['ø', 'œ'], ['a', 'ɑ']];  // gespannt/ungespannt: schon/davon
-const aehnlich = (x, y) => { const a = ohneLaenge(x), b = ohneLaenge(y); return AEHNLICH.some(([p, q]) => (a === p && b === q) || (a === q && b === p)); };
+// Vokalisches r hängt in der Lautschrift am Vokal (mir /miːɐ̯/) – für den Vergleich i:ü abtrennen (mir/Tür, dir/für)
+const ohneR = v => (/.ɐ̯$/.test(v) && !/[ɪʏʊ]̯ɐ̯$/.test(v) ? v.slice(0, -2) : v);
+const aehnlich = (x, y) => {
+  if (/ɐ̯$/.test(x) !== /ɐ̯$/.test(y)) return false;
+  const a = ohneLaenge(ohneR(x)), b = ohneLaenge(ohneR(y));
+  return AEHNLICH.some(([p, q]) => (a === p && b === q) || (a === q && b === p));
+};
+// Stummes Dehnungs-h vor der Endsilbe (Höhen /ˈhøːhən/ neben gehen /ˈɡeːən/): manche Quellen schreiben es mit
+const ohneH = s => s.replace(/([ːˑ])h(?=ə)/g, '$1');
+// g:ch in der Wortmitte (neige/reiche) – auffällig, aber üblich (R4, Stufe 2); am Wortende (Tuch/genug) nur mundartlich
+const gch = s => s.replace(/[ɡg](?=ə)/g, 'ç').replace(/x(?=ə)/g, 'ç');
 export function reimStufe(a, b) {
   if (!a || !b) return null;
+  const kodaH = (k, v) => (/[ːˑ]$/.test(v) ? k.replace(/^h(?=ə)/, '') : k);
+  a = { ...a, voll: ohneH(a.voll), koda: kodaH(a.koda, a.vokal) }; b = { ...b, voll: ohneH(b.voll), koda: kodaH(b.koda, b.vokal) };
   if (a.voll === b.voll) return 'rein';
   if (ohneLaenge(a.voll) === ohneLaenge(b.voll)) return 'fast rein';
   if (a.koda === b.koda && aehnlich(a.vokal, b.vokal)) return 'unrein';
   // Konsonanten nur in stimmhaft/stimmlos verschieden (rasen/saßen, melden/gelten): unreiner Reim (Burdorf,
   // Gedichtanalyse, 2.2.1) – nicht bloß Assonanz. Am Wortende steckt die Auslautverhärtung schon in der IPA.
-  if (a.koda !== b.koda && entstimmt(a.koda) === entstimmt(b.koda) &&
+  if (a.koda !== b.koda && (entstimmt(a.koda) === entstimmt(b.koda) || gch(a.koda) === gch(b.koda)) &&
       (ohneLaenge(a.vokal) === ohneLaenge(b.vokal) || aehnlich(a.vokal, b.vokal))) return 'unrein';
   if (a.koda && a.koda === b.koda) return 'Konsonanz';
   if (ohneLaenge(a.vokal) === ohneLaenge(b.vokal)) return 'Assonanz';

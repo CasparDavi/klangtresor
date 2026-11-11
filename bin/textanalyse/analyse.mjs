@@ -5,6 +5,7 @@ import { wortBetonung } from './betonung-de.mjs';
 import { hebungen } from './metrik.mjs';
 import { wortBetonungEn, letzteSilbeVollEn, phonesWortEn, reimteilEn, reimStufeEn } from './englisch.mjs';
 import { spracheText, ohneKlammern } from './sprache.mjs';
+import { formen } from './formen.mjs';
 
 // Schreibsilben für die Anzeige: Wort in n Stücke teilen, Grenze vor dem letzten Konsonanten
 // zwischen zwei Vokalgruppen (ch, sch, ck, ph, th, qu bleiben zusammen).
@@ -101,24 +102,46 @@ export function anzeige(text) {
     const t = roh.trim();
     if (!t) return { typ: 'leer' };
     const ohneRegie = maskiert[zi];
+    if (t.startsWith('#')) return { typ: 'kommentar' };   // Kommentarzeile: Notiz, kein Vers
     // nur Klammerinhalt in der Zeile → Regie-/Abschnittszeile (auch Fortsetzung einer mehrzeiligen Angabe)
     if (!ohneRegie.trim()) return { typ: 'abschnitt', name: t.replace(/^\[|\]$/g, '').trim() };
+    // Platzhalter aus dem Gerüst (Jörg, 10.11.2026): „x-X-x-X“ – je Silbe x (unbetont) oder X (betont), mit Bindestrich
+    // getrennt, mindestens zwei Silben. Sie zählen wie Silben mit genau dieser Betonung, reimen aber nicht.
+    // Mit Reimschema steht an der letzten betonten Silbe der Reimbuchstabe (A–W) statt X – auch er ist eine betonte Silbe.
+    // Am Ende darf statt X ein Reimklang stehen (Jörg, 10.11.2026): „x-x-ICHT“ – groß betont, klein unbetont.
+    // „___“ ist eine Lücke ohne Maß: ihr Maß kommt in der Werkbank aus der Partnerzeile; sie zählt keine Silben.
+    const platz = [...ohneRegie.matchAll(/(?<=^|\s)((?:[xX]+|[A-W])(?:-(?:[xX]+|[A-W]))*(?:-[A-Za-zÄÖÜäöüß]{2,})?)(?=[\s.,;:!?…]|$)/g)]
+      .filter(m => m[1].includes('-') && /(?:^|-)[xX]+(?:-|$)/.test(m[1]));
+    for (const m of ohneRegie.matchAll(/_{3,}/g)) platz.push(Object.assign([m[0], m[0]], { index: m.index, luecke: true }));
+    const ohnePlatz = platz.reduce((t, m) => t.slice(0, m.index) + ' '.repeat(m[1].length) + t.slice(m.index + m[1].length), ohneRegie);
     // Fremde Schrift (kyrillisch, japanisch …) wird nicht analysiert; sonst deutsch oder englisch je Zeile
-    if (spr[zi] === 'fremd') return { typ: 'fremd' };
+    if (spr[zi] === 'fremd' && !platz.length) return { typ: 'fremd' };
     // Zeilen nur aus Satzzeichen („…“, „– – –“) zählen wie Leerzeilen: Satzzeichen spielen keine Rolle
-    if (!/[A-Za-zÄÖÜäöüß]/.test(ohneRegie)) return { typ: 'leer' };
+    if (!/[A-Za-zÄÖÜäöüß]/.test(ohneRegie) && !/_{3,}/.test(ohneRegie)) return { typ: 'leer' };
     const sprache = spr[zi] === 'en' ? 'en' : 'de';
     const betone = sprache === 'en' ? wortBetonungEn : wortBetonung;
-    const treffer = [...ohneRegie.matchAll(/[A-Za-zÄÖÜäöüß'’]+/g)];
+    const treffer = [...ohnePlatz.matchAll(/[A-Za-zÄÖÜäöüß'’]+/g)];
     const woerter = treffer.map(m => ({ w: m[0], von: m.index, ...betone(m[0]) }));
     const eingabe = [], silben = [];
-    for (const x of woerter) {
+    const teile = [...woerter.map(x => ({ x })), ...platz.map(m => ({ p: m }))].sort((a, b) => (a.x ? a.x.von : a.p.index) - (b.x ? b.x.von : b.p.index));
+    for (const { x, p } of teile) {
+      if (p) {   // Platzhalter: jede Gruppe aus x oder X ist eine Silbe, ein Reimklang am Ende auch
+        if (p.luecke) continue;
+        let pos = p.index;
+        for (const seg of p[1].split('-')) {
+          const betont = /^[xX]+$/.test(seg) ? seg.includes('X') : /^[A-W]$/.test(seg) || /^[A-ZÄÖÜ]/.test(seg);
+          silben.push({ von: pos, bis: pos + seg.length, st: betont ? 2 : 0, platz: true });
+          eingabe.push({ mehrsilbig: true, stufe: betont ? 2 : 0, klasse: null });
+          pos += seg.length + 1;
+        }
+        continue;
+      }
       const n = x.stufen.length, mehr = n > 1;
       let pos = x.von;
       schreibSilbenTeilen(x.w, n).forEach((teil, i) => {
         silben.push({ von: pos, bis: pos + teil.length, st: x.stufen[i] ?? 0 });
         pos += teil.length;
-        eingabe.push({ mehrsilbig: mehr, stufe: x.stufen[i] ?? 0, klasse: mehr ? null : (x.einsilberKlasse || 'c') });
+        eingabe.push({ mehrsilbig: mehr, stufe: x.stufen[i] ?? 0, klasse: mehr ? null : (x.einsilberKlasse || 'c'), p: x.vers ? x.vers[i] : null });
       });
     }
     // Vollvokal am Zeilenende (Bräuti|gam) darf die Hebung tragen: weicher Nebenton
@@ -127,9 +150,10 @@ export function anzeige(text) {
       eingabe[eingabe.length - 1] = { ...eingabe[eingabe.length - 1], stufe: 1, weich: true };
     const { muster, fassung } = hebungen(eingabe, sprache);
     silben.forEach((s, i) => { s.m = muster[i]; });
-    const letztes = woerter[woerter.length - 1];
+    const letzteStelle = teile[teile.length - 1];
+    const letztes = letzteStelle && letzteStelle.x ? letzteStelle.x : null;   // endet die Zeile mit einem Platzhalter, reimt sie (noch) nicht
     return {
-      typ: 'zeile', sprache, silben, fassung,
+      typ: 'zeile', sprache, silben, fassung, ...(platz.length ? { platzhalter: platz.length } : {}),
       n: silben.length, h: muster.filter(m => m === 'S').length,
       k: muster.length ? (muster[muster.length - 1] === 'S' ? 'm' : 'w') : '',
       letztesWort: letztes ? letztes.w : null, letztesVon: letztes ? letztes.von : null,
@@ -160,9 +184,40 @@ export function anzeige(text) {
     zeilen.forEach((y, j) => { if (j !== i && y.reim === z.reim && abschnittVon[j] === abschnittVon[i] && (best < 0 || Math.abs(j - i) < Math.abs(best - i))) best = j; });
     if (best >= 0) { z.reimPartner = best; z.partnerWort = zeilen[best].letztesWort; }
   });
+  wiederholteReime(zeilen, text.split('\n'), abschnittVon);
   binnenreime(zeilen);
+  formen(zeilen, text.split('\n'));   // Vers- und Strophenformen (kern/formen.mjs)
   zeilen.forEach(z => { delete z._woerter; });
   return zeilen;
+}
+
+// Wiederholte Reime im Werk – nur zum Aufmerksammachen, keine Wertung (Jörg, 10.11.2026): dasselbe Reimpaar, dasselbe
+// Reimwort oder derselbe Reimklang in einem anderen Abschnitt. Innerhalb eines Abschnitts zählt nichts (das ist das
+// Reimschema). Refrains wiederholen sich gewollt: eine Zeile, die wortgleich in mehreren Abschnitten steht, zählt nicht
+// (refrain: true). Je Endreimzeile: reimKlang (Reimteil ohne Länge) und wiederholt: [{ zeile, art: paar|wort|klang }].
+function wiederholteReime(zeilen, roh, abschnittVon) {
+  const norm = i => (roh[i] || '').toLowerCase().replace(/[^a-zäöüß]+/g, ' ').trim();
+  const wo = new Map();
+  zeilen.forEach((z, i) => { if (z.typ === 'zeile') { const k = norm(i); (wo.get(k) || wo.set(k, new Set()).get(k)).add(abschnittVon[i]); } });
+  const R = [];
+  zeilen.forEach((z, i) => { if (z.typ === 'zeile' && wo.get(norm(i)).size > 1) z.refrain = true; });
+  zeilen.forEach((z, i) => {
+    if (z.typ !== 'zeile' || !z.letztesWort) return;
+    const rp = reimteilWort(z.letztesWort, z.sprache);
+    if (rp && rp.voll) z.reimKlang = rp.voll.replace(/ː/g, '');
+    if (z.refrain || !z.reim) return;
+    R.push({ i, ab: abschnittVon[i], wort: z.letztesWort.toLowerCase(), partner: (z.partnerWort || '').toLowerCase(), klang: z.reimKlang || null });
+  });
+  for (const a of R) {
+    const mit = [];
+    for (const b of R) {
+      if (b.ab === a.ab) continue;
+      const paar = a.partner && b.partner && ((a.wort === b.wort && a.partner === b.partner) || (a.wort === b.partner && a.partner === b.wort));
+      const art = paar ? 'paar' : a.wort === b.wort ? 'wort' : a.klang && a.klang === b.klang ? 'klang' : null;
+      if (art) mit.push({ zeile: b.i, art });
+    }
+    if (mit.length) zeilen[a.i].wiederholt = mit;
+  }
 }
 
 // Binnenreime: betonte Inhaltswörter, die rein (oder in der betonten Silbe) auf ein Wort derselben oder der

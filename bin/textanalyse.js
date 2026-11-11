@@ -9,8 +9,8 @@
    Stand. Caspar_D, 08.11.2026: „wenn keine KI nötig ist oder nur lokal laufende kleine Modelle, dann ist
    KlangTresor der richtige Ort." Keine KI: Lautschrift aus zwei Woerterbuechern (ipa-dict Deutsch, CMUdict
    Englisch, beide in modelle/textanalyse/, geholt von der Einrichtung oder Profil → System), dazu Regeln.
-   Gemessen gegen Haiders Golddaten (Gedichte): Deutsch 95,6 % der Silben / 82,8 % der Zeilen richtig, Englisch
-   90,6 / 67,5 (Messreihe in KlangFeder/docs/PRUEFSTAND.md). Fuer Liedtexte gibt es noch keine Pruefmenge.
+   Gemessen gegen Haiders Golddaten (Gedichte): Deutsch 95,7 % der Silben richtig, Englisch
+   91,5 (Messreihe in KlangFeder/docs/PRUEFSTAND.md). Fuer Liedtexte gibt es noch keine Pruefmenge.
    Wer die Rechnung aendert, aendert sie in der KlangFeder und holt sie hierher - eine Rechnung, nicht zwei.
 
    WARUM EIN EIGENER PROZESS: Die Woerterbuecher belegen geladen gut 340 MB und brauchen gut eine Sekunde
