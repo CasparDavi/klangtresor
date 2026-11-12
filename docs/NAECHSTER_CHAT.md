@@ -10050,7 +10050,7 @@ farbiger Knoten an jedem Abschnittswechsel; „nur songs mit TExt“; natürlich
   beobachtet jetzt auch `bin/knotenschnur.js`.
 
 **Wiedervorlage:**
-- **Abnahme in Caspar_Ds eigenem Fenster** steht aus (neu laden, Räume und Schäume → Schnüre → Knotenschnur).
+- **Abgenommen** am 13.11.2026 in Caspar_Ds Fenster, im Vollbild mit Lichtschein (Caspar_D: „kann so bleiben“).
 - Lasche heißt weiter „Räume und Schäume“ – ob „Räume, Schäume, Schnüre“, entscheidet Caspar_D.
 - Weitere Formen derselben Reihe, besprochen, nicht gebaut: geglättete Hüllkurve, Perlen bzw. Scheiben je Textzeile
   (Zeilenzeiten stehen in denselben Wortmarken). Langsames Schwingen der Schnüre wäre möglich, kostet Neuzeichnen je Bild.
