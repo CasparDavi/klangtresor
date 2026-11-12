@@ -10015,3 +10015,30 @@ der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach libr
   nennt einen Konsolenbefehl (`node bin/lyrik.js --tun`) – gehört in Laienworte.
 - Neue RU-Texte (Rechtliches, Einrichtung, Kacheln) → Henrys nächste Runde. **Russische Texte inkl. README.ru.md kümmert Caspar_D
   selbst (01.11.2026) – nicht erinnern.**
+
+## §147 12.11.2026: 1.0.160 – Die Knotenschnur (Reihe „Schnüre“)
+
+Caspar_D: *„das ganze werk als Inkaknotenschnur, jedes lied ein angeknoteter Substrang mit grössen proportionalen
+abschnitten in den richtigen farben … die gesamtschnur so lang wie der song“* und *„alles auf schwarzem Grund und ein
+Lichtschein läuft beim Abspielen die Schnur herunter“*. Erst Skizzen aus echten Daten, dann Entscheidungen: A eigene Reihe
+„Schnüre“ im Panel (unter Räume und Schäume), B echte Abschnittszeiten aus Sunos Wortmarken, sonst Silbenanteil als
+Schätzung, C eine Hauptschnur nach Entstehung mit stetigem Zoom, D „beides kombiniert“: oben Likes als Inka-Zahlknoten
+(Einzelknoten Zehner/Hunderter, Langknoten Einer 2–9, Achterknoten 1, leer 0; Stellen auf gleicher Höhe), darunter ein
+farbiger Knoten an jedem Abschnittswechsel; „nur songs mit TExt“; natürliches Schlängeln je Schnur (fest aus der Kennung).
+
+- `bin/knotenschnur.js` + `GET /api/knotenschnur` (je Katalogstand einmal): 282 Lieder mit Text, davon 269 mit Zeiten aus
+  den Wortmarken (Kopfzeilen im zusammengesetzten Text gesucht – sie stehen oft über mehrere Marken verteilt), 10 nach
+  Silbenanteil, 3 ohne Abschnittsmarken (grau). Art der Abschnitte aus `KlangfederBlatt.abschnittArt`.
+- `web/knotenschnur.js`: Szene (Garn mit Drall, Röhrenschattierung, Knoten) nur bei Zoom/Verschieben/Daten neu; je Bild
+  nur der Lichtschein (läuft nur, solange gespielt wird). Klick spielt über `spielenNachId`, auf der laufenden Schnur
+  Sprung an die Stelle; sonst wird der Player nur gelesen (eine Audioquelle).
+- `web/index.html`: `raumJetzt = 'schnur'`, Pille `knotenschnur`; Feld `#schnurfeld` und Panel `#schnurrechts` teilen
+  sich per `:is(…)` alle Regeln des Schaum-Panels. Filter oben gilt (entprellt), Vollbild wie beim Schaum.
+- Geprüft im Sandkasten (Kopie, Port 8796, headless, stumm): keine Konsolenfehler, Zoom, Tooltip, Lichtschein mit Ton.
+
+**Wiedervorlage:**
+- **Abnahme in Caspar_Ds eigenem Fenster** steht aus (neu laden, Räume und Schäume → Schnüre → Knotenschnur).
+- Lasche heißt weiter „Räume und Schäume“ – ob „Räume, Schäume, Schnüre“, entscheidet Caspar_D.
+- Weitere Formen derselben Reihe, besprochen, nicht gebaut: geglättete Hüllkurve, Perlen bzw. Scheiben je Textzeile
+  (Zeilenzeiten stehen in denselben Wortmarken). Langsames Schwingen der Schnüre wäre möglich, kostet Neuzeichnen je Bild.
+- Neue Texte `raum.*schnur*`, `schnur.*` → Henrys nächste russische Runde (bis dahin Englisch).
