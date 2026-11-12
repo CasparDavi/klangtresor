@@ -5118,13 +5118,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=23"></script>
-<script src="/ui-sprache.js?v=37"></script>
+<script src="/ui-sprache-ru.js?v=24"></script>
+<script src="/ui-sprache.js?v=38"></script>
 <!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
 <script src="/klangfeder-blatt.js?v=2026-11-11.2"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Die Knotenschnur (12.11.2026) als eigene Datei, ohne defer: definiert, bevor das Haus-Skript laeuft. -->
-<script src="/knotenschnur.js?v=1"></script>
+<script src="/knotenschnur.js?v=2"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
 <script>
@@ -9335,13 +9335,16 @@ function legendenBeobachten(wurzel){
    Klang-Raum, gibt es nichts zu waehlen und keine Reihe. Jede Reihe ist eine Wahl nach Hausregel 19 (wahlHtml): passt
    sie nicht in eine Zeile, wird sie ein Dropdown; steht die Ansicht in der anderen Reihe, zeigt das Dropdown
    „Raum wählen …" bzw. „Schaum wählen …" als stillen Zustand. */
-const ansichtJetzt = () => raumJetzt === 'schaum' ? (schaumArt === 'bilder' ? 'bilderschau' : 'klangschaum') : raumJetzt === 'schnur' ? 'knotenschnur' : raumJetzt;
+const ansichtJetzt = () => raumJetzt === 'schaum' ? (schaumArt === 'bilder' ? 'bilderschau' : 'klangschaum') : raumJetzt === 'schnur' ? (schnurArt === 'glas' ? 'glasperlen' : 'knotenschnur') : raumJetzt;
 function ansichtWaehlen(a){
   if (a === ansichtJetzt()) return;
   if (a === 'klangschaum' || a === 'bilderschau'){
     raumJetzt = 'schaum'; schaumArt = a === 'bilderschau' ? 'bilder' : 'klang';
     try { localStorage.setItem('mysuno-schaum-art', schaumArt); } catch (e) {}
-  } else raumJetzt = a === 'knotenschnur' ? 'schnur' : a;
+  } else if (a === 'knotenschnur' || a === 'glasperlen'){
+    raumJetzt = 'schnur'; schnurArt = a === 'glasperlen' ? 'glas' : 'garn';
+    try { localStorage.setItem('mysuno-schnur-art', schnurArt); } catch (e) {}
+  } else raumJetzt = a;
   try { localStorage.setItem('mysuno-raum', raumJetzt); } catch (e) {}
   /* Die Sternbilder gelten je Raum - sonst zeigt der Geschichten-Raum die Namen aus dem Klang-Raum. */
   karteSternbilder = [];
@@ -9352,11 +9355,11 @@ function ansichtHtml(){
   if (!raumDa) return '';
   const raeume = ['klang', 'geschichten'].filter(r => raumDa[r]);
   const schaeume = raumDa.schaum ? ['klangschaum', 'bilderschau', ...(raumDa.groupies ? ['groupies'] : [])] : [];
-  /* Die dritte Reihe „Schnüre" (Caspar_D, 12.11.2026); weitere Formen (Hüllkurve, Perlen, Scheiben) kommen erst, wenn es sie gibt. */
-  const schnuere = raumDa.schnur ? ['knotenschnur'] : [];
+  /* Die dritte Reihe „Schnüre" (Caspar_D, 12.11.2026): Knotenschnur aus Garn, Glasperlenschnur mit der Hüllkurve als Perlengröße. */
+  const schnuere = raumDa.schnur ? ['knotenschnur', 'glasperlen'] : [];
   if (raeume.length + schaeume.length + schnuere.length < 2) return '';
-  const name = { klang: t('raum.pille.klang'), geschichten: t('raum.pille.geschichten'), klangschaum: raumName('schaum'), bilderschau: t('raum.pille.bilderschau'), groupies: raumName('groupies'), knotenschnur: t('raum.pille.knotenschnur') };
-  const was = { klang: raumWas('klang'), geschichten: raumWas('geschichten'), klangschaum: raumWas('schaum'), bilderschau: raumWas('bilder'), groupies: raumWas('groupies'), knotenschnur: raumWas('schnur') };
+  const name = { klang: t('raum.pille.klang'), geschichten: t('raum.pille.geschichten'), klangschaum: raumName('schaum'), bilderschau: t('raum.pille.bilderschau'), groupies: raumName('groupies'), knotenschnur: t('raum.pille.knotenschnur'), glasperlen: t('raum.pille.glasperlen') };
+  const was = { klang: raumWas('klang'), geschichten: raumWas('geschichten'), klangschaum: raumWas('schaum'), bilderschau: raumWas('bilder'), groupies: raumWas('groupies'), knotenschnur: raumWas('schnur'), glasperlen: raumWas('glasperlen') };
   const reihe = (titel, schl, liste, leer) => `<div class="pzeile pwahl"><span class="ptitel">${titel}</span><span class="pinhalt">`
     + wahlHtml(schl, liste.map(a => ({ id: a, name: name[a], title: was[a] })), ansichtJetzt(), { leer, titel: was[ansichtJetzt()] || titel }) + '</span></div>';
   return reihe(t('raum.reihe.raeume'), 'ansicht-raeume', raeume, t('raum.wahl.raum')) + (schaeume.length ? reihe(t('raum.reihe.schaeume'), 'ansicht-schaeume', schaeume, t('raum.wahl.schaum')) : '')
@@ -9474,6 +9477,8 @@ const SCHAUM_WABERN = '<filter id="schaumwabern" x="-25%" y="-25%" width="150%" 
    Audioquelle), und startet ein Lied auf dem Weg jeder Kachel (spielenNachId). Ein Klick auf die laufende Schnur springt an
    die Stelle - wie ein Klick in die Fortschrittsleiste. Gezeigt werden die Lieder mit Text im Filter oben. */
 let schnurDaten = null, schnurFilterStand = null, schnurFilterUhr = 0;
+/* Welche Schnur: Knotenschnur (Garn) oder Glasperlenschnur (Caspar_D, 12.11.2026) - gemerkt wie schaumArt */
+let schnurArt = (() => { try { return localStorage.getItem('mysuno-schnur-art') === 'glas' ? 'glas' : 'garn'; } catch (e) { return 'garn'; } })();
 /* Eigener Merker der Laden (wie der Schaum seinen hat): ist die Legende zu, wird das Panel zur schmalen Leiste wie im
    Klangraum; ein Klick aufs Symbol holt es zurück. Die Schnur bekommt dann die volle Breite (ResizeObserver im Modul). */
 let schnurLaden = (() => { try { return { legende: true, ...JSON.parse(localStorage.getItem('mysuno-schnur-laden') || '{}') }; } catch (e) { return { legende: true }; } })();
@@ -9531,6 +9536,7 @@ async function schnurZeichnen(){
   });
   const farben = (window.KlangfederBlatt && KlangfederBlatt.ABS_FARBE) || {};
   Knotenschnur.setzen(liste, farben);
+  Knotenschnur.material(schnurArt);
   Knotenschnur.zeigen();
   $('schnurlegende').innerHTML = Knotenschnur.legendeHtml((k, v) => t(k, v), liste, farben);
   $('schnurlegkurz').textContent = t('zahl.titel', { n: liste.length });

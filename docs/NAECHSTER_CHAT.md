@@ -10040,6 +10040,15 @@ farbiger Knoten an jedem Abschnittswechsel; „nur songs mit TExt“; natürlich
   Schwarz; Ruhe-Deckkraft .35 → .6). Das Knotenschnur-Panel klappt wie der Klangraum zur schmalen Leiste, wenn die Legende
   zu ist (eigener Merker `mysuno-schnur-laden`). Die Schäume haben weiter keine Leiste (so seit 15.10.2026).
 
+- **1.0.163 (13.11.2026):** Zoom an der Maus in beiden Richtungen (Breite × Zoom, Länge × √Zoom; Hauptschnur, Monate, Titel
+  bleiben oben; Ziehen in x und y; nah heran rückt die Ansicht dem Lichtschein nach, außer 3 s nach Handbewegung). Licht:
+  aus vier Vorlagen (Streiflicht, weich, Vitrine, Gegenlicht) gewählt „garn streif“ – Lambert + Blinn über den Querschnitt
+  in Bahnen, Drall, leichte Färbungsflecken; die anderen gelöscht. **Glasperlenschnur** als zweite Pille in „Schnüre“
+  (`schnurArt`, `mysuno-schnur-art`): Perlendurchmesser nach der geglätteten Hüllkurve (`huelle` aus `bin/knotenschnur.js`,
+  Ziffern 0–9 je Sekunde, aus `welle` oder `wellenStufen`), Perlen füllen jeden Abschnitt genau; Lichtbündelung im Glas,
+  farbige Lichtflecken auf dem Tisch; die Perle im Abspiellicht leuchtet mit zwei drehenden Lichtsternen. `server.js`
+  beobachtet jetzt auch `bin/knotenschnur.js`.
+
 **Wiedervorlage:**
 - **Abnahme in Caspar_Ds eigenem Fenster** steht aus (neu laden, Räume und Schäume → Schnüre → Knotenschnur).
 - Lasche heißt weiter „Räume und Schäume“ – ob „Räume, Schäume, Schnüre“, entscheidet Caspar_D.
