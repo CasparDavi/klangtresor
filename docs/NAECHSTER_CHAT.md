@@ -10036,6 +10036,10 @@ farbiger Knoten an jedem Abschnittswechsel; „nur songs mit TExt“; natürlich
   sich per `:is(…)` alle Regeln des Schaum-Panels. Filter oben gilt (entprellt), Vollbild wie beim Schaum.
 - Geprüft im Sandkasten (Kopie, Port 8796, headless, stumm): keine Konsolenfehler, Zoom, Tooltip, Lichtschein mit Ton.
 
+- **1.0.162:** Vollbildknopf zeigt sein Symbol (dem `<svg>` fehlte seit dem 28.08.2026 `fill:currentColor` – schwarz auf
+  Schwarz; Ruhe-Deckkraft .35 → .6). Das Knotenschnur-Panel klappt wie der Klangraum zur schmalen Leiste, wenn die Legende
+  zu ist (eigener Merker `mysuno-schnur-laden`). Die Schäume haben weiter keine Leiste (so seit 15.10.2026).
+
 **Wiedervorlage:**
 - **Abnahme in Caspar_Ds eigenem Fenster** steht aus (neu laden, Räume und Schäume → Schnüre → Knotenschnur).
 - Lasche heißt weiter „Räume und Schäume“ – ob „Räume, Schäume, Schnüre“, entscheidet Caspar_D.

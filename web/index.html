@@ -286,6 +286,8 @@ h1{
 /* Alle Laden zu: schmale Leiste rechts, nur die drei Symbole */
 #karte.leiste{grid-template-columns:minmax(0,1fr) 48px}
 #karte.leiste #kartelegende h3{display:none}
+/* Die Knotenschnur klappt ihr Panel genauso zur Leiste (Caspar_D, 12.11.2026: „das bedienpanel komplet zusammenschieben und per symbol wieder zurückholen") */
+#karte.leiste #schnurrechts{display:inline-flex;flex-direction:column;align-items:center;gap:0;padding:6px 0;border:1px solid var(--rand);border-radius:999px;background:var(--flaeche);width:40px;margin-left:auto;height:auto;align-self:start;overflow:visible}
 /* Eine senkrechte Pille mit den drei Symbolen = der zusammengefasste Status (Caspar_D, 22.08.) */
 #karte.leiste #kartelegende{display:inline-flex;flex-direction:column;align-items:center;gap:0;padding:6px 0;border:1px solid var(--rand);border-radius:999px;background:var(--flaeche);width:40px;margin-left:auto}
 #karte.leiste .drawer{border:none;margin:0;border-radius:0;background:none;width:40px;overflow:visible}
@@ -318,7 +320,7 @@ h1{
 :is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl .pzeile{flex-direction:column;align-items:stretch;gap:3px}
 :is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl .ptitel{flex:0 0 auto}
 :is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl .pzeile.pwahl .pinhalt{flex:0 0 auto}
-#karte.leiste #kartelegende .ansichtwahl{display:none}
+#karte.leiste #kartelegende .ansichtwahl,#karte.leiste #schnurrechts .ansichtwahl{display:none}
 :is(#kartelegende,#schaumrechts,#schnurrechts) .pzeile[hidden],:is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl[hidden]{display:none}
 /* PILLE ODER DROPDOWN, GEMESSEN (Hausregel 19, wahlHtml): dieselbe Wahl als Pillenreihe, solange sie in eine Zeile passt,
    sonst als Dropdown. Die Pillenreihe bleibt im Liste-Modus unsichtbar liegen, damit sie sich weiter messen laesst. Feste
@@ -335,11 +337,12 @@ h1{
    der Karte deutlich - er soll den Sternenhimmel nicht stoeren. */
 #kartevoll,:is(#schaumvoll,#schnurvoll){position:absolute;top:10px;right:10px;z-index:6;width:30px;height:30px;
   border:1px solid var(--rand);border-radius:8px;background:rgba(10,11,14,.55);
-  color:var(--schwach);cursor:pointer;opacity:.35;transition:opacity .15s,color .15s;
+  color:var(--schwach);cursor:pointer;opacity:.6;transition:opacity .15s,color .15s;
   display:flex;align-items:center;justify-content:center;padding:0}
 #kartefeld:hover #kartevoll,:is(#schaumfeld,#schnurfeld):hover :is(#schaumvoll,#schnurvoll){opacity:.9}
 #kartevoll:hover,:is(#schaumvoll,#schnurvoll):hover{color:var(--text);border-color:var(--akzent)}
-#kartevoll svg,:is(#schaumvoll,#schnurvoll) svg{width:15px;height:15px;display:block}
+/* fill fehlte seit dem 28.08.2026: das Symbol war schwarz auf schwarzem Grund (Caspar_D, 12.11.2026: „ich kann den vollbildmodus nicht mehr sehen") */
+#kartevoll svg,:is(#schaumvoll,#schnurvoll) svg{width:15px;height:15px;display:block;fill:currentColor}
 
 /* VOLLBILD HEISST VOLLBILD (Caspar_D, 28.08.2026: "das vollbild bei den
    Räumen muß aber auch wirklich ein vollbild sein, also keine panel,
@@ -9161,6 +9164,7 @@ function ladenDran(leg){
 }
 /* Alle zu -> schmale Leiste, Himmel volle Breite */
 function ladenLeiste(){
+  if (raumJetzt === 'schnur') return schnurLeiste();
   /* nur im Klangraum und im Geschichten-Raum - die Schaeume haben eigene Laden ohne Leiste (schaumLadenEinrichten) */
   const alleZu = !karteLaden.einstellungen && !karteLaden.legende && !karteLaden.werk && raumJetzt !== 'schaum' && raumJetzt !== 'groupies'
     && !(window.istHandy && istHandy());   /* Handy: die Seite ist ein Blatt, keine Leiste */
@@ -9470,6 +9474,13 @@ const SCHAUM_WABERN = '<filter id="schaumwabern" x="-25%" y="-25%" width="150%" 
    Audioquelle), und startet ein Lied auf dem Weg jeder Kachel (spielenNachId). Ein Klick auf die laufende Schnur springt an
    die Stelle - wie ein Klick in die Fortschrittsleiste. Gezeigt werden die Lieder mit Text im Filter oben. */
 let schnurDaten = null, schnurFilterStand = null, schnurFilterUhr = 0;
+/* Eigener Merker der Laden (wie der Schaum seinen hat): ist die Legende zu, wird das Panel zur schmalen Leiste wie im
+   Klangraum; ein Klick aufs Symbol holt es zurück. Die Schnur bekommt dann die volle Breite (ResizeObserver im Modul). */
+let schnurLaden = (() => { try { return { legende: true, ...JSON.parse(localStorage.getItem('mysuno-schnur-laden') || '{}') }; } catch (e) { return { legende: true }; } })();
+function schnurLeiste(){
+  const k = $('karte'); if (!k || raumJetzt !== 'schnur') return;
+  k.classList.toggle('leiste', !schnurLaden.legende && !(window.istHandy && istHandy()));
+}
 function schnurSichtbar(an){
   for (const id of ['schnurfeld', 'schnurrechts']) { const e = $(id); if (e) e.hidden = !an; }
   if (!an){ if (window.Knotenschnur) Knotenschnur.ruhen(); return; }
@@ -9491,9 +9502,10 @@ async function schnurZeichnen(){
   { const r = $('schnurrechts');
     if (r && !r.dataset.laden){ r.dataset.laden = '1';
       r.querySelectorAll('.drawer').forEach(d => { const k = d.dataset.lade, kopf = d.querySelector('.drawerkopf');
-        d.querySelector('.dicon').innerHTML = LADEN_ICON[k] || ''; d.classList.toggle('offen', !!schaumLaden[k]);
-        kopf.onclick = () => { schaumLaden[k] = !schaumLaden[k]; d.classList.toggle('offen', schaumLaden[k]);
-          try { localStorage.setItem('mysuno-schaum-laden', JSON.stringify(schaumLaden)); } catch (e) {} }; }); } }
+        d.querySelector('.dicon').innerHTML = LADEN_ICON[k] || ''; d.classList.toggle('offen', !!schnurLaden[k]);
+        kopf.onclick = () => { schnurLaden[k] = !schnurLaden[k]; d.classList.toggle('offen', schnurLaden[k]);
+          try { localStorage.setItem('mysuno-schnur-laden', JSON.stringify(schnurLaden)); } catch (e) {} schnurLeiste(); }; }); } }
+  schnurLeiste();
   { const vb = $('schnurvoll'); if (vb && !vb.onclick) vb.onclick = karteVollbild; }
   if (!window.Knotenschnur){ $('kartefuss').textContent = t('schnur.fehlt'); return; }
   if (!schnurDaten){
