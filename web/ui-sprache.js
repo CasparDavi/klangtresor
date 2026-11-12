@@ -248,7 +248,7 @@
     ['raum.reihe.schaeume', 'Schäume', 'Foams'],
     ['raum.wahl.raum', 'Raum wählen …', 'Choose a space …'],
     ['raum.wahl.schaum', 'Schaum wählen …', 'Choose a foam …'],
-    /* Die Knotenschnur (Caspar_D, 12.11.2026); Russisch folgt mit Henrys nächster Runde, bis dahin Englisch */
+    /* Die Knotenschnur (Caspar_D, 12.11.2026); Russisch von Claude in web/ui-sprache-ru.js, für Henrys nächste Durchsicht */
     ['raum.pille.knotenschnur', 'Knotenschnur', 'Knotted Cord'],
     ['raum.lasche.schnur', 'Knotenschnur', 'Knotted Cord'],
     ['raum.name.schnur', 'Knotenschnur', 'Knotted Cord'],

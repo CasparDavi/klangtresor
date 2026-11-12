@@ -10041,4 +10041,5 @@ farbiger Knoten an jedem Abschnittswechsel; „nur songs mit TExt“; natürlich
 - Lasche heißt weiter „Räume und Schäume“ – ob „Räume, Schäume, Schnüre“, entscheidet Caspar_D.
 - Weitere Formen derselben Reihe, besprochen, nicht gebaut: geglättete Hüllkurve, Perlen bzw. Scheiben je Textzeile
   (Zeilenzeiten stehen in denselben Wortmarken). Langsames Schwingen der Schnüre wäre möglich, kostet Neuzeichnen je Bild.
-- Neue Texte `raum.*schnur*`, `schnur.*` → Henrys nächste russische Runde (bis dahin Englisch).
+- Russisch der neuen Texte `raum.*schnur*`, `schnur.*` (26 Schlüssel) hat Claude geschrieben, nach `docs/ru/PRAVILA.md`
+  (Caspar_D: „das russisch schaffst du erstmal selbst“), 1.0.161 → in Henrys nächste Durchsicht.
