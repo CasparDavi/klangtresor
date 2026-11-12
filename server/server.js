@@ -3958,6 +3958,13 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     return res.end(daten);
   }
 
+  /* Die Knotenschnur (Caspar_D, 12.11.2026): je Lied mit Text Dauer, Likes und Abschnitte mit Anfangszeit, einmal je
+     Katalogstand gerechnet - Herleitung in bin/knotenschnur.js. */
+  if (p === '/api/knotenschnur') {
+    const k = katalogHolen();
+    if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
+    return jsonAntwort(res, require('../bin/knotenschnur.js').stand(k));
+  }
   if (p === '/api/raeume') {
     const da = {};
     for (const [r, n] of Object.entries({ klang: 'karte.json', geschichten: 'karte-geschichten.json' }))

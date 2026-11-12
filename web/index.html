@@ -156,12 +156,23 @@ h1{
 #kartesvg .stern.laeuft{stroke:var(--akzent);stroke-width:2}
 #karterechts{display:flex;flex-direction:column;gap:16px;min-height:0;height:100%;overflow:auto}
 /* Der Klangschaum steht in denselben zwei Spalten wie der Himmel; je Raum ist eine Seite zu. */
-#karterechts[hidden],#schaumfeld[hidden],#schaumrechts[hidden]{display:none}
+#karterechts[hidden],:is(#schaumfeld,#schnurfeld)[hidden],:is(#schaumrechts,#schnurrechts)[hidden]{display:none}
 /* Schwarz wie die Karte des Klangraums (Caspar_D, 15.10.2026: „mir gefällt die graue hinterlegung bei den Schäumen nicht, dadurch
    sieht alles so flau aus, der Kontrast wird künstlich unknackig gemacht"); bis 1.0.79 #121417, der Grund von render.js. Derselbe
    Grund im SVG (schaumSvgBauen), in den Fugen des Morphs und im Rahmen der Bilderschau (38 % Gruppenfarbe in den Grund gemischt). */
-#schaumfeld{position:relative;background:#000;border:1px solid #2a2a2e;border-radius:6px;height:100%;min-height:240px;overflow:hidden}
+:is(#schaumfeld,#schnurfeld){position:relative;background:#000;border:1px solid #2a2a2e;border-radius:6px;height:100%;min-height:240px;overflow:hidden}
 #schaumbild{position:absolute;inset:0}
+/* DIE KNOTENSCHNUR (Caspar_D, 12.11.2026): ein Feld auf schwarzem Grund, gemalt von web/knotenschnur.js */
+#schnurbild{position:absolute;inset:0}
+#schnurbild .ks-lein{position:absolute;inset:0;display:block}
+#schnurrechts .ks-legende{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--text)}
+#schnurrechts .ks-kopf{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach);margin-top:6px}
+#schnurrechts .ks-kopf:first-child{margin-top:0}
+#schnurrechts .ks-zeile{display:flex;align-items:center;gap:9px}
+#schnurrechts .ks-streifen{display:inline-block;width:26px;height:8px;border-radius:2px;flex:0 0 auto}
+#schnurrechts .ks-knoten{display:flex;align-items:center;gap:8px}
+#schnurrechts .ks-knoten img{flex:0 0 auto;display:block}
+#schnurrechts .ks-fuss{margin:4px 0 0;color:var(--schwach);font-size:12px;line-height:1.45}
 #schaumbild svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 #schaumbild svg.schaumwaber{pointer-events:none}
 #schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
@@ -178,7 +189,7 @@ h1{
 .bilderwand .bwschild{position:absolute;left:0;font-size:10.5px;line-height:13px;color:#a9acb3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .bilderwand .bwkopf{position:absolute;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .bilderwand .bwkopf small{color:#8a8d94;font-size:11px}
-#schaumrechts button[hidden]{display:none}
+:is(#schaumrechts,#schnurrechts) button[hidden]{display:none}
 #schaumbild{transition:opacity .25s}
 #schaumbild svg{transition:opacity .3s}
 /* Morph: nur die Bilder blenden aus und wieder ein, die Zellen behalten ihre Farbe; langsam (Caspar_D,
@@ -209,20 +220,20 @@ h1{
    „mach sie auf 80 % Deckkraft"). Ein Gegenrand stand hier einen Nachmittag lang. Schwarz oder
    weiss waehlt schaumKontrast() nach dem sichtbaren Grund unter jedem Titel. */
 #schaumbild text{fill-opacity:.8}
-#schaumrechts input[type=range]{width:100%;accent-color:var(--akzent)}
+:is(#schaumrechts,#schnurrechts) input[type=range]{width:100%;accent-color:var(--akzent)}
 #schaumstand{position:absolute;left:0;right:0;top:45%;text-align:center;color:#9aa0a8;font-size:13px;pointer-events:none}
-#schaumrechts{display:flex;flex-direction:column;gap:0;min-height:0;height:100%;overflow:auto}
-#schaumrechts > *{flex-shrink:0}   /* die Laden schrumpfen nicht, das Panel rollt (wie #karterechts) - mit der Werk-Lade reichte die Höhe nicht mehr */
+:is(#schaumrechts,#schnurrechts){display:flex;flex-direction:column;gap:0;min-height:0;height:100%;overflow:auto}
+:is(#schaumrechts,#schnurrechts) > *{flex-shrink:0}   /* die Laden schrumpfen nicht, das Panel rollt (wie #karterechts) - mit der Werk-Lade reichte die Höhe nicht mehr */
 /* Die Regler im Schaum-Panel (Farbe über den Bildern, „zeigt N von M") stehen in ihrer Zeile ueber die volle Breite */
-#schaumrechts .pzeile.pregler{flex-direction:column;align-items:stretch;gap:4px}
-#schaumrechts .pzeile.pregler .ptitel{flex:0 0 auto}
-#schaumrechts .pzeile.pregler .ptitel span:not([data-i18n]){text-transform:none;letter-spacing:0;font-size:12px;color:var(--text)}
-#schaumrechts .pzeile .farbwahl{flex:1 1 auto;min-width:0;margin-top:0}
+:is(#schaumrechts,#schnurrechts) .pzeile.pregler{flex-direction:column;align-items:stretch;gap:4px}
+:is(#schaumrechts,#schnurrechts) .pzeile.pregler .ptitel{flex:0 0 auto}
+:is(#schaumrechts,#schnurrechts) .pzeile.pregler .ptitel span:not([data-i18n]){text-transform:none;letter-spacing:0;font-size:12px;color:var(--text)}
+:is(#schaumrechts,#schnurrechts) .pzeile .farbwahl{flex:1 1 auto;min-width:0;margin-top:0}
 /* Schmales Panel: der Palettenname kuerzt sich, statt umzubrechen oder ueber den Rand zu ragen */
 .farbwahl .fw-knopf span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-#schaumrechts #schaumwas{margin:2px 0 0;line-height:1.45}
-#schaumrechts .drawer[data-lade="legende"] > .drawerinhalt > .dinnen{padding:8px 12px 12px}   /* staerker als die Klangraum-Regel darunter */
-#schaumrechts #plakatknopf{align-self:flex-start}
+:is(#schaumrechts,#schnurrechts) #schaumwas{margin:2px 0 0;line-height:1.45}
+:is(#schaumrechts,#schnurrechts) .drawer[data-lade="legende"] > .drawerinhalt > .dinnen{padding:8px 12px 12px}   /* staerker als die Klangraum-Regel darunter */
+:is(#schaumrechts,#schnurrechts) #plakatknopf{align-self:flex-start}
 #schaumlegende{display:flex;flex-direction:column;gap:5px;font-size:12.5px}
 /* Die Legendenzeilen gegen die Liedtextzeile der Karaoke-Buehne (.zeile, bis 27 px, fett) absetzen - im Groupieschaum
    sind es span-Elemente und erbten sie (Caspar_D, 06.10.2026: „die Legendenschrift ist im Groupieschaum viel zu groß"). */
@@ -263,14 +274,14 @@ h1{
 #kartesteckbrief h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:12px 0 4px}
 #kartesteckbrief ol{list-style:none;font-size:12px;line-height:1.6}
 #kartesteckbrief ol li i{font-style:normal;color:var(--schwach);font-size:10.5px;margin-left:6px}
-:is(#kartelegende,#schaumrechts) .drawer{margin:0 0 10px;border:1px solid var(--rand);border-radius:10px;overflow:hidden}
-:is(#kartelegende,#schaumrechts) .drawerkopf{width:100%;display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--flaeche);border:none;color:var(--text);cursor:pointer;text-align:left;font:inherit}
-:is(#kartelegende,#schaumrechts) .dicon{display:inline-flex;color:var(--schwach);flex:0 0 auto}
-:is(#kartelegende,#schaumrechts) .drawer.offen .dicon{color:var(--text)}
-:is(#kartelegende,#schaumrechts) .dinnen{min-height:0}
-:is(#kartelegende,#schaumrechts) .drawer[data-lade="legende"] .dinnen{padding:8px 4px 4px}
-:is(#kartelegende,#schaumrechts) .drawer[data-lade="werk"] .dinnen{padding:8px 12px 12px}
-#kartelegende .drawer[data-lade="werk"] #kartesteckbrief,#schaumrechts #kartesteckbrief{border-top:none;padding-top:0;margin-top:0}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawer{margin:0 0 10px;border:1px solid var(--rand);border-radius:10px;overflow:hidden}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawerkopf{width:100%;display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--flaeche);border:none;color:var(--text);cursor:pointer;text-align:left;font:inherit}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .dicon{display:inline-flex;color:var(--schwach);flex:0 0 auto}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawer.offen .dicon{color:var(--text)}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .dinnen{min-height:0}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawer[data-lade="legende"] .dinnen{padding:8px 4px 4px}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawer[data-lade="werk"] .dinnen{padding:8px 12px 12px}
+#kartelegende .drawer[data-lade="werk"] #kartesteckbrief,:is(#schaumrechts,#schnurrechts) #kartesteckbrief{border-top:none;padding-top:0;margin-top:0}
 #karterechts > #kartesteckbrief{display:none}   /* geparkt (ausserhalb der Lade): unsichtbar */
 /* Alle Laden zu: schmale Leiste rechts, nur die drei Symbole */
 #karte.leiste{grid-template-columns:minmax(0,1fr) 48px}
@@ -284,51 +295,51 @@ h1{
 #karte.leiste .drawerkopf .dtitel,#karte.leiste .drawerkopf .dkurz,#karte.leiste .drawerkopf .pfeil{display:none}
 #karte.leiste .dicon{color:var(--text)}
 #karte.leiste #karterechts{overflow:visible}
-:is(#kartelegende,#schaumrechts) .drawerkopf .pfeil{display:inline-block;transition:transform .2s;color:var(--schwach);font-size:14px}
-:is(#kartelegende,#schaumrechts) .drawer.offen .drawerkopf .pfeil{transform:rotate(90deg)}
-:is(#kartelegende,#schaumrechts) .drawerkopf .dtitel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600}
-:is(#kartelegende,#schaumrechts) .drawerkopf .dkurz{font-size:11px;color:var(--schwach);margin-left:auto;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
-:is(#kartelegende,#schaumrechts) .drawerinhalt{max-height:0;overflow:hidden;transition:max-height .28s ease}   /* zu: nichts lugt hervor */
-:is(#kartelegende,#schaumrechts) .drawer.offen .drawerinhalt{max-height:3000px}
-:is(#kartelegende,#schaumrechts) .drawerinhalt > .dinnen{min-height:0}
-:is(#kartelegende,#schaumrechts) .panel{display:flex;flex-direction:column;gap:7px;padding:10px 12px 12px}
-:is(#kartelegende,#schaumrechts) .pzeile{display:flex;gap:10px;align-items:center}
-:is(#kartelegende,#schaumrechts) .ptitel{flex:0 0 118px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach)}
-:is(#kartelegende,#schaumrechts) .ptitel b{color:var(--text);text-transform:none;letter-spacing:0;font-size:12px}
-:is(#kartelegende,#schaumrechts) .pinhalt{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-:is(#kartelegende,#schaumrechts) .phinweis{font-size:11px;color:var(--schwach)}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawerkopf .pfeil{display:inline-block;transition:transform .2s;color:var(--schwach);font-size:14px}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawer.offen .drawerkopf .pfeil{transform:rotate(90deg)}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawerkopf .dtitel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawerkopf .dkurz{font-size:11px;color:var(--schwach);margin-left:auto;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawerinhalt{max-height:0;overflow:hidden;transition:max-height .28s ease}   /* zu: nichts lugt hervor */
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawer.offen .drawerinhalt{max-height:3000px}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .drawerinhalt > .dinnen{min-height:0}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .panel{display:flex;flex-direction:column;gap:7px;padding:10px 12px 12px}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .pzeile{display:flex;gap:10px;align-items:center}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .ptitel{flex:0 0 118px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach)}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .ptitel b{color:var(--text);text-transform:none;letter-spacing:0;font-size:12px}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .pinhalt{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .phinweis{font-size:11px;color:var(--schwach)}
 /* DIE ANSICHTSWAHL OBEN IM PANEL (Caspar_D, 15.10.2026): die Unterleiste in der Registerleiste ist weg; ganz oben in
    jedem Panel zwei beschriftete Pillenreihen „Räume" und „Schäume". Sie steht über den Laden, nicht in einer - sie
    entscheidet, WAS man sieht. In der schmalen Leiste (alle Laden zu) hat sie keinen Platz: dort erst eine Lade öffnen. */
-:is(#kartelegende,#schaumrechts) .ansichtwahl{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;padding:0 2px}
-:is(#kartelegende,#schaumrechts) .ansichtwahl .pille{font-weight:600}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;padding:0 2px}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl .pille{font-weight:600}
 /* Die Beschriftung steht UEBER der Reihe, nicht davor: so bleibt den Pillen die ganze Breite des Panels und sie passen
    noch bei 1100 px Fensterbreite in eine Zeile (davor: 209 statt 337 px frei, beide Reihen wurden Dropdowns). */
-:is(#kartelegende,#schaumrechts) .ansichtwahl .pzeile{flex-direction:column;align-items:stretch;gap:3px}
-:is(#kartelegende,#schaumrechts) .ansichtwahl .ptitel{flex:0 0 auto}
-:is(#kartelegende,#schaumrechts) .ansichtwahl .pzeile.pwahl .pinhalt{flex:0 0 auto}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl .pzeile{flex-direction:column;align-items:stretch;gap:3px}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl .ptitel{flex:0 0 auto}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl .pzeile.pwahl .pinhalt{flex:0 0 auto}
 #karte.leiste #kartelegende .ansichtwahl{display:none}
-:is(#kartelegende,#schaumrechts) .pzeile[hidden],:is(#kartelegende,#schaumrechts) .ansichtwahl[hidden]{display:none}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .pzeile[hidden],:is(#kartelegende,#schaumrechts,#schnurrechts) .ansichtwahl[hidden]{display:none}
 /* PILLE ODER DROPDOWN, GEMESSEN (Hausregel 19, wahlHtml): dieselbe Wahl als Pillenreihe, solange sie in eine Zeile passt,
    sonst als Dropdown. Die Pillenreihe bleibt im Liste-Modus unsichtbar liegen, damit sie sich weiter messen laesst. Feste
    Hoehe, damit der Wechsel die beobachtete Groesse nicht aendert (sonst meldet der ResizeObserver eine Schleife). */
-:is(#kartelegende,#schaumrechts) .pzeile.pwahl .pinhalt{flex:1 1 0;min-width:0;flex-wrap:nowrap}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .pzeile.pwahl .pinhalt{flex:1 1 0;min-width:0;flex-wrap:nowrap}
 .wahl{position:relative;display:flex;align-items:center;flex:1 1 auto;min-width:0;height:28px;overflow:clip;overflow-clip-margin:4px}
 .wahl-p{display:flex;gap:6px;flex-wrap:nowrap;white-space:nowrap;width:max-content;flex:0 0 auto}
 .wahl.liste .wahl-p{position:absolute;left:0;top:0;visibility:hidden;pointer-events:none}
 .wahl:not(.liste) select{display:none}
-:is(#kartelegende,#schaumrechts) .wahl select{font:inherit;font-size:12px;max-width:100%;min-width:0;padding:3px 8px;border-radius:999px;
+:is(#kartelegende,#schaumrechts,#schnurrechts) .wahl select{font:inherit;font-size:12px;max-width:100%;min-width:0;padding:3px 8px;border-radius:999px;
   border:1px solid var(--rand);background:var(--flaeche);color:var(--text);cursor:pointer}
-:is(#kartelegende,#schaumrechts) .pille:active{transform:scale(.95)}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .pille:active{transform:scale(.95)}
 /* Vollbildknopf: unaufdringlich in der Ecke, wird erst beim Ueberfahren
    der Karte deutlich - er soll den Sternenhimmel nicht stoeren. */
-#kartevoll,#schaumvoll{position:absolute;top:10px;right:10px;z-index:6;width:30px;height:30px;
+#kartevoll,:is(#schaumvoll,#schnurvoll){position:absolute;top:10px;right:10px;z-index:6;width:30px;height:30px;
   border:1px solid var(--rand);border-radius:8px;background:rgba(10,11,14,.55);
   color:var(--schwach);cursor:pointer;opacity:.35;transition:opacity .15s,color .15s;
   display:flex;align-items:center;justify-content:center;padding:0}
-#kartefeld:hover #kartevoll,#schaumfeld:hover #schaumvoll{opacity:.9}
-#kartevoll:hover,#schaumvoll:hover{color:var(--text);border-color:var(--akzent)}
-#kartevoll svg,#schaumvoll svg{width:15px;height:15px;display:block}
+#kartefeld:hover #kartevoll,:is(#schaumfeld,#schnurfeld):hover :is(#schaumvoll,#schnurvoll){opacity:.9}
+#kartevoll:hover,:is(#schaumvoll,#schnurvoll):hover{color:var(--text);border-color:var(--akzent)}
+#kartevoll svg,:is(#schaumvoll,#schnurvoll) svg{width:15px;height:15px;display:block}
 
 /* VOLLBILD HEISST VOLLBILD (Caspar_D, 28.08.2026: "das vollbild bei den
    Räumen muß aber auch wirklich ein vollbild sein, also keine panel,
@@ -352,10 +363,10 @@ h1{
 #karte:-webkit-full-screen #kartefeld{ border:none;border-radius:0 }
 /* Dasselbe fuer die Schaeume und die Bilderschau (Caspar_D, 11.10.2026: „das Klangschaum- und Bilderschau-Panel
    einen Vollbildmodus wie der Klangraum"): nur das Feld, ohne Panel und Fussnote. */
-#karte:fullscreen > #schaumrechts,
-#karte:-webkit-full-screen > #schaumrechts{ display:none }
-#karte:fullscreen #schaumfeld,
-#karte:-webkit-full-screen #schaumfeld{ border:none;border-radius:0 }
+#karte:fullscreen > :is(#schaumrechts,#schnurrechts),
+#karte:-webkit-full-screen > :is(#schaumrechts,#schnurrechts){ display:none }
+#karte:fullscreen :is(#schaumfeld,#schnurfeld),
+#karte:-webkit-full-screen :is(#schaumfeld,#schnurfeld){ border:none;border-radius:0 }
 
 /* Der laufende Song im Vollbild. Unten rechts, damit er die Sterne
    nicht verdeckt - und mit Datum, weil im Vollbild sonst nichts mehr
@@ -365,16 +376,16 @@ h1{
    aussen, der Text rechtsbuendig davor - so laeuft die Zeile auf das
    Bild zu, statt von ihm wegzulaufen. Ein weicher Schatten am Text
    haelt ihn ueber hellen Sternen lesbar. */
-#karteläuft,#schaumläuft{position:absolute;right:16px;bottom:16px;z-index:6;display:flex;gap:11px;
+#karteläuft,:is(#schaumläuft,#schnurläuft){position:absolute;right:16px;bottom:16px;z-index:6;display:flex;gap:11px;
   align-items:center;max-width:min(360px,48vw);pointer-events:none}
-#karteläuft img,#schaumläuft img{width:52px;height:52px;border-radius:8px;object-fit:cover;flex:0 0 auto;
+#karteläuft img,:is(#schaumläuft,#schnurläuft) img{width:52px;height:52px;border-radius:8px;object-fit:cover;flex:0 0 auto;
   box-shadow:0 4px 16px rgba(0,0,0,.6);order:2}
-#karteläuft > div,#schaumläuft > div{order:1;text-align:right;min-width:0;
+#karteläuft > div,:is(#schaumläuft,#schnurläuft) > div{order:1;text-align:right;min-width:0;
   text-shadow:0 1px 6px rgba(0,0,0,.9),0 0 16px rgba(0,0,0,.7)}
-#karteläuft .t,#schaumläuft .t{font-size:14px;font-weight:600;line-height:1.3;
+#karteläuft .t,:is(#schaumläuft,#schnurläuft) .t{font-size:14px;font-weight:600;line-height:1.3;
   overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-#karteläuft .d,#schaumläuft .d{font-size:11.5px;color:var(--schwach);margin-top:2px;font-variant-numeric:tabular-nums}
-#schaumläuft[hidden]{display:none}
+#karteläuft .d,:is(#schaumläuft,#schnurläuft) .d{font-size:11.5px;color:var(--schwach);margin-top:2px;font-variant-numeric:tabular-nums}
+:is(#schaumläuft,#schnurläuft)[hidden]{display:none}
 
 /* Song-Klang-Pille im Player (Caspar_D, 29.08.2026: "knallhart sichtbar
    sein, das ein Song mit eigenem EQ läuft und es muß abschaltbar sein").
@@ -415,13 +426,13 @@ h1{
   color:var(--schwach);transition:color .15s}
 #kartelegende .namensfeld:hover .ico{color:var(--text)}
 #kartelegende .namensfeld:focus-within .ico{color:var(--akzent)}
-:is(#kartelegende,#schaumrechts) .pille{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--rand);background:none;color:var(--schwach);cursor:pointer}
-:is(#kartelegende,#schaumrechts) .pille.an{border:2px solid var(--akzent);color:var(--text)}
-:is(#kartelegende,#schaumrechts) .pille[disabled]{opacity:.4;cursor:default}
-:is(#kartelegende,#schaumrechts) .artpille.an{border-color:var(--af);color:var(--af)}
-:is(#kartelegende,#schaumrechts) .schalter{display:inline-flex;border:1px solid var(--rand);border-radius:999px;overflow:hidden}
-:is(#kartelegende,#schaumrechts) .schalter .pille{border:none;border-radius:0;padding:3px 9px}
-:is(#kartelegende,#schaumrechts) .schalter .pille.an{border:none;background:var(--akzent);color:#000}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .pille{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--rand);background:none;color:var(--schwach);cursor:pointer}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .pille.an{border:2px solid var(--akzent);color:var(--text)}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .pille[disabled]{opacity:.4;cursor:default}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .artpille.an{border-color:var(--af);color:var(--af)}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .schalter{display:inline-flex;border:1px solid var(--rand);border-radius:999px;overflow:hidden}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .schalter .pille{border:none;border-radius:0;padding:3px 9px}
+:is(#kartelegende,#schaumrechts,#schnurrechts) .schalter .pille.an{border:none;background:var(--akzent);color:#000}
 #kartelegende .legende2{display:flex;flex-direction:column;gap:10px}
 #kartelegende .lblock h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:0 0 4px 8px}
 /* ein- oder zweispaltig nach Messung (legendenMessen, Hausregel 19) - ohne Klasse eine Spalte */
@@ -2553,20 +2564,20 @@ html.handy.quer #jetzt.mittext .jmodi button{min-height:44px}
    auf dem Handy nicht (sie haette dem Himmel die Hoehe genommen); die Legende im Blatt bleibt. */
 #raumknopf{display:none}
 html.handy #karte:not([hidden]){display:block;position:relative;padding:4px 6px}
-html.handy #karte > #kartefeld,html.handy #karte > #schaumfeld{height:100%;min-height:0}
+html.handy #karte > #kartefeld,html.handy #karte > :is(#schaumfeld,#schnurfeld){height:100%;min-height:0}
 html.handy #karte > #kartefuss{display:none}
-html.handy #kartefeld,html.handy #schaumfeld{touch-action:none}
+html.handy #kartefeld,html.handy :is(#schaumfeld,#schnurfeld){touch-action:none}
 /* Jedes Bild baut die Sternkreise neu; ein Finger, der auf einem Kreis aufsetzte, verlor mit ihm seine Geste (Touch-
    Ereignisse bleiben beim alten Ziel). Auf dem Handy fasst darum das Feld an - den Stern sucht karteFingerTipp. */
 html.handy #kartesvg .stern,html.handy #kartesvg .sternbild,html.handy #kartesvg .loch{pointer-events:none}
 html.handy #raumknopf{display:flex;align-items:center;gap:8px;position:absolute;left:16px;top:14px;z-index:6;min-height:40px;padding:0 14px;
   border-radius:999px;border:1px solid var(--rand);background:#0c0c0dcc;color:var(--text);font:inherit;font-size:14px;-webkit-tap-highlight-color:transparent}
 html.handy #raumknopf .ico{width:18px;height:18px}
-html.handy #karte > #karterechts:not([hidden]),html.handy #karte > #schaumrechts:not([hidden]){display:flex;flex-direction:column;position:fixed;
+html.handy #karte > #karterechts:not([hidden]),html.handy #karte > :is(#schaumrechts,#schnurrechts):not([hidden]){display:flex;flex-direction:column;position:fixed;
   left:0;right:0;bottom:0;z-index:80;height:auto;max-height:80dvh;overflow:auto;overscroll-behavior:contain;background:var(--flaeche);
   border-top:1px solid var(--rand);border-radius:16px 16px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));
   transform:translateY(105%);transition:transform .28s ease;visibility:hidden}
-html.handy.raum-offen #karte > #karterechts:not([hidden]),html.handy.raum-offen #karte > #schaumrechts:not([hidden]){transform:none;visibility:visible}
+html.handy.raum-offen #karte > #karterechts:not([hidden]),html.handy.raum-offen #karte > :is(#schaumrechts,#schnurrechts):not([hidden]){transform:none;visibility:visible}
 html.handy.raum-offen #blattgrund{display:block;position:fixed;inset:0;z-index:79;background:rgba(0,0,0,.5)}
 html.handy.raum-offen header{backdrop-filter:none;-webkit-backdrop-filter:none}
 
@@ -4697,6 +4708,16 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="drawerinhalt"><div class="dinnen"><div id="schaumsteckbriefhalter"></div></div></div></div>
     <button class="pille" id="plakatknopf" type="button" onclick="plakatOeffnen()" title="Den Schaum oder die Bilderschau als Plakat gestalten und als PDF sichern" data-i18n-title="schaum.plakat.titel" data-i18n="schaum.plakat" data-i18n-title="schaum.plakat.titel">Als Plakat (PDF)…</button>
   </div>
+  <!-- DIE KNOTENSCHNUR (Caspar_D, 12.11.2026, Reihe „Schnüre"): Feld und Panel in denselben Spalten wie Himmel und Schaum;
+       schnurSichtbar() klappt um. Gemalt wird von web/knotenschnur.js, die Daten kommen aus /api/knotenschnur. -->
+  <div id="schnurfeld" hidden><div id="schnurbild"></div>
+    <button id="schnurvoll" title="Vollbild (Esc zurück)" data-i18n-title="vollbild.esc" aria-label="Vollbild" data-i18n-aria="vollbild.aria"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-vollbild"/></svg></button>
+    <div id="schnurläuft" hidden></div></div>
+  <div id="schnurrechts" hidden>
+    <div id="schnuransicht" class="ansichtwahl"></div>
+    <div class="drawer" data-lade="legende"><button class="drawerkopf" title="Legende auf- und zuklappen" data-i18n-title="schaum.lade.legende"><span class="dicon" data-icon="legende"></span><span class="dtitel" data-i18n="schaum.legende">Legende</span><span class="dkurz" id="schnurlegkurz"></span><span class="pfeil">›</span></button>
+      <div class="drawerinhalt"><div class="dinnen"><div id="schnurlegende"></div></div></div></div>
+  </div>
   <div id="kartefuss" class="fussnote"></div>
 </div>
 <!-- Wer das gebaut hat. Klein und mittig, nach der Form von #reakt -
@@ -5095,10 +5116,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
 <script src="/ui-sprache-ru.js?v=22"></script>
-<script src="/ui-sprache.js?v=36"></script>
+<script src="/ui-sprache.js?v=37"></script>
 <!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
 <script src="/klangfeder-blatt.js?v=2026-11-11.2"></script>
 <script src="/qr.js?v=1"></script>
+<!-- Die Knotenschnur (12.11.2026) als eigene Datei, ohne defer: definiert, bevor das Haus-Skript laeuft. -->
+<script src="/knotenschnur.js?v=1"></script>
 <!-- Das Effektclip-Studio als eigene Datei (27.09.2026), OHNE defer: definiert, bevor das Haus-Skript laeuft. Stylesheet: /tbs.css am Ende des zweiten <style>. -->
 <script src="/tbs-modul.js?v=1.0.115"></script>
 <script>
@@ -8485,6 +8508,12 @@ function zeichnen(){
     /* KLANGSCHAUM UND BILDERSCHAU FOLGEN DEM FILTER (Caspar_D, 15.10.2026, Phase 2 „Filter-Anbindung"): schaumZeichnen nimmt
        dieselbe Auswahl (titelImFilter). Hat sich der Filter geaendert, wird entprellt neu gelegt - beim Tippen in der Suche nicht
        je Buchstabe ein Lauf. Nur hier, also nur, wenn die Ansicht sichtbar ist; sonst gilt der Filter beim naechsten Zeigen. */
+    /* Die Knotenschnur folgt dem Filter genauso, entprellt (Caspar_D, 12.11.2026). */
+    if (raumJetzt === 'schnur' && schnurFilterStand !== null && titelFilterSchluessel() !== schnurFilterStand){
+      clearTimeout(schnurFilterUhr);
+      schnurFilterUhr = setTimeout(() => { if (register === 'karte' && raumJetzt === 'schnur') karteZeichnen(); }, 300);
+      return;
+    }
     if (raumJetzt === 'schaum' && schaumFilterStand !== null && titelFilterSchluessel() !== schaumFilterStand){
       clearTimeout(schaumFilterUhr);
       schaumFilterUhr = setTimeout(() => { if (register === 'karte' && raumJetzt === 'schaum') karteZeichnen(); }, 300);
@@ -8567,7 +8596,7 @@ let karteDaten = null, karteGruppeAn = null;
    ist es noch nicht so richtig." Offene Schritte: docs/BACKLOG.md,
    "Geschichten-Raum: naechste Schritte". Das Etikett haengt am Namen
    und wandert damit in Pille, Lasche und Fussnote. */
-const RAUM_NAME = { klang: 1, geschichten: 1, schaum: 1, groupies: 1 };
+const RAUM_NAME = { klang: 1, geschichten: 1, schaum: 1, groupies: 1, schnur: 1 };
 const raumName = (k) => t('raum.name.' + k);
 const raumWas  = (k) => t('raum.was.' + k);
 let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
@@ -9150,9 +9179,10 @@ let karteDrawerOffen = false;   // (alt; ersetzt durch karteLaden)
    erscheint deshalb NUR im Vollbild - darunter waere sie doppelt. */
 function karteLaeuftSetzen(){
   /* Im Klangschaum, in der Bilderschau und im Groupieschaum steht das Feld des Himmels verdeckt - dort eine eigene Anzeige */
-  const schaum = raumJetzt === 'schaum' || raumJetzt === 'groupies', anders = $(schaum ? 'karteläuft' : 'schaumläuft');
-  if (anders) anders.hidden = true;
-  const el = $(schaum ? 'schaumläuft' : 'karteläuft'); if (!el) return;
+  const schaum = raumJetzt === 'schaum' || raumJetzt === 'groupies', schnur = raumJetzt === 'schnur';
+  const meins = schnur ? 'schnurläuft' : schaum ? 'schaumläuft' : 'karteläuft';
+  for (const id of ['karteläuft', 'schaumläuft', 'schnurläuft']) if (id !== meins){ const e = $(id); if (e) e.hidden = true; }
+  const el = $(meins); if (!el) return;
   const voll = document.fullscreenElement === $('karte');
   const s = aktuellId && song(aktuellId);
   if (!voll || !s){ el.hidden = true; return; }
@@ -9203,6 +9233,8 @@ async function raeumeErfragen(){
   /* Der Groupieschaum (Tarja, Caspar_D 06.10.2026) legt sich aus /api/community; er steht mit dem
      Klangschaum - wer noch keine Reaktionen mit Namen hat, liest es dort. */
   raumDa.groupies = !!raumDa.klang;
+  /* Die Knotenschnur braucht keinen gerechneten Raum, nur den Katalog (Caspar_D, 12.11.2026). */
+  raumDa.schnur = true;
   if (!raumDa[raumJetzt]) raumJetzt = 'klang';
   raumLascheBenennen();
 }
@@ -9299,13 +9331,13 @@ function legendenBeobachten(wurzel){
    Klang-Raum, gibt es nichts zu waehlen und keine Reihe. Jede Reihe ist eine Wahl nach Hausregel 19 (wahlHtml): passt
    sie nicht in eine Zeile, wird sie ein Dropdown; steht die Ansicht in der anderen Reihe, zeigt das Dropdown
    „Raum wählen …" bzw. „Schaum wählen …" als stillen Zustand. */
-const ansichtJetzt = () => raumJetzt === 'schaum' ? (schaumArt === 'bilder' ? 'bilderschau' : 'klangschaum') : raumJetzt;
+const ansichtJetzt = () => raumJetzt === 'schaum' ? (schaumArt === 'bilder' ? 'bilderschau' : 'klangschaum') : raumJetzt === 'schnur' ? 'knotenschnur' : raumJetzt;
 function ansichtWaehlen(a){
   if (a === ansichtJetzt()) return;
   if (a === 'klangschaum' || a === 'bilderschau'){
     raumJetzt = 'schaum'; schaumArt = a === 'bilderschau' ? 'bilder' : 'klang';
     try { localStorage.setItem('mysuno-schaum-art', schaumArt); } catch (e) {}
-  } else raumJetzt = a;
+  } else raumJetzt = a === 'knotenschnur' ? 'schnur' : a;
   try { localStorage.setItem('mysuno-raum', raumJetzt); } catch (e) {}
   /* Die Sternbilder gelten je Raum - sonst zeigt der Geschichten-Raum die Namen aus dem Klang-Raum. */
   karteSternbilder = [];
@@ -9316,14 +9348,17 @@ function ansichtHtml(){
   if (!raumDa) return '';
   const raeume = ['klang', 'geschichten'].filter(r => raumDa[r]);
   const schaeume = raumDa.schaum ? ['klangschaum', 'bilderschau', ...(raumDa.groupies ? ['groupies'] : [])] : [];
-  if (raeume.length + schaeume.length < 2) return '';
-  const name = { klang: t('raum.pille.klang'), geschichten: t('raum.pille.geschichten'), klangschaum: raumName('schaum'), bilderschau: t('raum.pille.bilderschau'), groupies: raumName('groupies') };
-  const was = { klang: raumWas('klang'), geschichten: raumWas('geschichten'), klangschaum: raumWas('schaum'), bilderschau: raumWas('bilder'), groupies: raumWas('groupies') };
+  /* Die dritte Reihe „Schnüre" (Caspar_D, 12.11.2026); weitere Formen (Hüllkurve, Perlen, Scheiben) kommen erst, wenn es sie gibt. */
+  const schnuere = raumDa.schnur ? ['knotenschnur'] : [];
+  if (raeume.length + schaeume.length + schnuere.length < 2) return '';
+  const name = { klang: t('raum.pille.klang'), geschichten: t('raum.pille.geschichten'), klangschaum: raumName('schaum'), bilderschau: t('raum.pille.bilderschau'), groupies: raumName('groupies'), knotenschnur: t('raum.pille.knotenschnur') };
+  const was = { klang: raumWas('klang'), geschichten: raumWas('geschichten'), klangschaum: raumWas('schaum'), bilderschau: raumWas('bilder'), groupies: raumWas('groupies'), knotenschnur: raumWas('schnur') };
   const reihe = (titel, schl, liste, leer) => `<div class="pzeile pwahl"><span class="ptitel">${titel}</span><span class="pinhalt">`
     + wahlHtml(schl, liste.map(a => ({ id: a, name: name[a], title: was[a] })), ansichtJetzt(), { leer, titel: was[ansichtJetzt()] || titel }) + '</span></div>';
-  return reihe(t('raum.reihe.raeume'), 'ansicht-raeume', raeume, t('raum.wahl.raum')) + (schaeume.length ? reihe(t('raum.reihe.schaeume'), 'ansicht-schaeume', schaeume, t('raum.wahl.schaum')) : '');
+  return reihe(t('raum.reihe.raeume'), 'ansicht-raeume', raeume, t('raum.wahl.raum')) + (schaeume.length ? reihe(t('raum.reihe.schaeume'), 'ansicht-schaeume', schaeume, t('raum.wahl.schaum')) : '')
+    + (schnuere.length ? reihe(t('raum.reihe.schnuere'), 'ansicht-schnuere', schnuere, t('raum.wahl.schnur')) : '');
 }
-wahlTun['ansicht-raeume'] = wahlTun['ansicht-schaeume'] = ansichtWaehlen;
+wahlTun['ansicht-raeume'] = wahlTun['ansicht-schaeume'] = wahlTun['ansicht-schnuere'] = ansichtWaehlen;
 /* Die Reihe im Schaum-Panel steht fest im HTML; die im Klangraum-Panel baut kartePanelHtml mit. */
 function schaumAnsichtBauen(){
   raumLascheBenennen();
@@ -9430,6 +9465,66 @@ const SCHAUM_WABERN = '<filter id="schaumwabern" x="-25%" y="-25%" width="150%" 
   + '<feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G">'
   + '<animate attributeName="scale" dur="3.1s" values="5;12;5" repeatCount="indefinite"/></feDisplacementMap></filter>';
 
+/* DIE KNOTENSCHNUR IM HAUS (Caspar_D, 12.11.2026). Feld und Panel klappen um wie beim Schaum; gemalt wird von
+   web/knotenschnur.js. Der Ton bleibt beim Player: die Schnur LIEST nur, welches Lied laeuft und wo es steht (eine
+   Audioquelle), und startet ein Lied auf dem Weg jeder Kachel (spielenNachId). Ein Klick auf die laufende Schnur springt an
+   die Stelle - wie ein Klick in die Fortschrittsleiste. Gezeigt werden die Lieder mit Text im Filter oben. */
+let schnurDaten = null, schnurFilterStand = null, schnurFilterUhr = 0;
+function schnurSichtbar(an){
+  for (const id of ['schnurfeld', 'schnurrechts']) { const e = $(id); if (e) e.hidden = !an; }
+  if (!an){ if (window.Knotenschnur) Knotenschnur.ruhen(); return; }
+  for (const id of ['kartefeld', 'karterechts', 'schaumfeld', 'schaumrechts']) { const e = $(id); if (e) e.hidden = true; }
+  const k = $('karte'); if (k) k.classList.remove('leiste');
+  if (schiffLauf){ cancelAnimationFrame(schiffLauf); schiffLauf = 0; }
+}
+function schnurAnsichtBauen(){
+  const el = $('schnuransicht'); if (!el) return;
+  const html = ansichtHtml();
+  if (el.dataset.stand === html) return;
+  el.dataset.stand = html; el.innerHTML = html; el.hidden = !html;
+  wahlenBeobachten(el);
+}
+async function schnurZeichnen(){
+  karteHoehe();
+  raumLascheBenennen();
+  schnurAnsichtBauen();
+  { const r = $('schnurrechts');
+    if (r && !r.dataset.laden){ r.dataset.laden = '1';
+      r.querySelectorAll('.drawer').forEach(d => { const k = d.dataset.lade, kopf = d.querySelector('.drawerkopf');
+        d.querySelector('.dicon').innerHTML = LADEN_ICON[k] || ''; d.classList.toggle('offen', !!schaumLaden[k]);
+        kopf.onclick = () => { schaumLaden[k] = !schaumLaden[k]; d.classList.toggle('offen', schaumLaden[k]);
+          try { localStorage.setItem('mysuno-schaum-laden', JSON.stringify(schaumLaden)); } catch (e) {} }; }); } }
+  { const vb = $('schnurvoll'); if (vb && !vb.onclick) vb.onclick = karteVollbild; }
+  if (!window.Knotenschnur){ $('kartefuss').textContent = t('schnur.fehlt'); return; }
+  if (!schnurDaten){
+    try { schnurDaten = await (await fetch('/api/knotenschnur', { cache: 'no-store' })).json(); }
+    catch (e) { schnurDaten = null; $('kartefuss').textContent = t('schnur.fehlt'); return; }
+  }
+  if (raumJetzt !== 'schnur') return;           /* waehrend des Ladens weitergeschaltet */
+  const auswahl = titelAuswahl();
+  schnurFilterStand = titelFilterSchluessel();
+  const liste = (schnurDaten.songs || []).filter(x => {
+    const s = song(x.id); if (!s || !auswahl.ids.has(x.id) || istInstrumental(s)) return false;
+    x.likes = s.likes || 0;                      /* die Zaehler sind im Index frischer als im Katalogstand */
+    return true;
+  });
+  Knotenschnur.einrichten($('schnurbild'), {
+    t: (k, v) => t(k, v),
+    locale: () => (typeof localeTag === 'function' ? localeTag() : 'de-DE'),
+    laufend: () => aktuellId ? { id: aktuellId, t: audio.currentTime || 0, spielt: !audio.paused } : null,
+    spielen: (id) => spielenNachId(id),
+    springen: (sek) => { if (isFinite(sek)) { try { audio.currentTime = sek; } catch (e) {} } },
+    tipp: (html, ev) => karteTipp(html, ev),
+    tippWeg: () => karteTippWeg(),
+  });
+  const farben = (window.KlangfederBlatt && KlangfederBlatt.ABS_FARBE) || {};
+  Knotenschnur.setzen(liste, farben);
+  Knotenschnur.zeigen();
+  $('schnurlegende').innerHTML = Knotenschnur.legendeHtml((k, v) => t(k, v), liste, farben);
+  $('schnurlegkurz').textContent = t('zahl.titel', { n: liste.length });
+  $('kartefuss').textContent = t('schnur.fuss', { auswahl: auswahl.text, n: liste.length });
+  karteLaeuftSetzen();
+}
 function schaumSichtbar(an){
   for (const id of ['kartefeld', 'karterechts']) { const e = $(id); if (e) e.hidden = an; }
   for (const id of ['schaumfeld', 'schaumrechts']) { const e = $(id); if (e) e.hidden = !an; }
@@ -11784,6 +11879,8 @@ async function karteZeichnen(){
   /* Welche Räume gibt es? Einmal fragen, dann merken. */
   await raeumeErfragen();
   schaumSichtbar(raumJetzt === 'schaum' || raumJetzt === 'groupies');
+  schnurSichtbar(raumJetzt === 'schnur');
+  if (raumJetzt === 'schnur') return schnurZeichnen();
   if (raumJetzt === 'schaum' || raumJetzt === 'groupies') return schaumZeichnen();
   if (!raumDaten[raumJetzt]){
     /* Erst hier steht fest, welche Songs ueberhaupt einen Stern haben.
