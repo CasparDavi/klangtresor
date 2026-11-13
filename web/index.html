@@ -5118,8 +5118,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=24"></script>
-<script src="/ui-sprache.js?v=38"></script>
+<script src="/ui-sprache-ru.js?v=25"></script>
+<script src="/ui-sprache.js?v=39"></script>
 <!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
 <script src="/klangfeder-blatt.js?v=2026-11-11.2"></script>
 <script src="/qr.js?v=1"></script>
@@ -9222,8 +9222,9 @@ document.addEventListener('fullscreenchange', () => {
 function raumLascheBenennen(){
   const b = $('reg-karte'); if (!b) return;
   const da = Object.keys(RAUM_NAME).filter(r => raumDa && raumDa[r]);
-  /* Mit dem Klangschaum heisst die Lasche „Räume und Schäume" (Caspar_D, 06.10.2026). */
-  b.textContent = da.includes('schaum') ? t('register.raeume_schaeume')
+  /* Mit dem Klangschaum heisst die Lasche „Räume und Schäume" (Caspar_D, 06.10.2026),
+     mit der Knotenschnur „Räume, Schäume, Schnüre" (Caspar_D, 13.11.2026). */
+  b.textContent = da.includes('schaum') ? t(da.includes('schnur') ? 'register.raeume_schaeume_schnuere' : 'register.raeume_schaeume')
     : da.length === 1 ? t('raum.lasche.' + da[0]) : t('register.raeume');
 }
 /* Die Lasche soll ihren Namen schon tragen, bevor man sie zum ersten Mal oeffnet. */
@@ -23208,7 +23209,9 @@ function promptLasche(name){
    Vermessen wird der EINGEREICHTE Text (Caspar_D, 08.11.2026), Zeile fuer Zeile wie in der Lasche „Lyrics".
    Die Rechnung kennt Deutsch und Englisch; Zeilen in anderer Schrift bleiben grau und ungezaehlt.
    Hinweistexte des Blatts kommen aus unserem Sprachsystem (Schluessel kfb.*), damit sie der Oberflaechensprache folgen. */
-const taBlattOptionen = () => ({ sprache: sprache() === 'de' ? 'de' : 'en', t: (k, v) => t('kfb.' + k, v) });
+// Russisch: Kadenz м/ж statt m/w (Caspar_D, 13.11.2026: „die hebungen müssen natürlich auch auf russisch stehen“)
+const taBlattOptionen = () => ({ sprache: sprache() === 'de' ? 'de' : 'en', t: (k, v) => t('kfb.' + k, v),
+  kadA: k => (!k ? '' : sprache() === 'ru' ? String(k).replace(/m/g, 'м').replace(/w/g, 'ж') : sprache() === 'de' ? k : String(k).replace(/w/g, 'f')) });
 /* Der Satz oben: was am haeufigsten vorkommt, aus denselben Zeilen gezaehlt, die man darunter sieht. */
 function taKurz(zeilen){
   const Z = zeilen.filter(z => z.typ === 'zeile' && z.n);

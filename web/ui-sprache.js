@@ -165,6 +165,7 @@
     ['register.klangraum', 'Klangraum', 'Sound Space'],
     ['register.raeume', 'Räume', 'Spaces'],
     ['register.raeume_schaeume', 'Räume und Schäume', 'Spaces & Foams'],
+    ['register.raeume_schaeume_schnuere', 'Räume, Schäume, Schnüre', 'Spaces, Foams, Cords'],
     ['register.groesse', 'Kachelgröße — nach rechts größer', 'Tile size — larger to the right'],
     ['register.spalten', '{n} Spalten, je etwa {px} px breit', '{n} columns, about {px} px each'],
 
@@ -1680,6 +1681,7 @@
     ['kfb.hk.h','{n} betonte Silbe (Hebung)|{n} betonte Silben (Hebungen)','{n} stressed syllable|{n} stressed syllables'],
     ['kfb.hk.m','endet betont (männlich)','ends stressed (masculine)'],
     ['kfb.hk.w','endet unbetont (weiblich)','ends unstressed (feminine)'],
+    ['kfb.hk.zeichen','H','H'],   // Zeichen hinter der Hebungszahl („4H“); Russisch „уд“ (Caspar_D, 13.11.2026)
     ['kfb.rl.reim','Zeilen mit gleichem Buchstaben reimen','Lines with the same letter rhyme'],
     ['kfb.rl.asso','Assonanz: nur die Vokale klingen gleich','Assonance: only the vowels sound the same'],
     ['kfb.rl.plan','geplanter Reim {b} – die Zeile ist noch Platzhalter','planned rhyme {b} – the line is still a placeholder'],

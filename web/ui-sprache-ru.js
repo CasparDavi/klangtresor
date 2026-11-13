@@ -142,6 +142,7 @@ window.UI_RU = {
   "register.klangraum": "Звуковое пространство",
   "register.raeume": "Пространства",
   "register.raeume_schaeume": "Пространства и пены",
+  "register.raeume_schaeume_schnuere": "Пространства, пены, шнуры",
   "register.groesse": "Размер плиток — вправо крупнее",
   "register.spalten": "столбцов: {n}, примерно по {px} px",
   "zahl.titel": "{n} трек|{n} трека|{n} треков",
@@ -4075,4 +4076,14 @@ window.UI_RU = {
   "profil.kurios.f.zeit": "нет временных меток",
   "profil.kurios.f.text": "слишком мало треков с текстом",
   "profil.kurios.f.tonart": "слишком мало измеренных тональностей",
+  /* Leseansicht der Lyrik-Analyse (klangfeder-blatt.js), 13.11.2026 – KI-Übersetzung aus der KlangFeder, noch nicht von Henry geprüft */
+  "kfb.hk.zeichen": "уд",
+  "kfb.hk.h": "{n} ударный слог|{n} ударных слога|{n} ударных слогов",
+  "kfb.hk.m": "кончается ударным слогом (мужская клаузула)",
+  "kfb.hk.w": "кончается безударным слогом (женская клаузула)",
+  "kfb.rl.reim": "Строки с одинаковой буквой рифмуются",
+  "kfb.rl.asso": "Ассонанс: одинаково звучат только гласные",
+  "kfb.rl.plan": "запланированная рифма {b} — строка пока заполнитель",
+  "kfb.silben": "Слоги",
+  "kfb.reim": "Рифма",
 };
