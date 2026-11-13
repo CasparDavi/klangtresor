@@ -165,7 +165,6 @@
     ['register.klangraum', 'Klangraum', 'Sound Space'],
     ['register.raeume', 'Räume', 'Spaces'],
     ['register.raeume_schaeume', 'Räume und Schäume', 'Spaces & Foams'],
-    ['register.raeume_schaeume_schnuere', 'Räume, Schäume, Schnüre', 'Spaces, Foams, Cords'],
     ['register.groesse', 'Kachelgröße — nach rechts größer', 'Tile size — larger to the right'],
     ['register.spalten', '{n} Spalten, je etwa {px} px breit', '{n} columns, about {px} px each'],
 

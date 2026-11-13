@@ -10051,7 +10051,7 @@ farbiger Knoten an jedem Abschnittswechsel; „nur songs mit TExt“; natürlich
 
 **Wiedervorlage:**
 - **Abgenommen** am 13.11.2026 in Caspar_Ds Fenster, im Vollbild mit Lichtschein (Caspar_D: „kann so bleiben“).
-- Lasche heißt seit 1.0.164 „Räume, Schäume, Schnüre“ (Caspar_D, 13.11.2026: „schnüre kommt nich mit in die Registerlasche“); `register.raeume_schaeume_schnuere`, RU „Пространства, пены, шнуры“ für Henrys Durchsicht. Auf dem Handy bricht sie dreizeilig um – so hoch wie vorher.
+- Lasche bleibt „Räume und Schäume“ – entschieden (Caspar_D, 13.11.2026: „schnüre kommt nicht mit in die Registerlasche“). 1.0.164 hatte sie irrtümlich umbenannt (Satz als Fehlermeldung gelesen), zurückgenommen.
 - Weitere Formen derselben Reihe, besprochen, nicht gebaut: geglättete Hüllkurve, Perlen bzw. Scheiben je Textzeile
   (Zeilenzeiten stehen in denselben Wortmarken). Langsames Schwingen der Schnüre wäre möglich, kostet Neuzeichnen je Bild.
 - Russisch der neuen Texte `raum.*schnur*`, `schnur.*` (26 Schlüssel) hat Claude geschrieben, nach `docs/ru/PRAVILA.md`

@@ -142,7 +142,6 @@ window.UI_RU = {
   "register.klangraum": "Звуковое пространство",
   "register.raeume": "Пространства",
   "register.raeume_schaeume": "Пространства и пены",
-  "register.raeume_schaeume_schnuere": "Пространства, пены, шнуры",
   "register.groesse": "Размер плиток — вправо крупнее",
   "register.spalten": "столбцов: {n}, примерно по {px} px",
   "zahl.titel": "{n} трек|{n} трека|{n} треков",
