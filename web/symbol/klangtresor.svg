@@ -1,1 +1,17 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='#0c0c0d'/><g transform='translate(32 32)' stroke='#e8e8ec' stroke-width='4' stroke-linecap='round' fill='none'><circle r='22'/><g transform='rotate(15)'><path d='M-22 0H22M0-22V22'/></g></g><circle cx='32' cy='32' r='5' fill='#e8e8ec'/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Das Schreibtischsymbol: Tresorrad orange auf durchsichtigem Grund, umgeben von einer schmalen schwarzen Kontur,
+       damit es auch auf hellem Hintergrund steht (Caspar_D, 13.11.2026). Gegenstueck dazu ist die sandfarbene Feder der
+       KlangFeder - dieselbe Bauart, andere Farbe und anderes Zeichen. Die Kontur ist der schwarze Strich DARUNTER, je
+       0,5 Einheiten breiter als der orange darueber; bei 16 Punkten dunkelt sie das Rad leicht ab, zerstoert es aber
+       nicht, darum steht sie in allen Groessen. Das Favicon im Browser-Tab (web/index.html) bleibt die orange PLATTE
+       mit Rahmen und Bolzen - das ist ein anderes Zeichen fuer einen anderen Ort.
+       Gebaut mit labor/symbole/symbole-bauen.sh (Chrome + ImageMagick) - Werkstatt, nicht Betrieb. -->
+  <g transform="translate(32 32)" stroke="#000" stroke-width="5" stroke-linecap="round" fill="none">
+    <circle r="26"/><g transform="rotate(15)"><path d="M-26 0H26M0-26V26"/></g>
+  </g>
+  <circle cx="32" cy="32" r="5.5" fill="#000"/>
+  <g transform="translate(32 32)" stroke="#ff6a00" stroke-width="4" stroke-linecap="round" fill="none">
+    <circle r="26"/><g transform="rotate(15)"><path d="M-26 0H26M0-26V26"/></g>
+  </g>
+  <circle cx="32" cy="32" r="5" fill="#ff6a00"/>
+</svg>
