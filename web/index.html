@@ -5118,8 +5118,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=29"></script>
-<script src="/ui-sprache.js?v=43"></script>
+<script src="/ui-sprache-ru.js?v=30"></script>
+<script src="/ui-sprache.js?v=44"></script>
 <!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
 <script src="/klangfeder-blatt.js?v=2026-11-13.2"></script>
 <script src="/qr.js?v=1"></script>
@@ -16743,7 +16743,7 @@ function profilZahlenFuellen(){
     const feld = document.createElement('div'); feld.className = 'hitstrom'; w.appendChild(feld); g.appendChild(w);
     (async () => {
       try {
-        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.0.71'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
+        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.1.5'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
         const daten = d && M.hitstromDaten(eigene, d.verlauf || {});
         if (!daten){ w.remove(); return; }
         /* Farben: das Modul schreibt --titel-a/-b selbst ins Bild, so folgt der Strom jedem Titelwechsel (siehe hitstrom.js) */

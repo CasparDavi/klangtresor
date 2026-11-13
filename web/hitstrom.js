@@ -33,6 +33,10 @@ const resonanz = (e) => (e.plays || 0) + 2 * (e.likes || 0) + 3 * (e.kommentare 
 const tagVon = (d) => Date.parse(d + 'T00:00:00Z') / 864e5;
 const kw = (tag) => { const d = new Date(tag * 864e5), dd = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 3)), y0 = new Date(Date.UTC(dd.getUTCFullYear(), 0, 4));
   return 1 + Math.round(((dd - y0) / 864e5 - 3 + ((y0.getUTCDay() + 6) % 7)) / 7); };
+/* Eigene IDs je Diagramm. Die Verlaeufe und Namenspfade hiessen fest hsv0, hsn0 ... - liegen zwei Hitstroeme auf
+   einer Seite, gibt es jede ID doppelt, und der Browser loest url(#hsv0) auf das ERSTE im Dokument auf: das zweite
+   Diagramm borgt sich die Farben des ersten (am 13.11.2026 in einem Vergleichsbild gesehen, 191 IDs, 123 verschiedene). */
+let lauf = 0;
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* Wochenzuwaechse der zehn bewegtesten. songs: [{id, titel, erstellt}], verlauf: {id: [{stand, plays, likes, kommentare}]} */
@@ -51,7 +55,12 @@ export function hitstromDaten(songs, verlauf, anzahl = 12){
   const zeilen = S.map(s => { const an = grenzen.map(t => wertAn(s, t)), v = [];
     for (let j = 0; j < wochen; j++) v.push(Math.max(0, an[j + 1] - an[j]));
     return { id: s.id, titel: s.titel || '—', v, summe: v.reduce((a, b) => a + b, 0) }; });
-  const zehn = zeilen.filter(z => z.summe > 0).sort((a, b) => b.summe - a.summe).slice(0, anzahl);
+  /* ALLE Titel, die sich ueberhaupt bewegt haben - keine Auswahl mehr (Caspar_D, 13.11.2026: „was mich stoert ist,
+     dass nur noch bewegtere Titel reinkommen"). Vorher waren es die zwoelf mit dem groessten Zuwachs; dann waren die
+     100 % einer Woche nur die 100 % DIESER ZWOELF, und das schwankte zwischen 23 und 95 % des wirklichen Geschehens.
+     Jetzt sind 100 % wirklich 100 %. Je Woche bewegen sich nur 19 bis 43 Titel, ueber alle Wochen 123 - das traegt
+     die Form noch; Wattenberg zeigt 7500 Filme im selben Bild. Namen bekommen nur die dicken Baender (siehe unten). */
+  const zehn = zeilen.filter(z => z.summe > 0).sort((a, b) => b.summe - a.summe);
   if (zehn.length < 2) return null;
   return { zehn, wochen: grenzen.slice(0, wochen) };
 }
@@ -73,11 +82,18 @@ function monotone(xs, ys){
    Browser faerbt den Strom mit wie die Balken der anderen Profildiagramme - ohne neu zu zeichnen. Darum als style, nicht als
    Attribut: Variablen und color-mix gelten nur in CSS-Eigenschaften. */
 export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, rechts = null, akzente = ['var(--titel-a,#f97b14)', 'var(--titel-b,#e31c79)'], messen, schrift = 'system-ui, sans-serif', xHoehe = 0.52 } = {}){
-  const items = daten.zehn, m = daten.wochen.length, n = items.length;
+  const items = daten.zehn, m = daten.wochen.length, n = items.length, UID = 'hs' + (++lauf) + '_';
   const vals = items.map(it => it.v.map((x, j) => { const t = items.reduce((a, q) => a + q.v[j], 0); return t ? 100 * x / t : 0; }));
   /* von innen nach aussen */
-  const sums = vals.map(v => v.reduce((a, b) => a + b, 0)), peak = vals.map(v => v.reduce((b, x, j) => x > v[b] ? j : b, 0));
-  const nachGipfel = vals.map((_, i) => i).sort((a, b) => peak[a] - peak[b] || sums[b] - sums[a]); let oben = 0, unten = 0; const tops = [], bots = [];
+  /* VON INNEN NACH AUSSEN NACH DEM EINSATZ, die ZULETZT begonnenen innen (Caspar_D, 13.11.2026: „das linke Anfangen
+     eines Liedes sollte immer nah der vertikalen Mitte sein, das Auslaufen nach aussen von der Mitte weg").
+     Vorher entschied der Gipfel. Die Lage im Stapel steht fuer alle Wochen fest - ein Band kann nicht wandern;
+     nach aussen gedrueckt wird es nur dadurch, dass die Baender UNTER ihm spaeter anschwellen. Darum muessen die
+     spaeter begonnenen nach innen. Byron & Wattenberg ordnen umgekehrt (frueheste innen); dann bleiben die alten in
+     der Mitte liegen und die neuen erscheinen am Rand - drei Fassungen nebeneinander gezeigt, diese gewaehlt. */
+  const sums = vals.map(v => v.reduce((a, b) => a + b, 0));
+  const einsatz = vals.map(v => { const k = v.findIndex(x => x > 0); return k < 0 ? v.length : k; });
+  const nachGipfel = vals.map((_, i) => i).sort((a, b) => einsatz[b] - einsatz[a] || sums[b] - sums[a]); let oben = 0, unten = 0; const tops = [], bots = [];
   for (const j of nachGipfel){ if (oben < unten){ oben += sums[j]; tops.push(j); } else { unten += sums[j]; bots.push(j); } }
   const order = bots.reverse().concat(tops);
   /* gewichtetes Wackeln, dann ohne Trend */
@@ -104,6 +120,16 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
     order.forEach((i, kk) => { const hell = i < Math.ceil(n / 2), k = hell ? 'h' : 'd'; let t = reihum[k] % 3; if (t === vorher) t = (t + 1) % 3;
       reihum[k] = t + 1; farbe[kk] = (hell ? toene : dunkel)[t]; vorher = t; }); }
   let defs = '', flaechen = '', toplines = '', namen = '';
+  const zuSetzen = [], RANDLUFT = 6;
+  /* Wie dick ein Band sein muss, damit ein Name hineinpasst, als Vielfaches der Schriftgroesse. 1,15 war zu knapp:
+     Oberlaenge und Unterlaenge brauchen zusammen rund 1,24, und der Schriftpfad liegt nicht auf der Mittellinie,
+     sondern um eine halbe x-Hoehe versetzt (damit der Buchstabenkoerper mittig sitzt) - zusammen also rund 1,5.
+     Gemessen quer zum Mittelpfad, nach oben und unten (Caspar_D, 13.11.2026), ueber 26 Punkte je Name:
+       1,3 und 1,45 -> 10 Namen, einer ragt heraus
+       1,6          ->  8 Namen, keiner ragt heraus
+       1,8          ->  6 Namen, keiner ragt heraus
+     1,6 gewaehlt: zwei Namen mehr sind den einen falsch sitzenden nicht wert. Wer darunter liegt, bleibt stumm. */
+  const DICKE = 1.6;
   const breiteVon = (text, fs) => (messen ? messen(text, fs) : text.length * fs * 0.56) * 1.08;
   order.forEach((i, kk) => {
     const it = items[i], dn = kanten[kk], up = kanten[kk + 1], akzent = farbe[kk], topline = `color-mix(in srgb, ${akzent} 75%, #fff)`;
@@ -111,8 +137,8 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
     let d = obenD + `L${f(px[m - 1])},${f(Y(dn[m - 2][5]))}`;
     for (let j = m - 2; j >= 0; j--){ const c = dn[j], y0 = j ? dn[j - 1][5] : start[kk]; d += `C${f(c[2])},${f(Y(c[3]))} ${f(c[0])},${f(Y(c[1]))} ${f(px[j])},${f(Y(y0))}`; }
     d += 'Z';
-    defs += `<linearGradient id="hsv${kk}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${akzent};stop-opacity:0.66"/><stop offset="1" style="stop-color:${akzent};stop-opacity:0.22"/></linearGradient>`;
-    flaechen += `<path class="hsband" data-id="${esc(it.id)}" d="${d}" fill="url(#hsv${kk})"><title>${esc(it.titel)} · ${it.summe.toLocaleString('de-DE')} Punkte in ${m} Wochen</title></path>`;
+    defs += `<linearGradient id="${UID}v${kk}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${akzent};stop-opacity:0.66"/><stop offset="1" style="stop-color:${akzent};stop-opacity:0.22"/></linearGradient>`;
+    flaechen += `<path class="hsband" data-id="${esc(it.id)}" d="${d}" fill="url(#${UID}v${kk})"><title>${esc(it.titel)} · ${it.summe.toLocaleString('de-DE')} Punkte in ${m} Wochen</title></path>`;
     toplines += `<path d="${obenD}" fill="none" style="stroke:${topline}" stroke-width="1" pointer-events="none"/>`;
     /* der Name: Raender je Segment neunmal abgetastet, die Mitte dazwischen ungeglaettet */
     const smp = []; for (let j = 0; j < m - 1; j++) for (let q = 0; q < 9; q++){ const t = q / 9; smp.push({ x: px[j] + (px[j + 1] - px[j]) * t, lo: Y(yAt(kk, j, t)), hi: Y(yAt(kk + 1, j, t)) }); }
@@ -138,7 +164,14 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
       eff.forEach((e, j) => { if (e < 10) return;
         for (let fs = Math.min(15, Math.floor(e * 0.6)); fs >= 9; fs--){ const w = breiteVon(text, fs);
           let a0 = j, a1 = j; while (a0 > 0 && arc[j] - arc[a0] < w / 2) a0--; while (a1 < arc.length - 1 && arc[a1] - arc[j] < w / 2) a1++;
-          if (arc[a1] - arc[a0] < w * 0.98) continue; let mn = Infinity; for (let q = a0; q <= a1; q++) mn = Math.min(mn, eff[q]); if (mn < fs * 1.15) continue;
+          if (arc[a1] - arc[a0] < w * 0.98) continue;
+          /* Geprueft wird die Strecke, die SPAETER AUCH GEZEICHNET wird: der Schriftpfad wird um zwei Stuetzpunkte
+             je Seite verlaengert, und auf dieser Verlaengerung prueften wir frueher nichts - darum liefen die Enden
+             der Namen ins Nachbarband (am 13.11.2026 nachgemessen: 6 von 20 Namen). Dazu Abstand zum Rand, sonst
+             laeuft ein Name aus der schwarzen Flaeche heraus („Kein Wetter"). */
+          const p0 = Math.max(0, a0 - 2), p1 = Math.min(eff.length - 1, a1 + 2);
+          if (smp[p0].x < X0 + RANDLUFT || smp[p1].x > X1 - RANDLUFT) continue;
+          let mn = Infinity; for (let q = p0; q <= p1; q++) mn = Math.min(mn, eff[q]); if (mn < fs * DICKE) continue;
           let st = 0; for (let q = a0; q < a1; q++) st += Math.abs(Math.atan2(mid[q + 1] - mid[q], (smp[q + 1].x - smp[q].x) || 1e-9)) * (smp[q + 1].x - smp[q].x);
           st /= Math.max(1e-9, smp[a1].x - smp[a0].x);
           alle.push({ fs, a0, a1, st, j, mn });
@@ -147,21 +180,35 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
       const fsMax = Math.max(...alle.map(c => c.fs)), G = { groesse: 1, ruhe: 1.5, mitte: 1.5, luft: 0.5 };
       for (const c of alle){
         const groesse = c.fs / fsMax, ruhe = 1 - Math.min(1, c.st / (Math.PI / 6));
-        const mitte = 1 - Math.min(1, 2 * Math.abs(smp[c.j].x - schwer) / (X1 - X0)), luft = Math.min(1, Math.max(0, c.mn / c.fs - 1.15));
+        const mitte = 1 - Math.min(1, 2 * Math.abs(smp[c.j].x - schwer) / (X1 - X0)), luft = Math.min(1, Math.max(0, c.mn / c.fs - DICKE));
         c.wert = G.groesse * groesse + G.ruhe * ruhe + G.mitte * mitte + G.luft * luft; }
       return alle.reduce((b, c) => c.wert > b.wert ? c : b); };
     /* passt der Name nicht, so wenig gekuerzt wie noetig (mindestens vier Zeichen vor dem …) */
     let text = it.titel, best = platz(text);
     for (let k = text.length - 1; !best && k >= 4; k--){ const kurz = it.titel.slice(0, k).trimEnd() + '…'; best = platz(kurz); if (best) text = kurz; }
     if (!best) return;
-    const a0 = Math.max(0, best.a0 - 2), a1 = Math.min(smp.length - 1, best.a1 + 2), fs = best.fs, id = `hsn${kk}`;
+    zuSetzen.push({ kk, text, best, smp, mid, topline, gewicht: it.summe });
+  });
+  /* ERST SAMMELN, DANN SETZEN - das dickste Band zuerst, wer mit einem schon gesetzten Namen kollidiert, bleibt
+     stumm. Vorher setzte jedes Band seinen Namen sofort in Stapelreihenfolge, ohne von den anderen zu wissen; bei
+     zwoelf Baendern fiel das kaum auf, bei hundert standen Namen uebereinander (Caspar_D, 13.11.2026). Dass dabei
+     Namen wegfallen, ist der Preis: aus 20 gesetzten wurden 12 - aber keiner davon liegt mehr falsch. */
+  const belegt = [];
+  const schneidet = (k) => belegt.some(b => !(k.x1 < b.x0 || b.x1 < k.x0 || k.y1 < b.y0 || b.y1 < k.y0));
+  for (const e of zuSetzen.sort((a, b) => b.gewicht - a.gewicht)) {
+    const { kk, text, best, smp, mid, topline } = e;
+    const a0 = Math.max(0, best.a0 - 2), a1 = Math.min(smp.length - 1, best.a1 + 2), fs = best.fs, id = `${UID}n${kk}`;
     const grund = smp.slice(a0, a1 + 1).map((q, r) => [q.x, mid[a0 + r] + xHoehe * fs / 2]);
     const mi = grund[grund.length >> 1][1], enden = (grund[0][1] + grund[grund.length - 1][1]) / 2, senke = mi > enden + 0.05 * fs;
     const bahn = senke ? grund.map(p => [p[0], p[1] - xHoehe * fs]) : grund;
+    const ys = bahn.map(p => p[1]);
+    const kasten = { x0: bahn[0][0] - 2, x1: bahn[bahn.length - 1][0] + 2, y0: Math.min(...ys) - fs * 0.7, y1: Math.max(...ys) + fs * 0.7 };
+    if (schneidet(kasten)) continue;
+    belegt.push(kasten);
     defs += `<path id="${id}" d="M${bahn.map(p => f(p[0]) + ',' + f(p[1])).join('L')}" fill="none"/>`;
     namen += `<text style="fill:${topline}" font-size="${fs}" font-family="${esc(schrift)}" pointer-events="none"><textPath href="#${id}" startOffset="50%" text-anchor="middle">`
       + `<tspan${senke ? ` dy="${xHoehe}em"` : ''}>${esc(text)}</tspan></textPath></text>`;
-  });
+  }
   /* Wochen: stossen zwei Beschriftungen aneinander (schmaler Bildschirm), stehen nur die erste und die letzte - die Achse ist
      linear, die Wochen dazwischen liest man ab (Caspar_D, 13.11.2026: „es reicht auch die erste und letzte"). */
   const kwText = daten.wochen.map(t => 'KW ' + kw(t)), kwBreite = (s) => messen ? messen(s, 11) : s.length * 6.2;

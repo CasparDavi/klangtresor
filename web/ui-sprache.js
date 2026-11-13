@@ -743,7 +743,11 @@
     ['profil.zahlen.archiv', 'Alle {n} Titel des Archivs.', 'All {n} titles in the archive.'],
     ['profil.zahlen.archiv_privat', 'Alle {n} Titel des Archivs, auch {p} private, die Suno nicht zeigt.', 'All {n} titles in the archive, including {p} private ones Suno does not show.'],
     ['profil.hitstrom', 'Hitstrom aller Wochen', 'Hit stream of all weeks'],
-    ['profil.hitstrom.hinweis', 'die zwölf bewegtesten seit {datum}, Anteil an ihrer Resonanz je Woche', 'the twelve with the most momentum since {datum}, share of their resonance each week'],
+    /* Der Hinweis sagt die Normierung jetzt in Klartext. „Anteil an ihrer Resonanz je Woche" war sachlich richtig und
+       kam trotzdem nicht an (Caspar_D, 13.11.2026: „die normierung auf 100 Wochenprozent war mir nicht klar beim
+       Hitflow"). „Anteil" ist ein Entwicklerwort; es sagt nicht, was man sehen muss - dass eine Woche mit 185 Abrufen
+       genauso hoch ist wie eine mit 1767. Seit derselben Runde sind es ausserdem ALLE Titel in Bewegung, nicht zwoelf. */
+    ['profil.hitstrom.hinweis', 'alle Titel, die sich seit {datum} bewegt haben · jede Woche ist gleich hoch und zeigt, wer sich den Zuwachs teilt – nicht, wie viel es war', 'every title that has moved since {datum} · each week is the same height and shows who shares the gain – not how much it was'],
     ['profil.bewegtesten', 'Die zehn bewegtesten', 'The ten with the most momentum'],
     ['profil.meistgeherzt', 'Die zehn meistgeherzten', 'The ten most hearted'],
     ['profil.chip.woche', 'Letzte Woche', 'Last week'],
