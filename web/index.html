@@ -16752,10 +16752,13 @@ function profilZahlenFuellen(){
         const xh = (() => { leinwand.font = '100px ' + schrift; const v = leinwand.measureText('x').actualBoundingBoxAscent / 100; return v > 0.3 && v < 0.8 ? v : 0.52; })();
         /* die Enden fluchten mit den Bildkanten der Hitparaden darunter (erstes und letztes Cover der ersten Reihe); Hoehe zwei Drittel
            der ersten Fassung (Caspar_D: „den Stream nur 2/3 so hoch") */
-        const malen = () => { const breite = Math.max(420, Math.round(feld.clientWidth || 680)), r0 = feld.getBoundingClientRect();
+        /* Unter 420 Punkten (Handy) wird breiter gezeichnet und vom CSS auf das Feld verkleinert - die gemessenen Kanten sind
+           Bildschirmpunkte und muessen darum mit breite/feldbreite in Bildpunkte umgerechnet werden. Ohne das endete der Strom
+           bei feldbreite/420, auf dem Handy nach zwei Dritteln (Caspar_D, 13.11.2026: „das rechte Drittel bleibt leer"). */
+        const malen = () => { const fb = feld.clientWidth || 680, breite = Math.max(420, Math.round(fb)), mass = breite / fb, r0 = feld.getBoundingClientRect();
           const kacheln = [...((g.querySelector('.topreihe') || {}).children || [])].filter(k => k.classList.contains('topk'));
-          const links = kacheln.length ? kacheln[0].getBoundingClientRect().left - r0.left : 0;
-          const rechts = kacheln.length ? kacheln[kacheln.length - 1].getBoundingClientRect().right - r0.left : breite;
+          const links = kacheln.length ? Math.max(0, kacheln[0].getBoundingClientRect().left - r0.left) * mass : 0;
+          const rechts = kacheln.length ? Math.min(fb, kacheln[kacheln.length - 1].getBoundingClientRect().right - r0.left) * mass : breite;
           feld.innerHTML = M.hitstromSvg(daten, { breite, hoehe: Math.round(Math.min(253, Math.max(173, breite * 0.28))), links, rechts, messen, schrift, xHoehe: xh }); };
         /* GEMESSEN WIRD, WENN DAS FELD SICHTBAR IST (28.10.2026). Oeffnet das Profil mit einer anderen Lasche (etwa „System"),
            entsteht „Meine Daten" versteckt: Breite und Bildkanten der Hitparaden messen dann null, und der Strom lag
