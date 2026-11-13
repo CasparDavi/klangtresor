@@ -13,6 +13,9 @@ const Q = s => `Kayser, Kleine deutsche Versschule, S. ${s}`;
 // Englische Strophenformen (Jörg, 10.11.2026: Englisch nachziehen): allgemeines Wissen der englischen Verslehre, die
 // Hymnen-Metren nach ihren Hebungszahlen; keine Seitenangabe, weil kein Buch dazu bei uns liegt.
 const QEN = 'englische Verslehre (allgemein)';
+// Russische Strophenformen (13.11.2026, Russisch als Textsprache): allgemeines Wissen der russischen Verslehre; die
+// Onegin-Strophe nach Puschkins „Евгений Онегин“ (gemeinfrei). Keine Seitenangabe, weil kein Buch dazu bei uns liegt.
+const QRU = 'russische Verslehre (allgemein); Puschkin, Евгений Онегин';
 const MEHRHEIT = 0.75;
 
 // ---- Vers ----
@@ -80,7 +83,7 @@ const reimText = s => !/[a-w]/.test(s) ? 'ohne Endreim' : REIMNAME[s] || (paarre
 const anteil = (Z, f) => Z.filter(f).length / Z.length;
 const fuenfJambus = z => z.vers && z.vers.h === 5 && z.vers.fuellung === 'eins' && z.vers.auftakt === 1;
 const liedFuellung = z => z.vers && ['eins', 'zwei', 'einszwei'].includes(z.vers.fuellung);
-const norm = z => (z.roh || '').toLowerCase().replace(/[^a-zäöüß]+/g, ' ').trim();
+const norm = z => (z.roh || '').toLowerCase().replace(/[^a-zäöüßа-яё]+/g, ' ').trim();
 const hebungsgang = Z => { const h = Z.map(z => z.h); return Z.length <= 8 ? h.join('-') : `${Math.min(...h)} bis ${Math.max(...h)}`; };
 function fuellungText(Z) {
   const n = {}; Z.forEach(z => { const t = z.vers && z.vers.takt; if (t) n[t] = (n[t] || 0) + 1; });
@@ -112,6 +115,16 @@ export function strophenform(Z) {
   // Englische Strophen: nur, wenn die Zeilen überwiegend englisch sind (deutsche Formen wie Volksliedstrophe, Knittelvers
   // passen dann nicht)
   const englisch = anteil(Z, z => z.sprache === 'en') >= MEHRHEIT, hg = h.join('');
+  // Russische Strophen: nur bei überwiegend russischen Zeilen; deutsche Formen (Volksliedstrophe, Knittelvers) dann aus
+  const russisch = anteil(Z, z => z.sprache === 'ru') >= MEHRHEIT;
+  if (russisch) {
+    const ru = (name, text) => ({ name, text, quelle: QRU });
+    const vierJambus = z => z.vers && z.vers.h === 4 && z.vers.auftakt === 1 && z.vers.fuellung === 'eins';
+    const kad = Z.map(z => z.k).join('');
+    // Onegin-Strophe: 14 Zeilen vierhebiger Jambus, AbAb CCdd EffE gg (groß = unbetont endend) – Kreuz-, Paar-, umarmender Reim, Schlusspaar
+    if (n === 14 && s === 'ababccddeffegg' && anteil(Z, vierJambus) >= MEHRHEIT)
+      return ru('Onegin-Strophe', `Onegin-Strophe – 14 vierhebige Jamben: Kreuzreim, zwei Reimpaare, umarmender Reim, Schlusspaar${kad === 'wmwmwwmmwmmwmm' ? ' (Ausgänge wie bei Puschkin)' : ''}`);
+  }
   if (englisch) {
     const en = (name, text) => ({ name, text, quelle: QEN });
     if (n === 5 && s === 'aabba' && Math.max(Z[2].n, Z[3].n) < Math.min(Z[0].n, Z[1].n, Z[4].n))   // dritte und vierte kürzer (Silben – robuster als Hebungen)
@@ -133,7 +146,7 @@ export function strophenform(Z) {
   if (n === 4 && s === 'abab' && h.join('') === '4343' && Z.every(z => z.k === 'm') && anteil(Z, liedFuellung) >= MEHRHEIT)
     return form('Chevy-Chase-Strophe', `vier Zeilen mit 4-3-4-3 Hebungen, alle betont endend, Kreuzreim (Chevy-Chase-Strophe)`, '41');
   // Volksliedstrophe: vier Volksliedzeilen im Kreuzreim (S. 40)
-  if (!englisch && n === 4 && s === 'abab' && anteil(Z, z => z.vers && z.vers.name === 'Volksliedzeile') >= MEHRHEIT)
+  if (!englisch && !russisch && n === 4 && s === 'abab' && anteil(Z, z => z.vers && z.vers.name === 'Volksliedzeile') >= MEHRHEIT)
     return form('Volksliedstrophe', `Volksliedstrophe – vier Zeilen mit drei oder vier Hebungen, Kreuzreim · Hebungen ${hebungsgang(Z)}`, '40');
   // Ritornell: drei Zeilen, erste und dritte reimen, die erste kürzer (S. 43)
   if (n === 3 && s === 'axa' && h[0] < h[1] && h[0] < h[2])
@@ -155,7 +168,7 @@ export function strophenform(Z) {
     if (a.name && a.name === b.name) return form(a.name, `zwei Vierzeiler, je ${a.text.replace(/ · Hebungen.*$/, '')} · Hebungen ${hebungsgang(Z)}`, a.quelle.replace(/^.*S\. /, ''));
   }
   // Knittelverse: vierhebig, paarweise gereimt, Füllung frei; Hans Sachs zählte 8 oder 9 Silben (S. 22)
-  if (!englisch && n >= 2 && /^((.)\2)+$/.test(s) && !/x/.test(s) && anteil(Z, z => z.h === 4) >= MEHRHEIT && !Z.every(z => z.vers && z.vers.fuellung === 'eins')) {
+  if (!englisch && !russisch && n >= 2 && /^((.)\2)+$/.test(s) && !/x/.test(s) && anteil(Z, z => z.h === 4) >= MEHRHEIT && !Z.every(z => z.vers && z.vers.fuellung === 'eins')) {
     const streng = Z.every(z => z.n === (z.k === 'm' ? 8 : 9));
     return form('Knittelvers', `${n} Zeilen Knittelvers – vierhebig, Paarreim, ${streng ? 'acht oder neun Silben (strenger Knittel)' : 'freie Füllung'}`, '22');
   }
@@ -265,6 +278,8 @@ export const FORMKATALOG = [
   { ebene: 'Strophenform', name: 'sapphische Odenstrophe', text: 'drei elfsilbige Verse und ein kurzer Schlussvers, ohne Reim', quelle: QODE, bild: ['SWSWSWWSWSW|x', 'SWSWSWWSWSW|x', 'SWSWSWWSWSW|x', 'SWWSW|x'] },
   { ebene: 'Strophenform', name: 'alkäische Odenstrophe', text: 'zwei Elfsilbler, ein jambischer Neunsilbler, ein fallender Zehnsilbler, ohne Reim', quelle: QODE, bild: ['WSWSWSWWSWS|x', 'WSWSWSWWSWS|x', 'WSWSWSWSW|x', 'SWWSWWSWSW|x'] },
   { ebene: 'Strophenform', name: 'asklepiadeische Odenstrophe', text: 'zwei Zwölfsilbler mit zwei Hebungen nebeneinander in der Mitte, dann sieben und acht Silben, ohne Reim', quelle: QODE, bild: ['SWSWWS/SWWSWS|x', 'SWSWWS/SWWSWS|x', 'SWSWWSW|x', 'SWSWWSWS|x'] },
+  { ebene: 'Strophenform', name: 'Onegin-Strophe', text: '14 vierhebige Jamben: Kreuzreim, zwei Reimpaare, umarmender Reim, Schlusspaar (AbAb CCdd EffE gg, groß = unbetont endend)', quelle: QRU,
+    bild: ['WSWSWSWSW|a', 'WSWSWSWS|b', 'WSWSWSWSW|a', 'WSWSWSWS|b', 'WSWSWSWSW|c', 'WSWSWSWSW|c', 'WSWSWSWS|d', 'WSWSWSWS|d', 'WSWSWSWSW|e', 'WSWSWSWS|f', 'WSWSWSWS|f', 'WSWSWSWSW|e', 'WSWSWSWS|g', 'WSWSWSWS|g'] },
   { ebene: 'Strophenform', name: 'Common Metre', text: 'englische Balladenstrophe: vier Zeilen mit 4-3-4-3 Hebungen, Kreuzreim oder nur Zeile 2 und 4', quelle: QEN, bild: ['WSWSWSWS|x', 'WSWSWS|a', 'WSWSWSWS|x', 'WSWSWS|a'] },
   { ebene: 'Strophenform', name: 'Short Metre', text: 'vier Zeilen mit 3-3-4-3 Hebungen', quelle: QEN, bild: ['WSWSWS|x', 'WSWSWS|a', 'WSWSWSWS|x', 'WSWSWS|a'] },
   { ebene: 'Strophenform', name: 'Long Metre', text: 'vier jambische Vierheber, Kreuz- oder Paarreim', quelle: QEN, bild: ['WSWSWSWS|a', 'WSWSWSWS|b', 'WSWSWSWS|a', 'WSWSWSWS|b'] },

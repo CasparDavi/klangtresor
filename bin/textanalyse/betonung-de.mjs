@@ -1,5 +1,6 @@
 // Wortbetonung Deutsch: Wort → Betonungsstufe je Silbe (2 Haupt, 1 Neben, 0 unbetont).
 // Reihenfolge: Lexikon (ipa-dict, aus Wiktionary; dahinter Viëtor 1921, kern/vietor-de.tsv) → Betonungsliste aus dem Duden (kern/betonung-korrektur-de.tsv) →
+// Muret-Sanders 1900 (kern/muret-de.tsv, nur ganze Wörter) →
 // Beugungsendung abtrennen → Kompositum zerlegen (Hauptakzent aufs Erstglied) → Regel (Stammsilbe, unbetonte Präfixe).
 import { lexikon, stufenVon } from './lexikon-de.mjs';
 import { klasseEinsilber } from './kleinwoerter-de.mjs';
@@ -26,6 +27,22 @@ function ausDuden(w) {
   const n = schreibSilben(w); if (!(i >= 0 && i < n)) return null;
   const st = new Array(n).fill(0); st[i] = 2; return st;
 }
+// Muret-Sanders 1900 (gemeinfrei, kern/muret-de.tsv, bin/muret-betonung.mjs): Betonung je Silbe mit Nebenton
+const MURET = new Map(process.env.KLANGFEDER_OHNE_MURET ? [] : korrekturen('muret-de.tsv').map(([w, s]) => [w.toLowerCase(), s.split(' ').map(Number)]));
+// Bühnendeutsch um 1900 (Jörg, 12.11.2026: „in der Werkbank Bühnendeutsch/Alltagsdeutsch“, für Lieder im Stil der
+// Comedian Harmonists oder Rammsteins): Muret-Sanders zuerst, mit seiner Betonung von 1900 (unge|sagt, kern/muret-buehne-de.tsv);
+// danach wie im Alltagsdeutsch. Voreinstellung Alltagsdeutsch – der Bestand rechnet unverändert.
+let BUEHNE = false;
+export function aussprache(wahl) { if (wahl === 'buehne' || wahl === 'alltag') BUEHNE = wahl === 'buehne'; return BUEHNE ? 'buehne' : 'alltag'; }
+let MURET_BUEHNE = null;
+function ausBuehne(w) {
+  if (!MURET_BUEHNE) MURET_BUEHNE = new Map(korrekturen('muret-buehne-de.tsv').map(([x, s]) => [x.toLowerCase(), s.split(' ').map(Number)]));
+  const k = w.toLowerCase(), st = MURET_BUEHNE.get(k) || MURET.get(k);
+  return st && st.length === schreibSilben(w) ? st.slice() : null;
+}
+function ausMuret(w) { const st = MURET.get(w.toLowerCase()); return st && st.length === schreibSilben(w) ? st.slice() : null; }
+// Muret gilt nur fürs ganze Wort, nicht für Glieder eines Kompositums oder Stämme vor Beugungsendungen: als Glied
+// rechnete er Komposita falsch (Erzielung, Geraschel; Krech 2009: 74,0 statt 74,1 %).
 const nachschlagen = w => imLexikon(w) || ausDuden(w);
 
 function regel(w) {
@@ -57,7 +74,8 @@ export function wortBetonung(roh, tiefe = 0) {
     return { ...b, quelle: b.quelle + "+'s" };
   }
   // Satzzeichen zählen nicht: gibt es das Wort ohne Apostroph, gilt es so (hab', Haus' als Anführung)
-  if (w !== ohneApo) { const bar = nachschlagen(ohneApo); if (bar) st = bar; }
+  if (BUEHNE) { st = ausBuehne(ohneApo); if (st) quelle = 'muret'; }
+  if (!st && w !== ohneApo) { const bar = nachschlagen(ohneApo); if (bar) st = bar; }
   if (!st && w !== ohneApo) {
     // Auslassung: steh'n = stehen, soll'n = sollen – volles Wort nachschlagen, eine unbetonte Silbe weniger
     const voll = w.includes("'") && !/'$/.test(w) ? w.replace("'", 'e') : ohneApo + 'e';
@@ -70,6 +88,7 @@ export function wortBetonung(roh, tiefe = 0) {
   }
   if (!st) st = imLexikon(ohneApo);
   if (!st) { st = ausDuden(ohneApo); if (st) quelle = 'duden'; }
+  if (!st) { st = ausMuret(ohneApo); if (st) quelle = 'muret'; }
 
   if (!st) {
     // Beugungsendung abtrennen

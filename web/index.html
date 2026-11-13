@@ -5121,7 +5121,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <script src="/ui-sprache-ru.js?v=26"></script>
 <script src="/ui-sprache.js?v=40"></script>
 <!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
-<script src="/klangfeder-blatt.js?v=2026-11-11.2"></script>
+<script src="/klangfeder-blatt.js?v=2026-11-13.2"></script>
 <script src="/qr.js?v=1"></script>
 <!-- Die Knotenschnur (12.11.2026) als eigene Datei, ohne defer: definiert, bevor das Haus-Skript laeuft. -->
 <script src="/knotenschnur.js?v=2"></script>
@@ -23211,7 +23211,7 @@ function promptLasche(name){
    Hinweistexte des Blatts kommen aus unserem Sprachsystem (Schluessel kfb.*), damit sie der Oberflaechensprache folgen. */
 // Russisch: Kadenz м/ж statt m/w (Caspar_D, 13.11.2026: „die hebungen müssen natürlich auch auf russisch stehen“)
 const taBlattOptionen = () => ({ sprache: sprache() === 'de' ? 'de' : 'en', t: (k, v) => t('kfb.' + k, v),
-  kadA: k => (!k ? '' : sprache() === 'ru' ? String(k).replace(/m/g, 'м').replace(/w/g, 'ж') : sprache() === 'de' ? k : String(k).replace(/w/g, 'f')) });
+  kadA: k => (!k ? '' : sprache() === 'ru' ? String(k).replace(/m/g, 'м').replace(/w/g, 'ж') : sprache() === 'de' ? k : String(k).replace(/m/g, 's').replace(/w/g, 'u')) });   // Englisch s/u (stressed/unstressed ending)
 /* Der Satz oben: was am haeufigsten vorkommt, aus denselben Zeilen gezaehlt, die man darunter sieht. */
 function taKurz(zeilen){
   const Z = zeilen.filter(z => z.typ === 'zeile' && z.n);

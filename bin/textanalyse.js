@@ -7,8 +7,9 @@
    Herkunft: Die Rechnung ist in der KlangFeder entstanden (Entwicklung/KlangFeder, Liedtext-Werkstatt neben dem
    KlangTresor) und liegt unveraendert in bin/textanalyse/ - KERN_VERSION in bin/textanalyse/version.mjs nennt den
    Stand. Caspar_D, 08.11.2026: „wenn keine KI nötig ist oder nur lokal laufende kleine Modelle, dann ist
-   KlangTresor der richtige Ort." Keine KI: Lautschrift aus zwei Woerterbuechern (ipa-dict Deutsch, CMUdict
-   Englisch, beide in modelle/textanalyse/, geholt von der Einrichtung oder Profil → System), dazu Regeln.
+   KlangTresor der richtige Ort." Keine KI: Lautschrift aus Woerterbuechern (ipa-dict Deutsch, CMUdict Englisch,
+   seit Kern 2026-11-13.1 zwei optionale russische aus dem Wiktionary; alle in modelle/textanalyse/, geholt von der
+   Einrichtung oder Profil → System), dazu Regeln.
    Gemessen gegen Haiders Golddaten (Gedichte): Deutsch 95,7 % der Silben richtig, Englisch
    91,5 (Messreihe in KlangFeder/docs/PRUEFSTAND.md). Fuer Liedtexte gibt es noch keine Pruefmenge.
    Wer die Rechnung aendert, aendert sie in der KlangFeder und holt sie hierher - eine Rechnung, nicht zwei.
@@ -29,7 +30,8 @@
    [Intro]: Caspar_D, 11.11.2026: „alles was vor dem [intro] steht, fliegt aus der analyse". Davor stehen Vorreden,
    Playlist-Hinweise, Links (87 Titel; laut bereinigter Lyrik wird davon nichts gesungen). Ohne [Intro] bleibt der
    ganze Text. Die bereinigte Lyrik selbst kam nicht in Frage: wo Whisper Zeilen ueberhoert, fehlen sie dort.
-   Texte in fremder Schrift (kyrillisch, japanisch …) stehen mit sprache 'fremd' und ohne Zeilen drin.
+   Russische Texte (kyrillisch) rechnet der Kern seit 2026-11-13.1 mit; andere fremde Schrift (japanisch, ukrainisch …)
+   steht mit sprache 'fremd' und ohne Zeilen drin.
 
      node bin/textanalyse.js            den Bestand nachrechnen (Morgenlauf)
      node bin/textanalyse.js --dienst   Anfragen des Servers ueber IPC beantworten
@@ -55,7 +57,12 @@ function kernVersion() {
    Die Pruefsumme rechnet bin/modelle-holen.js beim Holen; hier genuegt die Groesse, das kostet nichts. */
 const AUSWEIS = JSON.parse(fs.readFileSync(path.join(__dirname, 'textanalyse', 'daten.json'), 'utf8')).dateien;
 const WOERTERBUECHER = AUSWEIS.map(d => d.pfad);
-const fehlend = () => AUSWEIS.filter(d => { try { return fs.statSync(path.join(DATEN, d.pfad)).size !== d.groesse; } catch (e) { return true; } }).map(d => d.pfad);
+const daPasst = (d) => { try { return fs.statSync(path.join(DATEN, d.pfad)).size === d.groesse; } catch (e) { return false; } };
+/* Optionale Eintraege (seit Kern 2026-11-13.1 die russischen Woerterbuecher) zaehlen nicht als fehlend: ohne sie
+   rechnet der Kern Russisch mit dem Endungsmodell. Ob sie da sind, steht mit im Ergebnis (ruWoerterbuch) - kommen
+   sie spaeter dazu, wird neu gerechnet. */
+const fehlend = () => AUSWEIS.filter(d => !d.optional && !daPasst(d)).map(d => d.pfad);
+const ruWoerterbuch = () => AUSWEIS.filter(d => d.optional).every(daPasst);
 const hash = (text) => crypto.createHash('sha1').update(String(text || ''), 'utf8').digest('hex').slice(0, 16);
 
 /* Der analysierte Text: ab der ersten Zeile [Intro …]; ohne [Intro] alles. vorrede = Zahl der Zeilen davor mit Text. */
@@ -139,7 +146,8 @@ async function bestand() {
   if (!katalog) { console.error('  ' + T('Kein Katalog.')); process.exit(1); }
   const k = await kernLaden();
   const alt = lesen();
-  const altSongs = alt && alt.kern === k.version ? alt.songs || {} : {};
+  const ruWb = ruWoerterbuch();
+  const altSongs = alt && alt.kern === k.version && !!alt.ruWoerterbuch === ruWb ? alt.songs || {} : {};
   const songs = {};
   let neu = 0, gleich = 0, fremd = 0;
   for (const s of Object.values(katalog.songs)) {
@@ -152,7 +160,8 @@ async function bestand() {
     neu++;
   }
   const weg = Object.keys(alt && alt.songs || {}).filter(id => !songs[id]).length;
-  if (neu || weg || !alt || alt.kern !== k.version) schreiben({ kern: k.version, stand: new Date().toISOString(), songs });
+  if (neu || weg || !alt || alt.kern !== k.version || !!alt.ruWoerterbuch !== ruWb)
+    schreiben({ kern: k.version, ruWoerterbuch: ruWb, stand: new Date().toISOString(), songs });
   console.log('  ' + T('Liedtexte: {neu} neu gerechnet, {gleich} unverändert, {weg} entfallen (Rechnung {kern})',
     { neu, gleich, weg, kern: k.version }) + (fremd ? ' · ' + T('{n} in fremder Schrift', { n: fremd }) : ''));
 }

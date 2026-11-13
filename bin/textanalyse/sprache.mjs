@@ -1,5 +1,6 @@
-// Sprache je Zeile und je Text: 'de', 'en' oder 'fremd' (z. B. kyrillisch). Gemischte Texte zeilenweise.
-// Reihenfolge je Zeile: kyrillisch ohne Lateinisches → fremd; Umlaut/ß → de; häufige Funktionswörter;
+// Sprache je Zeile und je Text: 'de', 'en', 'ru' oder 'fremd' (andere Schriften). Gemischte Texte zeilenweise.
+// Russisch (seit 2026-11-13.1): Zeilen mit mehr kyrillischen als lateinischen Wörtern; ukrainische, belarussische und
+// serbische Buchstaben (і ї є ґ ў ђ ј љ њ ћ џ) bleiben fremd. Reihenfolge je Zeile: kyrillisch → ru/fremd; andere Schrift ohne Lateinisches → fremd; Umlaut/ß → de; häufige Funktionswörter;
 // sonst Wörterbuch-Treffer, die nur in einer Sprache stehen. Unentschiedene und knapp entschiedene Zeilen erben
 // aus ihrer Strophe, sonst vom Nachbarn bzw. von der Mehrheit des Textes (spracheText).
 import { lexikon } from './lexikon-de.mjs';
@@ -44,8 +45,13 @@ export function ohneKlammern(text) {
 
 const woerter = z => (z.replace(/\[[^\]]*\]/g, ' ').replace(/#.*$/, ' ').match(/[A-Za-zÄÖÜäöüß'’]+/g) || []).map(w => w.replace(/’/g, "'"));
 
+const KYR = /[А-Яа-яЁё]/, NICHT_RU = /[іїєґўђјљњћџІЇЄҐЎЂЈЉЊЋЏ]/;
 export function spracheZeile(zeile) {
   const ohne = zeile.replace(/\[[^\]]*\]/g, ' ');
+  if (KYR.test(ohne) || NICHT_RU.test(ohne)) {
+    const kyr = (ohne.match(/[А-Яа-яЁёІЇЄҐЎЂЈЉЊЋЏіїєґўђјљњћџ]+/g) || []).length, lat = (ohne.match(/[A-Za-zÄÖÜäöüß]{2,}/g) || []).length;
+    if (kyr >= lat) return NICHT_RU.test(ohne) ? 'fremd' : 'ru';
+  }
   // Buchstaben, aber keine lateinischen (kyrillisch, japanisch, griechisch …) → fremd
   if (/\p{L}/u.test(ohne) && !/[A-Za-zÄÖÜäöüß]/.test(ohne)) return 'fremd';
   const w = woerter(ohne).filter(x => !LAUT.has(x.toLowerCase()));
@@ -73,7 +79,7 @@ export function spracheZeile(zeile) {
 export function spracheText(text) {
   const maske = ohneKlammern(text).split('\n');
   const zeilen = maske.map(z => (!z.trim() ? undefined : spracheZeile(z)));
-  const zaehl = { de: 0, en: 0, fremd: 0 };
+  const zaehl = { de: 0, en: 0, ru: 0, fremd: 0 };
   zeilen.forEach(s => { if (s) zaehl[s]++; });
   const mehrheit = zaehl.de >= zaehl.en ? (zaehl.de ? 'de' : zaehl.en ? 'en' : null) : 'en';
   const sicher = i => (zeilen[i] === 'de' || zeilen[i] === 'en' ? zeilen[i] : null);
@@ -82,7 +88,7 @@ export function spracheText(text) {
   const strophe = (i, schritt) => { for (let j = i + schritt; j >= 0 && j < zeilen.length && !grenze(j); j += schritt) { const s = sicher(j); if (s) return s; } return null; };
   let letzte = null;
   const gefuellt = zeilen.map((s, i) => {
-    if (s === undefined || s === 'fremd') return s;
+    if (s === undefined || s === 'fremd' || s === 'ru') return s;   // Russisch ist an der Schrift immer entschieden und vererbt nichts
     if (s === null) {
       const vor = strophe(i, -1), nach = strophe(i, 1);
       s = (vor && nach ? (vor === nach ? vor : null) : vor || nach) || letzte || mehrheit || 'de';
@@ -91,6 +97,9 @@ export function spracheText(text) {
     return s;
   });
   const lat = zaehl.de + zaehl.en;
+  // Russisch überwiegt (mehr russische Zeilen als deutsche und englische zusammen): ru, wenn ≥ 80 %, sonst gemischt.
+  // Sonst wie zuvor: russische Zeilen zählen für das Gesamturteil Deutsch/Englisch nicht (wie fremde).
+  if (zaehl.ru > lat && zaehl.ru >= zaehl.fremd) return { zeilen: gefuellt, gesamt: zaehl.ru / (zaehl.ru + lat) >= 0.8 ? 'ru' : 'gemischt', zaehl };
   const gesamt = !lat || zaehl.fremd > lat ? (zaehl.fremd ? 'fremd' : null)
     : zaehl.de / lat >= 0.8 ? 'de' : zaehl.en / lat >= 0.8 ? 'en' : 'gemischt';
   return { zeilen: gefuellt, gesamt, zaehl };

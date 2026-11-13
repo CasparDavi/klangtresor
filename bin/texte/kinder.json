@@ -1374,5 +1374,9 @@
  "andere Fassung (Prüfsumme passt nicht)": {
   "en": "different version (checksum does not match)",
   "ru": "другая версия (контрольная сумма не совпадает)"
+ },
+ "nur ein Hinweis: Russisch rechnet dann mit dem Endungsmodell": {
+  "en": "just a note: Russian is then computed with the ending model only",
+  "ru": "только к сведению: тогда русский текст рассчитывается только по модели окончаний"
  }
 }

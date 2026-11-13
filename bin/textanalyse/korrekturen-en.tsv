@@ -3,3 +3,14 @@
 # Leere Zeilen und Zeilen mit # werden übergangen.
 # WICHTIG: Jede Änderung hier braucht eine neue KERN_VERSION (kern/version.mjs) – sonst rechnet der KlangTresor
 # seinen gespeicherten Bestand nicht neu (er rechnet nur bei geändertem Lyrics-Hash oder neuer Kern-Version).
+# Verkürzte Formen der Dichtersprache, die keine Regel trifft (o'er = over, gesprochen wie „ore“; e'er = ever wie „air“)
+o'er	AO1 R
+e'er	EH1 R
+ne'er	N EH1 R
+e'en	IY1 N
+ta'en	T EY1 N
+whate'er	W AH0 T EH1 R
+howe'er	HH AW0 EH1 R
+where'er	W EH0 R EH1 R
+whene'er	W EH0 N EH1 R
+whoe'er	HH UW0 EH1 R

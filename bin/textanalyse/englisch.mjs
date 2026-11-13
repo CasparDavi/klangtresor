@@ -3,6 +3,7 @@
 // Daten: <daten>/en/cmudict.dict (nur über pfade.mjs).
 import fs from 'node:fs';
 import { daten, korrekturen } from './pfade.mjs';
+import { aussprache } from './betonung-de.mjs';
 
 let CMU = null;
 export function lexikonEn() {
@@ -28,6 +29,21 @@ export function stufenEn(w) {
   const st = ph ? ph.split(' ').filter(p => VOKAL.test(p)).map(p => ({ 1: 2, 2: 1, 0: 0 })[p.slice(-1)]) : null;
   const r = st && st.length ? st : null;
   STUFEN.set(w, r); return r;
+}
+
+// Muret-Sanders Teil I (Englisch-Deutsch, um 1900, gemeinfrei; bin/muret-betonung-en.mjs; Jörg, 12.11.2026, „A b, B a“):
+// kern/muret-en.tsv füllt, was CMUdict nicht kennt – Betonung je Silbe und Reimteil (sicher = am Bild nachgelesen, sonst
+// vermutet). kern/muret-1900-en.tsv: Wörter, die Muret 1900 anders betont als CMUdict – gelten nur bei der Wahl „um 1900“
+// (derselbe Schalter wie Bühnendeutsch, kern/betonung-de.mjs). Reihenfolge: CMUdict → Muret → Beugung → Kompositum → Regel.
+const tabelle = d => { try { return fs.readFileSync(new URL('./' + d, import.meta.url), 'utf8').split('\n').filter(z => z && z[0] !== '#').map(z => z.split('\t')); } catch { return []; } };
+let MURET_EN = null, MURET_1900 = null;
+function muretEn() {
+  if (!MURET_EN) MURET_EN = new Map(process.env.KLANGFEDER_OHNE_MURET ? [] : tabelle('muret-en.tsv').map(([w, st, reim, sicher]) => [w, { st: st.split(' ').map(Number), reim: reim || null, sicher: sicher === '1' }]));
+  return MURET_EN;
+}
+function muret1900(w) {
+  if (!MURET_1900) MURET_1900 = new Map(process.env.KLANGFEDER_OHNE_MURET ? [] : tabelle('muret-1900-en.tsv').map(([x, st]) => [x, st.split(' ').map(Number)]));
+  return MURET_1900.get(w) || null;
 }
 
 // ---------- Kleinwörter (Einsilber) in drei Stufen, wie im Deutschen ----------
@@ -87,6 +103,22 @@ function versAnteilEn(w, n) {
 }
 
 const ENDUNGEN_EN = ["'s", 'ing', 'ed', 'es', 's', 'er', 'est', 'ly', 'ness', 'ful', 'less', 'd'];
+// Verkürzte Formen der Dichtersprache (Jörg, 12.11.2026, Entscheidung „D a“): turn'd, heav'n, pow'r, wand'ring = volles
+// Wort mit e an der Stelle des Hochkommas. Hat die verkürzte Schreibung eine Silbe weniger, fällt die unbetonte Silbe an
+// dieser Stelle weg (heav'n einsilbig, wand'ring zweisilbig); turn'd bleibt einsilbig wie turned. Unregelmäßige
+// (o'er, e'er, ne'er, e'en, ta'en …) stehen mit Lauten in kern/korrekturen-en.tsv.
+function auslassung(w) {
+  if (!/[a-z]'[a-z]/.test(w) || /'s$/.test(w) || lexikonEn().has(w)) return null;
+  const voll = w.replace("'", 'e');
+  return { voll, vor: (voll.slice(0, w.indexOf("'")).match(/[aeiouy]+/g) || []).length, n: schreibSilbenEn(w.replace(/'/g, '')) };
+}
+// welche Silbe der vollen Form entfällt: die unbetonte an der Stelle des Hochkommas (sonst die nächstgelegene), −1 = keine
+function wegIndex(st, a) {
+  if (st.length <= a.n) return -1;
+  let i = Math.min(a.vor, st.length - 1);
+  if (st[i] !== 0) { const z = st.map((x, j) => (x === 0 ? j : -1)).filter(j => j >= 0); if (!z.length) return -1; i = z.reduce((b, j) => (Math.abs(j - a.vor) < Math.abs(b - a.vor) ? j : b)); }
+  return i;
+}
 // Wort → { stufen, quelle, einsilberKlasse } wie wortBetonung (deutsch)
 export function wortBetonungEn(roh, tiefe = 0) {
   let w = roh.toLowerCase().replace(/’/g, "'").replace(/[^a-z']/g, '').replace(/^'+(?!(cause|bout|til|em|course)$)/, '');
@@ -95,7 +127,22 @@ export function wortBetonungEn(roh, tiefe = 0) {
   if (/'$/.test(w) && !lexikonEn().has(w)) w = w.replace(/'+$/, '');            // schließendes Hochkomma (‘here’) zählt nicht
   if (klasseEinsilberEn(w) !== 'c' && (stufenEn(w) || [0]).length <= 1)
     return { stufen: [0], quelle: 'kleinwort', einsilberKlasse: klasseEinsilberEn(w), vers: versAnteilEn(w, 1) };
-  let st = stufenEn(w), quelle = 'lexikon';
+  const a = auslassung(w);
+  if (a) {
+    // nur, wenn die volle Form ein Wort ist (Wörterbuch oder gebeugt) – sonst steht das Hochkomma für etwas anderes
+    // (th'Wind = the + Wind, Thou'll = thou will, an' = and) und e-Einsetzen ergäbe ein Scheinkompositum (Haider dev)
+    const v = wortBetonungEn(a.voll, tiefe);
+    if ((v.quelle === 'lexikon' || v.quelle === 'muret' || v.quelle === 'beugung') && v.stufen.length) {
+      const st = v.stufen.slice(), i = wegIndex(st, a); if (i >= 0) st.splice(i, 1);
+      if (st.length > 1 && !st.includes(2)) st[Math.max(0, st.indexOf(1))] = 2;
+      const out = { stufen: st, quelle: 'auslassung', vers: versAnteilEn(w, st.length) };
+      if (st.length === 1) out.einsilberKlasse = klasseEinsilberEn(w);
+      return out;
+    }
+  }
+  let st = aussprache() === 'buehne' ? muret1900(w) : null, quelle = st ? 'muret' : 'lexikon';
+  if (!st) st = stufenEn(w);
+  if (!st) { const m = muretEn().get(w); if (m) { st = m.st; quelle = 'muret'; } }
   if (!st) {
     for (const e of ENDUNGEN_EN) {
       if (!w.endsWith(e) || w.length - e.length < 3) continue;
@@ -121,15 +168,34 @@ export function wortBetonungEn(roh, tiefe = 0) {
 }
 
 // ---------- Reim ----------
+const HOCH_VORN = /^'+(?!(cause|bout|til|em|course)$)/;   // 'neath = neath, aber 'cause, 'bout … bleiben
 export function phonesWortEn(roh) {
   let w = roh.toLowerCase().replace(/’/g, "'").replace(/[^a-z']/g, '');
+  if (!lexikonEn().has(w)) w = w.replace(HOCH_VORN, '');
   const L = lexikonEn();
   if (L.has(w)) return L.get(w);
   if (/in'$/.test(w) && L.has(w.slice(0, -1) + 'g')) return L.get(w.slice(0, -1) + 'g');
+  const a = auslassung(w);
+  if (a && L.has(a.voll)) {   // Laute der vollen Form ohne die ausgelassene Silbe (heav'n: HH EH1 V N; pow'r: P AW1 R)
+    const p = L.get(a.voll).split(' '), vok = p.map((x, j) => (VOKAL.test(x) ? j : -1)).filter(j => j >= 0);
+    const i = wegIndex(vok.map(j => ({ 1: 2, 2: 1, 0: 0 })[p[j].slice(-1)]), a);
+    if (i >= 0) { const j = vok[i]; if (/^ER/.test(p[j])) p[j] = 'R'; else p.splice(j, 1); }
+    return p.join(' ');
+  }
+  const m = muretEn().get(w); if (m && m.reim) return m.reim;
   w = w.replace(/'/g, '');
   if (L.has(w)) return L.get(w);
   for (let i = 1; i <= w.length - 3; i++) if (L.has(w.slice(i))) return L.get(w.slice(i));   // Endglied reimt
   return null;
+}
+// Kommen die Laute eines Worts aus Muret und sind nicht am Bild nachgelesen, ist sein Reim nur vermutet (Jörg, „B a“):
+// die Oberfläche zeigt ihn grau.
+export function lautVermutetEn(roh) {
+  let w = roh.toLowerCase().replace(/’/g, "'").replace(/[^a-z']/g, ''); const L = lexikonEn();
+  if (!L.has(w)) w = w.replace(HOCH_VORN, '');
+  if (L.has(w) || (/in'$/.test(w) && L.has(w.slice(0, -1) + 'g'))) return false;
+  const a = auslassung(w); if (a && L.has(a.voll)) return false;
+  const m = muretEn().get(w); return !!(m && m.reim && !m.sicher);
 }
 // Reimteil ab dem letzten betonten Vokal (1 oder 2) – wie pronouncing.rhyming_part; ab = Silbenindex (optional)
 export function reimteilEn(phones, ab = null) {

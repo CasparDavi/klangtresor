@@ -16,6 +16,26 @@
       "groesse": 3618488,
       "quelle": "cmusphinx/cmudict, Commit 0f8072f (2024-12-17)",
       "lizenz": "BSD-artig, Copyright Carnegie Mellon University (LICENSE im Repository)"
+    },
+    {
+      "pfad": "ru/betonung-ru.tsv",
+      "adresse": "https://github.com/CasparDavi/klangfeder/releases/download/daten-2026-11-13/betonung-ru.tsv",
+      "sha256": "8b4103c75edf1d8a60d9f0c56e2c04d069d6f0b855a9c025e56bc9293ec581c5",
+      "groesse": 77555877,
+      "quelle": "selbst gebaut aus dem englischen und russischen Wiktionary über kaikki.org/wiktextract (bin/betonung-ru-bauen.mjs); Release daten-2026-11-13 des öffentlichen Repos klangfeder",
+      "lizenz": "CC BY-SA 4.0 (Wiktionary) – Namensnennung, Weitergabe unter gleichen Bedingungen",
+      "optional": true,
+      "zweck": "Russisch (seit Kern 2026-11-13.1): Betonung bzw. е/ё-Auflösung. Fehlt die Datei, rechnet der Kern Russisch nur mit dem Endungsmodell."
+    },
+    {
+      "pfad": "ru/haeufigkeit-ru-50k.txt",
+      "adresse": "https://github.com/CasparDavi/klangfeder/releases/download/daten-2026-11-13/haeufigkeit-ru-50k.txt",
+      "sha256": "6095f507cc167488ec66ada5a85ac50433503a08ad24a07c6eabdf54352c4e7f",
+      "groesse": 998861,
+      "quelle": "hermitdave/FrequencyWords (OpenSubtitles 2018), content/2018/ru/ru_50k.txt; Release daten-2026-11-13 des öffentlichen Repos klangfeder",
+      "lizenz": "CC BY-SA 4.0",
+      "optional": true,
+      "zweck": "Russisch (seit Kern 2026-11-13.1): Betonung bzw. е/ё-Auflösung. Fehlt die Datei, rechnet der Kern Russisch nur mit dem Endungsmodell."
     }
   ]
 }

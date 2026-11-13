@@ -3,16 +3,24 @@
 // Aufruf zum Ausprobieren: node kern/analyse.mjs < text.txt
 import { wortBetonung } from './betonung-de.mjs';
 import { hebungen } from './metrik.mjs';
-import { wortBetonungEn, letzteSilbeVollEn, phonesWortEn, reimteilEn, reimStufeEn } from './englisch.mjs';
+import { wortBetonungEn, letzteSilbeVollEn, phonesWortEn, reimteilEn, reimStufeEn, lautVermutetEn } from './englisch.mjs';
 import { spracheText, ohneKlammern } from './sprache.mjs';
+import { wortBetonungRu, silbenRu } from './russisch.mjs';
+import { reimteilRu, reimStufeRu } from './laute-ru.mjs';
 import { formen } from './formen.mjs';
 
+import { trennstuecke } from './trennung.mjs';
 // Schreibsilben für die Anzeige: Wort in n Stücke teilen, Grenze vor dem letzten Konsonanten
 // zwischen zwei Vokalgruppen (ch, sch, ck, ph, th, qu bleiben zusammen).
 const VG = /(äu|eu|au|ei|ai|ey|ay|ie|aa|ee|oo|[aeiouäöüyAEIOUÄÖÜY])/g;
 const ANLAUTE = new Set('schr schl schw schm schn spr str sch chr ch ck ph th qu sp st pl pr bl br kl kr gl gr fl fr tr dr kn pf zw'.split(' '));
-export function schreibSilbenTeilen(wort, n) {
+// Zuerst die TeX-Trennmuster (kern/trennung.mjs, Jörg 12.11.2026: „ich will natürlich richtig trennen“): ergeben sie genau
+// n Stücke, gelten sie (aal-ähn-lich statt aa-lähn-lich); sonst die eigene Regel darunter.
+export function schreibSilbenTeilen(wort, n, sprache = 'de') {
   if (n <= 1) return [wort];
+  if (sprache === 'ru') { const t = silbenRu(wort); if (t.length === n) return t; }   // Russisch: Silbe = Vokalbuchstabe (kern/russisch.mjs)
+  const tm = trennstuecke(wort, sprache);
+  if (tm && tm.length === n) return tm;
   const gruppen = [...wort.matchAll(VG)].map(m => [m.index, m.index + m[0].length]);
   if (gruppen.length < n) { const l = Math.ceil(wort.length / n); return Array.from({ length: n }, (_, i) => wort.slice(i * l, (i + 1) * l)).filter(Boolean); }
   // überzählige Gruppen (z. B. „ie“ in Familie) vorn zusammenlegen
@@ -42,12 +50,22 @@ import { letzteSilbeVoll, reimteil, reimteilAb, reimStufe, ipaWort } from './rei
 // Reimteil eines Wortes je Sprache (ab = Silbe der metrischen Hebung, sonst letzter Wortton)
 export function reimteilWort(w, sprache = 'de', ab = null) {
   if (sprache === 'en') return reimteilEn(phonesWortEn(w), ab);
+  if (sprache === 'ru') return reimteilWortRu(w, ab);
   return ab != null ? reimteilAb(ipaWort(w), ab) : reimteil(ipaWort(w));
+}
+// Russisch: Reimteil ab der betonten Silbe; ab = vom Versmaß gewählte Betonung eines Homographen (за́мок/замо́к) – dann auch die
+// passende Schreibung (звёзды statt звезды́)
+export function reimteilWortRu(w, ab = null) {
+  const b = wortBetonungRu(w); if (!b.stufen.length) return null;
+  let haupt = b.stufen.indexOf(Math.max(...b.stufen)), form = b.form || w.toLowerCase().replace(/[\u0300\u0301+]/g, '');
+  if (b.varianten) { const v = b.varianten.find(x => x.haupt === ab) || b.varianten[0]; haupt = v.haupt; form = v.form; }
+  else if (ab != null && ab < b.stufen.length && b.quelle !== 'eigen') haupt = b.stufen[ab] ? ab : haupt;
+  return reimteilRu(form, haupt);
 }
 // Reimvergleich zweier Wörter; verschiedene Sprachen reimen hier nicht
 export function reimVergleich(a, b) {
   if (!a || !b || !a.rp || !b.rp || a.sprache !== b.sprache) return null;
-  return a.sprache === 'en' ? reimStufeEn(a.rp, b.rp) : reimStufe(a.rp, b.rp);
+  return a.sprache === 'en' ? reimStufeEn(a.rp, b.rp) : a.sprache === 'ru' ? reimStufeRu(a.rp, b.rp) : reimStufe(a.rp, b.rp);
 }
 // Endreime: Buchstaben je Abschnitt (ABAB …), Partner höchstens FENSTER Zeilen zurück im selben Abschnitt
 const FENSTER = 4;
@@ -90,6 +108,7 @@ const VOK_DE = 'aɑɐeɛəiɪoɔuʊyʏøœæɜʌɒ';
 const VOK_EN = /^(AA|AE|AH|AO|AW|AY|EH|ER|EY|IH|IY|OW|OY|UH|UW)$/;
 function vokalGeruest(t) {
   if (t.sprache === 'en') return t.rp.voll.split(' ').filter(x => VOK_EN.test(x)).join(' ');
+  if (t.sprache === 'ru') return t.rp.vokale;
   return (t.rp.voll.replace(/[ːˑ]/g, '').match(new RegExp(`[${VOK_DE}](?:[${VOK_DE}]\u032F)?`, 'g')) || [])
     .map((v, k) => (k && /^[əɐ]$/.test(v) ? 'ə' : v)).join(' ');
 }
@@ -124,10 +143,12 @@ export function anzeige(text) {
     // Fremde Schrift (kyrillisch, japanisch …) wird nicht analysiert; sonst deutsch oder englisch je Zeile
     if (spr[zi] === 'fremd' && !platz.length) return { typ: 'fremd' };
     // Zeilen nur aus Satzzeichen („…“, „– – –“) zählen wie Leerzeilen: Satzzeichen spielen keine Rolle
-    if (!/[A-Za-zÄÖÜäöüß]/.test(ohneRegie) && !/_{3,}/.test(ohneRegie)) return { typ: 'leer' };
-    const sprache = spr[zi] === 'en' ? 'en' : 'de';
-    const betone = sprache === 'en' ? wortBetonungEn : wortBetonung;
-    const treffer = [...ohnePlatz.matchAll(/[A-Za-zÄÖÜäöüß'’]+/g)];
+    const ru = spr[zi] === 'ru';
+    if (!(ru ? /[А-Яа-яЁё]/ : /[A-Za-zÄÖÜäöüß]/).test(ohneRegie) && !/_{3,}/.test(ohneRegie)) return { typ: 'leer' };
+    const sprache = spr[zi] === 'en' ? 'en' : ru ? 'ru' : 'de';
+    const betone = sprache === 'en' ? wortBetonungEn : ru ? wortBetonungRu : wortBetonung;
+    // Russisch: kyrillische Wörter mit Bindestrich (кто-то, из-за) und eigenen Betonungszeichen (за́мок, замОк, зам+ок)
+    const treffer = [...ohnePlatz.matchAll(ru ? /[А-Яа-яЁё\u0300\u0301+]+(?:-[А-Яа-яЁё\u0300\u0301+]+)*/g : /[A-Za-zÄÖÜäöüß'’]+/g)].filter(m => !ru || /[А-Яа-яЁё]/.test(m[0]));
     const woerter = treffer.map(m => ({ w: m[0], von: m.index, ...betone(m[0]) }));
     const eingabe = [], silben = [];
     const teile = [...woerter.map(x => ({ x })), ...platz.map(m => ({ p: m }))].sort((a, b) => (a.x ? a.x.von : a.p.index) - (b.x ? b.x.von : b.p.index));
@@ -144,27 +165,38 @@ export function anzeige(text) {
         continue;
       }
       const n = x.stufen.length, mehr = n > 1;
+      if (!n) continue;   // russische Präpositionen ohne Vokal (в, к, с) sind keine Silbe
       let pos = x.von;
-      schreibSilbenTeilen(x.w, n).forEach((teil, i) => {
+      x.silbeAb = silben.length;
+      schreibSilbenTeilen(x.w, n, sprache).forEach((teil, i) => {
         silben.push({ von: pos, bis: pos + teil.length, st: x.stufen[i] ?? 0 });
         pos += teil.length;
-        eingabe.push({ mehrsilbig: mehr, stufe: x.stufen[i] ?? 0, klasse: mehr ? null : (x.einsilberKlasse || 'c'), p: x.vers ? x.vers[i] : null });
+        // weich: Kandidat eines russischen Homographen – wird am Zeilenende nicht zur Pflicht-Hebung (kern/metrik.mjs)
+        eingabe.push({ mehrsilbig: mehr, stufe: x.stufen[i] ?? 0, klasse: mehr ? null : (x.einsilberKlasse || 'c'), p: x.vers ? x.vers[i] : null, ...(x.varianten ? { weich: true } : {}) });
       });
     }
     // Vollvokal am Zeilenende (Bräuti|gam) darf die Hebung tragen: weicher Nebenton
     const letzt = woerter[woerter.length - 1];
-    if (letzt && letzt.stufen.length > 1 && letzt.stufen[letzt.stufen.length - 1] === 0 && (sprache === 'en' ? letzteSilbeVollEn : letzteSilbeVoll)(letzt.w))
+    if (!ru && letzt && letzt.stufen.length > 1 && letzt.stufen[letzt.stufen.length - 1] === 0 && (sprache === 'en' ? letzteSilbeVollEn : letzteSilbeVoll)(letzt.w))
       eingabe[eingabe.length - 1] = { ...eingabe[eingabe.length - 1], stufe: 1, weich: true };
     const { muster, fassung } = hebungen(eingabe, sprache);
     silben.forEach((s, i) => { s.m = muster[i]; });
+    // Russische Homographen (за́мок/замо́к, ру́ки/руки́): das Versmaß hat gewählt – die Betonung, die auf der Hebung steht, gilt
+    // (sonst die häufigere); Anzeige und Reim folgen der Wahl
+    if (ru) for (const x of woerter) if (x.varianten && x.silbeAb != null) {
+      const auf = x.varianten.find(v => muster[x.silbeAb + v.haupt] === 'S') || x.varianten[0];
+      x.wahl = auf.haupt;
+      x.stufen.forEach((_, i) => { silben[x.silbeAb + i].st = i === auf.haupt ? 2 : 0; });
+    }
     const letzteStelle = teile[teile.length - 1];
     const letztes = letzteStelle && letzteStelle.x ? letzteStelle.x : null;   // endet die Zeile mit einem Platzhalter, reimt sie (noch) nicht
     return {
       typ: 'zeile', sprache, silben, fassung, ...(platz.length ? { platzhalter: platz.length } : {}),
       n: silben.length, h: muster.filter(m => m === 'S').length,
       k: muster.length ? (muster[muster.length - 1] === 'S' ? 'm' : 'w') : '',
-      letztesWort: letztes ? letztes.w : null, letztesVon: letztes ? letztes.von : null,
+      letztesWort: letztes ? letztes.w : null, letztesVon: letztes ? letztes.von : null, ...(letztes && letztes.wahl != null ? { letzteBetonung: letztes.wahl } : {}),
       _woerter: woerter.map(x => ({ w: x.w, von: x.von, bis: x.von + x.w.length, inhalt: x.stufen.length > 1 || (x.einsilberKlasse || 'c') !== 'u' })),
+      ...(ru && letztes && letztes.varianten && letztes.silbeAb != null ? { _ende: { varianten: letztes.varianten, ab: letztes.silbeAb, eingabe } } : {}),
     };
   });
   const enden = zeilen.map(z => {
@@ -172,12 +204,16 @@ export function anzeige(text) {
     if (z.typ !== 'zeile' || !z.letztesWort) return null;
     const imWort = z.silben.filter(s => s.von >= z.letztesVon);
     const hebung = imWort.map(s => s.m).lastIndexOf('S'), akzent = imWort.map(s => s.st).lastIndexOf(2);
+    if (z.sprache === 'ru') return { w: z.letztesWort, sprache: 'ru', ab: z.letzteBetonung ?? null };
     return { w: z.letztesWort, sprache: z.sprache, ab: hebung > akzent && akzent >= 0 ? hebung : null };
   });
+  homographReim(zeilen, enden);
   const { buchst, art, asso } = reimschema(enden);
   zeilen.forEach((z, i) => {
     if (z.typ !== 'zeile' || (!buchst[i] && !asso[i])) return;
     if (buchst[i]) { z.reim = buchst[i]; z.reimArt = art[i]; } else z.assonanz = asso[i];
+    // Englisch: Laute aus Muret, nicht nachgelesen → Reim nur vermutet (Jörg, 12.11.2026, „B a“; die Oberfläche zeigt ihn grau)
+    if (z.sprache === 'en' && z.letztesWort && lautVermutetEn(z.letztesWort)) z.reimVermutet = true;
     // Reimteil ab der letzten Hebung im letzten Wort bis Wortende
     const imWort = z.silben.filter(s => s.von >= z.letztesVon);
     const ab = [...imWort].reverse().find(s => s.m === 'S') || imWort[0];
@@ -194,8 +230,38 @@ export function anzeige(text) {
   wiederholteReime(zeilen, text.split('\n'), abschnittVon);
   binnenreime(zeilen);
   formen(zeilen, text.split('\n'));   // Vers- und Strophenformen (kern/formen.mjs)
-  zeilen.forEach(z => { delete z._woerter; });
+  zeilen.forEach(z => { delete z._woerter; delete z._ende; });
   return zeilen;
+}
+
+// Russische Homographen am Zeilenende (следа́ / сле́да, ру́ки / руки́): Dichter reimen – reimt eine Lesart rein auf ein
+// Zeilenende in der Nähe (≤ 4 Zeilen, selber Abschnitt), die gewählte aber nicht, gilt diese Lesart; das Versmaß der Zeile
+// wird mit ihr neu gerechnet.
+function homographReim(zeilen, enden) {
+  const abschnitt = []; let nr = 0; enden.forEach((e, i) => { if (e === '§') nr++; abschnitt[i] = nr; });
+  const lesarten = i => { const z = zeilen[i]; if (!z || z.typ !== 'zeile' || z.sprache !== 'ru' || !z.letztesWort) return [];
+    return z._ende ? z._ende.varianten.map(v => v.haupt) : [z.letzteBetonung ?? null]; };
+  const gut = st => st === 'rein' || st === 'fast rein' || st === 'rührend';
+  zeilen.forEach((z, i) => {
+    if (!z._ende) return;
+    const reimt = h => { const a = reimteilWortRu(z.letztesWort, h);
+      for (let j = Math.max(0, i - 4); j <= Math.min(zeilen.length - 1, i + 4); j++) {
+        if (j === i || abschnitt[j] !== abschnitt[i]) continue;
+        for (const hj of lesarten(j)) if (gut(reimStufeRu(a, reimteilWortRu(zeilen[j].letztesWort, hj)))) return true;
+      }
+      return false; };
+    if (reimt(z.letzteBetonung)) return;
+    const neu = z._ende.varianten.find(v => v.haupt !== z.letzteBetonung && reimt(v.haupt)); if (!neu) return;
+    const { ab, eingabe } = z._ende, ein = eingabe.slice();
+    z._ende.varianten.forEach(v => { ein[ab + v.haupt] = { ...ein[ab + v.haupt], stufe: 0, weich: false }; });
+    ein[ab + neu.haupt] = { ...ein[ab + neu.haupt], stufe: 2, weich: false };
+    const { muster, fassung } = hebungen(ein, 'ru');
+    z.silben.forEach((s, k) => { s.m = muster[k]; });
+    z._ende.varianten.forEach(v => { z.silben[ab + v.haupt].st = v.haupt === neu.haupt ? 2 : 0; });
+    z.letzteBetonung = neu.haupt; z.fassung = fassung; z.h = muster.filter(m => m === 'S').length;
+    z.k = muster[muster.length - 1] === 'S' ? 'm' : 'w';
+    enden[i] = { ...enden[i], ab: neu.haupt };
+  });
 }
 
 // Wiederholte Reime im Werk – nur zum Aufmerksammachen, keine Wertung (Jörg, 10.11.2026): dasselbe Reimpaar, dasselbe
@@ -203,14 +269,14 @@ export function anzeige(text) {
 // Reimschema). Refrains wiederholen sich gewollt: eine Zeile, die wortgleich in mehreren Abschnitten steht, zählt nicht
 // (refrain: true). Je Endreimzeile: reimKlang (Reimteil ohne Länge) und wiederholt: [{ zeile, art: paar|wort|klang }].
 function wiederholteReime(zeilen, roh, abschnittVon) {
-  const norm = i => (roh[i] || '').toLowerCase().replace(/[^a-zäöüß]+/g, ' ').trim();
+  const norm = i => (roh[i] || '').toLowerCase().replace(/[^a-zäöüßа-яё]+/g, ' ').trim();
   const wo = new Map();
   zeilen.forEach((z, i) => { if (z.typ === 'zeile') { const k = norm(i); (wo.get(k) || wo.set(k, new Set()).get(k)).add(abschnittVon[i]); } });
   const R = [];
   zeilen.forEach((z, i) => { if (z.typ === 'zeile' && wo.get(norm(i)).size > 1) z.refrain = true; });
   zeilen.forEach((z, i) => {
     if (z.typ !== 'zeile' || !z.letztesWort) return;
-    const rp = reimteilWort(z.letztesWort, z.sprache);
+    const rp = reimteilWort(z.letztesWort, z.sprache, z.letzteBetonung ?? null);
     if (rp && rp.voll) z.reimKlang = rp.voll.replace(/ː/g, '');
     if (z.refrain || !z.reim) return;
     R.push({ i, ab: abschnittVon[i], wort: z.letztesWort.toLowerCase(), partner: (z.partnerWort || '').toLowerCase(), klang: z.reimKlang || null });
@@ -248,9 +314,9 @@ function binnenreime(zeilen) {
       const rp = reimteilWort(x.w, z.sprache);
       // Silbenreim: Vokal der betonten Silbe plus Konsonanten bis zum nächsten Vokal (fal|len ~ Hall)
       // bei bloßem Silbenreim nur die betonte Silbe bis vor den nächsten Vokal markieren (Bräut|igam, Wass|er)
-      const silbeBis = rs.von + ((x.w.slice(rs.von - x.von).match(/^[^aeiouäöüy]*[aeiouäöüy]+[^aeiouäöüy]*/i) || [''])[0].length || (rs.bis - rs.von));
+      const silbeBis = rs.von + ((x.w.slice(rs.von - x.von).match(z.sprache === 'ru' ? /^[^аеёиоуыэюя]*[аеёиоуыэюя][\u0300\u0301]?[^аеёиоуыэюя]*/i : /^[^aeiouäöüy]*[aeiouäöüy]+[^aeiouäöüy]*/i) || [''])[0].length || (rs.bis - rs.von));
       if (rp) posten.push({ i, abschnitt, sprache: z.sprache, w: x.w.toLowerCase(), ende, inhalt: x.inhalt, von: rs.von, bis: x.bis, silbeBis, markBis: 0, voll: rp.voll,
-        silbe: z.sprache === 'en' ? silbeEn(rp) : rp.voll.replace(/^([^aɑɐeɛəiɪoɔuʊyʏøœ]*[aɑɐeɛəiɪoɔuʊyʏøœ][ːˑ\u0300-\u036F]*(?:[aɑɐeɛəiɪoɔuʊyʏøœ]\u032F)?[^aɑɐeɛəiɪoɔuʊyʏøœ]*).*$/, '$1'),
+        silbe: z.sprache === 'en' ? silbeEn(rp) : z.sprache === 'ru' ? rp.silbe : rp.voll.replace(/^([^aɑɐeɛəiɪoɔuʊyʏøœ]*[aɑɐeɛəiɪoɔuʊyʏøœ][ːˑ\u0300-\u036F]*(?:[aɑɐeɛəiɪoɔuʊyʏøœ]\u032F)?[^aɑɐeɛəiɪoɔuʊyʏøœ]*).*$/, '$1'),
         r: ende ? z.reim : null, z });
     });
   });

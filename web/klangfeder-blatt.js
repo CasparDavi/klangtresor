@@ -12,7 +12,7 @@
 // (sonst deutsch wie geliefert); kadA(k) zeigt m/w; wdhText(z) Titel der Marke ↺.
 (function (global) {
   'use strict';
-  const VERSION = '2026-11-11.1';   // gehört zum Kern gleichen Stands
+  const VERSION = '2026-11-12.1';   // gehört zum Kern gleichen Stands
   const FARBEN = ['#ff7a1a', '#3fc1a5', '#9d8cff', '#e8c27a', '#e0619a', '#7fb2ff', '#c5e05a', '#ff9e9e'];
   const reimFarbe = b => FARBEN[(b.charCodeAt(0) - 65) % FARBEN.length];
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -32,13 +32,15 @@
 
   // eigene Sätze (gleich lautend wie in der KlangFeder); „a|b“ = Einzahl|Mehrzahl
   const SAETZE = {
-    de: { 'hk.h': '{n} betonte Silbe (Hebung)|{n} betonte Silben (Hebungen)', 'hk.m': 'endet betont (männlich)', 'hk.w': 'endet unbetont (weiblich)',
+    de: { 'hk.h': '{n} betonte Silbe (Hebung)|{n} betonte Silben (Hebungen)', 'hk.m': 'endet betont (männlich)', 'hk.w': 'endet unbetont (weiblich)', 'hk.zeichen': 'H',
       'rl.reim': 'Zeilen mit gleichem Buchstaben reimen', 'rl.asso': 'Assonanz: nur die Vokale klingen gleich',
       'rl.plan': 'geplanter Reim {b} – die Zeile ist noch Platzhalter', silben: 'Silben', reim: 'Reim',
+      'rl.vermutet': 'Reim vermutet: die Laute stammen aus Muret-Sanders (um 1900) und sind nicht am Original nachgelesen',
       'wdh.einfach': 'derselbe Reimklang steht auch in Zeile {n}' },
-    en: { 'hk.h': '{n} stressed syllable|{n} stressed syllables', 'hk.m': 'ends stressed (masculine)', 'hk.w': 'ends unstressed (feminine)',
+    en: { 'hk.h': '{n} beat (stressed syllable)|{n} beats (stressed syllables)', 'hk.m': 'stressed ending', 'hk.w': 'unstressed ending', 'hk.zeichen': 'B',
       'rl.reim': 'Lines with the same letter rhyme', 'rl.asso': 'Assonance: only the vowels sound the same',
       'rl.plan': 'planned rhyme {b} – the line is still a placeholder', silben: 'Syllables', reim: 'Rhyme',
+      'rl.vermutet': 'Rhyme assumed: the sounds come from Muret-Sanders (around 1900) and were not checked against the original',
       'wdh.einfach': 'the same rhyme sound also appears in line {n}' },
   };
   const eigenT = sprache => (k, v) => {
@@ -49,7 +51,7 @@
   const optionen = (o = {}) => {
     const sprache = o.sprache === 'en' ? 'en' : 'de';
     return { sprache, t: o.t || eigenT(sprache), formText: o.formText || (x => x || ''), formName: o.formName || (x => x || ''),
-      kadA: o.kadA || (k => (k && sprache === 'en' ? String(k).replace(/w/g, 'f') : k || '')), wdhText: o.wdhText || null };
+      kadA: o.kadA || (k => (k && sprache === 'en' ? String(k).replace(/m/g, 's').replace(/w/g, 'u') : k || '')), wdhText: o.wdhText || null };   // Kadenz englisch s/u (stressed/unstressed ending)
   };
 
   // ---------- Bausteine ----------
@@ -95,14 +97,19 @@
   function reimHtml(z, o, plan = null) {
     const { t } = optionen(o);
     if (plan) return `<span class="rl plan" style="color:${reimFarbe(plan)}" title="${esc(t('rl.plan', { b: plan }))}">${plan}</span>`;
-    return `<span class="rl" style="color:${z.reim ? reimFarbe(z.reim) : 'var(--kfb-schwach)'}" title="${z.assonanz ? esc(t('rl.asso')) : z.reim ? esc(t('rl.reim')) : ''}">${z.reim || z.assonanz || ''}</span>`;
+    // grau = unsicher (Hausregel): vermuteter Reim aus nicht nachgelesenen Muret-Lauten (kern/englisch.mjs lautVermutetEn)
+    const titel = (z.assonanz ? t('rl.asso') : z.reim ? t('rl.reim') : '') + (z.reimVermutet ? ' · ' + t('rl.vermutet') : '');
+    return `<span class="rl${z.reimVermutet ? ' vermutet' : ''}" style="color:${z.reim && !z.reimVermutet ? reimFarbe(z.reim) : 'var(--kfb-schwach)'}" title="${esc(titel)}">${z.reim || z.assonanz || ''}</span>`;
   }
   // Versmaß einer Zeile für den Titel von „4H“
   const versTitel = (v, o) => { const { formText, formName } = optionen(o); return v && v.takt ? ` · ${formText(v.takt)}${v.name ? ' – ' + formName(v.name) : ''}` : ''; };
   // „4H“ und m/w; soll = Kadenzvorgabe ('m'/'w'), weicht die Zeile ab, steht m/w rot; sollText = Zusatz im Titel
   function hebungHtml(z, o, soll = '', sollText = '') {
     const op = optionen(o), t = op.t, ab = soll && soll !== z.k;
-    return `<span title="${esc(t('hk.h', { n: z.h }) + versTitel(z.vers, o))}">${z.h}H</span>`
+    // Zeichen hinter der Zahl aus der Sprache (Jörg, 13.11.2026: „die hebungen müssen natürlich auch auf russisch stehen“):
+    // H (Hebung) auf Deutsch, B (beat) auf Englisch, уд (ударный) auf Russisch; fehlt der Schlüssel beim Gastgeber, bleibt H
+    const hz0 = t('hk.zeichen'), hz = !hz0 || /hk\.zeichen$/.test(hz0) ? 'H' : hz0;
+    return `<span title="${esc(t('hk.h', { n: z.h }) + versTitel(z.vers, o))}">${z.h}${esc(hz)}</span>`
       + `<span title="${esc(t(z.k === 'm' ? 'hk.m' : 'hk.w') + (ab ? sollText : ''))}"${ab ? ' style="color:var(--kfb-prall)"' : ''}>${op.kadA(z.k)}</span>`;
   }
   // wiederholter Reim in einem anderen Abschnitt: stille Marke ↺, beim Draufzeigen wo

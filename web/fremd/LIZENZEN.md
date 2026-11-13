@@ -292,13 +292,15 @@ das Skizzenbuch weg — alles andere hängt nicht daran.
 ### Wörterbücher für die Liedtext-Analyse — CC BY-SA und CMU-Lizenz
 
 Die Liedtext-Analyse (`bin/textanalyse.js`) liest Silben, Betonung und Reim
-aus der Lautschrift zweier Wörterbücher. Sie liegen unter
+aus der Lautschrift von Wörterbüchern (Deutsch, Englisch, Russisch). Sie liegen unter
 `textanalyse/` im Modellordner.
 
 | Datei | aus | Lizenz |
 |---|---|---|
 | `textanalyse/de/ipa-dict-de.txt` | `data/de.txt` in [github.com/open-dict-data/ipa-dict](https://github.com/open-dict-data/ipa-dict), Commit `43c3570` (30 726 400 Byte, SHA-256 `d36d11dbcc226468a22f0fb3a0794ee0ce142bf277e26e517a8bfd0de1ec2653`) | CC BY-SA |
 | `textanalyse/en/cmudict.dict` | `cmudict.dict` in [github.com/cmusphinx/cmudict](https://github.com/cmusphinx/cmudict), Commit `0f8072f` (3 618 488 Byte, SHA-256 `81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22`) | BSD-artig |
+| `textanalyse/ru/betonung-ru.tsv` (optional) | für die KlangFeder gebaut aus dem englischen und russischen Wiktionary (über kaikki.org/wiktextract), Release [daten-2026-11-13](https://github.com/CasparDavi/klangfeder/releases/tag/daten-2026-11-13) (77 555 877 Byte, SHA-256 `8b4103c75edf1d8a60d9f0c56e2c04d069d6f0b855a9c025e56bc9293ec581c5`) | CC BY-SA 4.0 |
+| `textanalyse/ru/haeufigkeit-ru-50k.txt` (optional) | [hermitdave/FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles 2018), `content/2018/ru/ru_50k.txt`, Release daten-2026-11-13 (998 861 Byte, SHA-256 `6095f507cc167488ec66ada5a85ac50433503a08ad24a07c6eabdf54352c4e7f`) | CC BY-SA 4.0 |
 
 Geholt wird genau diese Fassung (Datenausweis `bin/textanalyse/daten.json`); eine andere wird verworfen.
 Eigene Korrekturen am Wörterbuch stehen in `bin/textanalyse/korrekturen-de.tsv` und `-en.tsv`.
@@ -307,6 +309,22 @@ Zweites deutsches Aussprachelexikon, im Paket enthalten: `bin/textanalyse/vietor
 ipa-dict nicht kennt (11 223).
 
 > Viëtor, Deutsches Aussprachewörterbuch, 3. Aufl. 1921, gemeinfrei; digitalisiert für die KlangFeder, CC0.
+
+Die beiden russischen Wörterbücher sind optional: fehlen sie, rechnet die Analyse Russisch nur aus den Wortendungen.
+
+Weitere Dateien im Paket, alle unter `bin/textanalyse/`:
+
+- `muret-de.tsv`, `muret-buehne-de.tsv` (Deutsch) und `muret-en.tsv`, `muret-1900-en.tsv` (Englisch) – Betonungen
+  von Wörtern, die die Wörterbücher oben nicht kennen:
+  > Muret-Sanders, Enzyklopädisches Wörterbuch, Teil I Englisch-Deutsch und Teil II Deutsch-Englisch, Langenscheidt um
+  > 1900, gemeinfrei; ausgewertet für die KlangFeder, CC0.
+- `trennmuster-de.txt`, `trennmuster-en.txt` – Silbentrennung der Anzeige nach den TeX-Trennmustern aus
+  [hyphenation/tex-hyphen](https://github.com/hyphenation/tex-hyphen): `hyph-de-1996` (© Deutschsprachige
+  Trennmustermannschaft, MIT-Lizenz) und `hyph-en-us` (© Gerard D. C. Kuiken; Weitergabe mit oder ohne Änderung
+  erlaubt, wenn Urhebervermerk und Erlaubnis mitgehen).
+- `betonung-endungen-ru.tsv` – Betonung russischer Wörter aus ihrer Endung, gelernt aus dem Wiktionary, CC BY-SA 4.0.
+- `betonung-vers-ru.json` – Lesarten mehrdeutiger russischer Formen im Vers, gelernt aus gemeinfreien Gedichten des
+  russischen Wikisource, CC BY-SA 4.0.
 
 > Deutsch: ipa-dict, Open Dictionary Data; die deutschen Daten stammen aus
 > [german-ipa-dict](https://github.com/devio-at/german-ipa-dict) von devio-at,

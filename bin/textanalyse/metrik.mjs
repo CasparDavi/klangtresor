@@ -38,7 +38,17 @@ export const K_EN = { ...K, lern: 0.5, endeEin: 0.9 };
 // 68,9 %. Ein Gitter über 20 Wertepaare fand keine Einstellung, die eine der Zeilen ohne Verlust auf dev richtet – Gedicht-Gold
 // und Liedzeilen ziehen hier in verschiedene Richtungen.
 export const K_EN_FREI = { ...K_EN, monoU: [0.8, 0], monoC: [0, 1.5], monoB: [0.3, 0.2], doppelsenkung: 0.2, poly0: [2, 0], liedregel: true };
-const KOSTEN = { de: [K, K_FREI], en: [K_EN, K_EN_FREI] };
+// Russisch (seit 2026-11-13.1): syllabotonisch wie das Deutsche, Ausgang die deutschen Werte. Abgestimmt mit pruef/abstimmen-ru.mjs
+// auf RIFMA dev (9 907 Zeilen mit eindeutigem Metrum): nur zwei Werte weichen ab – kleine Wörter in der Hebung billiger (monoU
+// 0,2 → 0,1; russische Klitika tragen im Vers öfter die Hebung) und unbetonte Silben mehrsilbiger Wörter in der Hebung billiger
+// (poly0 1,2 → 0,8; lange russische Wörter mit Pyrrhichius). dev: Silben 94,6 → 95,5 %, Zeilen 78,8 → 82,7 %. Ein feineres
+// Raster (auch gelernter Einsilber-Anteil) brachte nur 0,1–0,2 Punkte mehr – nicht übernommen.
+// Dreisilbige Verse (seit 2026-11-13.2): ist die Zeile nach der ersten Hebung dreisilbig gebaut (Abstände zwischen den Hebungen
+// überwiegend zwei Senkungen: Daktylus, Amphibrachys, Anapäst), wird sie ein zweites Mal mit dreisilbigen Kosten gerechnet – zwei
+// Senkungen frei, eine einzelne teuer, zweisilbiger Auftakt frei. Sonst verlor der Anapäst fast immer seine erste Silbe an ein
+// kleines Wort (И, Ты, Пусть …): RIFMA dev Anapäst 25 % Zeilen richtig.
+export const K_RU = { ...K, monoU: [0.1, 0], poly0: [0.8, 0], ternaer: { anteil: 0.5, doppelsenkung: 0, einfach: 1, auftakt2: 0 } }, K_RU_FREI = { ...K_FREI };
+const KOSTEN = { de: [K, K_FREI], en: [K_EN, K_EN_FREI], ru: [K_RU, K_RU_FREI] };
 
 const wortKosten = (s, k) => {
   // gelernter Anteil Hebung (Englisch, s.p): Kosten aus dem Log-Verhältnis
@@ -67,12 +77,18 @@ export function hebungen(eingabe, sprache = 'de') {
   // Einsilber am Zeilenende trägt den Reim und damit die Hebung – auch ein kleines Wort („what thou and I“).
   // Haider-Gold Englisch: 340 von 358 Fällen Hebung; gilt für beide Sprachen.
   if (l > 0 && !silben[l].mehrsilbig && kStreng.endeEin) silben[l] = { ...silben[l], klasse: 'c', p: Math.max(silben[l].p ?? 0, kStreng.endeEin) };
-  const streng = hebungenMit(silben, kStreng);
+  let streng = hebungenMit(silben, kStreng);
+  if (kStreng.ternaer && dreisilbig(streng.muster, kStreng.ternaer.anteil)) streng = hebungenMit(silben, { ...kStreng, ...kStreng.ternaer });
   const frei = hebungenMit(silben, kFrei);
   const vs = verstoesse(silben, streng.muster), vf = verstoesse(silben, frei.muster);
   return vf < vs ? { ...frei, fassung: 'frei' } : { ...streng, fassung: 'streng' };
 }
 
+// Abstände zwischen den Hebungen: überwiegend (Anteil ≥ a) zwei Senkungen, mindestens zwei Abstände
+function dreisilbig(muster, a = 1) {
+  const s = muster.map((x, i) => (x === 'S' ? i : -1)).filter(i => i >= 0), d = s.slice(1).map((x, i) => x - s[i] - 1);
+  return d.length >= 2 && d.filter(x => x === 2).length >= a * d.length;
+}
 export function hebungenMit(silben, k = K) {
   const n = silben.length;
   if (!n) return { muster: [], kosten: 0 };
@@ -90,6 +106,7 @@ export function hebungenMit(silben, k = K) {
       let c = alt + kS;
       if (g && z === 0) c += k.prall;
       if (g && z === 2) c += k.doppelsenkung;
+      if (g && z === 1 && k.einfach) c += k.einfach;   // nur im dreisilbigen Durchgang (Russisch)
       if (!g && z === 2) c += k.auftakt2;
       if (c < neu[idx(0, 1)]) { neu[idx(0, 1)] = c; von[idx(0, 1)] = [idx(z, g), 'S']; }
       // Senkung

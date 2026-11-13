@@ -3,6 +3,7 @@
 import { anzeige, BAUTEIL } from './analyse.mjs';
 import { klasseEinsilber } from './kleinwoerter-de.mjs';
 import { klasseEinsilberEn } from './englisch.mjs';
+import { klasseEinsilberRu } from './russisch.mjs';
 import { spracheText, ohneKlammern } from './sprache.mjs';
 
 const median = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); return s[s.length >> 1]; };
@@ -24,19 +25,20 @@ function erfassen(text) {
     if (!akt) { akt = { name: '(ohne Abschnitt)', zeilen: [] }; abschnitte.push(akt); }
     akt.zeilen.push(e);
   });
-  const woerter = zeilen.flatMap(e => (e.text.replace(/\[[^\]]*\]/g, ' ').match(/[A-Za-zÄÖÜäöüß']+/g) || []).map(w => ({ w, sprache: e.sprache })));
+  const woerter = zeilen.flatMap(e => (e.text.replace(/\[[^\]]*\]/g, ' ').match(e.sprache === 'ru' ? /[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*/g : /[A-Za-zÄÖÜäöüß']+/g) || []).map(w => ({ w, sprache: e.sprache })));
   return { zeilen, abschnitte, woerter, zeichen: text.length, sprache: spracheText(text).gesamt };
 }
 
 function beschreiben(daten, titel) {
   const Z = daten.flatMap(d => d.zeilen), A = daten.flatMap(d => d.abschnitte), W = daten.flatMap(d => d.woerter);
-  if (!Z.length) return { titel, hinweis: 'keine analysierbaren deutschen oder englischen Zeilen' };
-  const inhalt = W.filter(({ w, sprache }) => w.length > 2 && (sprache === 'en' ? klasseEinsilberEn(w) : klasseEinsilber(w)) === 'c').map(({ w }) => w.toLowerCase());
+  if (!Z.length) return { titel, hinweis: 'keine analysierbaren deutschen, englischen oder russischen Zeilen' };
+  const inhalt = W.filter(({ w, sprache }) => w.length > 2 && (sprache === 'en' ? klasseEinsilberEn(w) : sprache === 'ru' ? klasseEinsilberRu(w) : klasseEinsilber(w)) === 'c').map(({ w }) => w.toLowerCase());
   const schemata = A.filter(a => a.zeilen.length >= 2).map(a => a.zeilen.map(z => z.reim || '–').join(''));
   return {
     titel,
     umfang: { songs: daten.length, zeilen: Z.length, abschnitte: A.length, woerter: W.length, zeichenMedian: median(daten.map(d => d.zeichen)) },
     sprachen: { zeilenDeutsch: `${anteil(Z.filter(z => z.sprache === 'de').length, Z.length)} %`, zeilenEnglisch: `${anteil(Z.filter(z => z.sprache === 'en').length, Z.length)} %`,
+      ...(Z.some(z => z.sprache === 'ru') ? { zeilenRussisch: `${anteil(Z.filter(z => z.sprache === 'ru').length, Z.length)} %` } : {}),
       songs: Object.fromEntries(zaehle(daten.map(d => d.sprache || 'unbekannt'))) },
     mass: {
       silbenMedian: median(Z.map(z => z.n)), silbenSpanne: [Math.min(...Z.map(z => z.n)), Math.max(...Z.map(z => z.n))],
@@ -64,12 +66,12 @@ function beschreiben(daten, titel) {
   };
 }
 
-// Deutsch und Englisch (auch gemischt, zeilenweise); Texte in fremder Schrift werden ausgelassen.
+// Deutsch, Englisch und Russisch (auch gemischt, zeilenweise); Texte in fremder Schrift werden ausgelassen.
 // istDeutsch bleibt für ältere Aufrufer erhalten.
 export const istDeutsch = text => spracheText(text).gesamt === 'de';
 export const steckbriefText = (text, titel = 'Text') => beschreiben([erfassen(text)], titel);
 export function steckbriefSet(texte, titel = 'Set') {
-  const ok = texte.filter(t => ['de', 'en', 'gemischt'].includes(spracheText(t).gesamt));
+  const ok = texte.filter(t => ['de', 'en', 'ru', 'gemischt'].includes(spracheText(t).gesamt));
   const b = beschreiben(ok.map(erfassen), titel);
   b.umfang = { ...b.umfang, ausgelassenFremd: texte.length - ok.length };
   return b;

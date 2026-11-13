@@ -1,0 +1,787 @@
+# Aussprache von 1900: Wörter, die CMUdict kennt, Muret-Sanders Teil I (um 1900) aber auf einer anderen Silbe betont.
+# Gilt nur bei der Wahl „Aussprache von 1900“ (kern/englisch.mjs). Erzeugt mit bin/muret-betonung-en.mjs am 2026-11-12. Lizenz: CC0 1.0 (Muret-Sanders 1900 gemeinfrei; Auswertung 12.11.2026).
+abbas	2 0
+abie	0 2
+abram	2 0
+abron	2 0
+abstracted	0 2 0
+abyssinia	1 0 2 0
+abyssinian	1 0 2 0
+accent	2 0
+accessory	2 0 0 0
+accolade	1 0 2
+accountability	1 0 0 2 0 0
+accredit	0 2 0
+acetylene	2 0 0 0
+adar	2 0
+adare	2 0
+address	0 2
+adin	2 0
+adina	2 0 0
+adios	0 2 0
+adipose	1 0 2
+adlai	2 0 0
+adon	2 0
+adverse	2 0
+advert	0 2
+afghanistan	1 0 0 2
+agee	0 2
+aidenn	2 0
+akey	2 0
+alarie	2 0 0
+alcantara	0 2 0 0
+alcazar	0 2 0
+aldebaran	1 0 2 0
+alem	2 0
+allahabad	1 0 0 2
+allin	2 0
+alloy	0 2
+ally	0 2
+almaden	1 0 2
+almeria	1 0 2 0
+alternate	0 2 0
+alternation	1 0 2 0
+aluminium	1 0 2 0
+amateur	1 0 2
+amateurish	1 0 2 0
+ambrosius	0 2 0 0
+amine	2 0
+amniotic	1 0 2 0
+ampere	0 2
+amsterdam	1 0 2
+amygdala	0 2 0 0
+and	2
+anecdotal	2 0 0 0
+angina	2 0 0
+annandale	1 0 2
+annex	0 2
+annul	0 2
+ansel	2 0
+antecedent	1 0 2 0
+antipode	2 0 0
+apolline	0 2 0
+apotheosis	1 0 2 0 0
+apply	2 0
+appro	0 2
+araki	2 0 0
+arbuthnot	2 0 0
+arcanum	0 2 0
+archduke	0 2
+archenemy	0 2 0 0
+argyle	0 2
+arithmetic	0 2 0 0
+arkansas	0 2 0
+arvad	2 0
+arvel	2 0
+aspirant	0 2 0
+assam	2 0
+assay	0 2
+astrakhan	1 0 2
+atacama	1 0 2 0
+atavistic	1 0 2 0
+attila	2 0 0
+avatar	1 0 2
+aven	2 0
+aways	0 2
+bacchanal	2 0 0
+backgammon	0 2 0
+bagdad	0 2
+balak	2 0
+baldur	2 0
+ballet	2 0
+balow	0 2
+balthasar	0 2 0
+banal	2 0
+bangalore	1 0 2
+banshee	2 0
+bardell	2 0
+barrage	2 0
+barricade	1 0 2
+baton	2 0
+bayreuth	0 2
+belgrade	0 2
+belvidere	1 0 2
+belvoir	2 0
+benedicta	1 0 2 0
+benefactor	1 0 2 0
+bengal	0 2
+benin	0 2
+benish	0 2
+benzene	2 0
+berlin	2 0
+bernard	2 0
+berserk	2 0
+bifocal	0 2 0
+billionaire	2 0 0
+boleyn	2 0
+bombard	2 0
+bonaventure	1 0 2 0
+bottone	1 0 2
+bouchard	2 0
+bouman	2 0
+bowdoin	2 0
+brasil	0 2
+brigantine	2 0 0
+bucharest	1 0 2
+buffeting	2 0 0
+burgee	0 2
+burrell	2 0
+cabaret	2 0 0
+cadillac	0 2 0
+cadiz	2 0
+cafe	2 0
+calais	2 0
+calgary	0 2 0
+camara	2 0 0
+canace	2 0 0
+canam	0 2
+canine	0 2
+canuck	0 2
+capitan	1 0 2
+capitoline	0 2 0 0
+capitulate	1 0 2 0
+capsize	0 2
+caput	2 0
+carew	0 2
+carlen	0 2
+carlisle	0 2
+cartel	2 0
+carvel	2 0
+casal	2 0
+cashew	0 2
+casserole	1 0 2
+cavalcade	1 0 2
+cellulose	1 0 2
+centrifugal	0 2 0 0
+chabot	2 0
+champaign	2 0
+cherokee	1 0 2
+chiffon	2 0
+cingular	2 0 0
+circulation	1 0 2 0
+citrine	2 0
+clarinet	2 0 0
+cleanup	0 2
+clitoris	2 0 0
+coagulation	1 0 0 2 0
+coauthor	0 2 0
+coaxial	0 2 0 0
+cockatoo	1 0 2
+cofounder	0 2 0
+comatose	1 0 2
+combatant	2 0 0
+combative	2 0 0
+combine	0 2
+comedown	0 2
+committee	1 0 2
+communal	2 0 0
+comparator	2 0 0 0
+complaisant	2 0 0
+compost	0 2
+concrete	2 0
+confidant	1 0 2
+confidante	1 0 2
+confluent	2 0 0
+conjugate	2 0 0
+conjure	0 2
+conservator	2 0 0 0
+consoled	2 0
+consort	2 0
+construe	2 0
+consummate	0 2 0
+contemplate	0 2 0
+content	0 2
+context	0 2
+contour	0 2
+contractor	0 2 0
+convex	2 0
+copartner	0 2 0
+copenhagen	1 0 2 0
+cordoba	2 0 0
+cordova	2 0 0
+cornell	2 0
+cornet	2 0
+correlate	1 0 2
+corsage	2 0
+cortes	2 0
+cortine	2 0
+costume	2 0
+cotyledon	1 0 2 0
+countermove	1 0 2
+countervailing	1 0 2 0
+crittenden	2 0 0
+crochet	2 0
+croissant	2 0
+cunard	0 2
+cuneiform	0 2 0 0
+cupola	2 0 0
+curacao	1 0 2
+cyanuric	1 0 2 0
+cyclades	2 0 0
+dalai	0 2
+davitt	2 0
+decade	2 0
+decadence	0 2 0
+decima	2 0 0
+decimation	1 0 2 0
+decorous	0 2 0
+defect	0 2
+della	0 2
+demerse	0 2
+demi	0 2
+demonstrable	0 2 0 0
+depot	0 2
+desecrate	2 0 0
+deseret	2 0 0
+deserter	0 2 0
+despicable	2 0 0 0
+detach	0 2
+detailer	0 2 0
+deterioration	1 0 0 0 2 0
+dewan	0 2
+dewees	0 2
+dictate	2 0
+digested	0 2 0
+digester	0 2 0
+dinar	2 0
+dinwiddie	0 2 0
+disconcert	0 2 0
+discounter	0 2 0
+discourse	0 2
+dislocation	1 0 2 0
+disputable	2 0 0 0
+disputation	1 0 2 0
+domine	2 0 0
+dominica	1 0 2 0
+dominus	2 0 0
+doucet	2 0
+dovey	2 0
+dulcinea	0 2 0 0
+dunbar	0 2
+dundas	0 2
+dunite	2 0
+duplicative	2 0 0 0
+duration	0 2 0
+durban	0 2
+eastend	0 2
+eastender	0 2 0
+educative	2 0 0 0
+effusive	0 2 0
+eighteen	2 0
+eighteenth	2 0
+electrolyte	0 2 0 0
+elisha	0 2 0
+emerant	2 0 0
+emirate	0 2 0
+endurance	0 2 0
+enema	0 2 0
+engineering	1 0 2 0
+environs	2 0 0
+envy	0 2
+epsilon	0 2 0
+er	2
+erica	0 2 0
+escapade	1 0 2
+eskin	2 0
+espy	0 2
+esquire	0 2
+essay	2 0
+etcetera	0 2 0 0
+eugene	2 0
+evermore	1 0 2
+excerpt	0 2
+excess	0 2
+exchequer	0 2 0
+excised	0 2
+excoriation	1 0 0 2 0
+excrete	2 0
+execrable	2 0 0 0
+exon	2 0
+expert	0 2
+expiry	2 0 0
+exploit	0 2
+exponent	0 2 0
+expressionless	0 2 0 0
+extender	0 2 0
+extricable	2 0 0 0
+falconet	2 0 0
+ferrel	2 0
+fillet	2 0
+flageolet	2 0 0
+foment	0 2
+forbidden	0 2 0
+fordyce	0 2
+forecaster	0 2 0
+forgie	0 2
+forsyth	0 2
+fourfold	2 0
+frontier	2 0
+fusillade	1 0 2
+gabardine	1 0 2
+gabel	2 0
+galapagos	1 0 2 0
+gendarme	0 2
+genevieve	1 0 2
+geraldine	2 0 0
+gerard	2 0
+gilead	2 0
+goatee	0 2
+godden	0 2
+goodnight	0 2
+goree	0 2
+governmental	1 0 2 0
+grandiose	2 0 0
+gravett	0 2
+gravimeter	0 2 0 0
+grimace	0 2
+grimaced	0 2
+guarantor	2 0 0
+guaranty	2 0 0
+gustavus	0 2 0
+haidee	0 2
+hainan	0 2
+harass	2 0
+harasser	2 0 0
+harassment	2 0 0
+harmattan	0 2 0
+harmonies	0 2 0
+hassan	2 0
+hegemony	2 0 0 0
+hermione	0 2 0 0
+hervey	2 0
+himalaya	0 2 0 0
+hindustan	1 0 2
+hoboken	0 2 0
+homicidal	2 0 0 0
+homosporous	0 2 0 0
+hyperspace	2 0 0
+illustrate	0 2 0
+imam	0 2
+iman	0 2
+immolation	1 0 2 0
+impregnation	1 0 2 0
+in	2
+inbreed	0 2
+incantation	1 0 2 0
+incarnation	1 0 2 0
+incensed	0 2
+incineration	1 0 0 2 0
+incognito	0 2 0 0
+inconspicuous	1 0 2 0
+inculcate	0 2 0
+indri	2 0
+inexplicable	0 2 0 0 0
+inez	2 0
+infrared	2 0 0
+inlaid	0 2
+inlay	0 2
+insecure	1 0 2
+inside	2 0
+insider	2 0 0
+intercept	2 0 0
+intern	0 2
+interpose	2 0 0
+intrepidity	1 0 2 0 0
+introspect	1 0 2
+inventory	2 0 0 0
+inverness	1 0 2
+inwood	0 2
+irrawaddy	1 0 2 0
+islam	2 0
+ivan	0 2
+jacoby	2 0 0
+jaguar	0 2
+jerome	2 0
+jihad	0 2
+johan	2 0
+kiosk	0 2
+kissee	0 2
+koran	2 0
+kowtow	0 2
+kurdistan	1 0 2
+kuril	2 0
+labor	0 2
+labrador	1 0 2
+ladakh	0 2
+lambeau	2 0
+lamellar	2 0 0
+lamentable	2 0 0 0
+lanier	2 0
+lazard	2 0
+lazuli	2 0 0
+lefthand	2 0
+lemonade	1 0 2
+levine	2 0
+leviton	2 0 0
+lipari	2 0 0
+livor	2 0
+lucerne	0 2
+luzon	0 2
+lyell	2 0
+lyon	0 2
+madar	0 2
+madras	0 2
+magazine	1 0 2
+mahabharata	1 0 2 0 0
+mahaffy	0 2 0
+malay	0 2
+malcontent	2 0 0
+mama	0 2
+mamma	0 2
+manatee	1 0 2
+manchu	0 2
+mandarin	1 0 2
+manet	2 0
+manganese	1 0 2
+manitoba	1 0 0 2
+mankind	0 2
+maranon	1 0 2
+marblehead	1 0 2
+marich	0 2
+marin	0 2
+marquis	2 0
+marvell	2 0
+mascaro	2 0 0
+massage	2 0
+maumee	0 2
+maurice	2 0
+maxillary	2 0 0 0
+medici	2 0 0
+melancholic	2 0 0 0
+melanie	0 2 0
+menu	0 2
+merida	2 0 0
+mesdames	2 0
+messieurs	2 0
+microliter	1 0 2 0
+microscopy	2 0 0 0
+migraine	0 2
+milan	2 0
+millionaire	2 0 0
+minar	0 2
+minaret	2 0 0
+minuet	2 0 0
+miscalculation	1 0 0 2 0
+misconstrue	0 2 0
+miscue	0 2
+misdeed	0 2
+misfit	0 2
+mishap	0 2
+misogyny	0 2 0 0
+missing	0 2
+modena	2 0 0
+mogul	0 2
+moline	2 0
+molybdenum	1 0 2 0
+momentarily	2 0 0 0 0
+morea	0 2 0
+morel	2 0
+mountaineer	1 0 2
+mountaineering	1 0 2 0
+mulligatawny	1 0 0 2 0
+mundane	2 0
+mustache	0 2
+mustached	0 2
+nanking	0 2
+narrate	0 2
+narrator	0 2 0
+natal	0 2
+navigation	1 0 2 0
+negate	2 0
+neolithic	1 0 2 0
+nevel	2 0
+nevil	2 0
+newcastle	0 2 0
+newfoundland	0 2 0
+obfuscate	0 2 0
+obligatory	2 0 0 0 0
+obstruct	2 0
+offender	2 0 0
+offset	2 0
+opportune	2 0 0
+optation	0 2 0
+orloff	0 2
+outdated	0 2 0
+outdistance	0 2 0
+outflank	0 2
+outlast	0 2
+outman	0 2
+outpace	0 2
+outpouring	2 0 0
+outshine	0 2
+outspoken	0 2 0
+overact	1 0 2
+overcast	1 0 2
+overcome	1 0 2
+overdo	1 0 2
+overeager	1 0 2 0
+overeat	1 0 2
+overflowing	1 0 2 0
+overhanging	1 0 2 0
+overhaul	1 0 2
+overhear	1 0 2
+overlaid	1 0 2
+overlain	1 0 2
+overlapping	1 0 2 0
+overlock	1 0 2
+overlook	1 0 2
+overrate	2 0 0
+overreach	1 0 2
+overrule	1 0 2
+overrun	1 0 2
+oversee	1 0 2
+oversell	1 0 2
+overshoot	1 0 2
+overshooting	1 0 2 0
+overt	2 0
+overtake	1 0 2
+overuse	2 0 0
+overwhelm	2 0 0
+oxymoron	1 0 2 0
+palay	0 2
+pamela	0 2 0
+panama	1 0 2
+pantaloon	1 0 2
+papaw	0 2
+papin	2 0
+parana	1 0 2
+pardi	0 2
+pardy	0 2
+pariah	2 0 0
+pasha	2 0
+passim	2 0
+pastel	2 0
+patera	2 0 0
+pathan	0 2
+patriarchal	2 0 0 0
+pavia	0 2 0
+pawnee	0 2
+pecksniffian	2 0 0 0
+pejorative	2 0 0 0
+penang	0 2
+penchant	0 2
+perceval	2 0 0
+perfect	2 0
+petard	0 2
+philistine	0 2 0
+phosphoric	0 2 0
+picard	2 0
+pineal	2 0 0
+pompano	0 2 0
+portee	0 2
+portuguese	1 0 2
+postdate	2 0
+potboiler	2 0 0
+preamble	2 0 0
+precedence	0 2 0
+preempt	0 2
+preexist	1 0 2
+prelude	0 2
+premature	2 0 0
+presenter	0 2 0
+probative	2 0 0
+proceeds	2 0
+procreation	1 0 2 0
+project	0 2
+prolog	2 0
+promiscuous	0 2 0
+propylene	2 0 0
+prorate	0 2
+prospect	0 2
+prospecting	2 0 0
+prosthesis	2 0 0
+protean	2 0 0
+protectee	1 0 2
+purcell	2 0
+quadruple	2 0 0
+quaternary	0 2 0 0
+quillman	2 0
+realisable	2 0 0 0 0
+reapply	1 0 2
+reborn	0 2
+recall	0 2
+receptivity	1 0 2 0 0
+recommit	1 0 2
+recondite	0 2 0
+recourse	0 2
+recriminate	0 2 0 0
+refill	0 2
+refugee	1 0 2
+regeneration	1 0 0 2 0
+reintegration	1 0 0 2 0
+relay	0 2
+relocation	1 0 2 0
+remake	0 2
+reminiscent	2 0 0 0
+remunerate	0 2 0 0
+renard	2 0
+reread	0 2
+resource	0 2
+respiratory	0 2 0 0 0
+retail	0 2
+retort	0 2
+revaluation	1 0 0 2 0
+rhinoplasty	2 0 0 0
+ricochet	1 0 2
+righthand	2 0
+righthanded	2 0 0
+roanoke	1 0 2
+rodeo	0 2 0
+romanoff	0 2 0
+rosalia	0 2 0 0
+rossignol	0 2 0
+rountree	2 0
+rutabaga	1 0 2 0
+ryal	2 0
+sacramental	1 0 2 0
+saguenay	1 0 2
+sakhalin	1 0 2
+salamis	2 0 0
+salin	2 0
+saltwater	2 0 0
+samar	0 2
+sarawak	1 0 2
+sardine	2 0
+saville	0 2
+secondarily	2 0 0 0 0
+secretive	0 2 0
+seguin	2 0
+seljuk	0 2
+septima	2 0 0
+sequential	2 0 0
+servility	0 2 0 0
+sextuplet	2 0 0
+seychelles	0 2
+shahin	0 2
+shanghai	0 2
+sinfonia	1 0 2 0
+singapore	1 0 2
+singularity	1 0 2 0 0
+sistine	2 0
+slovak	0 2
+slovakian	0 2 0 0
+sobriquet	1 0 2
+solitariness	2 0 0 0 0
+solute	0 2
+sorbet	2 0
+spectator	0 2 0
+stalagmite	0 2 0
+stanislas	2 0 0
+stephana	2 0 0
+stockade	0 2
+subacute	1 0 2
+subcommittee	1 0 2 0
+subcontract	1 0 2
+subcontracted	1 0 2 0
+subcontractor	2 0 0 0
+subdivision	1 0 2 0
+subject	2 0
+sublet	0 2
+submarine	1 0 2
+subsection	0 2 0
+subsequence	2 0 0
+suicidal	2 0 0 0
+summarily	2 0 0 0
+superfluous	0 2 0
+supervise	1 0 2
+sylvanus	0 2 0
+syncopation	1 0 2 0
+syringe	2 0
+tamara	2 0 0
+tamil	2 0
+tarot	2 0
+tatar	2 0
+tatu	2 0
+telephony	0 2 0 0
+thaddeus	0 2 0
+the	2
+theophila	0 2 0 0
+thereabouts	2 0 0
+therese	0 2
+throgmorton	2 0 0
+tibet	2 0
+tibetan	2 0 0
+tinnitus	0 2 0
+tipperary	1 0 2 0
+tokio	2 0 0
+toman	0 2
+tonite	2 0
+tonsil	2 0
+toran	2 0
+tormented	0 2 0
+tormenting	0 2 0
+tormentor	0 2 0
+toward	2 0
+towards	2 0
+trachea	0 2 0
+transect	0 2
+transkei	0 2
+travail	2 0
+tremont	0 2
+trincomalee	1 0 0 2
+trinidad	1 0 2
+tripartite	2 0 0
+triplex	2 0
+trombone	2 0
+truckee	0 2
+turbot	2 0
+turquoise	0 2
+twaddell	2 0
+ukraine	2 0
+unbolted	0 2 0
+unborn	0 2
+uncouth	0 2
+underarm	2 0 0
+underbid	1 0 2
+underestimate	1 0 2 0 0
+undergrad	1 0 2
+underlie	2 0 0
+underpin	1 0 2
+understatement	1 0 2 0
+undertake	1 0 2
+undertaking	1 0 2 0
+undervaluation	1 0 0 0 2 0
+undervalue	1 0 2 0
+underwrite	1 0 2
+undine	0 2
+undress	2 0
+unite	0 2
+unland	0 2
+unpaved	0 2
+unrehearsed	1 0 2
+unrein	0 2
+untoward	0 2 0
+unverifiable	0 2 0 0 0 0
+upbraid	0 2
+uplifting	0 2 0
+upright	2 0
+uproar	0 2
+upstairs	2 0
+upsurge	0 2
+uptake	0 2
+urdu	2 0
+urea	2 0 0
+vacate	0 2
+vaccine	2 0
+vaginal	2 0 0
+valet	2 0
+vauxhall	0 2
+vegetative	2 0 0 0
+velodrome	2 0 0
+vendee	0 2
+verbally	2 0 0
+verdun	0 2
+veterinarian	1 0 0 2 0
+viennese	1 0 2
+violin	2 0 0
+vitiligo	1 0 2 0
+voodoo	0 2
+wapiti	2 0 0
+waterloo	1 0 2
+wenona	0 2 0
+westminster	2 0 0
+westphalia	0 2 0 0
+yahoo	0 2
+yoho	0 2
+yucatan	1 0 2
+zagreb	0 2

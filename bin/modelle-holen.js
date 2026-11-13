@@ -60,6 +60,11 @@ const E = 'https://essentia.upf.edu/models';
 const TEXTANALYSE = JSON.parse(fs.readFileSync(path.join(__dirname, 'textanalyse', 'daten.json'), 'utf8')).dateien;
 /* Dateien mit fester Fassung: Name → { groesse, sha256 }. Fuer sie gilt die GENAUE Groesse, nicht „mindestens". */
 const FEST = new Map(TEXTANALYSE.map(d => ['textanalyse/' + d.pfad, { groesse: d.groesse, sha256: d.sha256 }]));
+/* Optionale Eintraege des Ausweises (seit Kern 2026-11-13.1: die russischen Woerterbuecher). Sie werden geholt und
+   geprueft wie alle, ein Fehlschlag ist aber nur ein Hinweis: ohne sie rechnet der Kern Russisch mit dem
+   Endungsmodell, alles andere ist unberuehrt. Sie zaehlen darum nicht in bestand() - die Einrichtung meldet
+   nicht „unvollstaendig", wenn nur sie fehlen; der Tab „System" zeigt sie als eigenen Zweck mit Holen-Knopf. */
+const OPTIONAL = new Set(TEXTANALYSE.filter(d => d.optional).map(d => 'textanalyse/' + d.pfad));
 const sha256 = (f) => require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 /* Liegt die richtige Datei da? Feste Fassungen: genaue Groesse, mit pruefen=true auch die Pruefsumme. */
 function passt(name, mindestens, pruefen) {
@@ -161,8 +166,9 @@ const LISTE = NUR ? DATEIEN.filter(([n]) => NUR.includes(n)) : DATEIEN;
 /* Wie viele Modelle vollstaendig daliegen - dieselbe Zaehlung fuer die
    Schlusszeile hier und fuer bin/einrichten.js. */
 function bestand() {
-  const da = DATEIEN.filter(([n, , m]) => passt(n, m, false)).length;
-  return { da, von: DATEIEN.length };
+  const pflicht = DATEIEN.filter(([n]) => !OPTIONAL.has(n));
+  const da = pflicht.filter(([n, , m]) => passt(n, m, false)).length;
+  return { da, von: pflicht.length };
 }
 
 /* Holen mit Rueckfall (22.08.2026, Tarja unter Windows: "fetch failed"):
@@ -300,7 +306,8 @@ const ZWECKE = [
   { id: 'gesichter',   dateien: ['scrfd_500m.onnx', 'text_detection_en_ppocrv3_2023may.onnx'] },
   { id: 'feder',       dateien: ['informative-drawings.onnx'] },
   { id: 'geschichten', dateien: ['paraphrase-multilingual-mpnet.onnx', 'paraphrase-multilingual-mpnet-tokenizer.json'] },
-  { id: 'textanalyse', dateien: ['textanalyse/de/ipa-dict-de.txt', 'textanalyse/en/cmudict.dict'] },
+  { id: 'textanalyse', dateien: TEXTANALYSE.filter(d => !d.optional).map(d => 'textanalyse/' + d.pfad) },
+  { id: 'textanalyse_ru', dateien: TEXTANALYSE.filter(d => d.optional).map(d => 'textanalyse/' + d.pfad) },
 ];
 if (require.main !== module) { module.exports = { bestand, passt, DATEIEN, ZWECKE, ZIEL }; return; }
 
@@ -343,6 +350,7 @@ if (require.main !== module) { module.exports = { bestand, passt, DATEIEN, ZWECK
     if (b.n && zipEintrag) { b.fehler = auspacken(fs.readFileSync(zf)); try { fs.rmSync(zf); } catch (e) {} if (b.fehler) b.n = 0; }
     if (b.n && fest && !passt(name, mindestens, true)) { try { fs.rmSync(f); } catch (e) {} b.n = 0; b.fehler = T('andere Fassung (Prüfsumme passt nicht)'); }
     if (b.n) { geholt++; GEHOLT_VORHER += b.n; console.log(mb(b.n)); continue; }
+    if (OPTIONAL.has(name)) { console.log(`${T('fehlt')} (${b.fehler}) - ${T('nur ein Hinweis: Russisch rechnet dann mit dem Endungsmodell')}`); continue; }
     console.log(`${T('FEHLER')} (${b.fehler})`); offen.push([name, url]); process.exitCode = 1;
   }
   /* Die Schlusszeile zaehlt immer alle - auch nach --nur ist das der

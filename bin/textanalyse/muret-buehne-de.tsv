@@ -1,0 +1,726 @@
+# Bühnendeutsch um 1900: un-Wörter mit der Betonung, wie Muret-Sanders 1900 sie druckt (Nebenton auf un-, Hauptton im Stamm).
+# Erzeugt mit bin/muret-betonung.mjs; gilt nur bei der Wahl „Bühnendeutsch“, vor kern/muret-de.tsv. Lizenz: CC0 1.0.
+unabbittlich	1 0 2 0
+unabbüßlich	1 0 2 0
+unabhelflich	1 0 2 0
+unabläßig	1 0 2 0
+unablegbar	1 0 2 0
+unablösbar	1 0 2 0
+Unablösbarkeit	1 0 2 0 1
+unabschaffbar	1 0 2 0
+unabsehbar	1 0 2 0
+unabsetzbar	1 0 2 0
+unabstellbar	1 0 2 0
+unabtragbar	1 0 2 0
+unabtretbar	1 0 2 0
+unabweisbar	1 0 2 0
+unabwendbar	1 0 2 0
+unanbringlich	1 0 2 0
+unanfechtbar	1 0 2 0
+unangreifbar	1 0 2 0
+unannehmbar	1 0 2 0
+unantastbar	1 0 2 0
+unanwendbar	1 0 2 0
+unassimilierbar	1 0 0 0 2 0
+unaufbringbar	1 0 2 0
+unaufhaltbar	1 0 2 0
+unaufhörlich	1 0 2 0
+unauflösbar	1 0 2 0
+unausdehnbar	1 0 2 0
+unausdrückbar	1 0 2 0
+unausführbar	1 0 2 0
+unausgleichbar	1 0 2 0
+unausklagbar	1 0 2 0
+unauslegbar	1 0 2 0
+unauslöschbar	1 0 2 0
+unauslöslich	1 0 2 0
+unausmeßbar	1 0 2 0
+unausrottbar	1 0 2 0
+unaussprechbar	1 0 2 0
+unaussprechlich	1 0 2 0
+Unaussprechlichkeit	1 0 2 0 0
+unausstehlich	1 0 2 0
+unaustilgbar	1 0 2 0
+unausweichbar	1 0 2 0
+unausziehbar	1 0 2 0
+unbar	1 2
+unbauhaft	1 2 0
+unbeabsichtigt	1 0 2 0 0
+unbeachtet	1 0 2 0
+unbeackert	1 0 2 0
+unbeanstandet	1 0 2 0 0
+unbeantwortet	1 0 2 0 0
+unbearbeitet	1 0 2 0 0
+unbeaufsichtigt	1 0 2 0 0
+unbebrütet	1 0 2 0
+unbedeckt	1 0 2
+unbeeidigt	1 0 2 0
+unbeeinflußt	1 0 2 0
+unbeeinträchtigt	1 0 2 0 0
+unbefahrbar	1 0 2 0
+unbefahren	1 0 2 0
+unbefehrbar	1 0 2 0
+unbefestigt	1 0 2 0
+unbefiedert	1 0 2 0
+unbefleckbar	1 0 2 0
+unbefrachtet	1 0 2 0
+unbefragt	1 0 2
+unbegeben	1 0 2 0
+unbeglaubigt	1 0 2 0
+unbeglückend	1 0 2 0
+unbegraben	1 0 2 0
+unbegreifbar	1 0 2 0
+unbegreiflich	1 0 2 0
+Unbegreiflichkeit	1 0 2 0 0
+unbegren	1 0 2
+unbegrenzbar	1 0 2 0
+unbegriffen	1 0 2 0
+unbegütert	1 0 2 0
+unbehaart	1 0 2
+unbehauen	1 0 2 0
+unbehaust	1 0 2
+unbehelligt	1 0 2 0
+unbeherrschbar	1 0 2 0
+unbeherzigt	1 0 2 0
+unbehilflich	1 0 2 0
+unbekehrt	1 0 2
+unbekfümmert	1 0 2 0
+unbeklagt	1 0 2
+unbekleidet	1 0 2 0
+unbeladen	1 0 2 0
+unbelastet	1 0 2 0
+unbelästigt	1 0 2 0
+unbeleckt	1 0 2
+unbelohnbar	1 0 2 0
+unbemannt	1 0 2
+unbemerkt	1 0 2
+unbeneidet	1 0 2 0
+unbenennbar	1 0 2 0
+unbenommen	1 0 2 0
+unbenutzt	1 0 2
+unbeodachtet	1 0 2 0 0
+unbepfründetrt	1 0 2 0
+unberaten	1 0 2 0
+unberechenbar	1 0 2 0 0
+unbereitet	1 0 2 0
+unberichtigt	1 0 2 0
+unberitten	1 0 2 0
+unberücksichtigt	1 0 2 0 0
+unberührbar	1 0 2 0
+unberührt	1 0 2
+unbeschadet	1 0 2 0
+unbeschädigt	1 0 2 0
+unbeschäftigt	1 0 2 0
+unbeschattet	1 0 2 0
+unbescheinigt	1 0 2 0
+unbeschiffbar	1 0 2 0
+unbeschifft	1 0 2
+unbeschlagen	1 0 2 0
+unbeschnitten	1 0 2 0
+Unbeschnittenheit	1 0 2 0 0
+unbeschränkbar	1 0 2 0
+unbeschränkt	1 0 2
+unbeschreiblich	1 0 2 0
+unbeschrieben	1 0 2 0
+unbeschrieen	1 0 2 0
+unbeschuht	1 0 2
+unbeschützt	1 0 2
+unbeseelt	1 0 2
+unbesehen	1 0 2 0
+unbesetzt	1 0 2
+Unbesetztheit	1 0 2 0
+unbesfleckt	1 0 2
+unbesiegbar	1 0 2 0
+unbesiegt	1 0 2
+unbesoldet	1 0 2 0
+unbesonnt	1 0 2
+unbesorgt	1 0 2
+unbesprechbar	1 0 2 0
+unbestätigt	1 0 2 0
+unbestechbar	1 0 2 0
+unbesteigbar	1 0 2 0
+unbestellbar	1 0 2 0
+Unbestellbarkeit	1 0 2 0 0
+unbestellk	1 0 2
+unbesteuert	1 0 2 0
+unbestiegen	1 0 2 0
+unbestimmbar	1 0 2 0
+unbestochen	1 0 2 0
+unbestraft	1 0 2
+unbestreitbar	1 0 2 0
+unbestrichen	1 0 2 0
+unbestritten	1 0 2 0
+unbetagt	1 0 2
+unbetastbar	1 0 2 0
+unbeteiligt	1 0 2 0
+unbethätigt	1 0 2 0
+unbetitelt	1 0 2 0
+unbeträchtlich	1 0 2 0
+unbetretbar	1 0 2 0
+unbetroffen	1 0 2 0
+unbewaffnet	1 0 2 0
+unbewährt	1 0 2
+unbewaldet	1 0 2 0
+unbewegt	1 0 2
+unbewehrt	1 0 2
+unbeweibt	1 0 2
+unbeweint	1 0 2
+unbeweisbar	1 0 2 0
+unbewiesen	1 0 2 0
+unbewohnbar	1 0 2 0
+unbezähmbar	1 0 2 0
+unbezaylbar	1 0 2 0
+unbezeichnet	1 0 2 0
+unbezüglich	1 0 2 0
+unbezwingbar	1 0 2 0
+uncivilisierbar	1 0 0 0 0 2
+undefinierbar	1 0 0 2 0
+undeklinierbar	1 0 0 2 0
+undenkbar	1 2 0
+Undenkbarkeit	1 2 0 0
+undenklich	1 2 0
+undienstbar	1 2 0
+undisziplinierbar	1 0 0 0 2 0
+unduldbar	1 2 0
+undurchdringlich	1 0 2 0
+Undurchdringlichkeit	1 0 2 0 0
+undurchführbar	1 0 2 0
+uneindringlich	1 0 2 0
+uneinrichtbar	1 0 2 0
+unempfindbar	1 0 2 0
+unendbar	1 2 0
+unendlich	1 2 0
+unendlichemal	1 2 0 0 0
+Unendlichkeit	1 2 0 0
+unentbehrlich	1 0 2 0
+unentgeltlich	1 0 2 0
+unentgleisbar	1 0 2 0
+unenthüllbar	1 0 2 0
+unentladdar	1 0 2 0
+unentrahmt	1 0 2
+unenträtselbar	1 0 2 0 0
+unentreißbar	1 0 2 0
+unentschält	1 0 2
+unentschuldbar	1 0 2 0
+unentsetzbar	1 0 2 0
+Unentsetzbarkeit	1 0 2 0 0
+unentsiegelt	1 0 2 0
+unentwegbar	1 0 2 0
+unentwirrbar	1 0 2 0
+unentzisferbar	1 0 2 0 0
+unentzündbar	1 0 2 0
+unerbittlich	1 0 2 0
+unerforschbar	1 0 2 0
+unerforschlich	1 0 2 0
+unerfüllbar	1 0 2 0
+unergreifbar	1 0 2 0
+Unergründlichkeit	1 0 2 0 0
+Unerhörtheit	1 0 2 0
+unerkennbar	1 0 2 0
+unerklärbar	1 0 2 0
+unerläßzlich	1 0 2 0
+unermessen	1 0 2 0
+unermeßlich	1 0 2 0
+unermittelbar	1 0 2 0 0
+unerörtert	1 0 2 0
+unerregbar	1 0 2 0
+unerreichbar	1 0 2 0
+unerreicht	1 0 2
+unerrettbar	1 0 2 0
+unersättlich	1 0 2 0
+unerschaffbar	1 0 2 0
+unerschöpflich	1 0 2 0
+unerschrotenQ	1 0 2 0
+unerschütterlich	1 0 2 0 0
+Unerschütterlichkeit	1 0 2 0 0 0
+unerschwinglich	1 0 2 0
+unersetzbar	1 0 2 0
+unersteiglich	1 0 2 0
+unerstrecklich	1 0 2 0
+unerträglich	1 0 2 0
+unerweichbar	1 0 2 0
+unerzählbar	1 0 2 0
+unerzeugbar	1 0 2 0
+uneßbar	1 2 0
+unexplodierbar	1 0 0 2 0
+unfälschbar	1 2 0
+unfehlbar	1 2 0
+Unfehlbarkeit	1 2 0 0
+unfindbar	1 2 0
+unfühlbar	1 2 0
+unfühnbar	1 2 0
+ungeachtet	1 0 2 0
+ungeackert	1 0 2 0
+ungeadert	1 0 2 0
+ungeahndet	1 0 2 0
+ungeahnt	1 0 2
+ungebändigt	1 0 2 0
+ungebaut	1 0 2
+ungebeugt	1 0 2
+ungebeutelt	1 0 2 0
+ungebilligt	1 0 2 0
+ungeblättert	1 0 2 0
+ungebleicht	1 0 2
+ungeblümt	1 0 2
+ungebogen	1 0 2 0
+ungeboren	1 0 2 0
+ungebrochen	1 0 2 0
+Ungebührlichkeit	1 0 2 0 0
+ungedankt	1 0 2
+ungedeckt	1 0 2
+ungedeelt	1 0 2
+ungedreht	1 0 2
+ungefähr	1 0 2
+ungefährdet	1 0 2 0
+ungefämmt	1 0 2
+ungefärbt	1 0 2
+ungefast	1 0 2
+ungefault	1 0 2
+ungefesselt	1 0 2 0
+ungefiedert	1 0 2 0
+ungefordert	1 0 2 0
+ungeformt	1 0 2
+ungefragt	1 0 2
+ungefrühstückt	1 0 2 0
+ungefüttert	1 0 2 0
+ungegerbt	1 0 2
+ungegessen	1 0 2 0
+ungegliedert	1 0 2 0
+ungegoren	1 0 2 0
+ungegründet	1 0 2 0
+ungehärtet	1 0 2 0
+ungeheiligt	1 0 2 0
+ungeheißen	1 0 2 0
+ungeheizt	1 0 2
+ungeheuchelt	1 0 2 0
+ungeheuer	1 0 2 0
+ungeheuerlich	1 0 2 0 0
+ungehindert	1 0 2 0
+ungehobelt	1 0 2 0
+ungehofft	1 0 2
+ungehopft	1 0 2
+ungehört	1 0 2
+ungehudelt	1 0 2 0
+ungekaut	1 0 2
+ungekleidet	1 0 2 0
+ungekocht	1 0 2
+ungekränkt	1 0 2
+ungeladen	1 0 2 0
+ungeläutert	1 0 2 0
+ungeleckt	1 0 2
+ungelegt	1 0 2
+ungeleimt	1 0 2
+ungelesen	1 0 2 0
+ungelogen	1 0 2 0
+ungelöscht	1 0 2
+ungelöst	1 0 2
+ungemeldet	1 0 2 0
+ungemengt	1 0 2
+Ungemessenheit	1 0 2 0 0
+ungemildert	1 0 2 0
+ungemischt	1 0 2
+ungemünzt	1 0 2
+ungenäht	1 0 2
+ungenannt	1 0 2
+ungenetzt	1 0 2
+ungeniert	1 0 2
+ungenießbar	1 0 2 0
+Ungenießbarkeit	1 0 2 0 0
+ungenopptF	1 0 2
+ungenossen	1 0 2 0
+ungenuszt	1 0 2
+ungeöffnet	1 0 2 0
+ungepaart	1 0 2
+ungepflegt	1 0 2
+ungepflückt	1 0 2
+ungepflügt	1 0 2
+ungepfropft	1 0 2
+ungeprägt	1 0 2
+ungepreßt	1 0 2
+ungepriesen	1 0 2 0
+ungeprüft	1 0 2
+ungeputzt	1 0 2
+ungerächt	1 0 2
+ungerändert	1 0 2 0
+ungeraten	1 0 2 0
+ungerechnet	1 0 2 0
+ungerinnbar	1 0 2 0
+ungerippt	1 0 2
+ungerissen	1 0 2 0
+ungerochen	1 0 2 0
+ungerufen	1 0 2 0
+ungerügt	1 0 2
+ungerührt	1 0 2
+ungerupft	1 0 2
+ungerüstet	1 0 2 0
+ungesagt	1 0 2
+ungesattelt	1 0 2 0
+ungesättigt	1 0 2 0
+ungesäuert	1 0 2 0
+ungesäumt	1 0 2
+ungeschaffen	1 0 2 0
+ungeschält	1 0 2
+ungeschärft	1 0 2
+ungescheut	1 0 2
+ungeschichtet	1 0 2 0
+ungeschlisfen	1 0 2 0
+ungeschmälert	1 0 2 0
+ungeschmalzen	1 0 2 0
+ungeschmeichelt	1 0 2 0
+ungeschmückt	1 0 2
+ungeschnitten	1 0 2 0
+ungeschoren	1 0 2 0
+ungeschrieben	1 0 2 0
+ungeschult	1 0 2
+ungeschwänzt	1 0 2
+ungeschworen	1 0 2 0
+ungesegnet	1 0 2 0
+ungesehen	1 0 2 0
+ungesichert	1 0 2 0
+ungeslügelt	1 0 2 0
+ungesotten	1 0 2 0
+ungespalten	1 0 2 0
+ungesponnen	1 0 2 0
+ungestärkt	1 0 2
+ungestielt	1 0 2
+ungestillt	1 0 2
+ungestört	1 0 2
+ungestraft	1 0 2
+ungesucht	1 0 2
+ungesühnt	1 0 2
+ungetadelt	1 0 2 0
+ungetäfelt	1 0 2 0
+ungetakelt	1 0 2 0
+ungetauft	1 0 2
+ungeteilt	1 0 2
+ungethan	1 0 2
+ungetrennt	1 0 2
+ungetrocknet	1 0 2 0
+ungetröstet	1 0 2 0
+ungetrübt	1 0 2
+ungewährbar	1 0 2 0
+ungewarnt	1 0 2
+ungewässert	1 0 2 0
+ungeweiht	1 0 2
+ungewiegt	1 0 2
+ungewimpert	1 0 2 0
+ungewitzigt	1 0 2 0
+ungewogen	1 0 2 0
+ungewunden	1 0 2 0
+ungewürdigt	1 0 2 0
+ungewürzt	1 0 2
+ungezählt	1 0 2
+ungezähnt	1 0 2
+ungezäumt	1 0 2
+ungeziert	1 0 2
+ungezweifelt	1 0 2 0
+Ungezwungenheit	1 0 2 0 0
+unglaublich	1 2 0
+unglücklicher·weise	1 0 0 0 2 0
+unhaltbar	1 2 0
+Unhaltbarkeit	1 2 0 0
+unheilbar	1 2 0
+unheilsam	1 2 0
+unheizbar	1 2 0
+unherstellbar	1 2 0 0
+unhörbar	1 2 0
+unjagdbar	1 2 0
+unkaufbar	1 2 0
+unkäuflich	1 2 0
+unkennbar	1 2 0
+unklagbar	1 2 0
+unkonvertierbar	1 0 0 2 0
+unkonvertierdt	1 0 0 2
+unkrystallisiert	1 0 0 0 2
+unkündbar	1 2 0
+unleidsam	1 2 0
+unleistbar	1 2 0
+unlesbar	1 2 0
+unleugbar	1 2 0
+unlöschbar	1 2 0
+unmannbar	1 2 0
+unmerkbar	1 2 0
+unmischbar	1 2 0
+unmitteilbar	1 2 0 0
+unmitteilsam	1 2 0 0
+unmöbliert	1 0 2
+unmöglich	1 2 0
+Unmöglichkeit	1 2 0 0
+unnachläßlich	1 2 0 0
+unnahbar	1 2 0
+unnennbar	1 2 0
+unpassierbar	1 0 2 0
+unplaniert	1 0 2
+unpoliert	1 0 2
+unpreßbar	1 2 0
+unrasiert	1 0 2
+unreguliert	1 0 0 2
+unreimbar	1 2 0
+unrektisizierlich	1 0 0 0 2 0
+unrettbar	1 2 0
+unsagbar	1 2 0
+unsangbar	1 2 0
+unschätzbar	1 2 0
+unscheidbar	1 2 0
+unschmelzbar	1 2 0
+unschweißbar	1 2 0
+unsersgleichen	1 0 2 0
+unsortiert	1 0 2
+unsresgleichen	1 0 2 0
+unsterblich	1 2 0
+unstillbar	1 2 0
+unstörbar	1 2 0
+unstrafbar	1 2 0
+unstreckbar	1 2 0
+unstreitbar	1 2 0
+unstudiert	1 0 2
+Unsühnbarkeit	1 2 0 0
+unteilbar	1 2 0
+Unterbindungs	1 0 2 0
+unterblasen	1 0 2 0
+unterbrechen	1 0 2 0
+Unterbrecher	1 0 2 0
+Unterbrechungsrad	1 0 2 0 1
+unterbrücken	1 0 2 0
+unterdes	1 0 2
+Unterdrücker	1 0 2 0
+untereinander	1 0 0 2 0
+unterfangen	1 0 2 0
+unterfaulen	1 0 2 0
+unterfertigen	1 0 2 0 0
+unterfressen	1 0 2 0
+unterführen	1 0 2 0
+Unterhalter	1 0 2 0
+unterhaltsam	1 0 2 0
+unterhandeln	1 0 2 0
+unterhöhlen	1 0 2 0
+unterjochen	1 0 2 0
+Unterjocher	1 0 2 0
+unterkreuzen	1 0 2 0
+Unterlafsungs	1 0 2 0
+unterlassen	1 0 2 0
+unterlegen	1 0 2 0
+unterminieren	1 0 0 2 0
+unternagen	1 0 2 0
+unternehmbar	1 0 2 0
+unternehmen	1 0 2 0
+Unternehmer	1 0 2 0
+Unterprima	1 0 2 0
+Unterprimaner	1 0 0 2 0
+unterreden	1 0 2 0
+Unterredung	1 0 2 0
+unterrichten	1 0 2 0
+Unterroßarzt	1 0 2 0
+untersagen	1 0 2 0
+unterschätzen	1 0 2 0
+unterscheidbar	1 0 2 0
+unterscheiden	1 0 2 0
+Unterschiedenheit	1 0 2 0 0
+unterschlagbar	1 0 2 0
+Unterschlager	1 0 2 0
+unterschlängeln	1 0 2 0
+unterschneiden	1 0 2 0
+unterschrämen	1 0 2 0
+unterschwären	1 0 2 0
+unterschwellen	1 0 2 0
+Untersegelgehen	1 0 2 0 1 0
+Untersekunda	1 0 0 2 0
+Untersekundaner	1 0 0 0 2 0
+Untersetztheit	1 0 2 0
+untersiegeln	1 0 2 0
+Untersiegler	1 0 2 0
+unterspülen	1 0 2 0
+Unterstaatssekretär	1 0 2 0 0 1
+Untersteuermann	1 0 2 0 0
+unterstreichen	1 0 2 0
+unterstützbar	1 0 2 0
+Unterstützer	1 0 2 0
+untersuchen	1 0 2 0
+Untersucher	1 0 2 0
+Untersuchung	1 0 2 0
+Untertertia	1 0 2 0 0
+Untertertianer	1 0 0 0 2 0
+unterwachsen	1 0 2 0
+unterwaschen	1 0 2 0
+Unterwasser	1 0 2 0
+unterweilen	1 0 2 0
+unterweisen	1 0 2 0
+Unterweiser	1 0 2 0
+unterwinden	1 0 2 0
+unterwölben	1 0 2 0
+Unterwundarzt	1 0 2 0
+unterwürfig	1 0 2 0
+Unterwürfigkeit	1 0 2 0 0
+unterzwicken	1 0 2 0
+untilgbar	1 2 0
+untragbar	1 2 0
+untrennbar	1 2 0
+untrinkbar	1 2 0
+untröstbar	1 2 0
+untröstlich	1 2 0
+Untröstlichkeit	1 2 0 0
+untrüglich	1 2 0
+unübersteigbar	1 0 0 2 0
+unübertragbar	1 0 0 2 0
+unübertreffbar	1 0 0 2 0
+unübertroffen	1 0 0 2 0
+unüberwindlich	1 0 0 2 0
+unüberwunden	1 0 0 2 0
+unüberzeugbar	1 0 0 2 0
+unumfaßbar	1 0 2 0
+unumkehrbar	1 0 2 0
+unummwunden	1 0 2 0
+unumschränkt	1 0 2
+Unumschränktheit	1 0 2 0
+unumstößlich	1 0 2 0
+ununterbrochen	1 0 0 2 0
+ununterdrückbar	1 0 0 2 0
+ununterlässig	1 0 0 2 0
+ununterläßlich	1 0 0 2 0
+ununterscheidbar	1 0 0 2 0
+ununterworfen	1 0 0 2 0
+unverächtlich	1 0 2 0
+unveränderlich	1 0 2 0 0
+unverarbeitet	1 0 2 0 0
+unveräußerlich	1 0 2 0 0
+unveräußert	1 0 2 0
+unverbesserlich	1 0 2 0 0
+Unverbesserlichkeit	1 0 2 0 0 0
+unverbessert	1 0 2 0
+unverbildet	1 0 2 0
+unverblümt	1 0 2
+unverboten	1 0 2 0
+unverbrauchbar	1 0 2 0
+unverbraucht	1 0 2
+unverbrennbar	1 0 2 0
+unverbrieft	1 0 2
+unverbrüchlich	1 0 2 0
+unverbürgt	1 0 2
+Unverdaulichkeit	1 0 2 0 0
+unverdaut	1 0 2
+Unverderblichkeit	1 0 2 0 0
+unverdient	1 0 2
+unverdrossen	1 0 2 0
+unverehelicht	1 0 2 0 0
+unverehrt	1 0 2
+unvereinbar	1 0 2 0
+unvererbt	1 0 2
+unverfallen	1 0 2 0
+unverfreit	1 0 2
+unverfroren	1 0 2 0
+unverfügbar	1 0 2 0
+unvergessen	1 0 2 0
+unvergeßlich	1 0 2 0
+unvergleichbar	1 0 2 0
+unvergolten	1 0 2 0
+unverhalten	1 0 2 0
+unverhaut	1 0 2
+unverheiratet	1 0 2 0 0
+unverhinderlich	1 0 2 0 0
+unverhofft	1 0 2
+unverhohlen	1 0 2 0
+unverhüllt	1 0 2
+unverjährbar	1 0 2 0
+unverjährt	1 0 2
+unverkauft	1 0 2
+unverkennbar	1 0 2 0
+unverkümmerbar	1 0 2 0 0
+unverkürzt	1 0 2
+unverlangt	1 0 2
+unverletzbar	1 0 2 0
+unverletzt	1 0 2
+unverlierbar	1 0 2 0
+unverloren	1 0 2 0
+unverlöschbar	1 0 2 0
+unvermählt	1 0 2
+unvermeidbar	1 0 2 0
+unvermerkt	1 0 2
+unvermietet	1 0 2 0
+unverminderlich	1 0 2 0 0
+unvermindert	1 0 2 0
+unvermischbar	1 0 2 0
+unvermittelt	1 0 2 0
+unvermutet	1 0 2 0
+unveröffentlicht	1 0 2 0 0
+unverpackt	1 0 2
+unverpfändet	1 0 2 0
+unverrichtet	1 0 2 0
+unverrückbar	1 0 2 0
+unverrückt	1 0 2
+unverrufen	1 0 2 0
+unversäumbar	1 0 2 0
+unverschließbar	1 0 2 0
+unverschnitten	1 0 2 0
+unversehen	1 0 2 0
+unversehrbar	1 0 2 0
+unversehrt	1 0 2
+unverseifsbar	1 0 2 0
+unversichert	1 0 2 0
+unversiegbar	1 0 2 0
+unversiegelt	1 0 2 0
+unversiegt	1 0 2
+unversöhnbar	1 0 2 0
+unversöhnt	1 0 2
+unversorgt	1 0 2
+unverstanden	1 0 2 0
+unversteuert	1 0 2 0
+unversucht	1 0 2
+unvertauschbar	1 0 2 0
+unverteidigt	1 0 2 0
+unvertilgbar	1 0 2 0
+unvervollkommnet	1 0 2 0 0
+unverwachsen	1 0 2 0
+unverwahrt	1 0 2
+unverwässert	1 0 2 0
+unverweigerlich	1 0 2 0 0
+unverweilt	1 0 2
+unverwelklich	1 0 2 0
+unverwelkt	1 0 2
+unverwerflich	1 0 2 0
+unverweslich	1 0 2 0
+unverwindbar	1 0 2 0
+unverwirrbar	1 0 2 0
+unverwischbar	1 0 2 0
+unverworren	1 0 2 0
+unverwundbar	1 0 2 0
+unverwüstlih	1 0 2 0
+unverzehrbar	1 0 2 0
+unverzeihbar	1 0 2 0
+unverzinsbar	1 0 2 0
+unverzögert	1 0 2 0
+unverzollt	1 0 2
+unverzweigt	1 0 2
+unvollbracht	1 0 2
+unvollendet	1 0 2 0
+unvorgreiflich	1 0 2 0
+unwahrnehmbar	1 2 0 0
+Unwandelbarkeit	1 2 0 0 1
+unweigerlich	1 2 0 0
+unwelkbar	1 2 0
+unwiderlegt	1 0 0 2
+unwiderrufen	1 0 0 2 0
+unwiderruflich	1 0 0 2 0
+unwidersprechlich	1 0 0 2 0
+unwidersprochen	1 0 0 2 0
+unwiderstehlich	1 0 0 2 0
+unwiederbringlich	1 0 0 2 0
+unwillkürlich	1 0 2 0
+unwohnbar	1 2 0
+unzahlbar	1 2 0
+unzählbar	1 2 0
+unzähmbar	1 2 0
+unzerbrechlich	1 0 2 0
+unzergänglich	1 0 2 0
+unzerlegbar	1 0 2 0
+unzerlegt	1 0 2
+unzerreißbar	1 0 2 0
+unzerschneidbar	1 0 2 0
+unzersetzbar	1 0 2 0
+unzersplittert	1 0 2 0
+unzerteilbar	1 0 2 0
+unzerteilt	1 0 2
+unzertrennbar	1 0 2 0
+unzertrennt	1 0 2
+unziehbar	1 2 0
+unzinsbar	1 2 0
+unzusammenhaltbar	1 0 2 0 0 0
