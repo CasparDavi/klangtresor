@@ -1673,7 +1673,10 @@
     ['ta.vorrede', 'Analysiert ab [Intro] – die Zeile davor ist nicht Teil des Liedes.|Analysiert ab [Intro] – die {n} Zeilen davor sind nicht Teil des Liedes.', 'Analysed from [Intro] on – the line before it is not part of the song.|Analysed from [Intro] on – the {n} lines before it are not part of the song.'],
     ['ta.grenze', 'Gerechnet ohne KI aus Wörterbüchern und Regeln für Deutsch und Englisch; an Gedichten geprüft, trifft sie 96 % der deutschen und 91 % der englischen Silben. Wie gesungen wird, weiß sie nicht.', 'Calculated without AI from dictionaries and rules for German and English; tested on poems, it gets 96 % of German and 91 % of English syllables right. It does not know how the song is sung.'],
     ['ta.leg.hell','Helligkeit = Betonung: hell betont (Hebung), mittel Nebenton, matt unbetont','Brightness = stress: bright stressed, medium secondary stress, dim unstressed'],
-    ['ta.leg.asso','gepunktet, kleiner Buchstabe: Assonanz – nur die Vokale klingen gleich (blind/ertrinkt), kein Reim','dotted, small letter: assonance – only the vowels sound alike (blind/ertrinkt), not a rhyme'],
+    /* Das Beispielpaar steht je Sprache in DIESER Sprache. „blind/ertrinkt" erklaert einem Englisch- oder
+       Russischleser nichts (Caspar_D, 13.11.2026). Englisch slow/road: beide langes o, andere Konsonanten, kein Reim;
+       russisch ровно/поздно: beide Vokale о, andere Konsonanten. Beide Paare sind belegt, nicht gebildet. */
+    ['ta.leg.asso','gepunktet, kleiner Buchstabe: Assonanz – nur die Vokale klingen gleich (blind/ertrinkt), kein Reim','dotted, small letter: assonance – only the vowels sound alike (slow/road), not a rhyme'],
     ['ta.leg.streifen','Streifen links: Strophe, Refrain, Bridge, übrige Teile; die Zahl davor = Silben der Zeile','Stripe on the left: verse, chorus, bridge, other parts; the number before it = syllables in the line'],
     ['ta.leg.rechts', 'rechts: Reimbuchstabe, Zahl der betonten Silben (H) und Ende betont (m) oder unbetont (w)', 'right: rhyme letter, number of beats (B) and ending stressed (s) or unstressed (u)'],
     ['ta.leg.wdh','derselbe Reimklang steht auch in einem anderen Abschnitt','the same rhyme sound also appears in another section'],
