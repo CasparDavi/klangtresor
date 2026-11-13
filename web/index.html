@@ -16743,7 +16743,7 @@ function profilZahlenFuellen(){
     const feld = document.createElement('div'); feld.className = 'hitstrom'; w.appendChild(feld); g.appendChild(w);
     (async () => {
       try {
-        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.1.5'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
+        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.1.6'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
         const daten = d && M.hitstromDaten(eigene, d.verlauf || {});
         if (!daten){ w.remove(); return; }
         /* Farben: das Modul schreibt --titel-a/-b selbst ins Bild, so folgt der Strom jedem Titelwechsel (siehe hitstrom.js) */

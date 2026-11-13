@@ -7,8 +7,9 @@
    Zuwachs an Resonanz (Abrufe + 2 x Herzen + 3 x Kommentare, wie „Meiste Bewegung"); EIN Wert je Wochengrenze fuer beide
    Nachbarwochen: der letzte Stand vor dem Montag, null fuer einen Titel, der erst danach erschien, sonst sein erster Stand (Caspar_D:
    „die Werte von Noch lachst Du können nicht stimmen" - erst fiel die Erscheinungswoche weg, dann der Zuwachs zwischen Sonntags- und
-   Montagsstand). Die laufende Woche fehlt (sie liefe sonst auf null zu). Gezeigt werden die zwoelf Titel mit dem groessten Zuwachs
-   ueber alle vollen Wochen (erst zehn; Caspar_D: „wir können auch ein Dutzend nehmen“ - bei 12 bekommen 11 einen Namen, bei 15 nur 13), jede Woche als 100 % ihrer gemeinsamen Resonanz.
+   Montagsstand). Die laufende Woche fehlt (sie liefe sonst auf null zu). Gezeigt wird JEDER Titel, der sich bewegt hat (erst zehn, dann
+   zwoelf; Caspar_D, 13.11.2026: „was mich stört ist, dass nur noch bewegtere Titel reinkommen“), jede Woche als 100 % ihrer
+   gemeinsamen Resonanz - so sind die 100 % wirklich 100 %.
 
    Form wie der Streamgraph in Prophane (tools/viewer/viewer.html, nach Paver): Reihenfolge von innen nach aussen nach dem Zeitpunkt
    des Gipfels, Grundlinie mit geringstem gewichtetem Wackeln (Byron & Wattenberg 2008), Kanten als monotone kubische Kurven (Fritsch
@@ -22,12 +23,35 @@
    und ein gedaempftes Weiss, dazu dieselben auf 55 % Helligkeit; die obere Haelfte nach Bewegung traegt die hellen, die untere
    die dunklen, Nachbarn nie im selben Ton. In jedem Band ein sanfter senkrechter Verlauf wie im Glockenstuhl, 0,66 oben, 0,22 unten.
 
-   Namen (Caspar_D: „glätte gar nicht, nimm einfach die Mittellinie des Bandes und suche den horizontalsten Abschnitt"; „schreibst du
-   die Beschriftung in Toplinefarbe"; „wenn der Text nicht ins Band passt, dann kürze ihn etwas mit …"): auf der Mitte zwischen den
-   Raendern, im waagrechtesten Abschnitt, in dem der Name mit 9 bis 15 Punkt und 1,15-facher Dicke (quer zur Linie gemessen, steile
-   Stuecke ueber 30 Grad bestraft) Platz hat, dort die groesste Schrift; passt er nirgends, so wenig gekuerzt wie noetig. Bezug wie bei
-   den Zellnamen im Klangschaum: der Koerper der Kleinbuchstaben mittig auf der Linie, bei einer Senke (∪) der Pfad auf der Oberkante
-   der m-Hoehe. */
+   Namen - Fassung vom 13.11.2026, von Caspar_D am Bild abgenommen („so ists gut"), nachdem die vorige schief lief
+   („deine Pfadkonstruktion ist fehlerhaft"). Sechs Stuecke, in dieser Reihenfolge:
+     1. MITTELACHSE, nicht die vertikale Mitte. (hi+lo)/2 liegt bei schiefen Baendern bis zu 24 Punkte neben der
+        Achse - gemessen an „Lagerfeuer" 24,5, „1 Unter der Haut I" 23,7, „Komm noch näher" 14,0. Genommen wird je
+        Stuetzpunkt y = (hi·c1 + lo·c2)/(c1+c2) mit c = 1/√(1+m²) je Kante: die geschlossene Loesung der lokal
+        linearisierten Aufgabe „gleicher SENKRECHTER Abstand zu beiden Raendern". Ihr Restfehler kommt aus der
+        Kantenkruemmung und betraegt 0,07 Schriftgroessen im Mittel (0,75 schlimmstenfalls) gegen die exakt
+        gerechnete Achse mit 0,04 (0,33) - die ist 115-mal so teuer (243 ms gegen 2,1 ms ueber 26 Baender) und
+        setzt genau einen Namen mehr. Zwei Korrekturrunden mit Strahlwerfern waren langsamer UND schlechter
+        (13,7 ms, 1,12) und sind verworfen.
+     2. 40-mal GEGLAETTET (Caspar_D: „40 x geglättet ist gut"), Nachbarmittel 1:2:1. Kostet 0,37 bis 0,46 Punkte
+        Abstand zur echten Achse und aendert die Luft zu den Raendern praktisch nicht.
+     3. LUFT QUER ZUR ACHSE, getrennt nach oben und unten (Caspar_D: „die senkrechte zum mittelpfad misst die höhe
+        nach oben und unten"). Vorher wurde senkrecht gemessen und mit einem Faktor fuer die Neigung verrechnet;
+        das war zu streng. Verlangt werden 0,30 Schriftgroessen nach oben (Oberlaengen) und 0,78 nach unten
+        (x-Hoehe plus Unterlaengen) - damit faellt die alte Pauschale „1,6-fache Dicke" weg, die Namen extrem
+        kuerzte („warum kürzt du so extrem ab, das ist doch noch ewig platz").
+     4. Dazu hoechstens 66 GRAD Neigung an jeder Stelle des Namens (Caspar_D) und Randabstand in x, nicht nur
+        entlang der Bogenlaenge - sonst schneidet die Bildkante den Namen ab.
+     5. GESETZT wird am GRAVITATIONSZENTRUM des Bandes (dickengewichtete Mitte als Bogenlaenge, Caspar_D): von
+        allen Stellen, an denen die groesste noch moegliche Schrift passt, die naechste daran. Die alte Bewertung
+        aus vier Teilen (Groesse, Ruhe, Mitte, Luft nach Imhof 1975) ist damit aufgeloest - Ruhe und Luft sind
+        jetzt harte Bedingungen, Mitte ist das Ziel, Groesse die aeussere Schleife.
+     6. SATZ buchstabenweise, jeder mit seiner m-LINIE (Oberkante der Mittelhoehe) auf der Tangente an seiner
+        Stelle (Caspar_D: „ich meinte zwar die oberkante der mittelhöhe, als die m-Linie"). Auf der geglaetteten
+        Achse tut ein textPath dasselbe bis auf 0,05 Punkte; der Gewinn liegt in der Achse, nicht im Satz. Hier
+        steht trotzdem der Satz, weil er den Bezug ohne den Senken-Behelf (∪) der vorigen Fassung trifft.
+   Farbe weiter die Topline des eigenen Bandes (Caspar_D: „schreibst du die Beschriftung in Toplinefarbe"); passt
+   der Name nirgends, so wenig gekuerzt wie noetig („dann kürze ihn etwas mit …"). */
 
 const resonanz = (e) => (e.plays || 0) + 2 * (e.likes || 0) + 3 * (e.kommentare || 0);
 const tagVon = (d) => Date.parse(d + 'T00:00:00Z') / 864e5;
@@ -39,8 +63,8 @@ const kw = (tag) => { const d = new Date(tag * 864e5), dd = new Date(Date.UTC(d.
 let lauf = 0;
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/* Wochenzuwaechse der zehn bewegtesten. songs: [{id, titel, erstellt}], verlauf: {id: [{stand, plays, likes, kommentare}]} */
-export function hitstromDaten(songs, verlauf, anzahl = 12){
+/* Wochenzuwaechse je Titel. songs: [{id, titel, erstellt}], verlauf: {id: [{stand, plays, likes, kommentare}]} */
+export function hitstromDaten(songs, verlauf){
   const S = songs.filter(s => verlauf[s.id] && verlauf[s.id].length);
   if (!S.length) return null;
   let t0 = Infinity, t1 = -Infinity;
@@ -60,9 +84,9 @@ export function hitstromDaten(songs, verlauf, anzahl = 12){
      100 % einer Woche nur die 100 % DIESER ZWOELF, und das schwankte zwischen 23 und 95 % des wirklichen Geschehens.
      Jetzt sind 100 % wirklich 100 %. Je Woche bewegen sich nur 19 bis 43 Titel, ueber alle Wochen 123 - das traegt
      die Form noch; Wattenberg zeigt 7500 Filme im selben Bild. Namen bekommen nur die dicken Baender (siehe unten). */
-  const zehn = zeilen.filter(z => z.summe > 0).sort((a, b) => b.summe - a.summe);
-  if (zehn.length < 2) return null;
-  return { zehn, wochen: grenzen.slice(0, wochen) };
+  const baender = zeilen.filter(z => z.summe > 0).sort((a, b) => b.summe - a.summe);
+  if (baender.length < 2) return null;
+  return { baender, wochen: grenzen.slice(0, wochen) };
 }
 
 function monotone(xs, ys){
@@ -82,7 +106,7 @@ function monotone(xs, ys){
    Browser faerbt den Strom mit wie die Balken der anderen Profildiagramme - ohne neu zu zeichnen. Darum als style, nicht als
    Attribut: Variablen und color-mix gelten nur in CSS-Eigenschaften. */
 export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, rechts = null, akzente = ['var(--titel-a,#f97b14)', 'var(--titel-b,#e31c79)'], messen, schrift = 'system-ui, sans-serif', xHoehe = 0.52 } = {}){
-  const items = daten.zehn, m = daten.wochen.length, n = items.length, UID = 'hs' + (++lauf) + '_';
+  const items = daten.baender, m = daten.wochen.length, n = items.length, UID = 'hs' + (++lauf) + '_';
   const vals = items.map(it => it.v.map((x, j) => { const t = items.reduce((a, q) => a + q.v[j], 0); return t ? 100 * x / t : 0; }));
   /* von innen nach aussen */
   /* VON INNEN NACH AUSSEN NACH DEM EINSATZ, die ZULETZT begonnenen innen (Caspar_D, 13.11.2026: „das linke Anfangen
@@ -120,17 +144,12 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
     order.forEach((i, kk) => { const hell = i < Math.ceil(n / 2), k = hell ? 'h' : 'd'; let t = reihum[k] % 3; if (t === vorher) t = (t + 1) % 3;
       reihum[k] = t + 1; farbe[kk] = (hell ? toene : dunkel)[t]; vorher = t; }); }
   let defs = '', flaechen = '', toplines = '', namen = '';
-  const zuSetzen = [], RANDLUFT = 6;
-  /* Wie dick ein Band sein muss, damit ein Name hineinpasst, als Vielfaches der Schriftgroesse. 1,15 war zu knapp:
-     Oberlaenge und Unterlaenge brauchen zusammen rund 1,24, und der Schriftpfad liegt nicht auf der Mittellinie,
-     sondern um eine halbe x-Hoehe versetzt (damit der Buchstabenkoerper mittig sitzt) - zusammen also rund 1,5.
-     Gemessen quer zum Mittelpfad, nach oben und unten (Caspar_D, 13.11.2026), ueber 26 Punkte je Name:
-       1,3 und 1,45 -> 10 Namen, einer ragt heraus
-       1,6          ->  8 Namen, keiner ragt heraus
-       1,8          ->  6 Namen, keiner ragt heraus
-     1,6 gewaehlt: zwei Namen mehr sind den einen falsch sitzenden nicht wert. Wer darunter liegt, bleibt stumm. */
-  const DICKE = 1.6;
-  const breiteVon = (text, fs) => (messen ? messen(text, fs) : text.length * fs * 0.56) * 1.08;
+  const zuSetzen = [], RANDLUFT = 7, GLATT = 40, GRAD66 = 66 * Math.PI / 180;
+  const mw = (text, fs) => messen ? messen(text, fs) : text.length * fs * 0.56;
+  const breiteVon = (text, fs) => mw(text, fs) * 1.04;          /* beim Suchen etwas Luft, beim Setzen das reine Mass */
+  /* Nachbarmittel 1:2:1, n-mal angewandt; die Enden bleiben liegen */
+  const glatt = (v, n) => { let o = v.slice(); for (let k = 0; k < n; k++){ const p = o.slice();
+    for (let q = 1; q < p.length - 1; q++) o[q] = (p[q - 1] + 2 * p[q] + p[q + 1]) / 4; } return o; };
   order.forEach((i, kk) => {
     const it = items[i], dn = kanten[kk], up = kanten[kk + 1], akzent = farbe[kk], topline = `color-mix(in srgb, ${akzent} 75%, #fff)`;
     const obenD = `M${f(px[0])},${f(Y(start[kk + 1]))}` + up.map(c => `C${f(c[0])},${f(Y(c[1]))} ${f(c[2])},${f(Y(c[3]))} ${f(c[4])},${f(Y(c[5]))}`).join('');
@@ -140,54 +159,13 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
     defs += `<linearGradient id="${UID}v${kk}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${akzent};stop-opacity:0.66"/><stop offset="1" style="stop-color:${akzent};stop-opacity:0.22"/></linearGradient>`;
     flaechen += `<path class="hsband" data-id="${esc(it.id)}" d="${d}" fill="url(#${UID}v${kk})"><title>${esc(it.titel)} · ${it.summe.toLocaleString('de-DE')} Punkte in ${m} Wochen</title></path>`;
     toplines += `<path d="${obenD}" fill="none" style="stroke:${topline}" stroke-width="1" pointer-events="none"/>`;
-    /* der Name: Raender je Segment neunmal abgetastet, die Mitte dazwischen ungeglaettet */
-    const smp = []; for (let j = 0; j < m - 1; j++) for (let q = 0; q < 9; q++){ const t = q / 9; smp.push({ x: px[j] + (px[j + 1] - px[j]) * t, lo: Y(yAt(kk, j, t)), hi: Y(yAt(kk + 1, j, t)) }); }
+    /* Die beiden Raender als Stuetzpunkte, etwa alle zwei Punkte. Im Pruefstand wurde das Band dafuer mit
+       isPointInFill abgetastet; hier liegen die Kanten als Bezierkurven vor und werden gerechnet - dieselbe
+       Geometrie, ohne Tastlauf. Der Abstand ist ueberall gleich, darauf verlaesst sich drin() weiter unten. */
+    const pro = Math.max(9, Math.ceil((px[1] - px[0]) / 2)), smp = [];
+    for (let j = 0; j < m - 1; j++) for (let q = 0; q < pro; q++){ const t = q / pro; smp.push({ x: px[j] + (px[j + 1] - px[j]) * t, lo: Y(yAt(kk, j, t)), hi: Y(yAt(kk + 1, j, t)) }); }
     smp.push({ x: px[m - 1], lo: Y(yAt(kk, m - 2, 1)), hi: Y(yAt(kk + 1, m - 2, 1)) });
-    const mid = smp.map(q => (q.lo + q.hi) / 2), arc = [0];
-    for (let q = 1; q < smp.length; q++) arc.push(arc[q - 1] + Math.hypot(smp[q].x - smp[q - 1].x, mid[q] - mid[q - 1]));
-    const tan30 = Math.tan(Math.PI / 6);
-    const eff = smp.map((q, j) => { const a = smp[Math.max(0, j - 1)], b = smp[Math.min(smp.length - 1, j + 1)], sl = Math.abs((mid[Math.min(smp.length - 1, j + 1)] - mid[Math.max(0, j - 1)]) / ((b.x - a.x) || 1));
-      let t = (q.lo - q.hi) / Math.sqrt(1 + sl * sl); if (sl > tan30) t /= 1 + 3 * (sl - tan30) / tan30; return t; });
-    /* WO DER NAME STEHT - eine Bewertung statt einer Rangfolge (Caspar_D, 12.10.2026: „Noch lachst Du und Halt die Klappe, Willem
-       stehen immer noch zu weit links - wie finden wir einen Platzierungsalgorithmus, der das gut hinbekommt"). Vorher zaehlte nur
-       „moeglichst waagrecht, dann moeglichst gross"; der Name landete am flachen Anfang eines Bandes, auch wenn das Band viel weiter
-       reicht. Nach Imhof (1975, Namen an Linien): auf den ruhigen Teil, aber in die Mitte der Ausdehnung des Objekts. Jede Stelle,
-       an der der Name passt, bekommt einen Wert aus vier Teilen (je 0 bis 1):
-         Groesse  Schrift / groesste, die irgendwo passt                                    Gewicht 1
-         Ruhe     1 - mittlere Neigung auf der Namenslaenge / 30 Grad                        Gewicht 1,5
-         Mitte    1 - Abstand zum dickengewichteten Schwerpunkt des Bandes / halbe Breite    Gewicht 1,5
-         Luft     Mindestdicke / Schrift - 1,15, hoechstens 1                               Gewicht 0,5
-       Die Gewichte hat Caspar_D gewaehlt („ganz klar der mittlere") aus drei Fassungen: Mitte stark (3 / Ruhe 1), ausgewogen (diese),
-       Ruhe stark (3 / Mitte 0,3, etwa die alte Regel). */
-    const schwer = (() => { let a = 0, b = 0; smp.forEach((q, k) => { const t = Math.max(0, q.lo - q.hi); a += q.x * t; b += t; }); return b ? a / b : (X0 + X1) / 2; })();
-    const platz = (text) => { const alle = [];
-      eff.forEach((e, j) => { if (e < 10) return;
-        for (let fs = Math.min(15, Math.floor(e * 0.6)); fs >= 9; fs--){ const w = breiteVon(text, fs);
-          let a0 = j, a1 = j; while (a0 > 0 && arc[j] - arc[a0] < w / 2) a0--; while (a1 < arc.length - 1 && arc[a1] - arc[j] < w / 2) a1++;
-          if (arc[a1] - arc[a0] < w * 0.98) continue;
-          /* Geprueft wird die Strecke, die SPAETER AUCH GEZEICHNET wird: der Schriftpfad wird um zwei Stuetzpunkte
-             je Seite verlaengert, und auf dieser Verlaengerung prueften wir frueher nichts - darum liefen die Enden
-             der Namen ins Nachbarband (am 13.11.2026 nachgemessen: 6 von 20 Namen). Dazu Abstand zum Rand, sonst
-             laeuft ein Name aus der schwarzen Flaeche heraus („Kein Wetter"). */
-          const p0 = Math.max(0, a0 - 2), p1 = Math.min(eff.length - 1, a1 + 2);
-          if (smp[p0].x < X0 + RANDLUFT || smp[p1].x > X1 - RANDLUFT) continue;
-          let mn = Infinity; for (let q = p0; q <= p1; q++) mn = Math.min(mn, eff[q]); if (mn < fs * DICKE) continue;
-          let st = 0; for (let q = a0; q < a1; q++) st += Math.abs(Math.atan2(mid[q + 1] - mid[q], (smp[q + 1].x - smp[q].x) || 1e-9)) * (smp[q + 1].x - smp[q].x);
-          st /= Math.max(1e-9, smp[a1].x - smp[a0].x);
-          alle.push({ fs, a0, a1, st, j, mn });
-          break; } });
-      if (!alle.length) return null;
-      const fsMax = Math.max(...alle.map(c => c.fs)), G = { groesse: 1, ruhe: 1.5, mitte: 1.5, luft: 0.5 };
-      for (const c of alle){
-        const groesse = c.fs / fsMax, ruhe = 1 - Math.min(1, c.st / (Math.PI / 6));
-        const mitte = 1 - Math.min(1, 2 * Math.abs(smp[c.j].x - schwer) / (X1 - X0)), luft = Math.min(1, Math.max(0, c.mn / c.fs - DICKE));
-        c.wert = G.groesse * groesse + G.ruhe * ruhe + G.mitte * mitte + G.luft * luft; }
-      return alle.reduce((b, c) => c.wert > b.wert ? c : b); };
-    /* passt der Name nicht, so wenig gekuerzt wie noetig (mindestens vier Zeichen vor dem …) */
-    let text = it.titel, best = platz(text);
-    for (let k = text.length - 1; !best && k >= 4; k--){ const kurz = it.titel.slice(0, k).trimEnd() + '…'; best = platz(kurz); if (best) text = kurz; }
-    if (!best) return;
-    zuSetzen.push({ kk, text, best, smp, mid, topline, gewicht: it.summe });
+    zuSetzen.push({ kk, id: it.id, titel: it.titel, smp, topline, gewicht: it.summe });
   });
   /* ERST SAMMELN, DANN SETZEN - das dickste Band zuerst, wer mit einem schon gesetzten Namen kollidiert, bleibt
      stumm. Vorher setzte jedes Band seinen Namen sofort in Stapelreihenfolge, ohne von den anderen zu wissen; bei
@@ -195,19 +173,91 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
      Namen wegfallen, ist der Preis: aus 20 gesetzten wurden 12 - aber keiner davon liegt mehr falsch. */
   const belegt = [];
   const schneidet = (k) => belegt.some(b => !(k.x1 < b.x0 || b.x1 < k.x0 || k.y1 < b.y0 || b.y1 < k.y0));
+  /* Oberlaengen ueber der m-Linie, x-Hoehe und Unterlaengen darunter - das ist die Luft, die ein Name braucht */
+  const O_OBEN = 0.30, O_UNTEN = 0.26;
   for (const e of zuSetzen.sort((a, b) => b.gewicht - a.gewicht)) {
-    const { kk, text, best, smp, mid, topline } = e;
-    const a0 = Math.max(0, best.a0 - 2), a1 = Math.min(smp.length - 1, best.a1 + 2), fs = best.fs, id = `${UID}n${kk}`;
-    const grund = smp.slice(a0, a1 + 1).map((q, r) => [q.x, mid[a0 + r] + xHoehe * fs / 2]);
-    const mi = grund[grund.length >> 1][1], enden = (grund[0][1] + grund[grund.length - 1][1]) / 2, senke = mi > enden + 0.05 * fs;
-    const bahn = senke ? grund.map(p => [p[0], p[1] - xHoehe * fs]) : grund;
-    const ys = bahn.map(p => p[1]);
-    const kasten = { x0: bahn[0][0] - 2, x1: bahn[bahn.length - 1][0] + 2, y0: Math.min(...ys) - fs * 0.7, y1: Math.max(...ys) + fs * 0.7 };
+    const { titel, smp, topline } = e, N = smp.length;
+    const XS = smp.map(q => q.x), HI = smp.map(q => q.hi), LO = smp.map(q => q.lo);
+    /* billige Vorentscheidung: wo das Band nirgends 9 Punkt Schrift traegt, wird gar nicht gerechnet */
+    let dickMax = 0; for (let j = 0; j < N; j++) dickMax = Math.max(dickMax, LO[j] - HI[j]);
+    if (dickMax < 9 * (O_OBEN + xHoehe + O_UNTEN)) continue;
+    /* 1. Mittelachse, geschlossene Formel; 2. vierzigmal geglaettet */
+    const abl = (v) => v.map((_, j) => { const a = Math.max(0, j - 1), b = Math.min(N - 1, j + 1); return (v[b] - v[a]) / ((XS[b] - XS[a]) || 1); });
+    const mh = abl(HI), ml = abl(LO);
+    const ACHSE = glatt(XS.map((_, j) => { const c1 = 1 / Math.sqrt(1 + mh[j] * mh[j]), c2 = 1 / Math.sqrt(1 + ml[j] * ml[j]);
+      return (HI[j] * c1 + LO[j] * c2) / (c1 + c2); }), GLATT);
+    /* 3. Luft quer zur Achse, getrennt nach oben und unten. drin(): das Band ist in x monoton, also liegt ein Punkt
+       darin, wenn er zwischen den beiden Raendern an seiner x-Stelle liegt - die Stuetzpunkte stehen gleich weit. */
+    const h = XS[1] - XS[0];
+    const drin = (x, y) => { const u = (x - XS[0]) / h; if (u < 0 || u > N - 1) return false;
+      const j = Math.min(N - 2, Math.floor(u)), t = u - j;
+      return y >= HI[j] + (HI[j + 1] - HI[j]) * t && y <= LO[j] + (LO[j + 1] - LO[j]) * t; };
+    /* Gemessen wird nur, bis die groesste Schrift satt ist (15 Punkt) - wie viel Luft darueber hinaus da ist,
+       aendert keine Entscheidung. Ohne diesen Deckel liefen die Taster in dicken Baendern bis zu 300 Punkte weit. */
+    const MAX_O = 15 * O_OBEN + 0.5, MAX_U = 15 * (xHoehe + O_UNTEN) + 0.5;
+    const winkel = [], fsLokal = new Float64Array(N);
+    for (let j = 0; j < N; j++){ const a = Math.max(0, j - 1), c = Math.min(N - 1, j + 1);
+      const w = Math.atan2(ACHSE[c] - ACHSE[a], (XS[c] - XS[a]) || 1); winkel.push(w);
+      const nx = -Math.sin(w), ny = Math.cos(w);
+      let u = 0, v = 0;
+      while (u < MAX_O && drin(XS[j] - nx * (u + 0.5), ACHSE[j] - ny * (u + 0.5))) u += 0.5;
+      while (v < MAX_U && drin(XS[j] + nx * (v + 0.5), ACHSE[j] + ny * (v + 0.5))) v += 0.5;
+      /* Die groesste Schrift, die AN DIESER STELLE noch Luft und Neigung einhaelt. Damit wird aus drei
+         Bedingungen eine einzige Zahl, und die Frage „passt fs auf der ganzen Namenslaenge" ist ein
+         Minimum ueber ein Fenster - als Praefixsumme der verbotenen Stellen in einem Schritt zu haben. */
+      fsLokal[j] = Math.abs(w) > GRAD66 ? 0 : Math.min(u / O_OBEN, v / (xHoehe + O_UNTEN)); }
+    const S = [0]; for (let j = 1; j < N; j++) S.push(S[j - 1] + Math.hypot(XS[j] - XS[j - 1], ACHSE[j] - ACHSE[j - 1]));
+    /* 5. Gravitationszentrum: dickengewichtete Mitte, als Bogenlaenge */
+    let sa = 0, sb = 0; for (let j = 0; j < N; j++){ const t = LO[j] - HI[j]; sa += S[j] * t; sb += t; }
+    const SCHWER = sb ? sa / sb : S[N - 1] / 2;
+    const anS = (s) => { s = Math.max(0, Math.min(S[N - 1], s)); let j = 1; while (j < N - 1 && S[j] < s) j++;
+      const t = (s - S[j - 1]) / ((S[j] - S[j - 1]) || 1);
+      return { x: XS[j - 1] + t * (XS[j] - XS[j - 1]), y: ACHSE[j - 1] + t * (ACHSE[j] - ACHSE[j - 1]), w: winkel[j] }; };
+    /* je Schriftgroesse einmal: wie viele verbotene Stellen bis hierher. Haengt nicht vom Text ab, also vor
+       den Kuerzungsversuchen gerechnet. */
+    const verboten = []; for (let fs = 15; fs >= 9; fs--){ const pre = new Int32Array(N + 1);
+      for (let j = 0; j < N; j++) pre[j + 1] = pre[j] + (fsLokal[j] < fs ? 1 : 0); verboten.push(pre); }
+    const suche = (text) => {
+      for (let fs = 15; fs >= 9; fs--){
+        const br = breiteVon(text, fs), pre = verboten[15 - fs];
+        let lo = 0, hi = 0, best = null;
+        for (let j = 0; j < N; j++){
+          const s0 = S[j] - br / 2, s1 = S[j] + br / 2;
+          while (lo < N - 1 && S[lo] < s0) lo++;                       /* beide Grenzen wandern mit j nach rechts */
+          if (hi < lo) hi = lo;
+          while (hi < N - 1 && S[hi + 1] <= s1) hi++;
+          if (s0 < 2 || s1 > S[N - 1] - 2) continue;
+          if (pre[hi + 1] - pre[lo]) continue;                         /* Luft und Neigung auf der ganzen Laenge */
+          /* 4. Randabstand in x, nicht nur entlang der Bogenlaenge - sonst schneidet die Bildkante den Namen ab */
+          if (XS[lo] < X0 + RANDLUFT || XS[hi] > X1 - RANDLUFT) continue;
+          const dist = Math.abs(S[j] - SCHWER);
+          if (!best || dist < best.dist) best = { fs, s: S[j], dist, br }; }
+        if (best) return best; }
+      return null; };
+    /* Passt der Name nicht, so wenig gekuerzt wie noetig (mindestens vier Zeichen vor dem …). Kuerzer ist immer
+       leichter unterzubringen, also wird die laengste passende Kuerzung geschachtelt gesucht statt Zeichen fuer
+       Zeichen - bei einem langen Titel sind das fuenf Versuche statt dreissig, mit demselben Ergebnis. */
+    let text = titel, treffer = suche(text);
+    if (!treffer){ let a = 4, b = titel.length - 1, gut = null;
+      while (a <= b){ const k = (a + b) >> 1, kurz = titel.slice(0, k).trimEnd() + '…', t = suche(kurz);
+        if (t){ gut = { t, kurz }; a = k + 1; } else b = k - 1; }
+      if (!gut) continue;
+      treffer = gut.t; text = gut.kurz; }
+    const { fs, s, br } = treffer, p0 = anS(s - br / 2), p1 = anS(s + br / 2), pm = anS(s);
+    const kasten = { x0: Math.min(p0.x, p1.x) - 2, x1: Math.max(p0.x, p1.x) + 2,
+      y0: Math.min(p0.y, p1.y, pm.y) - 0.9 * fs, y1: Math.max(p0.y, p1.y, pm.y) + 1.0 * fs };
     if (schneidet(kasten)) continue;
     belegt.push(kasten);
-    defs += `<path id="${id}" d="M${bahn.map(p => f(p[0]) + ',' + f(p[1])).join('L')}" fill="none"/>`;
-    namen += `<text style="fill:${topline}" font-size="${fs}" font-family="${esc(schrift)}" pointer-events="none"><textPath href="#${id}" startOffset="50%" text-anchor="middle">`
-      + `<tspan${senke ? ` dy="${xHoehe}em"` : ''}>${esc(text)}</tspan></textPath></text>`;
+    /* 6. Satz: jeder Buchstabe einzeln, seine m-Linie auf der Tangente an seiner Stelle. Ein <g> je Name, damit
+       die Buchstaben zusammengehoeren wie die Flaeche zu ihrem Band - und damit man sie zaehlen kann. */
+    const sStart = s - mw(text, fs) / 2;
+    let satz = '';
+    for (let c = 0; c < text.length; c++){ const ch = text[c]; if (ch === ' ') continue;
+      const vor = mw(text.slice(0, c), fs), w = mw(ch, fs), q = anS(sStart + vor + w / 2);
+      satz += `<text y="${f(xHoehe * fs)}" transform="translate(${f(q.x)},${f(q.y)}) rotate(${f(q.w * 180 / Math.PI)})"`
+        + ` text-anchor="middle">${esc(ch)}</text>`; }
+    namen += `<g class="hsname" data-id="${esc(e.id)}" font-size="${fs}" font-family="${esc(schrift)}"`
+      + ` style="fill:${topline}" pointer-events="none">${satz}</g>`;
   }
   /* Wochen: stossen zwei Beschriftungen aneinander (schmaler Bildschirm), stehen nur die erste und die letzte - die Achse ist
      linear, die Wochen dazwischen liest man ab (Caspar_D, 13.11.2026: „es reicht auch die erste und letzte"). */
