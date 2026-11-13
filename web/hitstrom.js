@@ -162,7 +162,12 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
     namen += `<text style="fill:${topline}" font-size="${fs}" font-family="${esc(schrift)}" pointer-events="none"><textPath href="#${id}" startOffset="50%" text-anchor="middle">`
       + `<tspan${senke ? ` dy="${xHoehe}em"` : ''}>${esc(text)}</tspan></textPath></text>`;
   });
-  const achse = daten.wochen.map((t, j) => `<text x="${f(px[j])}" y="${hoehe - 6}" font-size="11" text-anchor="${j === 0 ? 'start' : j === m - 1 ? 'end' : 'middle'}" fill="#9aa0a8" font-family="${esc(schrift)}">KW ${kw(t)}</text>`).join('');
+  /* Wochen: stossen zwei Beschriftungen aneinander (schmaler Bildschirm), stehen nur die erste und die letzte - die Achse ist
+     linear, die Wochen dazwischen liest man ab (Caspar_D, 13.11.2026: „es reicht auch die erste und letzte"). */
+  const kwText = daten.wochen.map(t => 'KW ' + kw(t)), kwBreite = (s) => messen ? messen(s, 11) : s.length * 6.2;
+  const kwSpanne = (j) => { const b = kwBreite(kwText[j]); return j === 0 ? [px[j], px[j] + b] : j === m - 1 ? [px[j] - b, px[j]] : [px[j] - b / 2, px[j] + b / 2]; };
+  let eng = false; for (let j = 1; j < m; j++) if (kwSpanne(j)[0] - kwSpanne(j - 1)[1] < 6) { eng = true; break; }
+  const achse = daten.wochen.map((t, j) => eng && j > 0 && j < m - 1 ? '' : `<text x="${f(px[j])}" y="${hoehe - 6}" font-size="11" text-anchor="${j === 0 ? 'start' : j === m - 1 ? 'end' : 'middle'}" fill="#9aa0a8" font-family="${esc(schrift)}">KW ${kw(t)}</text>`).join('');
   return `<svg viewBox="0 0 ${breite} ${hoehe}" width="${breite}" height="${hoehe}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hitstrom">`
     + `<defs>${defs}</defs><rect x="${f(X0)}" y="${TOP}" width="${f(X1 - X0)}" height="${PH}" rx="6" fill="#000"/>`
     + flaechen + toplines + namen + achse + '</svg>';
