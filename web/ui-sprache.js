@@ -1681,6 +1681,24 @@
     ['ta.leg.rechts', 'rechts: Reimbuchstabe, Zahl der betonten Silben (H) und Ende betont (m) oder unbetont (w)', 'right: rhyme letter, number of beats (B) and ending stressed (s) or unstressed (u)'],
     ['ta.leg.wdh','derselbe Reimklang steht auch in einem anderen Abschnitt','the same rhyme sound also appears in another section'],
     ['ta.leg.grau','grau kursiv: Angaben in eckigen Klammern und Notizen mit # – nicht vermessen; an der Überschrift Strophenform und Reimschema','grey italic: notes in square brackets and lines starting with # – not measured; next to the heading, stanza form and rhyme scheme'],
+    /* DIE MUSTERWOERTER LINKS IN DER LEGENDE. Sie standen fest im Markup und blieben darum auch im englischen und im
+       russischen Blatt deutsch - „Herz schlag", „Mond Wind", „Tür" (Caspar_D, 13.11.2026: „hier in russisch stehen
+       vorne in farbe immer noch deutsche wörter"). Ein Muster, das der Leser nicht lesen kann, zeigt nichts.
+       hell/mit/matt heissen in jeder Sprache so, wie der Text daneben die drei Stufen nennt (bright/mid/dim,
+       ярко/средне/тускло). prall braucht ZWEI betonte Silben nacheinander: deutsch und englisch ein Kompositum
+       (Herzschlag, heartbeat), russisch zwei einsilbige Woerter - darum die Fuge, die nur im Russischen ein
+       Leerzeichen ist. asso zeigt das Wort aus dem Beispielpaar von ta.leg.asso, damit beides zusammenpasst. */
+    ['ta.leg.w.hell','hell','bright'],
+    ['ta.leg.w.mit','mit','mid'],
+    ['ta.leg.w.matt','matt','dim'],
+    ['ta.leg.w.prall1','Herz','heart'],
+    ['ta.leg.w.prallfuge','',''],
+    ['ta.leg.w.prall2','schlag','beat'],
+    ['ta.leg.w.reim1','Mond','moon'],
+    ['ta.leg.w.reim2','Wind','wind'],
+    ['ta.leg.w.unrein','Tür','door'],
+    ['ta.leg.w.binnen','Herz','heart'],
+    ['ta.leg.w.asso','blind','slow'],
     ['kfb.hk.h','{n} betonte Silbe (Hebung)|{n} betonte Silben (Hebungen)','{n} beat (stressed syllable)|{n} beats (stressed syllables)'],
     ['kfb.hk.m','endet betont (männlich)','stressed ending'],
     ['kfb.hk.w','endet unbetont (weiblich)','unstressed ending'],

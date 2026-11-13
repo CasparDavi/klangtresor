@@ -5118,8 +5118,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=27"></script>
-<script src="/ui-sprache.js?v=41"></script>
+<script src="/ui-sprache-ru.js?v=28"></script>
+<script src="/ui-sprache.js?v=42"></script>
 <!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
 <script src="/klangfeder-blatt.js?v=2026-11-13.2"></script>
 <script src="/qr.js?v=1"></script>
@@ -23239,12 +23239,15 @@ function taLegende(){
   const muster = { h: 3, k: 'm', reim: 'A' };
   const streifen = ['strophe', 'refrain', 'bruecke', 'rand'].map(a => '<i class="ta-streifen" style="background:' + KB.ABS_FARBE[a] + '"></i>').join('');
   return '<div class="ta-leg kf-blatt">'
-    + zeile(s('h2', 'hell') + ' ' + s('h1', 'mit') + ' ' + s('h0', 'matt'), t('ta.leg.hell'))
-    + zeile(s('h2', 'Herz') + s('prall', 'schlag'), t('ta.leg.prall'))
-    + zeile('<span class="r" style="color:' + f('A') + '">Mond</span> <span class="r" style="color:' + f('B') + '">Wind</span>', t('ta.leg.farbe'))
-    + zeile('<span class="r unrein" style="color:' + f('A') + ';text-decoration-color:' + f('A') + '">Tür</span>', t('ta.leg.unrein'))
-    + zeile('<span class="binnen" style="text-decoration-color:' + f('C') + '">Herz</span>', t('ta.leg.binnen'))
-    + zeile('<span class="asso">blind</span>', t('ta.leg.asso'))
+    /* Die Musterwoerter kommen aus der Sprache (ta.leg.w.*), nicht aus dem Markup - sonst steht im russischen Blatt
+       „Herz schlag" (Caspar_D, 13.11.2026). Die Fuge zwischen den beiden prall-Silben ist nur im Russischen ein
+       Leerzeichen: dort sind es zwei einsilbige Woerter, im Deutschen und Englischen ein Kompositum. */
+    + zeile(s('h2', esc(t('ta.leg.w.hell'))) + ' ' + s('h1', esc(t('ta.leg.w.mit'))) + ' ' + s('h0', esc(t('ta.leg.w.matt'))), t('ta.leg.hell'))
+    + zeile(s('h2', esc(t('ta.leg.w.prall1'))) + esc(t('ta.leg.w.prallfuge')) + s('prall', esc(t('ta.leg.w.prall2'))), t('ta.leg.prall'))
+    + zeile('<span class="r" style="color:' + f('A') + '">' + esc(t('ta.leg.w.reim1')) + '</span> <span class="r" style="color:' + f('B') + '">' + esc(t('ta.leg.w.reim2')) + '</span>', t('ta.leg.farbe'))
+    + zeile('<span class="r unrein" style="color:' + f('A') + ';text-decoration-color:' + f('A') + '">' + esc(t('ta.leg.w.unrein')) + '</span>', t('ta.leg.unrein'))
+    + zeile('<span class="binnen" style="text-decoration-color:' + f('C') + '">' + esc(t('ta.leg.w.binnen')) + '</span>', t('ta.leg.binnen'))
+    + zeile('<span class="asso">' + esc(t('ta.leg.w.asso')) + '</span>', t('ta.leg.asso'))
     + zeile(streifen, t('ta.leg.streifen'))
     + zeile(KB.reimHtml(muster, o) + KB.hebungHtml(muster, o), t('ta.leg.rechts'))
     + zeile('<span class="wdh">↺</span>', t('ta.leg.wdh'))
