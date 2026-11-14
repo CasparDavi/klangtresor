@@ -748,6 +748,9 @@
        Hitflow"). „Anteil" ist ein Entwicklerwort; es sagt nicht, was man sehen muss - dass eine Woche mit 185 Abrufen
        genauso hoch ist wie eine mit 1767. Seit derselben Runde sind es ausserdem ALLE Titel in Bewegung, nicht zwoelf. */
     ['profil.hitstrom.hinweis', 'alle Titel, die sich seit {datum} bewegt haben · jede Woche ist gleich hoch und zeigt, wer sich den Zuwachs teilt – nicht, wie viel es war', 'every title that has moved since {datum} · each week is the same height and shows who shares the gain – not how much it was'],
+    /* Nur wenn die Klemme wirklich greift (hitstromDaten.weggelassen > 0) - bei Caspar_D bewegen sich hoechstens
+       43 Titel je Woche, da fehlt nichts und der Hinweis darueber waere eine Warnung ohne Anlass. */
+    ['profil.hitstrom.hinweis.gekappt', 'die {n} stärksten Titel jeder Woche seit {datum} · {weg} schwächere fehlen, bis zu {anteil} % einer Woche · jede Woche ist gleich hoch und zeigt, wer sich den Zuwachs teilt – nicht, wie viel es war', 'the {n} strongest titles of each week since {datum} · {weg} weaker ones are missing, up to {anteil} % of a week · each week is the same height and shows who shares the gain – not how much it was'],
     ['profil.bewegtesten', 'Die zehn bewegtesten', 'The ten with the most momentum'],
     ['profil.meistgeherzt', 'Die zehn meistgeherzten', 'The ten most hearted'],
     ['profil.chip.woche', 'Letzte Woche', 'Last week'],

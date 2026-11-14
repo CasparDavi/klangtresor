@@ -133,6 +133,24 @@ dieselbe Platte hängt.
 
 ## Klein und konkret
 
+### Hof der Zellnamen im Klangschaum: geraten statt gemessen (offen, 14.11.2026)
+Anlass: der Hitstrom hat am 14.11.2026 den Tintenapparat des Klangschaums übernommen und dabei den **Hof** dazu
+definiert — Caspar_D: *„definiere einen Hof um die Tinte - normalerweisse der i zu i-Punkt abstand"*, *„wir hatten
+das in der wortwolke in Klangfeder definiert"*. Der Klangschaum hat diesen Schritt noch nicht.
+- **Was er heute tut:** `render.js` setzt `const TINTE_RAND = 0.1` — jeder Tintenkasten bekommt 0,1 em Rand, eine
+  runde Zahl ohne Messung.
+- **Was die Wortwolke tut** (`KlangFeder/web/wortwolke.js`, `maske`): `luft = max(innenLuecke, iPunkt() · Größe)` —
+  das Größere aus der eigenen kleinsten inneren Lücke und dem i-Punkt-Abstand der Schrift. Caspar_D, 12.11.2026:
+  *„lieber den i/i-punkt abstand als maß für die hofbreite"*, *„außen nie enger als innen"*.
+- **Was der Hitstrom seit 1.1.8 tut:** den gemessenen i-Abstand (`tinte.hof`, bei der Oberflächenschrift 0,079 em).
+  Die innere Lücke ist dort weggelassen, weil sie eine Pixelmaske je Wort bräuchte und bei 7–15 Punkt nie das
+  Größere ist. Im Klangschaum können die Namen viel größer werden — dort könnte sie zählen.
+- **Zu tun:** `TINTE_RAND` durch den gemessenen Hof ersetzen; entscheiden, ob die innere Lücke dazukommt. Danach
+  Augenschein am Schaum, weil sich die Namenslagen verschieben können.
+- Nebenbei am 14.11.2026 schon korrigiert: der **Rückfallwert** der i-Lücke in `schaumSchriftMasse` war aus dem
+  Zeilenabstand abgeleitet (1,1 − 0,71 − 0,18 = 0,21) und damit dreimal zu groß; er steht jetzt bei 0,07 wie in der
+  Wortwolke. Er greift nur, wenn die Messung scheitert.
+
 ### Hüllkurve nur noch aus wellenStufen (offen, 11.10.2026)
 Anlass: Tarjas Pull Request 7 (Skizzenbuch zeigte bei ihr keine Tonhüllkurve). Er nimmt `wellenStufen` nur als Rückfall, wenn
 `welle` leer ist. Jörg: den Blick auf die falsche Quelle generell herausnehmen und nur unterstützen, was generisch funktioniert.

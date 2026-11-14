@@ -5118,8 +5118,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <!-- Sprache der Oberfläche, vor dem Haus-Skript: t() gilt überall, auch im Effektclip. -->
 <script src="/klang-woerter.js?v=1"></script>
 <!-- Russisch zuerst: ui-sprache.js übernimmt window.UI_RU beim Laden. -->
-<script src="/ui-sprache-ru.js?v=30"></script>
-<script src="/ui-sprache.js?v=44"></script>
+<script src="/ui-sprache-ru.js?v=31"></script>
+<script src="/ui-sprache.js?v=45"></script>
 <!-- Leseansicht der Lyrics-Analyse, unveraendert aus der KlangFeder (gehoert zum Kern in bin/textanalyse/). -->
 <script src="/klangfeder-blatt.js?v=2026-11-13.2"></script>
 <script src="/qr.js?v=1"></script>
@@ -10619,24 +10619,28 @@ function schaumKachelPlatz(p, a){
    Zellwand, „Electric rain im Stahlhimmel". Seit 1.0.52 messen die Tintenkaesten in der Groesse am Schirm, siehe unten.) */
 /* Die Masse der Schrift der Zellnamen, auf die Grundlinie bezogen: Oberlaenge o (hdkl), Unterlaenge u (gpqy), die Luecke
    zwischen i-Stamm und i-Punkt, daraus der Zeilenabstand lead = o + u + Luecke (Studio-Definition, siehe oben). */
-let schaumSchriftMasseMerk = null;
+const schriftMasseMerk = new Map();
 const SCHAUM_NAMEN_FAMILIE = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-function schaumSchriftMasse(){
-  if (schaumSchriftMasseMerk) return schaumSchriftMasseMerk;
-  let m = { o: 0.71, u: 0.18, lead: 1.1 };
+/* Die Masse gelten je Schriftfamilie - seit 1.1.8 misst auch der Hitstrom mit diesem Apparat, und der setzt in der
+   Schrift der Oberflaeche, nicht in der des Klangschaums. */
+function schaumSchriftMasse(FAM = SCHAUM_NAMEN_FAMILIE){
+  if (schriftMasseMerk.has(FAM)) return schriftMasseMerk.get(FAM);
+  /* Rueckfall, wenn die Messung nicht geht: lead 1,1 ist der alte Rueckfall des Zeilenabstands und bleibt; die
+     i-Luecke hat ihren eigenen (0,07 wie in der Wortwolke der KlangFeder), nicht lead - o - u = 0,21. */
+  let m = { o: 0.71, u: 0.18, luecke: 0.07, lead: 1.1 };
   try {
     const S = 240, c = document.createElement('canvas');
     c.width = S; c.height = Math.round(S * 1.4);
-    const g = c.getContext('2d', { willReadFrequently: true }); g.font = '400 ' + S + 'px ' + SCHAUM_NAMEN_FAMILIE; g.textBaseline = 'alphabetic';
+    const g = c.getContext('2d', { willReadFrequently: true }); g.font = '400 ' + S + 'px ' + FAM; g.textBaseline = 'alphabetic';
     const o = g.measureText('hdkl').actualBoundingBoxAscent / S, u = g.measureText('gpqy').actualBoundingBoxDescent / S;
     g.fillStyle = '#fff'; g.fillText('i', S * 0.25, S * 1.05);
     const W = c.width, H = c.height, d = g.getImageData(0, 0, W, H).data;
     const ink = (y) => { for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 60) return true; return false; };
     let y = 0; while (y < H && !ink(y)) y++; while (y < H && ink(y)) y++; const punkt = y; while (y < H && !ink(y)) y++;
     const luecke = (y - punkt) / S;
-    if (o > 0.4 && u > 0.1 && luecke > 0.005 && luecke < 0.3) m = { o, u, lead: o + u + luecke };
+    if (o > 0.4 && u > 0.1 && luecke > 0.005 && luecke < 0.3) m = { o, u, luecke, lead: o + u + luecke };
   } catch (e) {}
-  return (schaumSchriftMasseMerk = m);
+  schriftMasseMerk.set(FAM, m); return m;
 }
 function schaumZeilenabstand(){ return schaumSchriftMasse().lead; }
 /* TINTENKAESTEN DER ZELLNAMEN (1.0.52, Caspar_D: „Bereiche ohne Ober oder Unterlängen sind verschenkter Platz"). Fuer
@@ -10649,15 +10653,15 @@ function schaumZeilenabstand(){ return schaumSchriftMasse().lead; }
 const SCHAUM_TINTE_STUFEN = [4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48];
 const schaumTinteZeichen = new Map(), schaumTinteZeilen = new Map();
 let schaumTinteLeinwand = null, schaumTinteTeiler;
-function schaumNamenTinte(pxJe){
-  const m = schaumSchriftMasse();
+function schaumNamenTinte(pxJe, FAM = SCHAUM_NAMEN_FAMILIE){
+  const m = schaumSchriftMasse(FAM);
   if (!schaumTinteLeinwand){ schaumTinteLeinwand = document.createElement('canvas').getContext('2d'); schaumTinteLeinwand.textBaseline = 'alphabetic'; }
   if (schaumTinteTeiler === undefined) schaumTinteTeiler = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
   const g = schaumTinteLeinwand, teile = t => schaumTinteTeiler ? [...schaumTinteTeiler.segment(t)].map(s => s.segment) : [...t];
   const stufe = px => { let b = SCHAUM_TINTE_STUFEN[0]; for (const s of SCHAUM_TINTE_STUFEN) if (s <= px) b = s; return b; };
-  const schrift = (b, kursiv) => (kursiv ? 'italic ' : '') + '400 ' + b + 'px ' + SCHAUM_NAMEN_FAMILIE;
+  const schrift = (b, kursiv) => (kursiv ? 'italic ' : '') + '400 ' + b + 'px ' + FAM;
   const zeichen = (c, b, kursiv) => {
-    const k = (kursiv ? 'i' : '') + b + '|' + c; let z = schaumTinteZeichen.get(k);
+    const k = FAM + '|' + (kursiv ? 'i' : '') + b + '|' + c; let z = schaumTinteZeichen.get(k);
     if (!z){ g.font = schrift(b, kursiv); const q = g.measureText(c);
       z = { v: q.width / b, l: q.actualBoundingBoxLeft / b, r: q.actualBoundingBoxRight / b, a: q.actualBoundingBoxAscent / b, d: q.actualBoundingBoxDescent / b };
       schaumTinteZeichen.set(k, z); }
@@ -10667,8 +10671,12 @@ function schaumNamenTinte(pxJe){
   /* Kursiv (Zellen ohne Untergruppe) wird kursiv gemessen - die Tinte reicht 0,08-0,12 em weiter. Schrift von rechts nach links
      (Hebraeisch, Arabisch): die Zeichen stehen gespiegelt und verbunden, die Kaesten je Zeichen stimmen dann nicht - fuer solche
      Zeilen gilt der Tintenkasten der ganzen Zeile. */
-  const tinte = { o: m.o, u: m.u, breite: t => tinte.runs(t, 10 / pxJe).w, runs(t, groesse, kursiv = false){
-    const b = stufe(groesse * pxJe), k = (kursiv ? 'i' : '') + b + '|' + t; let e = schaumTinteZeilen.get(k);
+  /* DER HOF UM DIE TINTE ist der Abstand vom i-Stamm zum i-Punkt (Caspar_D, 14.11.2026: „definiere einen Hof um
+     die Tinte - normalerweisse der i zu i-Punkt abstand"). Das ist das Mass, das die Schrift selbst fuer „Luft"
+     mitbringt - dasselbe, aus dem der Zeilenabstand gebaut ist. Der Hitstrom haelt ihn zum Bandrand und zwischen
+     zwei Namen ein; bis 1.1.8 stiess die Tinte an manchen Baendern an den Rand. */
+  const tinte = { o: m.o, u: m.u, hof: m.luecke, breite: t => tinte.runs(t, 10 / pxJe).w, runs(t, groesse, kursiv = false){
+    const b = stufe(groesse * pxJe), k = FAM + '|' + (kursiv ? 'i' : '') + b + '|' + t; let e = schaumTinteZeilen.get(k);
     if (e) return e;
     g.font = schrift(b, kursiv);
     const ganz = g.measureText(t), w = ganz.width / b;
@@ -16739,13 +16747,20 @@ function profilZahlenFuellen(){
      Zaehlerverlauf kommen, wenn das Profil schon steht. Farben aus Akzent 1 und 2 des laufenden Titels (--titel-a/-b), live. */
   {
     const w = document.createElement('div'); w.className = 'dia breit';
-    w.appendChild(diaTitel(t('profil.hitstrom'), t('profil.hitstrom.hinweis', { datum: tagMonatVomStand(verlaufSeit || '2025-08-17') }), 'bewegung'));
+    const seit = tagMonatVomStand(verlaufSeit || '2025-08-17');
+    const kopf = diaTitel(t('profil.hitstrom'), t('profil.hitstrom.hinweis', { datum: seit }), 'bewegung'); w.appendChild(kopf);
     const feld = document.createElement('div'); feld.className = 'hitstrom'; w.appendChild(feld); g.appendChild(w);
     (async () => {
       try {
-        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.1.6'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
+        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.1.8a'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
         const daten = d && M.hitstromDaten(eigene, d.verlauf || {});
         if (!daten){ w.remove(); return; }
+        /* NACH OBEN GEKLEMMT: je Woche die staerksten (hitstrom.js). Greift die Klemme, sagt es der Hinweis - sonst
+           waeren die 100 % einer Woche nur die 100 % der Gezeigten, und niemand saehe es. Bei Caspar_D bewegen sich
+           hoechstens 43 Titel je Woche, da faellt nichts weg und der Hinweis bleibt, wie er ist. */
+        if (daten.weggelassen){ const k = kopf.querySelector('small');
+          if (k) k.textContent = '· ' + t('profil.hitstrom.hinweis.gekappt', { datum: seit, n: daten.jeWoche,
+            weg: daten.weggelassen, anteil: (100 * daten.fehltMax).toFixed(1) }); }
         /* Farben: das Modul schreibt --titel-a/-b selbst ins Bild, so folgt der Strom jedem Titelwechsel (siehe hitstrom.js) */
         const schrift = getComputedStyle(document.body).fontFamily;
         const leinwand = document.createElement('canvas').getContext('2d');
@@ -16764,7 +16779,12 @@ function profilZahlenFuellen(){
           const kacheln = [...((g.querySelector('.topreihe') || {}).children || [])].filter(k => k.classList.contains('topk'));
           const links = kacheln.length ? Math.max(0, kacheln[0].getBoundingClientRect().left - r0.left) * mass : 0;
           const rechts = kacheln.length ? Math.min(fb, kacheln[kacheln.length - 1].getBoundingClientRect().right - r0.left) * mass : breite;
-          feld.innerHTML = M.hitstromSvg(daten, { breite, hoehe: Math.round(Math.min(380, Math.max(173, breite * 0.38))), links, rechts, messen, schrift, xHoehe: xh }); };
+          /* DIE TINTE: derselbe Apparat wie bei den Zellnamen im Klangschaum (schaumNamenTinte), nur mit der
+             Schrift der Oberflaeche. Er misst in der Groesse, in der der Name am Schirm erscheint - unter 420
+             Punkten wird breiter gezeichnet und vom CSS verkleinert, darum mass. Ohne ihn faellt hitstrom.js auf
+             die Pauschale zurueck und setzt rund ein Drittel weniger Namen. */
+          const tinte = schaumNamenTinte(1 / mass, schrift);
+          feld.innerHTML = M.hitstromSvg(daten, { breite, hoehe: Math.round(Math.min(380, Math.max(173, breite * 0.38))), links, rechts, messen, tinte, schrift, xHoehe: xh }); };
         /* GEMESSEN WIRD, WENN DAS FELD SICHTBAR IST (28.10.2026). Oeffnet das Profil mit einer anderen Lasche (etwa „System"),
            entsteht „Meine Daten" versteckt: Breite und Bildkanten der Hitparaden messen dann null, und der Strom lag
            zusammengeknuellt am linken Rand (Caspar_D: „alles hängt linksbündig zerknüllt"). Darum zeichnet er neu, sobald
