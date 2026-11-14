@@ -168,8 +168,13 @@ Anlass: beim Pruefen der Plakatexporte nach den Beschriftungsregeln vom 14.11.20
 - **Am Schirm** meldet `renderSVG` jede Namensbox ueber `labelBox`; `schaumBildPlatz` rechnet sie in die Kosten und
   schiebt das Cover so, dass moeglichst kein Gesicht unter die Schrift geraet (Gesicht auf dem Namen: 70 → 31 von 139).
 - **Im Druck** setzt `renderSVG` gar keine Namen (`labelLevel: null`) — jede Zelle wird danach einzeln von `kopfUnten`
-  beschriftet. `namensBox` bleibt darum leer, und das Bild weiss beim Platzieren nichts vom Titel. Auf dem Plakat liegen
-  Namen also weiter auf Gesichtern.
+  beschriftet. `namensBox` bleibt darum leer, und das Bild weiss beim Platzieren nichts vom Titel.
+- **Milder als am Schirm, aber nicht geheilt:** im Druck steht der Titel nicht frei auf dem Bild, sondern auf einem
+  Glasband unten in der Zelle (`milch`/`rauch`, Deckung 0,62, Hoehe `y+h-bandY`). Lesbar ist der Titel damit immer —
+  aber das Band deckt den unteren Bildstreifen ab, und wo das Gesicht dort liegt, liegt es hinter Milchglas. Das
+  Ausweichen wuerde also nicht die Lesbarkeit verbessern, sondern das Gesicht aus dem Band holen.
+- Nichts davon wird von Hand nachjustiert: jede Zelle rechnet ihr Band selbst (`beschriften`), fuer alle Zellen
+  desselben Exports nach derselben Regel.
 - **Zu tun:** die Titel des Plakats vor der Bildplatzierung rechnen (sie haengen nur am Umriss, nicht am Bild) und ihre
   Boxen genauso in `schaumBildPlatz` geben. Reihenfolge im Blick behalten: heute entsteht erst das Bild, dann der Titel.
 
