@@ -10580,7 +10580,7 @@ function schaumFokus(id){
     0,4 × Abstand des Gesichts (sonst der Bildmitte) von der Zellmitte
    Ohne Gesicht und ohne Schrift gewinnt die mittige Lage ohne Zoom - dann bleibt alles wie vorher. „Sichtbar" heisst:
    im um 6 % eingerueckten Rechteck der Zelle (die Ecken der Vielecke zeigen ohnehin nichts). */
-function schaumBildPlatz(x, y, w, h, a, fokus, texte = []){
+function schaumBildPlatz(x, y, w, h, a, fokus, texte = [], nameBox = null){
   const W0 = Math.max(w, h * a), vx0 = x + 0.06 * w, vx1 = x + 0.94 * w, vy0 = y + 0.06 * h, vy1 = y + 0.94 * h;
   const sicht = Math.max(1e-9, (vx1 - vx0) * (vy1 - vy0)), gr = Math.max(w, h);
   const schnitt = (b) => Math.max(0, Math.min(b[2], vx1) - Math.max(b[0], vx0)) * Math.max(0, Math.min(b[3], vy1) - Math.max(b[1], vy0));
@@ -10597,6 +10597,16 @@ function schaumBildPlatz(x, y, w, h, a, fokus, texte = []){
         kosten += 50 * (1 - schnitt(g) / fg) + 0.4 * Math.hypot((g[0] + g[2]) / 2 - (x + w / 2), (g[1] + g[3]) / 2 - (y + h / 2)) / gr; }
       else kosten += 0.4 * Math.hypot(X + W / 2 - (x + w / 2), Y + H / 2 - (y + h / 2)) / gr;
       if (texte.length){ let t = 0; for (const b of texte) t += schnitt(ab(b)); kosten += 6 * t / sicht; }
+      /* DAS GESICHT NICHT UNTER DEN ZELLNAMEN (Caspar_D, 14.11.2026: „Gesichtsüberdeckungsvermeidung sollte aktiv
+         sein ... der Text liegt manchmal drüber"). Bisher wich das Bild nur der SCHRIFT IM COVER aus - der eigene
+         Name der Zelle war ihm unbekannt. Gemessen an Caspar_Ds 346 Zellen: von 133 Zellen mit Gesicht und Namen
+         lag der Name bei 78 auf dem Gesicht, im Mittel zu 47 % verdeckt; mit diesem Posten sind es 36. Gewicht 15
+         ist der Knick der Messreihe (5 → 42, 15 → 36, 40 → 35) und bleibt deutlich unter den 50 fuer „Gesicht
+         ueberhaupt in der Zelle" - lieber ein Gesicht unter der Schrift als eines ausserhalb des Bildes. */
+      if (f && nameBox){ const g2 = ab(f), fg2 = Math.max(1e-9, (g2[2] - g2[0]) * (g2[3] - g2[1]));
+        const ue = Math.max(0, Math.min(g2[2], nameBox[2]) - Math.max(g2[0], nameBox[0]))
+                 * Math.max(0, Math.min(g2[3], nameBox[3]) - Math.max(g2[1], nameBox[1]));
+        kosten += 15 * ue / fg2; }
       if (!best || kosten < best.k - 1e-9) best = { k: kosten, x: X, y: Y, w: W, h: H };
     }
   }
@@ -10979,7 +10989,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     const nr = skizzeTinten.get(ink), f = S.feder.get(id), lage = `x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`;
     /* Ausschnitt wie im Schaum (Caspar_D, 08.10.2026: „du hast die Gesichtszentrierung nicht mehr genutzt bzw die Textvermeidung, schalt
        das mal wieder an"): die Federzeichnung hat das Seitenverhältnis ihres Originals, also gilt derselbe Platz (schaumBildPlatz) */
-    const fd = f && f.tinte >= 0.012 ? schaumFokus(id) : null, pO = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus, fd.texte) : null;
+    const fd = f && f.tinte >= 0.012 ? schaumFokus(id) : null, pO = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus, fd.texte, namensBox.get(leaf) || null) : null;
     const lageB = pO ? `x="${pO.x.toFixed(1)}" y="${pO.y.toFixed(1)}" width="${pO.w.toFixed(1)}" height="${pO.h.toFixed(1)}"` : lage;
     let out = `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
       + (f && f.tinte >= 0.012
@@ -11064,7 +11074,10 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
   const zellName = (k) => { const kz = ohneKlammern(k.name); return kurzZahl.get(kz) > 1 ? k.name : kz; };
   const mitBild = new Set(res.leaves.filter((k, i) => bilder[i]));   /* Zellen mit Bild: Name unten (render.js untenSetzen) */
   /* cushion 0: die Kissen-Beleuchtung der Engine wirkte unter den Bildern nicht mehr (siehe schaumKissen) */
+  /* Wo die Namen liegen - renderSVG meldet es, die Bildplatzierung weiter unten weicht damit den Gesichtern aus */
+  const namensBox = new Map();
   let svg = R.renderSVG(res, { pad: 0, cushion: 0,
+    labelBox: (k, b) => namensBox.set(k, [b[0], res.height - b[3], b[2], res.height - b[1]]),
     /* im Druck stehen die Namen auf Glasbaendern */
     /* Luecken statt Linien auch am Schirm (07.10.2026, siehe 1.0.34): Grund scheint durch, Dark Reader
        kann nichts umfaerben; im Druck dieselben Breiten mal dem Fugen-Regler. */
@@ -11161,7 +11174,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              /* Platz des Bildes: mit Gesichtern gerueckt (schaumFokus); gezeigt wird am Schirm und in der
                 Vorschau meist die Kachel, im PDF das Original (data-p). Ohne Eintrag wie bisher mittig. */
              const fd = quelle ? (personen ? schaumFokusAvatar((zeilen[res.leaves[+i].row] || {}).bild) : schaumFokus(id)) : null;
-             const pOrig = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus, fd.texte) : null;
+             const pOrig = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus, fd.texte, namensBox.get(res.leaves[+i]) || null) : null;
              const gezeigt = druck ? (vorschauBilder[+i] || quelle) : quelle;
              const pBild = !pOrig ? { x, y, w, h } : (!fd.eigen && /kachel\.jpg/.test(gezeigt || '') ? schaumKachelPlatz(pOrig, fd.a) : pOrig);
              const lage = `x="${pBild.x.toFixed(1)}" y="${pBild.y.toFixed(1)}" width="${pBild.w.toFixed(1)}" height="${pBild.h.toFixed(1)}"`

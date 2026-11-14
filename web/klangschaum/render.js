@@ -214,14 +214,22 @@ function mittenFrei(poly, y, bw, bh, sperren) {
   return frei.map(([u, v]) => [u + bw / 2, v - bw / 2]).filter(([u, v]) => v > u);
 }
 // die Tintenkaesten eines Namensblocks je Zeile, relativ zu (Zeilenmitte x, Blockmitte y), Mathematik (y nach oben)
+/* SCHMALSCHNITT (14.11.2026): die Namen laufen auf 85 % der Breite bei voller Hoehe - ein Schmalschnitt, wie ihn
+   die Kartografie seit jeher fuer enge Lagen nimmt. Er spart Strecke, ohne an Lesehoehe zu verlieren; der Engpass
+   der Zellen ist die Breite, die Hoehe bleibt unberuehrt. Gemessen ueber Caspar_Ds 346 Zellen, zusaetzlich zu
+   Luft 0,12 und dem Ausweichen vor Gesichtern: 250 → 261 Namen, Lage 0,645 → 0,686, Flaeche unter dem Text
+   14,6 % → 10,6 %. Bei 78 % waeren es 269 Namen, dort sieht man die Stauchung aber. Derselbe Wert wie im
+   Hitstrom, den Caspar_D am Bild gewaehlt hat. Gilt nur fuer die Tinten-Saetze; der alte Zeilenkasten-Satz
+   rechnet unveraendert. */
+const TINTE_SCHMAL = 0.85;
 function tintenBlock(lines, size, ink, leading, m, kursiv = false) {
   const n = lines.length, zeilen = [];
   let u = Infinity, ob = -Infinity, links0 = Infinity, rechts0 = -Infinity;
   lines.forEach((t, j) => {
-    const l = ink.runs(t, size, kursiv), mid = ((n - 1) / 2 - j) * leading * size, g = mid - (ink.o - ink.u) / 2 * size, links = -l.w * size / 2, kaesten = [];
+    const l = ink.runs(t, size, kursiv), mid = ((n - 1) / 2 - j) * leading * size, g = mid - (ink.o - ink.u) / 2 * size, links = -l.w * TINTE_SCHMAL * size / 2, kaesten = [];
     let rechtsBis = -Infinity;
     for (const [a0, a1, o2, un] of l.runs) {
-      const k = [links + (a0 - m) * size, g - (un + m) * size, links + (a1 + m) * size, g + (o2 + m) * size];
+      const k = [links + (a0 * TINTE_SCHMAL - m) * size, g - (un + m) * size, links + (a1 * TINTE_SCHMAL + m) * size, g + (o2 + m) * size];
       k.neu = k[0] > rechtsBis;            // beginnt eine neue zusammenhaengende Gruppe (keine Ueberlappung mit den Kaesten davor)
       rechtsBis = Math.max(rechtsBis, k[2]);
       kaesten.push(k); u = Math.min(u, k[1]); ob = Math.max(ob, k[3]); links0 = Math.min(links0, k[0]); rechts0 = Math.max(rechts0, k[2]);
@@ -249,10 +257,14 @@ function rechteckFrei(nahe, x0, y0, x1, y1) {
   for (const [a, b] of nahe) if (streckeTrifft(a, b, x0, y0, x1, y1)) return false;
   return true;
 }
-const gesetzt = (b, xs, y, size, leading, ink) => ({ x: xs[(xs.length - 1) >> 1], xs, y, size, lines: b.lines, leading, tinte: { o: ink.o, u: ink.u } });
+/* box: die Tintenhuelle des gesetzten Blocks, relativ zu x und y (Mathematik, y nach oben) - damit der Aufrufer
+   weiss, welchen Fleck der Zelle der Name belegt. Der Klangschaum legt danach sein Bild so, dass kein Gesicht
+   darunter geraet (schaumBildPlatz in index.html). */
+const gesetzt = (b, xs, y, size, leading, ink) => ({ x: xs[(xs.length - 1) >> 1], xs, y, size, lines: b.lines, leading,
+  tinte: { o: ink.o, u: ink.u }, box: [b.links, b.u, b.rechts, b.ob] });
 function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv = false, sperren = null }) {
   const m = TINTE_RAND, x0c = Math.max(xa, px - 3 * r), x1c = Math.min(xb, px + 3 * r), cx = (x0c + x1c) / 2, W = x1c - x0c;
-  const s0 = Math.min(maxSize, 2 * r), breit = t => ink.runs(t, s0, kursiv).w + 2 * m;
+  const s0 = Math.min(maxSize, 2 * r), breit = t => ink.runs(t, s0, kursiv).w * TINTE_SCHMAL + 2 * m;
   // obere Grenze je Zeilenzahl: Breite der Sehne durch den Pol; ein Block, breiter als hoch, ist hoechstens 2 r hoch
   const bis = (k, laengste) => Math.min(W / laengste, 2 * r / ((k - 1) * leading + ink.o + ink.u + 2 * m), maxSize);
   let lines = [text], size = bis(1, breit(text));
@@ -291,7 +303,12 @@ function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, 
    Breite der Zelle auf dieser Hoehe); die tiefste Lage, die passt, gewinnt. Passt die Groesse nirgends, wird sie kleiner.
    Ohne Bild (Treemaps, Zellen ohne Cover) bleibt der Fuellmodus tinteSetzen - Caspar_D: „merke dir die maximalgroße
    Beschriftung für die Treemaps ohne Bilder, wo ausschliesslich die Grösse der Zellen eine Rolle spielt". */
-const TINTE_LUFT_BILD = 0.3;
+/* LUFT UM DIE TINTE IN ZELLEN MIT BILD. Erst 0,3 em (Caspar_D, 07.10.2026: „der Text etwas atmen"). Am
+   14.11.2026 ueber Caspar_Ds 346 Zellen gemessen, bei 0,30 / 0,20 / 0,12 / 0,079 (dem i-Punkt-Abstand):
+   jeder Schritt nach unten bringt mehr Namen (246 → 253), setzt sie tiefer (Lage 0,586 → 0,657 von 1) und
+   laesst weniger Zellflaeche unter dem Text (21,2 % → 13,3 %), ohne die Schrift kleiner zu machen. 0,12
+   gewaehlt: der Gewinn ist dort fast ganz gehoben, und es bleibt sichtbar mehr Luft als der blosse Hof. */
+const TINTE_LUFT_BILD = 0.12;
 /* Gemessen wird die OBERKANTE des Namens (07.10.2026, erster Versuch: die tiefste Unterkante gewann - ein schmaler Zweizeiler
    kam in runden Zellen tiefer hinunter als ein breiter Einzeiler, reichte aber hoeher ins Bild): je Fassung (jeder Umbruch in
    eine, zwei oder drei Zeilen) die tiefste Lage, die passt; es gewinnt die tiefste Oberkante, bei Gleichstand (5 % der Schrift)
@@ -314,13 +331,30 @@ function untenSetzen(poly, huelle, text, o) {
   const { px, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv, sperren } = o;
   // die bisherige Groesse: der Zeilenkasten-Satz - oder vorgegeben (startSize, das Glasfeld des Plakats rechnet sie selbst)
   const alt = startSize ? { size: startSize } : placeLabel(poly, text, { maxSize, minSize, maxLines, measure: ink.breite, fit: true, leading, drop, huelle });
-  if (!alt) return tinteSetzen(poly, huelle, text, o);   // der Zeilenkasten fand keinen Platz - dann so gross, wie die Tinte erlaubt
+  /* FINDET DER ZEILENKASTEN NICHTS, HEISST DAS NICHT, DASS DIE TINTE NICHTS FINDET (14.11.2026). Der alte Satz
+     verlangt pauschal 0,73 em ueber und unter JEDER Zeile; die Tinte verlangt nur, was wirklich an Buchstaben
+     dasteht. Bisher fiel die Funktion in diesem Fall sofort auf den mittigen Fuellmodus zurueck - gemessen an
+     Caspar_Ds 346 Zellen traf das 113 Namen. Jetzt beginnt die Suche bei der groessten Schrift, die die Zelle
+     ueberhaupt fassen kann, und arbeitet sich wie immer in 0,94-Schritten herunter; Caspar_Ds Regel „nie
+     groesser als der Zeilenkasten-Satz" gilt weiter, wo es diesen Satz gibt. */
+  const anfang = alt ? alt.size : Math.min(maxSize, 2 * o.r);
+  if (!(anfang >= minSize)) return tinteSetzen(poly, huelle, text, o);
   const m = TINTE_LUFT_BILD, fassungen = alleUmbrueche(text.split(" ").filter(Boolean), maxLines);
   let y0 = Infinity, y1 = -Infinity, xl = Infinity, xr = -Infinity;
   for (const p of poly) { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); xl = Math.min(xl, p[0]); xr = Math.max(xr, p[0]); }
-  for (let i = 0, size = alt.size; i < 40 && size >= minSize; i++, size *= 0.94) {
+  for (let i = 0, size = anfang; i < 40 && size >= minSize; i++, size *= 0.94) {
+    /* UMBRUCH LIEBER AN EINER FUGE (14.11.2026, wie im Hitstrom): bricht eine Zeile nach Komma, Gedankenstrich
+       oder Doppelpunkt, liest sich das als Pause - mitten im Satz als Stolpern. „Halt die Klappe, / Willem"
+       statt „Halt die / Klappe, Willem". Entschieden wird weiter nach der Hoehe des Blocks; eine Fassung mit
+       Fuge darf dafuer 0,12 Schriftgroessen hoeher sein. Von Caspar_Ds 244 mehrwortigen Titeln haben 78 eine
+       Fuge im Innern. GEMESSEN bringt das hier genau EINEN Namen mehr an der Fuge (26 von 145 mehrzeiligen auf 27),
+       und zwar unabhaengig von der Hoehe des Bonus (0,12 / 0,35 / 0,8 ergeben dasselbe): die flachste Fassung faellt
+       meist ohnehin mit der Fuge zusammen, sonst passt die Fugen-Fassung gar nicht. Die Regel bleibt, weil sie
+       richtig ist und nichts kostet - aber sie ist kein Hebel. */
+    const anFuge = (lines) => lines.length > 1 && lines.slice(0, -1).every(t => /[,;:.!?\u2013\u2014-]$/.test(t.trim()));
+    const hoch = (b) => (b.ob - b.u) - (anFuge(b.lines) ? 0.12 * size : 0);
     const bloecke = fassungen.map(lines => tintenBlock(lines, size, ink, leading, m, kursiv)).filter(b => !b.leer)
-      .sort((a, b) => (a.ob - a.u) - (b.ob - b.u) || a.lines.length - b.lines.length);
+      .sort((a, b) => hoch(a) - hoch(b) || a.lines.length - b.lines.length);
     if (!bloecke.length) return null;
     const schritt = Math.max(0.01 * (y1 - y0), 0.06 * size), gleich = 0.05 * size, zeile = leading * size;
     let best = null;
@@ -349,7 +383,7 @@ function untenSetzen(poly, huelle, text, o) {
   }
   /* nirgends Platz mit 0,3 em Luft: wie ohne Bild setzen, aber nicht groesser als bisher - sonst fehlte der Name ganz (der
      Schwachstellenagent fand „Glas Hydra" mit alter Groesse 4,08 - unter minSize / 0,94 gab es nur einen Versuch) */
-  return tinteSetzen(poly, huelle, text, { ...o, maxSize: Math.min(maxSize, alt.size) });
+  return tinteSetzen(poly, huelle, text, { ...o, maxSize: Math.min(maxSize, anfang) });
 }
 // die Kanten eines Vielecks, deren Huellkasten das Fenster [x0, y0, x1, y1] beruehrt
 function naheKanten(P, [x0, y0, x1, y1]) {
@@ -388,7 +422,7 @@ function bestSplit(words, k) {
   return best || [words.join(" ")];
 }
 
-export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [], colourOf = defaultColour, labelDepth = 1, strokes = [3.2, 2.0, 1.2, 0.7, 0.35], gutters = null, leafLabels = false, smallLabel = null, cushion = 0, labelLevel = null, labelSizes = [4, 24], measureText = null, labelLeading = 1.1, labelDrop = 0, labelInk = null, labelUnten = null, labelName = null } = {}) {
+export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [], colourOf = defaultColour, labelDepth = 1, strokes = [3.2, 2.0, 1.2, 0.7, 0.35], gutters = null, leafLabels = false, smallLabel = null, cushion = 0, labelLevel = null, labelSizes = [4, 24], measureText = null, labelLeading = 1.1, labelDrop = 0, labelInk = null, labelUnten = null, labelName = null, labelBox = null } = {}) {
   const { width: W, height: H, nodes, leaves } = result;
   if (colourOf === defaultColour && result.root) { const hd = hueDepthOf(result); colourOf = k => defaultColour(k, hd); }
   const top = pad + (title ? 26 : 0);
@@ -416,9 +450,11 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
   if (!gutters) for (let dd = maxDepth; dd >= 0; dd--) for (const k of nodes) if (k.depth === dd && k.outline && !leaves.includes(k)) body += `<path d="${d(k.outline)}" fill="none" stroke="#121417" stroke-width="${sw(dd)}" stroke-linejoin="round" pointer-events="none"/>`;
   const textAt = (lab, cls, extra) => {   // one or two centred lines
     if (lab.tinte) {   // Einzelbuchstaben-Kaesten: ein <text> je Name, jede Zeile auf ihrer Grundlinie wie in placeLabel gerechnet
-      const fs = lab.size * scale, x = X([lab.x, 0]), n = lab.lines.length, xj = j => lab.xs ? X([lab.xs[j], 0]) : x;
-      const zeile = (t, j) => `<tspan x="${xj(j)}" y="${(top + (H - (lab.y + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size)) * scale).toFixed(2)}">${esc(t)}</tspan>`;
-      return `<text${cls ? ` class="${cls}"` : ""} x="${x}" font-size="${fs.toFixed(2)}" text-anchor="middle" pointer-events="none"${extra}>${lab.lines.map(zeile).join("")}</text>`;
+      /* Gerechnet wurde mit gestauchten Breiten (tintenBlock), also staucht auch der Satz: scale um den Ursprung,
+         darum werden die x durch den Faktor geteilt; die y bleiben, die Schrift behaelt ihre Hoehe. */
+      const fs = lab.size * scale, x = +X([lab.x, 0]), n = lab.lines.length, xj = j => (lab.xs ? +X([lab.xs[j], 0]) : x) / TINTE_SCHMAL;
+      const zeile = (t, j) => `<tspan x="${xj(j).toFixed(2)}" y="${(top + (H - (lab.y + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size)) * scale).toFixed(2)}">${esc(t)}</tspan>`;
+      return `<text${cls ? ` class="${cls}"` : ""} font-size="${fs.toFixed(2)}" text-anchor="middle" pointer-events="none" transform="scale(${TINTE_SCHMAL},1)"${extra}>${lab.lines.map(zeile).join("")}</text>`;
     }
     const fs = lab.size * scale, x = X([lab.x, 0]), lead = lab.leading || 1.1, y0 = top + (H - lab.y) * scale - (lab.lines.length - 1) * fs * lead / 2;
     return lab.lines.map((t, i) => `<text${cls ? ` class="${cls}"` : ""} x="${x}" y="${(y0 + i * fs * lead).toFixed(2)}" font-size="${fs.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" pointer-events="none"${extra}>${esc(t)}</text>`).join("");
@@ -442,6 +478,8 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
       if (vis !== k.outline && !(aV > 0 && aV < aK && vis.every(p => imOderAufRand(k.outline, p, eps)))) continue;
       const lab = placeLabel(vis, (labelName ? labelName(k) : k.name).slice(0, 60).trim(), { maxSize: labelSizes[1] / scale, minSize: labelSizes[0] / scale, maxLines: 3, measure: measureText, fit: true, leading: labelLeading, drop: labelDrop, huelle: k.outline, ink: labelInk, unten: !!(labelUnten && labelUnten(k)), kursiv: isFilled(k) });
       if (!lab) continue;
+      /* Wo der Name liegt, in Zellkoordinaten - der Klangschaum legt danach sein Bild (Gesichter nicht unter den Text) */
+      if (labelBox && lab.box) labelBox(k, [lab.x + lab.box[0], lab.y + lab.box[1], lab.x + lab.box[2], lab.y + lab.box[3]]);
       const below = leavesBelow(k).filter(x => x.outline), under = below.find(x => inside(x.outline, [lab.x, lab.y])) || below[0] || k;
       const ink = lightnessOf(colourOf(under)) >= 58 ? "#000000" : "#ffffff";
       body += textAt(lab, "level-label", ` fill="${ink}" fill-opacity="0.7"${isFilled(k) ? ' font-style="italic"' : ""}`);
