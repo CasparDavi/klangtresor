@@ -184,7 +184,7 @@ Anlass: beim Pruefen der Plakatexporte nach den Beschriftungsregeln vom 14.11.20
   Bild und Gesicht lag das Gesicht bei **32 unter dem Band, jetzt bei 17** (44 % → 24 %), und die verdeckte Flaeche ging
   von 46 % auf 32 % zurueck. Titel gehen keine verloren (137 wie vorher).
 
-### Kantentitel haben keinen Hof — der Zellrand schneidet Tinte weg (offen, 14.11.2026)
+### Kantentitel haben keinen Hof — der Zellrand schneidet Tinte weg (erledigt, 14.11.2026)
 Anlass: beim Messen des Plakathofs aufgefallen (Caspar_D: *„die Texte touchieren die Blasenwände, da muß ein Hof drum"*).
 Der Hof ist fuer das **Glasband** gebaut (`SCHAUM_PLAKAT_LUFT` 0,24, siehe `kopfUnten`); die Vorlage mit Titeln **an der
 Kante** (`druck.titel === 'kante'`, `kantenTitel`) rechnet davon nichts mit.
@@ -194,8 +194,24 @@ Kante** (`druck.titel === 'kante'`, `kantenTitel`) rechnet davon nichts mit.
 - Grund: `kantenTitel` prueft nur, ob der Titel in 90 % der Bahnlaenge steht, und senkrecht zur Bahn gar nichts. Die Bahn
   laeuft `fs * 0,95` ueber der Unterkante zwischen 6 % und 94 % der Zellbreite — wo die Kante steil ansteigt, liegen die
   aeusseren Buchstaben im Rand.
-- **Zu tun:** die Pruefung, die dort schon fuer die **Nummer** steht (`imUmriss` mit 0,15 Geviert je Ecke, `nrPasst`), auf
-  alle Zeichen ausdehnen und den Titel kuerzen, bis jedes Zeichen mit Hof im Umriss liegt.
+- **Gebaut** (Caspar_D am 14.11.2026: *„ja für die Kanten auch korrigieren"*): jedes Zeichen muss mit
+  `SCHAUM_PLAKAT_LUFT` Hof im Umriss stehen (`mitHof` in `kantenTitel`) — dieselbe Zahl wie im Glasfeld, geprueft wie
+  bisher die Nummer (`imUmriss`), aber mit der **Tintenhoehe des Zeichens aus der Schrift selbst** statt des
+  Em-Kastens (der ist hoeher als die Tinte und verwirft Titel, die passen). Die eigene Messung der Ziffern ist damit
+  abgedeckt und geloescht.
+- **Die Reihenfolge der Abhilfen ist der eigentliche Gewinn.** Passt es nicht, dann **rutscht** der Titel zuerst auf
+  seiner Bahn (eng ist meist nur ein Ende; bis zu einem Fuenftel der Bahnlaenge, in 2-%-Schritten, der kleinste Ruck
+  gewinnt), dann wird **kleiner** gesetzt (das rueckt den mittigen Titel von selbst aus den Ecken und verkleinert den
+  Hof mit), und erst auf der Lesbarkeitsschwelle (2,2 mm) wird **gekuerzt**.
+- Gemessen (Pixelmaske, `--ohne-kantenhof` gegen den Stand von heute): **1377 gekappte Bildpunkte → 0**, enge Tinte
+  1576 → 2, kleinster Abstand 0,167 → **0,667 Einheiten (0,29 mm)**, und das kostet **2 von 219 Titeln**.
+- Zwei Wege wurden gebaut, gemessen und wieder verworfen, die Begruendung steht im Code: **nur kuerzen** kostete 15
+  Titel und verstuemmelte viele (aus „Mensch Mädel" wurde „Mensch .."); **die Bahn an den Enden beschneiden** nahm
+  langen Titeln bis zu 70 % ihrer Bahn und kuerzte sie dadurch erst recht (31 Titel weniger).
+- Nebenbefund, jetzt im Kopf des Pruefstands: **fuer die Kantentitel ist die Metrikrechnung unbrauchbar.** Chrome gibt
+  `getStartPositionOfChar` auf einem `textPath` nicht auf der Bahn zurueck (gemessen bis **0,67 Geviert** daneben), die
+  Tintenkaesten stehen dann falsch und die Spalte meldet Nullabstaende, wo nichts anliegt. Der Lauf sagt das selbst;
+  gemessen wird dort mit der Pixelmaske.
 
 ### Der Satz weiss nicht genau, wo seine Tinte steht (offen, 14.11.2026)
 Beim Bau des Plakathofs gemessen: der Satz prueft seine Tintenkaesten mit der bestellten Luft gegen den Zellumriss, aber

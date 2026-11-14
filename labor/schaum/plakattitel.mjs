@@ -12,6 +12,9 @@
 //
 //   node labor/schaum/plakattitel.mjs [http://127.0.0.1:8788]
 //   node labor/schaum/plakattitel.mjs --titel kante      Titel an der Zellkante statt im Glasband
+//   node labor/schaum/plakattitel.mjs --plakatluft 0.18  anderer Hof um die Plakattitel (SCHAUM_PLAKAT_LUFT)
+//   node labor/schaum/plakattitel.mjs --ohne-kantenhof   an der Kante ohne Hof, der Stand bis 1.1.10
+//   node labor/schaum/plakattitel.mjs --kantendebug      nennt die Titel, die der Hof veraendert hat
 //   node labor/schaum/plakattitel.mjs --mm 0.44          Millimeter je Schaum-Einheit (A3 quer, Vorgabe)
 //   node labor/schaum/plakattitel.mjs --svg plakat.svg   das gesetzte Plakat als SVG zum Ansehen
 //
@@ -30,9 +33,17 @@
 //     Luft 0,18                              enge Tinte 128 · 3 unter 0,2 · 137 Titel
 //     Luft 0,24 (eingebaut, SCHAUM_PLAKAT_LUFT)  enge Tinte  93 · 3 unter 0,2 · 137 Titel · nichts gekappt
 //     Luft 0,32                              enge Tinte  93 · 3 unter 0,2 · nur noch 135 Titel - zu teuer
-//   Kantentitel („kante"), 220 Titel: enge Tinte 1722, davon 373 unter 0,2 - und 1288 Bildpunkte (0,25 % der
-//     Tinte) schneidet der Zellrand WEG. Dieser Satz hat gar keinen Hof: er prueft nur, ob der Titel in 90 % der
-//     Bahnlaenge steht, und nichts senkrecht zur Bahn. OFFEN, siehe docs/BACKLOG.md.
+//   Kantentitel („kante"), gemessen mit der Pixelmaske - fuer sie ist die Metrikrechnung unbrauchbar (siehe unten):
+//     1.1.10, ohne Hof (--ohne-kantenhof)   219 Titel · 1377 Bildpunkte GEKAPPT (0,27 %) · 1576 enge · kleinster 0,167
+//     Hof 0,24 (eingebaut, dieselbe Zahl wie im Glasfeld)  217 Titel · 0 gekappt · 2 enge · kleinster 0,667 = 0,29 mm
+//   Der Hof kostet an der Kante also zwei Titel. Dass es nicht mehr sind, liegt an der Reihenfolge der Abhilfen:
+//   erst RUTSCHT der Titel auf seiner Bahn (eng ist meist nur ein Ende), dann wird KLEINER gesetzt, erst zuletzt
+//   gekuerzt. Mit Kuerzen allein kostete derselbe Hof 15 Titel und verstuemmelte viele („Mensch Mädel" → „Mensch .."),
+//   mit Beschneiden der Bahn 31 - beides verworfen, die Begruendungen stehen in kantenTitel.
+//
+// FUER DIE KANTENTITEL ZAEHLT ALLEIN DIE PIXELMASKE. Auf einem textPath gibt Chrome die Zeichenanfaenge nicht
+// auf der Bahn zurueck (gemessen: bis 0,67 Geviert daneben, der Lauf sagt es selbst) - die Tintenkaesten der
+// Metrikrechnung stehen dann an der falschen Stelle, und ihre Spalte meldet Nullabstaende, wo nichts anliegt.
 //
 // GEMESSEN WIRD je Titel der kleinste Abstand seiner TINTE zur gezeichneten Zellwand, in Geviert seiner Schrift.
 // Die Tinte kommt aus zwei eigenen Messungen: getStartPositionOfChar gibt die Grundlinie, wie der Browser sie
@@ -68,6 +79,17 @@ const LUFT = (() => { const i = process.argv.indexOf('--luft'); return i > 0 ? p
    die Beschriftung VOR der Bildplatzierung und gibt ihre Box an schaumBildPlatz; der Schalter setzt diese Box auf
    null, patcht also genau die eine Zeile in index.html. */
 const OHNE = process.argv.includes('--ohne-ausweichen');
+/* --plakatluft X: der Hof um die Plakattitel (SCHAUM_PLAKAT_LUFT in index.html, Vorgabe 0,24 Geviert) - im Glasfeld
+   die Seitenluft der Tintenkaesten, an der Kante der Abstand jedes Zeichens zur Wand. Dasselbe Patchen beim
+   Ausliefern, das Repo bleibt unberuehrt. 0 schaltet den Hof an der Kante ganz ab (der Stand bis 1.1.10). */
+const PLUFT = (() => { const i = process.argv.indexOf('--plakatluft'); return i > 0 ? parseFloat(process.argv[i + 1]) : null; })();
+/* --ohne-kantenhof: der Stand bis 1.1.10, zum Vergleichen - an der Kante wird nur die Bahnlaenge geprueft (90 %)
+   und senkrecht zur Bahn gar nichts. Nicht dasselbe wie --plakatluft 0: auch mit Hof 0 muss jedes Zeichen noch
+   GANZ im Umriss liegen, und das allein faengt den groessten Teil des Beschnitts schon ab. */
+const OHNEHOF = process.argv.includes('--ohne-kantenhof');
+/* --kantendebug: die App notiert je Kantentitel, was der Hof vom Namen uebrig laesst - zum Nachsehen, welches
+   Zeichen woran scheitert. Patcht nur beim Ausliefern. */
+const KDEBUG = process.argv.includes('--kantendebug');
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const BREITE = 900, VERHAELTNIS = 0.62;
 
@@ -95,8 +117,18 @@ const server = http.createServer((q, a) => {
     a.writeHead(200, { 'Content-Type': TYPEN['.js'] }).end(t.replace(alt, 'const TINTE_LUFT_BILD = ' + LUFT + ';'));
     return;
   }
-  if ((FEIN || OHNE) && f.endsWith('index.html')) {
+  if ((FEIN || OHNE || OHNEHOF || KDEBUG || PLUFT !== null) && f.endsWith('index.html')) {
     let t = fs.readFileSync(f, 'utf8');
+    if (KDEBUG) { const a1 = 'if (!S.txt) return null;';
+      if (!t.includes(a1)) { console.error('--kantendebug: die Stelle in kantenTitel ist nicht mehr da'); process.exit(1); }
+      t = t.replace(a1, '(window.__kuerz = window.__kuerz || []).push([name, S.txt, +S.f.toFixed(2), +fs0.toFixed(2)]); ' + a1); }
+    if (OHNEHOF) { const alt = 'const mitHof = (t, S0, ruck = 0) => {';
+      if (!t.includes(alt)) { console.error('--ohne-kantenhof: die Stelle in kantenTitel ist nicht mehr da'); process.exit(1); }
+      /* der Hof sagt zu allem ja: dann rutscht nichts, wird nichts kleiner und nichts gekuerzt - der Stand bis 1.1.10 */
+      t = t.replace(alt, alt + ' if (1) return true;'); }
+    if (PLUFT !== null) { const alt = 'const SCHAUM_PLAKAT_LUFT = 0.24;';
+      if (!t.includes(alt)) { console.error('--plakatluft: SCHAUM_PLAKAT_LUFT in index.html ist nicht mehr 0.24'); process.exit(1); }
+      t = t.replace(alt, 'const SCHAUM_PLAKAT_LUFT = ' + PLUFT + ';'); }
     if (FEIN) { const alt = 'const zs = teile(t).map(c => zeichen(c, b, kursiv))';
       if (!t.includes(alt)) { console.error('--feine-kaesten: die Stelle in schaumNamenTinte ist nicht mehr da'); process.exit(1); }
       t = t.replace(alt, 'const zs = teile(t).map(c => zeichen(c, 64, kursiv))'); }
@@ -181,6 +213,10 @@ console.log('');
 block('Tintensatz (kopfUnten)', z.neu);
 block('Altes Glasband (kopfPlan)', z.alt);
 block('Kantentitel', z.kante);
+if (z.kuerz && z.kuerz.length) { console.log('      vom Hof veraendert (Name → gesetzt, Schrift nachher/vorher):');
+  for (const k of z.kuerz) console.log('        „' + k[0] + '" → „' + k[1] + '"   ' + k[2] + ' / ' + k[3]); }
+if (z.anKante && z.bahnAb > 0.05) console.log('      Achtung: getStartPositionOfChar liegt bis ' + p(z.bahnAb, 2)
+  + ' Geviert neben der Bahn - fuer die Kantentitel zaehlt allein die Pixelmaske unten.');
 console.log('');
 if (z.gesicht && z.gesicht.n) {
   console.log('  Zellen mit Bild und Gesicht  ' + z.gesicht.n);
@@ -197,6 +233,8 @@ if (z.pixel && !z.pixel.fehler) {
   console.log('    Tinte nach Abstand        0: ' + z.pixel.histo[0] + ' · bis 0,2: ' + z.pixel.histo[1]
     + ' · bis 0,4: ' + z.pixel.histo[2] + ' · bis 0,8: ' + z.pixel.histo[3] + ' · bis 1,6: ' + z.pixel.histo[4]
     + ' · darüber: ' + z.pixel.histo[5] + ' Bildpunkte');
+  if (z.pixel.nester && z.pixel.nester.length) console.log('    gekappt vor allem bei   '
+    + z.pixel.nester.map(o => o.n + ' Punkte um x ' + o.x + ' / y ' + o.y).join(' · ') + '   (Schaum-Einheiten)');
 } else if (z.pixel) console.log('  Pixelmaske: ' + z.pixel.fehler);
 console.log('');
 console.log('  Ein Geviert ist ' + p(MM, 2) + ' mm je Einheit Schrift; 0,12 Geviert bei Schrift 7 sind '
@@ -291,7 +329,18 @@ function messcode() {
   const mw = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   const topf = () => ({ d: [], engste: [] });
   const neu = topf(), alt = topf(), kante = topf();
-  let imBand = 0, imAlt = 0, anKante = 0, ohneZelle = 0;
+  let imBand = 0, imAlt = 0, anKante = 0, ohneZelle = 0, bahnAb = 0;
+  /* KANN DIE MESSUNG DAS UEBERHAUPT? Auf einem textPath liegen die Glyphen auf der Bahn. Gibt
+     getStartPositionOfChar sie nicht dort zurueck (Chrome rechnet Textpfade in einem eigenen Schritt),
+     steht jeder Tintenkasten an der falschen Stelle und jeder Wandabstand daneben. Darum wird der
+     groesste Abstand eines gemeldeten Zeichenanfangs zur Bahn mitgemessen: ist er gross, gilt fuer die
+     Kantentitel allein die Pixelmaske. */
+  const punktZuBahn = (q, pts) => { let m = Infinity;
+    for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], c = pts[i];
+      const vx = c[0] - a[0], vy = c[1] - a[1], l2 = vx * vx + vy * vy || 1e-9;
+      const u = Math.max(0, Math.min(1, ((q[0] - a[0]) * vx + (q[1] - a[1]) * vy) / l2));
+      m = Math.min(m, Math.hypot(q[0] - (a[0] + u * vx), q[1] - (a[1] + u * vy))); }
+    return m; };
 
   for (const t of [...d.querySelectorAll('svg text')]) {
     const kl = t.getAttribute('class') || '';
@@ -306,9 +355,14 @@ function messcode() {
     const text = t.textContent || '';
     const stuecke = [];
     if (mitPfad) {                                   /* auf der Bahn: Zeichen fuer Zeichen */
+      const tp = t.querySelector('textPath');
+      const hr = ((tp.getAttribute('href') || tp.getAttribute('xlink:href') || '')).slice(1);
+      const pe = hr && d.querySelector('#' + hr), dd0 = pe && pe.getAttribute('d');
+      const bahnPts = dd0 ? dd0.slice(1).replace(/Z$/, '').split('L').map(q => q.split(',').map(Number)) : null;
       for (let i = 0; i < text.length; i++) {
         if (!text[i].trim()) continue;
         let a0; try { a0 = t.getStartPositionOfChar(i); } catch (e) { continue; }
+        if (bahnPts) bahnAb = Math.max(bahnAb, punktZuBahn([a0.x, a0.y], bahnPts) / fs);
         const q = tinteUm(text[i], fs, kursiv, fett);
         stuecke.push([a0.x - q.l, a0.y - q.a, a0.x + q.r, a0.y + q.d]);
       }
@@ -442,8 +496,19 @@ function messcode() {
       min = Math.min(min, e); summe += e; n++;
       const k = e <= 0 ? 0 : e < 0.2 ? 1 : e < 0.4 ? 2 : e < 0.8 ? 3 : e < 1.6 ? 4 : 5;
       histo[k]++; }
+    /* WO wird gekappt? Die gekappten Punkte zu Nestern zusammengefasst (je 12 Einheiten Radius), die groessten
+       drei mit ihrer Mitte in Schaum-Einheiten - damit man die Stelle am Bild nachsehen kann. */
+    const nester = [];
+    for (let y = 0; y < HO; y++) for (let x = 0; x < BR; x++) { const q = y * BR + x;
+      if (!(ohne[q * 4 + 3] > 40) || mit[q * 4 + 3] > 40) continue;
+      const ex = x / RASTER, ey = y / RASTER;
+      let z4 = nester.find(o => Math.abs(o.x / o.n - ex) < 12 && Math.abs(o.y / o.n - ey) < 12);
+      if (!z4) nester.push(z4 = { x: 0, y: 0, n: 0 });
+      z4.x += ex; z4.y += ey; z4.n++; }
     pixel = { mit: nMit, ohne: nOhne, gekappt: nOhne - nMit, anteil: nOhne ? (nOhne - nMit) / nOhne : 0,
-              raster: RASTER, min: n ? min : 0, mittel: n ? summe / n : 0, histo, punkte: n };
+              raster: RASTER, min: n ? min : 0, mittel: n ? summe / n : 0, histo, punkte: n,
+              nester: nester.sort((a, b) => b.n - a.n).slice(0, 3)
+                .map(o => ({ n: o.n, x: +(o.x / o.n).toFixed(1), y: +(o.y / o.n).toFixed(1) })) };
   } catch (e) { pixel = { fehler: String(e.message || e) }; }
 
   const fertig = (o) => ({ n: o.d.length, mittel: mw(o.d), min: o.d.length ? Math.min(...o.d) : 0,
@@ -452,6 +517,8 @@ function messcode() {
     engste: o.engste.sort((a, b) => a[1] - b[1]).slice(0, 8) });
   return { zellen: res.leaves.length, titel: imBand + imAlt + anKante, imBand, imAlt, anKante, ohneZelle,
            gesicht: { n: mitGesicht, imBand: imBandGesicht, mittel: mw(ueAnteile) },
-           neu: fertig(neu), alt: fertig(alt), kante: fertig(kante), pixel, svg: ${SVGAUS ? 'gebaut.svg' : 'null'} };
+           kuerz: (window.__kuerz || []).filter(k => k[0] !== k[1] || k[2] < k[3] - 0.01)
+             .sort((a, b) => (b[0].length - b[1].length) - (a[0].length - a[1].length)).slice(0, 12),
+           neu: fertig(neu), alt: fertig(alt), kante: fertig(kante), bahnAb, pixel, svg: ${SVGAUS ? 'gebaut.svg' : 'null'} };
 } catch (e) { return { fehler: String((e && e.stack) || e) }; } })()`;
 }

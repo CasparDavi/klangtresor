@@ -10663,8 +10663,10 @@ function schaumZeilenabstand(){ return schaumSchriftMasse().lead; }
    Tintenkasten aus measureText; die Lage in der Zeile aus dem Vorschub, gestreckt auf die gemessene Breite der ganzen Zeile
    (so ist die Unterschneidung verteilt, nicht vergessen). */
 const SCHAUM_TINTE_STUFEN = [4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48];
-/* Die Luft um die Titel des PLAKATS, in Geviert - mehr als am Schirm (render.js TINTE_LUFT_BILD, 0,12). Begruendung und
-   Messreihe stehen bei kopfUnten, wo sie an placeLabel geht. */
+/* Die Luft um die Titel des PLAKATS, in Geviert - mehr als am Schirm (render.js TINTE_LUFT_BILD, 0,12), weil die
+   Plakattitel an der Mindestschrift kleben (7 Einheiten, DIN 1450) und der Satz deshalb bis an die Grenze drueckt.
+   Gilt fuer BEIDE Satzwege: im Glasfeld als Seitenluft der Tintenkaesten (kopfUnten → placeLabel), an der Zellkante
+   als Abstand jedes Buchstabens zur Wand (kantenTitel → mitHof). Die Messreihen stehen an beiden Stellen. */
 const SCHAUM_PLAKAT_LUFT = 0.24;
 const schaumTinteZeichen = new Map(), schaumTinteZeilen = new Map();
 let schaumTinteLeinwand = null, schaumTinteTeiler;
@@ -10926,15 +10928,12 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
        dort zusammen oder rissen auseinander („Erlkönig s"); auf einer ∪-Kante zieht das Glaetten die Bahn nach innen, weg vom Rand */
     let gl = pts;
     for (let r = 0; r < 3; r++) gl = gl.map((p, k) => { const a = gl[Math.max(0, k - 1)], b = gl[Math.min(gl.length - 1, k + 1)]; return [p[0], (a[1] + 2 * p[1] + b[1]) / 4]; });
-    let lang = 0; for (let k = 1; k < gl.length; k++) lang += Math.hypot(gl[k][0] - gl[k - 1][0], gl[k][1] - gl[k - 1][1]);
     /* halbfett gemessen, in der Druckgroesse - vorher normal bei 100 px mit 1,2 Zuschlag („mit 1,06 liefen lange Titel ueber den
        Zellrand": das war die Textform der kleinen Schrift). Seit 1.0.56 ohne Saum (Caspar_D: „keinen Rand um die Buchstaben"):
        die Farbe waehlt schaumKantenKontrast nach dem Grund, 70 % deckend wie die Zellnamen am Schirm. */
-    const breit = (t) => textBreite(t, fs, 600) * fs;
+    const breit = (t, f = fs) => textBreite(t, f, 600) * f;
+    let lang = 0; for (let k = 1; k < gl.length; k++) lang += Math.hypot(gl[k][0] - gl[k - 1][0], gl[k][1] - gl[k - 1][1]);
     while (breit(name) > lang * 0.9 && fs * 0.92 >= 2.2 / mm) fs *= 0.92;
-    let txt = name;
-    if (breit(txt) > lang * 0.9){ let k = txt.length; while (k > 2 && breit(txt.slice(0, k) + '…') > lang * 0.9) k--; txt = k > 2 ? txt.slice(0, k) + '…' : ''; }
-    if (!txt) return null;
     /* SCHRIFT AUF DER ∪-KURVE (Caspar_D, 07.10.2026: „wenn du Text nach oben biegst, solltest du die oberkannte der m-Höhe als
        Bezugslinie nutzen, dann überlappen weniger Buchstaben"): die Unterkante einer Zelle senkt sich zur Mitte, der
        Kruemmungsmittelpunkt liegt ueber der Schrift - alles ueber der Bezugslinie wird zusammengedrueckt (Radius 40, Schrift 8:
@@ -10944,23 +10943,60 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
        Oberlaengen. Die Grundlinie bleibt, wo sie war; der Pfad ist nur verschoben, seine Laenge gleich. Senkt sich die Kante
        nicht (∩ oder gerade), bleibt die Grundlinie der Bezug. */
     const mi = gl[gl.length >> 1][1], enden = (gl[0][1] + gl[gl.length - 1][1]) / 2, schale = mi > enden + 0.05 * fs;
-    const bahn = schale ? gl.map(p => [p[0], p[1] - km.xh * fs]) : gl, versatz = schale ? ` dy="${km.xh.toFixed(3)}em"` : '';
+    /* HOF UM JEDES ZEICHEN (Caspar_D, 14.11.2026: „ja für die Kanten auch korrigieren"): bis 1.1.10 prueft der Kantensatz nur
+       die Bahnlaenge (90 %) und senkrecht zur Bahn gar nichts - der Zuschnitt der Zelle (clip-path) schnitt Tinte weg (gemessen
+       auf A3, Vorlage Galerie an der Kante: 1288 Bildpunkte, 0,25 % der Tinte; „Auf ganzer Linie" stand mit dem A in der Wand).
+       Jetzt muss jedes Zeichen mit SCHAUM_PLAKAT_LUFT Hof im Umriss stehen, geprueft wie bisher die Nummer (imUmriss): die
+       Tintenhoehe des Zeichens aus der Schrift selbst (nicht der Em-Kasten - der ist hoeher als die Tinte und verwirft Titel,
+       die passen), die vier Ecken auf der Tangente seiner Mitte, die Grundlinie um tief nach aussen.
+       UND WENN ES NICHT PASST, WIRD KLEINER GESETZT, NICHT GEKUERZT. Eng wird es an den ENDEN der Bahn, wo die Unterkante in
+       die Seitenwand aufsteigt; der Titel steht mittig, also rueckt kleinere Schrift von selbst aus den Ecken - und der Hof
+       schrumpft mit ihr. Gekuerzt wird erst, wenn die Schrift auf der Lesbarkeitsschwelle steht (2,2 mm).
+       Ein erster Versuch beschnitt stattdessen die Bahn an den Enden; das nahm langen Titeln bis zu 70 % ihrer Bahn und
+       kuerzte sie dadurch erst recht - geloescht, die Begruendung steht hier. */
+    const tinteHoch = new Map();
+    const tHoch = (c) => { let v = tinteHoch.get(c); if (v) return v;
+      leinwand.font = '600 100px ' + SCHAUM_NAMEN_FAMILIE; const m2 = leinwand.measureText(c);
+      v = [m2.actualBoundingBoxAscent / 100, m2.actualBoundingBoxDescent / 100]; tinteHoch.set(c, v); return v; };
+    /* der ganze Satz bei einer Schriftgroesse: der verschobene Pfad, die Laengen darauf und der Titel, so weit er in die Bahn passt */
+    const satzBei = (f) => {
+      const tief0 = schale ? km.xh * f : 0;
+      const bahn0 = schale ? gl.map(p => [p[0], p[1] - tief0]) : gl;
+      const lauf = [0]; for (let k = 1; k < bahn0.length; k++) lauf.push(lauf[k - 1] + Math.hypot(bahn0[k][0] - bahn0[k - 1][0], bahn0[k][1] - bahn0[k - 1][1]));
+      const an0 = (s) => { let k = 1; while (k < bahn0.length - 1 && lauf[k] < s) k++; const a = bahn0[k - 1], b = bahn0[k], l = (lauf[k] - lauf[k - 1]) || 1, u = (s - lauf[k - 1]) / l;
+        const tx = (b[0] - a[0]) / l, ty = (b[1] - a[1]) / l; return { p: [a[0] + u * (b[0] - a[0]), a[1] + u * (b[1] - a[1])], t: [tx, ty], n: [ty, -tx] }; };
+      let t0 = name;
+      if (breit(t0, f) > lang * 0.9){ let k = t0.length; while (k > 2 && breit(t0.slice(0, k) + '…', f) > lang * 0.9) k--; t0 = k > 2 ? t0.slice(0, k) + '…' : ''; }
+      return { f, tief: tief0, bahn: bahn0, an: an0, txt: t0, versatz: schale ? ` dy="${km.xh.toFixed(3)}em"` : '' };
+    };
+    const mitHof = (t, S0, ruck = 0) => { const st = lang / 2 - breit(t, S0.f) / 2 + ruck;
+      if (st < 0 || st + breit(t, S0.f) > lang) return false;
+      for (let j = 0; j < t.length; j++){ const [as, de] = tHoch(t[j]); if (!(as > 0 || de > 0)) continue;   /* Leerzeichen hat keine Tinte */
+        const a0 = st + (j ? breit(t.slice(0, j), S0.f) : 0), a1 = st + breit(t.slice(0, j + 1), S0.f), m2 = S0.an((a0 + a1) / 2), hb = (a1 - a0) / 2;
+        const g = (u, v) => [m2.p[0] + m2.t[0] * u + m2.n[0] * v, m2.p[1] + m2.t[1] * u + m2.n[1] * v];
+        if (![g(-hb, -de * S0.f - S0.tief), g(hb, -de * S0.f - S0.tief), g(hb, as * S0.f - S0.tief), g(-hb, as * S0.f - S0.tief)]
+              .every(q => imUmriss(pk, q, SCHAUM_PLAKAT_LUFT * S0.f))) return false; }
+      return true; };
+    /* DER TITEL DARF RUTSCHEN. Er steht mittig auf der Bahn (startOffset 50 %); eng ist es aber meist nur an EINEM Ende,
+       und oft passt er, wenn er ein Stueck zur anderen Seite rueckt. Erst wenn auch das nicht hilft, wird kleiner
+       gesetzt, und ganz zuletzt gekuerzt. Gesucht wird in Schritten von 2 % der Bahnlaenge bis zu einem Fuenftel,
+       abwechselnd nach beiden Seiten - der kleinste Ruck gewinnt, damit der Titel so mittig wie moeglich bleibt. */
+    const rucke = [0]; for (let r = 0.02; r <= 0.2001; r += 0.02) rucke.push(r, -r);
+    const passt = (S0, t) => { for (const r of rucke) if (mitHof(t, S0, r * lang)) return r * lang; return null; };
+    const fs0 = fs;
+    let S = satzBei(fs), ruck = S.txt ? passt(S, S.txt) : 0;
+    while (S.txt && ruck === null && S.f * 0.92 >= 2.2 / mm){ S = satzBei(S.f * 0.92); ruck = S.txt ? passt(S, S.txt) : 0; }
+    while (S.txt && ruck === null){ const k = (S.txt.endsWith('…') ? S.txt.length - 1 : S.txt.length) - 1;
+      S = { ...S, txt: k > 2 ? S.txt.slice(0, k) + '…' : '' }; ruck = S.txt ? passt(S, S.txt) : 0; }
+    if (!S.txt) return null;
+    const { tief, bahn, an, txt, versatz } = S; fs = S.f;
+    const s0 = lang / 2 - breit(txt) / 2 + (ruck || 0);
     /* NUR WAS PASST (Caspar_D, 15.10.2026: „Zeige nur die Nummer, wenn sie [hinein]passt"): die Nummer steht vorn im Titel, dort, wo die
        Kante zur Seite steigt, und der Zellumriss schnitt sie an (Klangschaum A3, Galerie mit Verzeichnis, an der Kante: aus „189" wurde
-       „89", 14 von 199 Nummern ragten rechnerisch bis 0,7 mm hinaus). Wo ihre Ziffern stehen, folgt aus der Bahn wie beim Setzen: der
-       Titel mittig (startOffset 50 %), jede Ziffer gerade auf der Tangente ihrer Mitte, die Grundlinie um dy nach aussen, darueber die
-       Ziffernhoehe. Liegt eine Ecke nicht mindestens 0,15 Geviert im Umriss, passt die Nummer hier nicht (nrPasst) - dort dann 163
-       Nummern, 36 Titel stehen ohne Nummer im Abschnitt „Zu klein für eine Nummer". */
-    const lauf = [0]; for (let k = 1; k < bahn.length; k++) lauf.push(lauf[k - 1] + Math.hypot(bahn[k][0] - bahn[k - 1][0], bahn[k][1] - bahn[k - 1][1]));
-    const an = (s) => { let k = 1; while (k < bahn.length - 1 && lauf[k] < s) k++; const a = bahn[k - 1], b = bahn[k], l = (lauf[k] - lauf[k - 1]) || 1, u = (s - lauf[k - 1]) / l;
-      const tx = (b[0] - a[0]) / l, ty = (b[1] - a[1]) / l; return { p: [a[0] + u * (b[0] - a[0]), a[1] + u * (b[1] - a[1])], t: [tx, ty], n: [ty, -tx] }; };
-    const s0 = lang / 2 - breit(txt) / 2, tief = schale ? km.xh * fs : 0, hoch = 0.72 * fs;
-    let nrPasst = true;
-    if (nr){
-      nrPasst = txt.startsWith(nr) && [...nr].every((_, j) => { const a0 = s0 + (j ? breit(nr.slice(0, j)) : 0), a1 = s0 + breit(nr.slice(0, j + 1)), m = an((a0 + a1) / 2), hb = (a1 - a0) / 2;
-        const g = (u, v) => [m.p[0] + m.t[0] * u + m.n[0] * v, m.p[1] + m.t[1] * u + m.n[1] * v];
-        return [g(-hb, -tief), g(hb, -tief), g(hb, hoch - tief), g(-hb, hoch - tief)].every(q => imUmriss(pk, q, 0.15 * fs)); });
-    }
+       „89", 14 von 199 Nummern ragten rechnerisch bis 0,7 mm hinaus). Wo ein Zeichen steht, folgt aus der Bahn wie beim Setzen: der
+       Titel mittig (startOffset 50 %), jedes Zeichen gerade auf der Tangente seiner Mitte, die Grundlinie um dy nach aussen, darueber
+       die Tinte. Seit 1.1.11 gilt das fuer den ganzen Titel (mitHof), nicht mehr nur fuer die Ziffern. */
+    const nrPasst = !nr || txt.startsWith(nr);
     /* oben: die hoechste Stelle, die der Titel erreicht (die Oberkante des Em-Kastens, km.fasc, ueber der Grundlinie, je halbe Schrift
        entlang des gesetzten Stuecks) - darueber darf das Schild stehen, wenn die Nummer nicht im Titel steht (beschriften) */
     let oben = Infinity;
@@ -10972,7 +11008,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     return { fs, fsSatz: +fs.toFixed(1), nrPasst, oben, box: [Math.min(e0, e1), oben, Math.max(e0, e1), y + h],
       svg: `<path id="skp${i}" d="M${bahn.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
       + `<text class="kante" font-size="${fs.toFixed(1)}" font-weight="600" fill="#ffffff" fill-opacity="0.7"`
-      + ` clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>` };   /* fsSatz: die Nummer davor zählt nur ab der Schwelle */
+      + ` clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="${(100 * (s0 + breit(txt) / 2) / lang).toFixed(2)}%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>` };   /* fsSatz: die Nummer davor zählt nur ab der Schwelle */
   };
   /* DIE ECKE (Plakat „Randlos"): bis 1.0.57 eine eigene Zelle mit dem Avatar als Bild und einem Glasfeld darin. Seit 1.0.58
      (Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der Avatar in rundem
