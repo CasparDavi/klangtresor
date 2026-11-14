@@ -10463,7 +10463,9 @@ async function schaumVorrechnen(){
    der Coverart in der Kachel zu sehen wäre", „damit keine Gesichter in den PDFs angeschnitten sind").
    bin/gesichter.js sucht die Gesichter je Standbild (GET /api/gesichter). Das Bild deckt seine Zelle wie bisher
    („slice"), rueckt aber so, dass die Gesichter in der Mitte der Zelle liegen - so weit, wie es geht, ohne dass
-   ein Rand frei wird. Gezaehlt werden die Gesichter ab Wertung 0,7 (gemessen) und davon nur die, die
+   ein Rand frei wird. Gezaehlt werden die Gesichter ab der Schwelle, die der Ausweis nennt (SCHWELLE in
+   bin/gesichter.js, zur Zeit 0,5 - „der gemessene Punkt: 22 von 23 Hauptgesichtern, kein Fehlalarm"); die 0,7
+   hier im Code ist nur der Rueckfall, falls der Ausweis keine nennt. Davon zaehlen nur die, die
    mindestens ein Viertel so gross sind wie das groesste: ein Paar rueckt gemeinsam in die Mitte, die kleinen
    Koepfe einer Menge ziehen nicht mit. Passen sie nicht gemeinsam in die Zelle, zaehlt das groesste. Ohne
    Gesicht oder ohne Eintrag bleibt es mittig wie vorher.
