@@ -133,6 +133,36 @@ dieselbe Platte hängt.
 
 ## Klein und konkret
 
+### Die Topline ist ein Schatten und sollte eine Fläche sein (offen, 14.11.2026)
+Anlass: Caspar_D vermisste die Toplines in den Profildiagrammen — *„kann es sein, das die top lines in den
+diagrammen irgendwann verschwunden sind"*, *„ich denke, die sind überall weg, auch bei den horizontalen balken"*.
+
+**Was die Untersuchung ergab — nichts davon war ein Fehler im Haus:**
+- Code und CSS sind seit dem 28.10.2026 (Tag des Feature-Bildes `docs/features/img/gemein-de.webp`) **zeichengleich**:
+  `.bb{height:9px}`, `.dia.stufig .bb i:first-child{opacity:.55}`, `.bb i.w4{opacity:.83}`, `diaTopline`, und die
+  vier `boxShadow`-Zeilen. Die `opacity`-Dämpfungen sind **nicht** seitdem dazugekommen.
+- Im Feature-Bild selbst ist die Topline messbar da: senkrechter Schnitt durch den obersten Balken ergibt
+  `srgb(255,170,102)` über der Fläche `srgb(168,80,16)`.
+- Dieselbe Messung an einer Probe mit echtem Markup und CSS: Topline `srgb(208,107,96)`, Fläche `srgb(130,42,32)`,
+  bei einfacher wie doppelter Geräteauflösung gleich (9 Zeilen Balken / 1 Zeile Topline gegen 18 / 2).
+- **Die Ursache war Noir** (Dark-Mode-Erweiterung im Browser), von Caspar_D selbst gefunden. Sie rechnet Farben um
+  und behandelt `box-shadow` als Dekoration. Der Hitstrom bleibt verschont, weil seine Topline ein SVG-Pfad mit
+  `stroke` ist — Grafikinhalt, kein Layout-Schmuck.
+
+**Zu tun:** Die Topline nicht mehr als `box-shadow: inset 0 1px 0`, sondern als **Fläche** zeichnen — ein eigenes
+Element mit `background`, oder im SVG ein Rechteck wie im Analyzer (`spurTopline`). Begründung steht schon in den
+Hausregeln: *„Sie ist keine Hervorhebung, sondern die Kante der Daten."* Ein Schatten ist für jedes Werkzeug
+— Erweiterung, Druckausgabe, Kontrastmodus — per Definition wegnehmbar; eine Datenkante darf das nicht sein.
+Betroffen sind die vier `boxShadow`-Stellen in `web/index.html` (liegende Balken, ihre Stufen, die Steckbrief-
+Säulen, die Längen-Histogramme). Nebengewinn: die `opacity`-Dämpfungen ließen sich dann getrennt steuern,
+statt die Topline mitzudämpfen, obwohl die Hausregel sie „in voller Stärke" verlangt.
+
+**Noch zu entscheiden (Caspar_D denkt darüber nach):** ob die Topline statt fester 1 Punkt **relativ zur
+Flächenhöhe** werden soll — Vorschlag war „1 Punkt, mindestens ein Fünftel der Höhe", also 2 Punkte beim 9 Punkt
+hohen liegenden Balken, 1 Punkt bei Säulen und Hüllkurven. Hintergrund: im Analyzer skaliert die Topline als
+SVG-Rechteck mit der Fläche mit, in den Profildiagrammen steht sie fest. Das wäre ein Nachtrag in
+`docs/haus/HAUSREGELN.md`, Abschnitt „Die Formsprache der Diagramme".
+
 ### Hof der Zellnamen im Klangschaum: geraten statt gemessen (offen, 14.11.2026)
 Anlass: der Hitstrom hat am 14.11.2026 den Tintenapparat des Klangschaums übernommen und dabei den **Hof** dazu
 definiert — Caspar_D: *„definiere einen Hof um die Tinte - normalerweisse der i zu i-Punkt abstand"*, *„wir hatten
