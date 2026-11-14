@@ -236,7 +236,18 @@ function tintenBlock(lines, size, ink, leading, m, kursiv = false) {
     }
     zeilen.push({ mid, kaesten });
   });
-  return { lines, zeilen, u, ob, links: links0, rechts: rechts0, leer: !zeilen.some(z => z.kaesten.length) };
+  const leer = !zeilen.some(z => z.kaesten.length);
+  /* OPTISCHE MITTE (14.11.2026). Bisher wurde die SCHRIFTBOX um den Bezugspunkt zentriert: die Grundlinie lag
+     (ink.o - ink.u) / 2 unter der Mitte, also galt jede Zeile als 0,71 em hoch und 0,18 em tief - gleich, ob
+     Unterlaengen dastehen oder nicht. Ein Name ohne Unterlaenge („Auftakt“) hat unten keine Tinte bis -u, sitzt
+     im Block also zu hoch und laesst unter sich Luft stehen. Derselbe Fehler, den Caspar_D am Hitstrom gesehen
+     hat („irgendwas drängt den text zum unteren RAnd, das sieht tatsächlich unschön aus“, 13.11.2026) - dort
+     spiegelbildlich. Darum wird der fertige Block um d verschoben, bis seine GEMESSENE Tinte symmetrisch um den
+     Bezugspunkt liegt. d geht in gesetzt() mit (tinte.d), weil der Satz die Grundlinien aus y neu rechnet -
+     render.js und der Namenskopf im Plakat (index.html) muessen dieselbe Verschiebung anwenden. */
+  const d = leer ? 0 : -(u + ob) / 2;
+  if (d) for (const z of zeilen) { z.mid += d; for (const k of z.kaesten) { k[1] += d; k[3] += d; } }
+  return { lines, zeilen, u: u + d, ob: ob + d, d, links: links0, rechts: rechts0, leer };
 }
 /* Passt der Block? Keine nahe Kante beruehrt einen Kasten, und die Kaesten liegen innen. Ueberlappen Kaesten einer Zeile (mit
    ihrer Luft), bilden sie eine zusammenhaengende Gruppe: beruehrt keine Kante, liegt die Gruppe ganz innen oder ganz aussen -
@@ -261,9 +272,9 @@ function rechteckFrei(nahe, x0, y0, x1, y1) {
    weiss, welchen Fleck der Zelle der Name belegt. Der Klangschaum legt danach sein Bild so, dass kein Gesicht
    darunter geraet (schaumBildPlatz in index.html). */
 const gesetzt = (b, xs, y, size, leading, ink) => ({ x: xs[(xs.length - 1) >> 1], xs, y, size, lines: b.lines, leading,
-  tinte: { o: ink.o, u: ink.u }, box: [b.links, b.u, b.rechts, b.ob] });
+  tinte: { o: ink.o, u: ink.u, d: b.d || 0 }, box: [b.links, b.u, b.rechts, b.ob] });
 function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv = false, sperren = null }) {
-  const m = TINTE_RAND, x0c = Math.max(xa, px - 3 * r), x1c = Math.min(xb, px + 3 * r), cx = (x0c + x1c) / 2, W = x1c - x0c;
+  const m = ink.hof ?? TINTE_RAND, x0c = Math.max(xa, px - 3 * r), x1c = Math.min(xb, px + 3 * r), cx = (x0c + x1c) / 2, W = x1c - x0c;
   const s0 = Math.min(maxSize, 2 * r), breit = t => ink.runs(t, s0, kursiv).w * TINTE_SCHMAL + 2 * m;
   // obere Grenze je Zeilenzahl: Breite der Sehne durch den Pol; ein Block, breiter als hoch, ist hoechstens 2 r hoch
   const bis = (k, laengste) => Math.min(W / laengste, 2 * r / ((k - 1) * leading + ink.o + ink.u + 2 * m), maxSize);
@@ -453,7 +464,7 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
       /* Gerechnet wurde mit gestauchten Breiten (tintenBlock), also staucht auch der Satz: scale um den Ursprung,
          darum werden die x durch den Faktor geteilt; die y bleiben, die Schrift behaelt ihre Hoehe. */
       const fs = lab.size * scale, x = +X([lab.x, 0]), n = lab.lines.length, xj = j => (lab.xs ? +X([lab.xs[j], 0]) : x) / TINTE_SCHMAL;
-      const zeile = (t, j) => `<tspan x="${xj(j).toFixed(2)}" y="${(top + (H - (lab.y + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size)) * scale).toFixed(2)}">${esc(t)}</tspan>`;
+      const zeile = (t, j) => `<tspan x="${xj(j).toFixed(2)}" y="${(top + (H - (lab.y + (lab.tinte.d || 0) + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size)) * scale).toFixed(2)}">${esc(t)}</tspan>`;
       return `<text${cls ? ` class="${cls}"` : ""} font-size="${fs.toFixed(2)}" text-anchor="middle" pointer-events="none" transform="scale(${TINTE_SCHMAL},1)"${extra}>${lab.lines.map(zeile).join("")}</text>`;
     }
     const fs = lab.size * scale, x = X([lab.x, 0]), lead = lab.leading || 1.1, y0 = top + (H - lab.y) * scale - (lab.lines.length - 1) * fs * lead / 2;

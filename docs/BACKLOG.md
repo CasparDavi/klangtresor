@@ -163,7 +163,7 @@ hohen liegenden Balken, 1 Punkt bei Säulen und Hüllkurven. Hintergrund: im Ana
 SVG-Rechteck mit der Fläche mit, in den Profildiagrammen steht sie fest. Das wäre ein Nachtrag in
 `docs/haus/HAUSREGELN.md`, Abschnitt „Die Formsprache der Diagramme".
 
-### Hof der Zellnamen im Klangschaum: geraten statt gemessen (offen, 14.11.2026)
+### Hof der Zellnamen im Klangschaum: geraten statt gemessen (erledigt, 14.11.2026)
 Anlass: der Hitstrom hat am 14.11.2026 den Tintenapparat des Klangschaums übernommen und dabei den **Hof** dazu
 definiert — Caspar_D: *„definiere einen Hof um die Tinte - normalerweisse der i zu i-Punkt abstand"*, *„wir hatten
 das in der wortwolke in Klangfeder definiert"*. Der Klangschaum hat diesen Schritt noch nicht.
@@ -175,8 +175,13 @@ das in der wortwolke in Klangfeder definiert"*. Der Klangschaum hat diesen Schri
 - **Was der Hitstrom seit 1.1.8 tut:** den gemessenen i-Abstand (`tinte.hof`, bei der Oberflächenschrift 0,079 em).
   Die innere Lücke ist dort weggelassen, weil sie eine Pixelmaske je Wort bräuchte und bei 7–15 Punkt nie das
   Größere ist. Im Klangschaum können die Namen viel größer werden — dort könnte sie zählen.
-- **Zu tun:** `TINTE_RAND` durch den gemessenen Hof ersetzen; entscheiden, ob die innere Lücke dazukommt. Danach
-  Augenschein am Schaum, weil sich die Namenslagen verschieben können.
+- **Erledigt am 14.11.2026:** `tinteSetzen` nimmt `ink.hof ?? TINTE_RAND`, also den gemessenen i-Abstand (0,079 em)
+  statt der runden 0,1. Gemessen mit `labor/schaum/beschriftung.mjs --fuellmodus` (dem Fall, in dem dieser Rand
+  überhaupt greift — mit Bildern setzt `untenSetzen` und nimmt `TINTE_LUFT_BILD`): 251 → 253 Namen, Schrift 8,87 →
+  8,95 px. Im Bildmodus zeichengleich. `TINTE_RAND` bleibt als Rückfall stehen, falls eine Tinte ohne `hof` kommt.
+- **Weiter offen: die innere Lücke.** Caspar_Ds Regel der Wortwolke lautet `max(innenLücke, iPunkt)` — der Klangschaum
+  nimmt bisher nur den i-Abstand. Sie bräuchte eine Pixelmaske je Name; bei den Schriftgrößen des Schaums
+  (bis 22 px) könnte sie das Größere sein. Vor dem Bau messen, ob sie es überhaupt je ist.
 - Nebenbei am 14.11.2026 schon korrigiert: der **Rückfallwert** der i-Lücke in `schaumSchriftMasse` war aus dem
   Zeilenabstand abgeleitet (1,1 − 0,71 − 0,18 = 0,21) und damit dreimal zu groß; er steht jetzt bei 0,07 wie in der
   Wortwolke. Er greift nur, wenn die Messung scheitert.

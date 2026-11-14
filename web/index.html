@@ -10844,11 +10844,12 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     const lab = R.placeLabel(poly, name, { maxSize: ziel, minSize: 7, maxLines: 3, fit: true, leading: schaumZeilenabstand(), drop: 0,
       huelle: poly, ink: kopfTinte, unten: true, startSize: ziel, sperren: waende });
     if (!lab || !lab.xs) return waende.length ? null : alt;      /* das alte Band kennt die Wandfugen nicht - im Triptychon dann die Nummer */
-    const n = lab.lines.length, grund = j => lab.y + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size;
+    /* tinte.d: die Verschiebung auf die optische Mitte, die tintenBlock in render.js rechnet - der Satz muss sie mitmachen */
+    const n = lab.lines.length, grund = j => lab.y + (lab.tinte.d || 0) + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size;
     const ober = Math.max(0, ...kopfTinte.runs(lab.lines[0], lab.size).runs.map(q => q[2]));
     const bandY = Math.max(y, -(grund(0) + ober * lab.size) - 2);
     const zeilen = lab.lines.map((t, j) => `<tspan x="${lab.xs[j].toFixed(1)}" y="${(-grund(j)).toFixed(1)}">${esc(t)}</tspan>`).join('');
-    /* die Nummer vorn in der ersten Zeile: placeLabel legt jeden Tintenkasten 0,1 Geviert im Umriss (TINTE_RAND) - sie passt */
+    /* die Nummer vorn in der ersten Zeile: placeLabel legt jeden Tintenkasten mit Luft in den Umriss (hier TINTE_LUFT_BILD, 0,12 Geviert) - sie passt */
     return { bandY, bh: y + h - bandY, fs: lab.size, fsSatz: +lab.size.toFixed(2), nrPasst: true,
       text: `<text class="kopf" font-size="${lab.size.toFixed(2)}" fill="${milch ? '#141414' : '#f4f4f2'}" text-anchor="middle" clip-path="url(#skz${i})" pointer-events="none">${zeilen}</text>` };
   };

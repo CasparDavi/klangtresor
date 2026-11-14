@@ -7,6 +7,7 @@
 //   node labor/schaum/beschriftung.mjs [http://127.0.0.1:8788]
 //   node labor/schaum/beschriftung.mjs --bild stand.png     zusaetzlich ein Bild des gelegten Schaums
 //   node labor/schaum/beschriftung.mjs --ohne-ausweichen    das Bild weicht dem Zellnamen NICHT aus (zum Vergleichen)
+//   node labor/schaum/beschriftung.mjs --fuellmodus         Zellen ohne Bild (Treemaps, Glasfeld): der mittige Satz
 //
 // WAS ER MISST, je Lauf ueber Caspar_Ds echten Bestand:
 //   Namen          wie viele Zellen ihren Namen tragen (von allen Zellen)
@@ -23,11 +24,16 @@
 // auch die Oberflaeche braucht). Daraus baut das Werkzeug eine Seite im Scratchpad und misst sie in einem
 // headless Chrome — derselbe Weg, den die App geht, nur ohne App.
 //
-// GEMESSENE STAENDE (900 x 620 Punkte, Gliederung „Klang", Mass Abrufe, 346 Zellen):
-//   1.1.8                                             246 Namen · Lage 0,586 · Rest 21,2 % · 78 von 133 Gesichtern verdeckt
-//   + Luft 0,12 statt 0,30                            250 Namen · Lage 0,645 · Rest 14,6 % · 63
-//   + Bild weicht dem Namen aus (Gewicht 15)          250 Namen · Lage 0,645 · Rest 14,6 % · 36
-//   + Schmalschnitt 85 %                              261 Namen · Lage 0,686 · Rest 10,6 % · 33
+// GEMESSENE STAENDE (900 x 558 Punkte, Gliederung „Klang“, Mass Abrufe, 346 Zellen).
+// Mit Bildern (der Normalfall des Klangschaums, untenSetzen):
+//   1.1.8, der Stand vor dem 14.11.                 228 Namen · Lage 0,591 · Rest 20,5 % · 70 von 120 Gesichtern verdeckt
+//   + Luft 0,12, Fuellmodus-Rueckfall weg, Bild
+//     weicht dem Namen aus, Schmalschnitt 85 %      255 Namen · Lage 0,678 · Rest 11,4 % · 31 von 139
+//   + Hof statt 0,1 und optische Mitte              255 Namen · Lage 0,678 · Rest 11,4 % · 31  (greifen hier nicht)
+// Ohne Bilder (--fuellmodus, tinteSetzen mittig - die Treemaps und das Glasfeld des Plakats):
+//   nach den vier Eingriffen oben                   251 Namen · Schrift 8,87 px · Lage 0,517
+//   + Rand = gemessener Hof 0,079 statt 0,1         253 Namen · Schrift 8,95 px · Lage 0,517
+//   + optische Mitte (Tinte statt Schriftbox)       253 Namen · Schrift 8,94 px · Lage 0,524
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -40,6 +46,11 @@ const WURZEL = path.resolve(HIER, '..', '..');
 const TRESOR = process.argv.find(a => a.startsWith('http')) || 'http://127.0.0.1:8788';
 const BILD = (() => { const i = process.argv.indexOf('--bild'); return i > 0 ? process.argv[i + 1] : null; })();
 const AUSWEICHEN = process.argv.includes('--ohne-ausweichen') ? 0 : 15;   /* Gewicht wie in web/index.html */
+/* FUELLMODUS (--fuellmodus): die Zellen ohne Bild, wie in den Treemaps und im Glasfeld des Plakats - dort setzt
+   nicht untenSetzen, sondern tinteSetzen mittig in die Zelle. Caspar_D, 07.10.2026: „merke dir die maximalgroße
+   Beschriftung für die Treemaps ohne Bilder, wo ausschliesslich die Grösse der Zellen eine Rolle spielt". Nur so
+   ist der Rand TINTE_RAND ueberhaupt messbar; mit Bildern wird der Fuellmodus nie erreicht. */
+const FUELL = process.argv.includes('--fuellmodus');
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const BREITE = 900, VERHAELTNIS = 0.62;
 
@@ -70,7 +81,7 @@ fs.writeFileSync(path.join(arbeit, 'karte.json'), JSON.stringify(karte));
 fs.writeFileSync(path.join(arbeit, 'index.json'), JSON.stringify(index));
 fs.writeFileSync(path.join(arbeit, 'gesichter.json'), JSON.stringify(gesichter));
 
-fs.writeFileSync(path.join(arbeit, 'pruefstand.html'), seite(tintenapparat(), AUSWEICHEN));
+fs.writeFileSync(path.join(arbeit, 'pruefstand.html'), seite(tintenapparat(), AUSWEICHEN, FUELL));
 
 const bildArgs = BILD ? ['--window-size=1250,860', '--screenshot=' + path.join(arbeit, 'bild.png')] : [];
 const roh = execFileSync(CHROME, ['--headless', '--disable-gpu', '--mute-audio', '--no-first-run',
@@ -86,7 +97,8 @@ if (z.fehler) { console.error('FEHLER im Prüfstand: ' + z.fehler); process.exit
 const p = (x, n = 0) => String(typeof x === 'number' ? x.toFixed(n) : x);
 console.log('');
 console.log('  ' + BREITE + ' × ' + Math.round(BREITE * VERHAELTNIS) + ' Punkte · Gliederung „Klang" · Maß Abrufe'
-  + (AUSWEICHEN ? '' : '  ·  OHNE Ausweichen vor dem Namen'));
+  + (AUSWEICHEN ? '' : '  ·  OHNE Ausweichen vor dem Namen')
+  + (FUELL ? '  ·  FÜLLMODUS (ohne Bilder, wie die Treemaps)' : ''));
 console.log('');
 console.log('  Zellen                    ' + z.zellen);
 console.log('  davon beschriftet         ' + z.namen + '   (' + p(100 * z.namen / z.zellen, 1) + ' %)');
@@ -109,7 +121,7 @@ if (BILD) { fs.copyFileSync(path.join(arbeit, 'bild.png'), BILD); console.log(' 
 fs.rmSync(arbeit, { recursive: true, force: true });
 
 /* ------------------------------------------------------------------ */
-function seite(apparat, ausweichen) {
+function seite(apparat, ausweichen, fuell) {
   return `<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{margin:0;background:#0c0c0d;color:#9aa0a8;font:12px system-ui,sans-serif}
 #w svg{display:block;width:1200px;height:auto}
@@ -161,7 +173,7 @@ try {
   const namensBox = new Map();
   const svg = R.renderSVG(res, { pad: 0, cushion: 0, gutters: [3.2, 2.0, 1.2, 0.7, 0.35],
     labelLevel: 2, labelSizes: [4, 22], labelLeading: schaumZeilenabstand(FAM) || 1.1,
-    labelDrop: 0.12, labelInk: tinte, labelUnten: () => true, labelName: zellName,
+    labelDrop: 0.12, labelInk: tinte, labelUnten: () => ${fuell ? 'false' : 'true'}, labelName: zellName,
     labelBox: (k, b) => namensBox.set(k, [b[0], H - b[3], b[2], H - b[1]]),
     measureText: textBreite, colourOf: () => '#2a2a2e' });
   document.getElementById('w').innerHTML = svg;
