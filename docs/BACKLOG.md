@@ -179,9 +179,24 @@ das in der wortwolke in Klangfeder definiert"*. Der Klangschaum hat diesen Schri
   statt der runden 0,1. Gemessen mit `labor/schaum/beschriftung.mjs --fuellmodus` (dem Fall, in dem dieser Rand
   überhaupt greift — mit Bildern setzt `untenSetzen` und nimmt `TINTE_LUFT_BILD`): 251 → 253 Namen, Schrift 8,87 →
   8,95 px. Im Bildmodus zeichengleich. `TINTE_RAND` bleibt als Rückfall stehen, falls eine Tinte ohne `hof` kommt.
-- **Weiter offen: die innere Lücke.** Caspar_Ds Regel der Wortwolke lautet `max(innenLücke, iPunkt)` — der Klangschaum
-  nimmt bisher nur den i-Abstand. Sie bräuchte eine Pixelmaske je Name; bei den Schriftgrößen des Schaums
-  (bis 22 px) könnte sie das Größere sein. Vor dem Bau messen, ob sie es überhaupt je ist.
+- **Die innere Lücke braucht es nicht — gemessen am 14.11.2026, damit erledigt.** Caspar_Ds Regel der Wortwolke
+  lautet `max(innenLücke, iPunkt)`; der Klangschaum nimmt nur den i-Abstand. Gemessen über alle 307 Zellnamen, mit
+  der Logik von `innenLuecke()` aus `KlangFeder/web/wortwolke.js` (Tinte in zusammenhängende Teile zerlegen, kleinster
+  Abstand zwischen zwei Teilen): Mittel **0,040 em**, Median 0,045 em, größer als der i-Abstand bei **2 von 307**.
+  Die Pixelmaske würde also in 99,3 % der Fälle dasselbe liefern wie die eine Zeile, die schon dasteht.
+  - **Warum das so sein muss:** die innere Lücke ist das *Minimum* über alle Buchstabenpaare. Je länger der Name,
+    desto kleiner das Minimum. Die lange Reihe knapp unter dem i-Abstand — „Vanille-Eis“, „Ich, Thiel“,
+    „Nachglühen - Ich bleib!“ — sind Namen mit i oder ü: dort IST die engste innere Lücke der i-Punkt-Abstand.
+    Genau darum ist er das richtige Maß.
+  - **Und die Größe spielt keine Rolle** — anders als hier zunächst vermutet. In Geviert gemessen ist die Lücke
+    größenunabhängig, der Buchstabenabstand skaliert mit der Schrift. In der Wortwolke wächst `luft` mit der
+    Schriftgröße nur, weil dort in ganzen Rasterzellen gerechnet wird; das ist ein Rasterartefakt, keine Typografie.
+    Dazu: 0,045 em sind auf der mittleren Schaumschrift von 6,9 px **0,3 Pixel** — eine Maske könnte dort nichts
+    messen, was sie nicht selbst erzeugt.
+  - **Der eine echte Fall bleibt offen, klein:** der japanische Titel „手と木“ hat 0,18 em innere Lücke, sein Hof
+    müsste also mehr als doppelt so weit sein. Vier japanische Titel im Bestand. Das ginge ohne Pixelmaske — CJK hat
+    bekannte Geviertabstände —, ist aber reine Ästhetik an vier Zellen und kein Platzgewinn. Erst bauen, wenn es
+    Caspar_D an einem Bild auffällt.
 - Nebenbei am 14.11.2026 schon korrigiert: der **Rückfallwert** der i-Lücke in `schaumSchriftMasse` war aus dem
   Zeilenabstand abgeleitet (1,1 − 0,71 − 0,18 = 0,21) und damit dreimal zu groß; er steht jetzt bei 0,07 wie in der
   Wortwolke. Er greift nur, wenn die Messung scheitert.
