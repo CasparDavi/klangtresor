@@ -163,7 +163,7 @@ hohen liegenden Balken, 1 Punkt bei Säulen und Hüllkurven. Hintergrund: im Ana
 SVG-Rechteck mit der Fläche mit, in den Profildiagrammen steht sie fest. Das wäre ein Nachtrag in
 `docs/haus/HAUSREGELN.md`, Abschnitt „Die Formsprache der Diagramme".
 
-### Auf dem Plakat weicht das Bild dem Titel nicht aus (offen, 14.11.2026)
+### Auf dem Plakat weicht das Bild dem Titel nicht aus (erledigt, 14.11.2026)
 Anlass: beim Pruefen der Plakatexporte nach den Beschriftungsregeln vom 14.11.2026 aufgefallen.
 - **Am Schirm** meldet `renderSVG` jede Namensbox ueber `labelBox`; `schaumBildPlatz` rechnet sie in die Kosten und
   schiebt das Cover so, dass moeglichst kein Gesicht unter die Schrift geraet (Gesicht auf dem Namen: 70 → 31 von 139).
@@ -175,8 +175,40 @@ Anlass: beim Pruefen der Plakatexporte nach den Beschriftungsregeln vom 14.11.20
   Ausweichen wuerde also nicht die Lesbarkeit verbessern, sondern das Gesicht aus dem Band holen.
 - Nichts davon wird von Hand nachjustiert: jede Zelle rechnet ihr Band selbst (`beschriften`), fuer alle Zellen
   desselben Exports nach derselben Regel.
-- **Zu tun:** die Titel des Plakats vor der Bildplatzierung rechnen (sie haengen nur am Umriss, nicht am Bild) und ihre
-  Boxen genauso in `schaumBildPlatz` geben. Reihenfolge im Blick behalten: heute entsteht erst das Bild, dann der Titel.
+- **Gebaut** (Caspar_D: *„bau es, ändere die Reihenfolge, das gesicht soll schon wenn möglihc unter dem Band oder der
+  Schrift hervorkommen"*): die Beschriftung rechnet jetzt VOR der Bildplatzierung — sie haengt nur am Zellumriss, es ist
+  derselbe Aufruf, nur frueher, und kostet keinen Rechenschritt. Ihre Box geht als `nameBox` in `schaumBildPlatz`: beim
+  Glasfeld das ganze Band (`bandY` bis Zellfuss), an der Kante die Schrift selbst (`kantenTitel` gibt dafuer seit heute
+  eine `box` zurueck).
+- **Gemessen** mit `labor/schaum/plakattitel.mjs` ueber Caspar_Ds 346 Zellen (A3 quer, Vorlage Galerie): von 72 Zellen mit
+  Bild und Gesicht lag das Gesicht bei **32 unter dem Band, jetzt bei 17** (44 % → 24 %), und die verdeckte Flaeche ging
+  von 46 % auf 32 % zurueck. Titel gehen keine verloren (137 wie vorher).
+
+### Kantentitel haben keinen Hof — der Zellrand schneidet Tinte weg (offen, 14.11.2026)
+Anlass: beim Messen des Plakathofs aufgefallen (Caspar_D: *„die Texte touchieren die Blasenwände, da muß ein Hof drum"*).
+Der Hof ist fuer das **Glasband** gebaut (`SCHAUM_PLAKAT_LUFT` 0,24, siehe `kopfUnten`); die Vorlage mit Titeln **an der
+Kante** (`druck.titel === 'kante'`, `kantenTitel`) rechnet davon nichts mit.
+- Gemessen mit `labor/schaum/plakattitel.mjs --titel kante`: 220 Titel, davon stehen **1722 Bildpunkte naeher als 0,8
+  Einheiten** an der Wand (373 davon unter 0,2) — und **1288 Bildpunkte, 0,25 % der ganzen Tinte, schneidet der Zellrand
+  weg** (der Titel haengt an `clip-path="url(#skzN)"`). Im Glasband wird nach dem Hof **nichts** mehr gekappt.
+- Grund: `kantenTitel` prueft nur, ob der Titel in 90 % der Bahnlaenge steht, und senkrecht zur Bahn gar nichts. Die Bahn
+  laeuft `fs * 0,95` ueber der Unterkante zwischen 6 % und 94 % der Zellbreite — wo die Kante steil ansteigt, liegen die
+  aeusseren Buchstaben im Rand.
+- **Zu tun:** die Pruefung, die dort schon fuer die **Nummer** steht (`imUmriss` mit 0,15 Geviert je Ecke, `nrPasst`), auf
+  alle Zeichen ausdehnen und den Titel kuerzen, bis jedes Zeichen mit Hof im Umriss liegt.
+
+### Der Satz weiss nicht genau, wo seine Tinte steht (offen, 14.11.2026)
+Beim Bau des Plakathofs gemessen: der Satz prueft seine Tintenkaesten mit der bestellten Luft gegen den Zellumriss, aber
+die **wirkliche** Tinte reicht weiter als die Kaesten. Bei Luft 0,12 (Schrift 7 Einheiten, bestellt also 0,84 Einheiten
+Abstand) stand der engste Tintenpunkt **0,167 Einheiten** von der Wand — gemessen metrikfrei mit der Pixelmaske, also
+unabhaengig von jedem Metrikmodell. Mehr Luft verschiebt die Masse (389 → 93 enge Bildpunkte), aber diese drei
+Bildpunkte bleiben: ein harter Rest, der nicht an der Luft haengt.
+- Nicht die Ursache: die Messstufe. `ink.runs` misst bei `stufe(Groesse × pxJeEinheit)`, im Plakat also bei 4 px, wo ein
+  halber Bildpunkt 0,125 Geviert ist — mit den Einzelkaesten bei 64 px gemessen (`--feine-kaesten`) aendert sich nichts.
+- Verdacht: `runs` setzt die Kaesten der Einzelzeichen nach ihren Vorschuessen aneinander und streckt sie auf die
+  gemessene Zeilenbreite; **Kerning** verschiebt einzelne Glyphen gegenueber dieser Rechnung.
+- Praktisch: drei Bildpunkte bei sechsfacher Rasterung sind nichts, was man sieht. Der Eintrag steht hier, damit die
+  Zahl nicht als „Hof haelt genau" durchgeht.
 
 ### Hof der Zellnamen im Klangschaum: geraten statt gemessen (erledigt, 14.11.2026)
 Anlass: der Hitstrom hat am 14.11.2026 den Tintenapparat des Klangschaums übernommen und dabei den **Hof** dazu

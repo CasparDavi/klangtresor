@@ -34,6 +34,12 @@
 //   nach den vier Eingriffen oben                   251 Namen · Schrift 8,87 px · Lage 0,517
 //   + Rand = gemessener Hof 0,079 statt 0,1         253 Namen · Schrift 8,95 px · Lage 0,517
 //   + optische Mitte (Tinte statt Schriftbox)       253 Namen · Schrift 8,94 px · Lage 0,524
+//
+// HOF ZUR ZELLWAND (seit 14.11.2026 mitgemessen, mit Bildern): Mittel 0,490 Geviert, Median 0,306, engster 0,066;
+// 12 von 450 Zeilen unter den 0,12, mit denen der Satz rechnet, keine unter 0,06. Mehr Luft hilft hier NICHT: bei
+// 0,24 werden es 253 Namen, die Titel steigen (Lage 0,678 → 0,646) und unter dem Text bleibt mehr Flaeche
+// (11,4 → 14,6 %) - die Schrift darf am Schirm auf 4 heruntergehen und holt sich ihre Luft selbst. Das PLAKAT
+// verhaelt sich anders (dort klebt jeder Titel an der Mindestschrift 7): labor/schaum/plakattitel.mjs.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -51,6 +57,18 @@ const AUSWEICHEN = process.argv.includes('--ohne-ausweichen') ? 0 : 15;   /* Gew
    Beschriftung für die Treemaps ohne Bilder, wo ausschliesslich die Grösse der Zellen eine Rolle spielt". Nur so
    ist der Rand TINTE_RAND ueberhaupt messbar; mit Bildern wird der Fuellmodus nie erreicht. */
 const FUELL = process.argv.includes('--fuellmodus');
+/* --luft X: die Luft um die Tintenkaesten in Zellen mit Bild (TINTE_LUFT_BILD in render.js, Vorgabe 0,12). render.js wird
+   in den Arbeitsordner kopiert - der Schalter patcht die Kopie, das Repo bleibt unberuehrt.
+   --feine-kaesten: die Kaesten der EINZELZEICHEN bei 64 px messen statt bei der Darstellungsstufe. Grund (14.11.2026):
+   bei 6,9 px Schrift und 0,6 px je Einheit misst der Apparat bei 4 px, und dort ist ein Rasterpixel 0,25 Geviert - der
+   Kasten weiss also nur grob, wo die Tinte steht. Die Zeilenbreite w bleibt bei der Darstellungsstufe gemessen (dort
+   ist die Textform wirklich breiter), und der Faktor f streckt die feinen Kaesten darauf. */
+const LUFT = (() => { const i = process.argv.indexOf('--luft'); return i > 0 ? parseFloat(process.argv[i + 1]) : null; })();
+/* --minschrift N: die kleinste Schrift (Vorgabe 4 wie am Schirm). Das PLAKAT verlangt 7 Schaum-Einheiten (kopfUnten in
+   web/index.html, nach der Lesbarkeitsschwelle DIN 1450). Wo placeLabel das nicht schafft, faellt das Plakat auf das
+   alte Glasband zurueck - und das hat keinen Hof. Mit diesem Schalter ist zaehlbar, wie viele Zellen das betrifft. */
+const MIN = (() => { const i = process.argv.indexOf('--minschrift'); return i > 0 ? parseFloat(process.argv[i + 1]) : 4; })();
+const FEIN = process.argv.includes('--feine-kaesten');
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const BREITE = 900, VERHAELTNIS = 0.62;
 
@@ -62,7 +80,13 @@ function tintenapparat() {
   const a = s.indexOf('const schriftMasseMerk');
   const e = s.indexOf('/* Bildschirmpixel je Schaum-Einheit');
   if (a < 0 || e < 0 || e <= a) throw new Error('Tintenapparat in web/index.html nicht gefunden');
-  return s.slice(a, e);
+  let t = s.slice(a, e);
+  if (FEIN) {
+    const alt = 'const zs = teile(t).map(c => zeichen(c, b, kursiv))';
+    if (!t.includes(alt)) throw new Error('--feine-kaesten: die Stelle in schaumNamenTinte ist nicht mehr da');
+    t = t.replace(alt, 'const zs = teile(t).map(c => zeichen(c, 64, kursiv))');
+  }
+  return t;
 }
 
 const holen = async (pfad) => {
@@ -77,6 +101,12 @@ const [karte, index, gesichter] = await Promise.all([holen('/api/karte'), holen(
 const arbeit = fs.mkdtempSync(path.join(os.tmpdir(), 'schaum-pruefstand-'));
 for (const d of fs.readdirSync(path.join(WURZEL, 'web/klangschaum')))
   if (d.endsWith('.js')) fs.copyFileSync(path.join(WURZEL, 'web/klangschaum', d), path.join(arbeit, d));
+if (LUFT > 0) {
+  const p0 = path.join(arbeit, 'render.js'), q = fs.readFileSync(p0, 'utf8');
+  const alt = 'const TINTE_LUFT_BILD = 0.12;';
+  if (!q.includes(alt)) throw new Error('--luft: TINTE_LUFT_BILD in render.js ist nicht mehr 0.12');
+  fs.writeFileSync(p0, q.replace(alt, 'const TINTE_LUFT_BILD = ' + LUFT + ';'));
+}
 fs.writeFileSync(path.join(arbeit, 'karte.json'), JSON.stringify(karte));
 fs.writeFileSync(path.join(arbeit, 'index.json'), JSON.stringify(index));
 fs.writeFileSync(path.join(arbeit, 'gesichter.json'), JSON.stringify(gesichter));
@@ -98,7 +128,8 @@ const p = (x, n = 0) => String(typeof x === 'number' ? x.toFixed(n) : x);
 console.log('');
 console.log('  ' + BREITE + ' × ' + Math.round(BREITE * VERHAELTNIS) + ' Punkte · Gliederung „Klang" · Maß Abrufe'
   + (AUSWEICHEN ? '' : '  ·  OHNE Ausweichen vor dem Namen')
-  + (FUELL ? '  ·  FÜLLMODUS (ohne Bilder, wie die Treemaps)' : ''));
+  + (FUELL ? '  ·  FÜLLMODUS (ohne Bilder, wie die Treemaps)' : '')
+  + (LUFT > 0 ? '  ·  Luft ' + LUFT : '') + (FEIN ? '  ·  feine Kästen (64 px)' : ''));
 console.log('');
 console.log('  Zellen                    ' + z.zellen);
 console.log('  davon beschriftet         ' + z.namen + '   (' + p(100 * z.namen / z.zellen, 1) + ' %)');
@@ -111,6 +142,12 @@ console.log('    tief (über 0,7)         ' + z.tief);
 console.log('    oben (unter 0,5)        ' + z.oben);
 console.log('  Zellfläche unter dem Text ' + p(100 * z.rest, 1) + ' %');
 console.log('    mehr als 25 %           ' + z.viel + ' Namen');
+console.log('');
+console.log('  Hof zur Zellwand          ' + p(z.hofMittel, 3) + ' Geviert im Mittel · Median ' + p(z.hofMedian, 3)
+  + ' · engster ' + p(z.hofMin, 3) + '   (gerechnet wird mit ' + (FUELL ? 'dem gemessenen Hof' : '0,12') + ')');
+console.log('    unter 0,12 Geviert      ' + z.unter12 + ' von ' + z.zeilen10 + ' Zeilen');
+console.log('    unter 0,06 / 0,02       ' + z.unter06 + ' / ' + z.unter02);
+if (z.engste && z.engste.length) console.log('    engste: ' + z.engste.map(e => '„' + e[0] + '" ' + p(e[1], 3) + ' (' + e[2] + ' px)').join(' · '));
 console.log('');
 console.log('  Zellen mit Gesicht        ' + z.mitGesicht);
 console.log('    Name auf dem Gesicht    ' + z.drueber + '   (' + p(100 * z.drueber / Math.max(1, z.mitGesicht), 0) + ' %, im Mittel '
@@ -172,7 +209,7 @@ try {
 
   const namensBox = new Map();
   const svg = R.renderSVG(res, { pad: 0, cushion: 0, gutters: [3.2, 2.0, 1.2, 0.7, 0.35],
-    labelLevel: 2, labelSizes: [4, 22], labelLeading: schaumZeilenabstand(FAM) || 1.1,
+    labelLevel: 2, labelSizes: [${MIN}, 22], labelLeading: schaumZeilenabstand(FAM) || 1.1,
     labelDrop: 0.12, labelInk: tinte, labelUnten: () => ${fuell ? 'false' : 'true'}, labelName: zellName,
     labelBox: (k, b) => namensBox.set(k, [b[0], H - b[3], b[2], H - b[1]]),
     measureText: textBreite, colourOf: () => '#2a2a2e' });
@@ -236,9 +273,49 @@ try {
     const S2 = mm ? parseFloat(mm[1]) : 1;
     return { x: b.x * S2, y: b.y, width: b.width * S2, height: b.height }; };
 
+  /* ABSTAND DER TINTE ZUR ZELLWAND (14.11.2026). Caspar_D am Plakat: „die Texte touchieren die Blasenwände, da muß
+     ein Hof drum". Gemessen wird ZEILENWEISE (ein Block hat je Zeile eigene Grenzen): der kleinste Abstand des
+     Tintenkastens dieser Zeile - getBBox umschliesst die Glyphen, also die Tinte selbst - zum Zellumriss, einmal
+     Kastenecke gegen Umrisskante und einmal Umrissecke gegen den Kasten (sonst wird eine Kante, die mitten durch
+     eine Kastenseite laeuft, zu gross gemessen). In GEVIERT der Schrift dieser Zeile, denn nur so ist die Zahl
+     ueber alle Zellgroessen vergleichbar - und nur so steht sie neben der Luft, mit der render.js rechnet. */
+  /* DIE TINTE SELBST, UNABHAENGIG VON render.js GEMESSEN. getBBox() eines SVG-Textes gibt die LAYOUTBOX: Breite der
+     Vorschub, Hoehe der ganze Em-Kasten (Ascent + Descent) - auch wo keine Unter- oder Oberlaenge dasteht. Die erste
+     Fassung dieser Messung nahm sie und meldete darum lauter Nullabstaende, samt und sonders bei Woertern ohne
+     Unterlaenge („Monolith", „Wirt", „fest"). Hier wird darum aus den tspan-Attributen gerechnet, die im SVG stehen -
+     x ist die Mitte (text-anchor middle), y die Grundlinie -, und die Ausdehnung der TINTE in der Satzgroesse am
+     Canvas gemessen (actualBoundingBox*). Das ist eine zweite, eigene Messung: render.js rechnet mit ink.runs, das
+     bei pxJeE-Groesse misst - kommen beide auf dasselbe, hat die Luft wirklich Bestand. Der Schmalschnitt staucht
+     nur x, und zwar um den Ursprung: darum erst in ungestauchten Einheiten rechnen, dann mit S malnehmen. */
+  const lwT = document.createElement('canvas').getContext('2d');
+  const tinteKasten = (text, fs, xm, yg, S, kursiv) => {
+    if (!text || !(fs > 0) || !isFinite(xm) || !isFinite(yg)) return null;
+    lwT.font = (kursiv ? 'italic ' : '') + '400 ' + fs.toFixed(2) + 'px ' + FAM;
+    const m = lwT.measureText(text);
+    if (!(m.actualBoundingBoxRight + m.actualBoundingBoxLeft > 0)) return null;
+    const start = xm - m.width / 2;
+    return [(start - m.actualBoundingBoxLeft) * S, yg - m.actualBoundingBoxAscent,
+            (start + m.actualBoundingBoxRight) * S, yg + m.actualBoundingBoxDescent];
+  };
+
+  const wandAbstand = (b, pts) => {
+    const segAb = (p, a, c) => { const vx = c[0] - a[0], vy = c[1] - a[1], l2 = vx * vx + vy * vy || 1e-9;
+      const t2 = Math.max(0, Math.min(1, ((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / l2));
+      return Math.hypot(p[0] - (a[0] + t2 * vx), p[1] - (a[1] + t2 * vy)); };
+    const ecken = [[b[0], b[1]], [b[2], b[1]], [b[2], b[3]], [b[0], b[3]]];
+    let d = Infinity;
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      for (const e of ecken) d = Math.min(d, segAb(e, pts[j], pts[i]));
+      const p = pts[i];
+      d = Math.min(d, Math.hypot(Math.max(b[0] - p[0], 0, p[0] - b[2]), Math.max(b[1] - p[1], 0, p[1] - b[3])));
+    }
+    return d;
+  };
+
   const texte = [...document.querySelectorAll('#w svg text')];
   const mw = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   const lagen = [], rest = [], groessen = [], zeilig = {}, anteile = [];
+  const hoefe = [], engste = [];
   let mehrzeilig = 0, fuge = 0, mitGesicht = 0, drueber = 0;
   for (const t of texte) {
     const sp = [...t.querySelectorAll('tspan')], n = Math.max(1, sp.length);
@@ -248,6 +325,16 @@ try {
     const bb = BOX(t), mx = bb.x + bb.width / 2, my = bb.y + bb.height / 2;
     const z = zellen.find(c => my >= c.y0 && my <= c.y1 && drin(c.pts, [mx, my]));
     if (!z) continue;
+    { const S3 = parseFloat(((t.getAttribute('transform') || '').match(/scale\\(([\\d.]+)/) || [0, '1'])[1]) || 1;
+      const fs = parseFloat(t.getAttribute('font-size')) || 1;
+      const kursiv = getComputedStyle(t).fontStyle === 'italic';
+      for (const el of (sp.length ? sp : [t])) {
+        const b = tinteKasten(el.textContent, fs, parseFloat(el.getAttribute('x')), parseFloat(el.getAttribute('y')), S3, kursiv);
+        if (!b) continue;
+        const d = wandAbstand(b, z.pts) / fs;
+        hoefe.push(d);
+        if (d < 0.06) engste.push([el.textContent, +d.toFixed(3), +fs.toFixed(1)]);
+      } }
     lagen.push((my - z.y0) / ((z.y1 - z.y0) || 1));
     rest.push(unterhalb(z.pts, bb.y + bb.height) / (z.A || 1));
     if (z.k.row == null) continue;
@@ -265,7 +352,12 @@ try {
   melde({ zellen: res.leaves.length, namen: texte.length, schrift: mw(groessen), zeilig, mehrzeilig, fuge,
           lage: mw(lagen), tief: lagen.filter(x => x > 0.7).length, oben: lagen.filter(x => x < 0.5).length,
           rest: mw(rest), viel: rest.filter(x => x > 0.25).length,
-          mitGesicht, drueber, ueMittel: mw(anteile) });
+          mitGesicht, drueber, ueMittel: mw(anteile),
+          hofMittel: mw(hoefe), hofMin: hoefe.length ? Math.min(...hoefe) : 0,
+          hofMedian: hoefe.length ? [...hoefe].sort((a, b) => a - b)[hoefe.length >> 1] : 0,
+          zeilen10: hoefe.length, unter12: hoefe.filter(x => x < 0.12).length,
+          unter06: hoefe.filter(x => x < 0.06).length, unter02: hoefe.filter(x => x < 0.02).length,
+          engste: engste.sort((a, b) => a[1] - b[1]).slice(0, 12) });
 } catch (e) { melde({ fehler: String((e && e.stack) || e) }); }
 </script></body></html>`;
 }

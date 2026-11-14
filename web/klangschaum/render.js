@@ -78,9 +78,9 @@ function imOderAufRand(poly, p, eps) {
 // A label inside a cell: at the centre of its largest inscribed circle, as large as the horizontal width there and the circle
 // allow (text width estimated at 0.56 em per character), on one or two lines, whichever gives the larger font. In user
 // units of the layout; null if it would be smaller than minSize.
-export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false, startSize = null, kursiv = false, sperren = null } = {}) {
+export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false, startSize = null, kursiv = false, sperren = null, luft = null } = {}) {
   const [px, py, r] = poleOf(poly), [xa, xb] = chordAt(poly, [px, py]);
-  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv, sperren });
+  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv, sperren, luft });
   if (ink && fit) return tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv, sperren });
   const cx = (Math.max(xa, px - 3 * r) + Math.min(xb, px + 3 * r)) / 2, width = 0.92 * (Math.min(xb, px + 3 * r) - Math.max(xa, px - 3 * r));
   // width of a line in em: measured with the real font where the page offers it (measure), else estimated at 0.56 em a character
@@ -350,7 +350,13 @@ function untenSetzen(poly, huelle, text, o) {
      groesser als der Zeilenkasten-Satz" gilt weiter, wo es diesen Satz gibt. */
   const anfang = alt ? alt.size : Math.min(maxSize, 2 * o.r);
   if (!(anfang >= minSize)) return tinteSetzen(poly, huelle, text, o);
-  const m = TINTE_LUFT_BILD, fassungen = alleUmbrueche(text.split(" ").filter(Boolean), maxLines);
+  /* DER HOF IST EINSTELLBAR (14.11.2026). Caspar_D am gedruckten Plakat: „die Texte touchieren die Blasenwände,
+     da muß ein Hof drum". Gemessen mit labor/schaum/plakattitel.mjs (dem Pruefstand, der den PLAKATSATZ misst):
+     am Plakat klebt jeder Titel an der Mindestschrift 7 - die Schrift kann nicht kleiner werden, also drueckt der
+     Satz bis an die Grenze. Am Schirm darf sie auf 4 herunter und hat von sich aus Luft. Darum nimmt das Plakat
+     seine eigene Zahl (luft, siehe kopfUnten in index.html) und der Schirm behaelt die seine: 0,24 am Schirm
+     kostete 2 Namen, hob die Titel (Lage 0,678 → 0,646) und liess mehr Flaeche unter dem Text (11,4 → 14,6 %). */
+  const m = o.luft ?? TINTE_LUFT_BILD, fassungen = alleUmbrueche(text.split(" ").filter(Boolean), maxLines);
   let y0 = Infinity, y1 = -Infinity, xl = Infinity, xr = -Infinity;
   for (const p of poly) { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); xl = Math.min(xl, p[0]); xr = Math.max(xr, p[0]); }
   for (let i = 0, size = anfang; i < 40 && size >= minSize; i++, size *= 0.94) {

@@ -10663,6 +10663,9 @@ function schaumZeilenabstand(){ return schaumSchriftMasse().lead; }
    Tintenkasten aus measureText; die Lage in der Zeile aus dem Vorschub, gestreckt auf die gemessene Breite der ganzen Zeile
    (so ist die Unterschneidung verteilt, nicht vergessen). */
 const SCHAUM_TINTE_STUFEN = [4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48];
+/* Die Luft um die Titel des PLAKATS, in Geviert - mehr als am Schirm (render.js TINTE_LUFT_BILD, 0,12). Begruendung und
+   Messreihe stehen bei kopfUnten, wo sie an placeLabel geht. */
+const SCHAUM_PLAKAT_LUFT = 0.24;
 const schaumTinteZeichen = new Map(), schaumTinteZeilen = new Map();
 let schaumTinteLeinwand = null, schaumTinteTeiler;
 function schaumNamenTinte(pxJe, FAM = SCHAUM_NAMEN_FAMILIE){
@@ -10841,8 +10844,15 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
   const kopfUnten = (pk, x, y, w, h, name, i, nr = '') => {
     const alt = kopfPlan(pk, x, y, w, h, name, i, true, nr), ziel = Math.max(7, alt ? alt.fs : 7);
     const poly = pk.map(p => [p[0], -p[1]]);                       /* render.js rechnet mit y nach oben */
+    /* DER HOF AUF DEM PLAKAT (Caspar_D, 14.11.2026, am gedruckten Blatt: „die Texte touchieren die Blasenwände, da muß ein
+       Hof drum"). Das Plakat braucht mehr Luft als der Schirm, weil hier jeder Titel an der Mindestschrift 7 klebt (DIN 1450):
+       die Schrift kann nicht kleiner werden, also drueckt der Satz bis an die Grenze. Gemessen mit labor/schaum/plakattitel.mjs
+       ueber Caspar_Ds 346 Zellen, A3 quer - Tinte, die naeher als 0,8 Einheiten an der Wand steht (metrikfrei, Pixelmaske):
+       Luft 0,12 → 389 Bildpunkte · 0,18 → 128 · 0,24 → 93 · 0,32 → 93, aber dann fallen 2 Titel weg. 0,24 gewaehlt: der Gewinn
+       ist dort gehoben, und es kostet keinen Titel (137 wie vorher). Am Schirm bleibt es bei 0,12 - dort kosteten 0,24 zwei
+       Namen und hoben die Titel wieder an (render.js TINTE_LUFT_BILD). */
     const lab = R.placeLabel(poly, name, { maxSize: ziel, minSize: 7, maxLines: 3, fit: true, leading: schaumZeilenabstand(), drop: 0,
-      huelle: poly, ink: kopfTinte, unten: true, startSize: ziel, sperren: waende });
+      huelle: poly, ink: kopfTinte, unten: true, startSize: ziel, sperren: waende, luft: SCHAUM_PLAKAT_LUFT });
     if (!lab || !lab.xs) return waende.length ? null : alt;      /* das alte Band kennt die Wandfugen nicht - im Triptychon dann die Nummer */
     /* tinte.d: die Verschiebung auf die optische Mitte, die tintenBlock in render.js rechnet - der Satz muss sie mitmachen */
     const n = lab.lines.length, grund = j => lab.y + (lab.tinte.d || 0) + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size;
@@ -10955,7 +10965,12 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
        entlang des gesetzten Stuecks) - darueber darf das Schild stehen, wenn die Nummer nicht im Titel steht (beschriften) */
     let oben = Infinity;
     for (let sl = s0; sl <= s0 + breit(txt) + 1e-9; sl += fs / 2){ const m = an(Math.min(sl, s0 + breit(txt))); oben = Math.min(oben, m.p[1] + m.n[1] * (km.fasc * fs - tief)); }
-    return { fs, fsSatz: +fs.toFixed(1), nrPasst, oben, svg: `<path id="skp${i}" d="M${bahn.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
+    /* box: das Rechteck, das der Titel belegt - damit das Bild ihm ausweichen kann (schaumBildPlatz, nameBox). Links und rechts
+       die Enden des gesetzten Stuecks (die Bahn laeuft monoton nach rechts), oben die hoechste Tinte, unten der Fuss der Zelle:
+       zwischen Schrift und Unterkante liegt nur die halbe Schrift, dort ist ohnehin nichts vom Gesicht zu holen. */
+    const e0 = an(s0).p[0], e1 = an(s0 + breit(txt)).p[0];
+    return { fs, fsSatz: +fs.toFixed(1), nrPasst, oben, box: [Math.min(e0, e1), oben, Math.max(e0, e1), y + h],
+      svg: `<path id="skp${i}" d="M${bahn.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
       + `<text class="kante" font-size="${fs.toFixed(1)}" font-weight="600" fill="#ffffff" fill-opacity="0.7"`
       + ` clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>` };   /* fsSatz: die Nummer davor zählt nur ab der Schwelle */
   };
@@ -11180,7 +11195,16 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              /* Platz des Bildes: mit Gesichtern gerueckt (schaumFokus); gezeigt wird am Schirm und in der
                 Vorschau meist die Kachel, im PDF das Original (data-p). Ohne Eintrag wie bisher mittig. */
              const fd = quelle ? (personen ? schaumFokusAvatar((zeilen[res.leaves[+i].row] || {}).bild) : schaumFokus(id)) : null;
-             const pOrig = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus, fd.texte, namensBox.get(res.leaves[+i]) || null) : null;
+             /* ERST DER TITEL, DANN DAS BILD (Caspar_D, 14.11.2026: „ändere die Reihenfolge, das gesicht soll schon wenn möglich
+                unter dem Band oder der Schrift hervorkommen"). Am Schirm meldet renderSVG die Namensboxen selbst (labelBox); im
+                Druck setzt es keine Namen, jede Zelle wird hier einzeln beschriftet - und bis 1.1.10 geschah das NACH der
+                Bildplatzierung, das Bild wusste also nichts von seinem Titel. Die Beschriftung haengt nur am Zellumriss, nicht am
+                Bild: sie darf vorziehen, und es kostet keinen Rechenschritt mehr, es ist derselbe Aufruf. Die Box ist das, was
+                tatsaechlich deckt - beim Glasfeld das Band (bandY bis Zellfuss, Deckung 0,62), an der Kante die Schrift selbst. */
+             const nrHier = nummern ? nummern.get(+i) : 0;
+             const { plan, kante, tf, schild } = (nrHier && beschriftet.get(+i)) || beschriften(+i, dd, 0);
+             const titelBox = plan ? [x, plan.bandY, x + w, plan.bandY + plan.bh] : (kante && kante.box) || null;
+             const pOrig = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus, fd.texte, titelBox || namensBox.get(res.leaves[+i]) || null) : null;
              const gezeigt = druck ? (vorschauBilder[+i] || quelle) : quelle;
              const pBild = !pOrig ? { x, y, w, h } : (!fd.eigen && /kachel\.jpg/.test(gezeigt || '') ? schaumKachelPlatz(pOrig, fd.a) : pOrig);
              const lage = `x="${pBild.x.toFixed(1)}" y="${pBild.y.toFixed(1)}" width="${pBild.w.toFixed(1)}" height="${pBild.h.toFixed(1)}"`
@@ -11189,8 +11213,6 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              const bildAn = !quelle ? '' : druck ? `href="${esc(schaumBildHref(vorschauBilder[+i] || quelle, stufe))}" data-voll="${esc(quelle)}" data-i="${i}"`
                : `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"`;
              let kopf = '';
-             const nrHier = nummern ? nummern.get(+i) : 0;
-             const { plan, kante, tf, schild } = (nrHier && beschriftet.get(+i)) || beschriften(+i, dd, 0);
              if (plan){
                kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
                  + `<g clip-path="url(#skz${i})" pointer-events="none">`
