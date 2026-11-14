@@ -163,6 +163,16 @@ hohen liegenden Balken, 1 Punkt bei Säulen und Hüllkurven. Hintergrund: im Ana
 SVG-Rechteck mit der Fläche mit, in den Profildiagrammen steht sie fest. Das wäre ein Nachtrag in
 `docs/haus/HAUSREGELN.md`, Abschnitt „Die Formsprache der Diagramme".
 
+### Auf dem Plakat weicht das Bild dem Titel nicht aus (offen, 14.11.2026)
+Anlass: beim Pruefen der Plakatexporte nach den Beschriftungsregeln vom 14.11.2026 aufgefallen.
+- **Am Schirm** meldet `renderSVG` jede Namensbox ueber `labelBox`; `schaumBildPlatz` rechnet sie in die Kosten und
+  schiebt das Cover so, dass moeglichst kein Gesicht unter die Schrift geraet (Gesicht auf dem Namen: 70 → 31 von 139).
+- **Im Druck** setzt `renderSVG` gar keine Namen (`labelLevel: null`) — jede Zelle wird danach einzeln von `kopfUnten`
+  beschriftet. `namensBox` bleibt darum leer, und das Bild weiss beim Platzieren nichts vom Titel. Auf dem Plakat liegen
+  Namen also weiter auf Gesichtern.
+- **Zu tun:** die Titel des Plakats vor der Bildplatzierung rechnen (sie haengen nur am Umriss, nicht am Bild) und ihre
+  Boxen genauso in `schaumBildPlatz` geben. Reihenfolge im Blick behalten: heute entsteht erst das Bild, dann der Titel.
+
 ### Hof der Zellnamen im Klangschaum: geraten statt gemessen (erledigt, 14.11.2026)
 Anlass: der Hitstrom hat am 14.11.2026 den Tintenapparat des Klangschaums übernommen und dabei den **Hof** dazu
 definiert — Caspar_D: *„definiere einen Hof um die Tinte - normalerweisse der i zu i-Punkt abstand"*, *„wir hatten

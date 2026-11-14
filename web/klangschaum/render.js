@@ -221,7 +221,7 @@ function mittenFrei(poly, y, bw, bh, sperren) {
    14,6 % → 10,6 %. Bei 78 % waeren es 269 Namen, dort sieht man die Stauchung aber. Derselbe Wert wie im
    Hitstrom, den Caspar_D am Bild gewaehlt hat. Gilt nur fuer die Tinten-Saetze; der alte Zeilenkasten-Satz
    rechnet unveraendert. */
-const TINTE_SCHMAL = 0.85;
+export const TINTE_SCHMAL = 0.85;
 function tintenBlock(lines, size, ink, leading, m, kursiv = false) {
   const n = lines.length, zeilen = [];
   let u = Infinity, ob = -Infinity, links0 = Infinity, rechts0 = -Infinity;
