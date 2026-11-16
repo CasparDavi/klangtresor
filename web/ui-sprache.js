@@ -532,6 +532,12 @@
     ['wer.rolle.dabei', 'Mit dabei', 'On board'],
     ['wer.rolle.mit', 'Mitentwicklerin', 'Co-developer'],
     ['wer.rolle.russisch', 'Russisch', 'Russian'],
+    /* Die Wege nach draussen. Einmal benannt, zweimal benutzt: als Zeile im Fenster „Wer" und als Fusszeile
+       der Lasche „System" (index.html, data-href-sprache). Die Feature-Seite und die Broschuere gibt es in
+       allen drei Sprachen - die Adresse bekommt die Sprache der Oberflaeche mitgegeben. */
+    ['aussen.features', 'Was KlangTresor kann', 'Everything it can do'],
+    ['aussen.quelltext', 'Quelltext', 'Source code'],
+    ['aussen.broschuere', 'Broschüre (PDF)', 'Brochure (PDF)'],
     ['wer.suno', 'Songs auf Suno', 'Songs on Suno'],
     ['wer.einstieg', 'Ein lokales Archiv der eigenen <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>-Titel — mit Karaoke-Bühne, Klanganalyse und Tonstudio. Läuft im eigenen Netz, ohne Konto und ohne Server im Internet.', 'A local archive of your own <a href="https://suno.com" target="_blank" rel="noopener">Suno</a> titles — with a karaoke stage, sound analysis and the Sound Studio. Runs on your own network, with no account and no server on the internet.'],
     ['wer.tarja', 'Hat Whisper ins Haus geholt, prüft unter Linux und optimiert für Docker, hat das Update-Skript und die Versions-Glocke gebaut und den KlangTresor zweisprachig gemacht – sie hat entschieden, wovor ich mich lange gedrückt habe, obwohl ich es auch wollte. Ihr verdanken wir außerdem einen großen Teil unseres Verständnisses der Suno-Studio-Schnittstelle — wie Sunos eigene Oberfläche mit uns spricht, war lange unklar.', 'Brought Whisper into the house, tests on Linux and optimises for Docker, built the update script and the version bell, and made KlangTresor bilingual – she decided what I had long put off, although I wanted it too. We also owe her a large part of our understanding of the Suno Studio interface — how Suno’s own UI talks to us was unclear for a long time.'],
@@ -4443,6 +4449,11 @@
     });
     wurz.querySelectorAll('[data-i18n-label]').forEach(function (el) {
       el.label = t(el.getAttribute('data-i18n-label'));
+    });
+    /* Links nach draussen: {s} in der Adresse wird die Sprachkennung. Wer den KlangTresor auf Russisch
+       bedient, soll nicht auf der englischen Feature-Seite landen. */
+    wurz.querySelectorAll('[data-href-sprache]').forEach(function (el) {
+      el.href = el.getAttribute('data-href-sprache').replace('{s}', sprache);
     });
     document.querySelectorAll('[data-sprache]').forEach(function (el) {
       el.classList.toggle('an', el.getAttribute('data-sprache') === sprache);
