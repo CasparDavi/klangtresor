@@ -290,9 +290,14 @@ footer a:hover{color:var(--akzent);border-color:var(--akzent)}
 const PLUS = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>';
 const KREUZ = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l10 10M11 1L1 11"/></svg>';
 
+/* ?lang= SCHLAEGT DAS GEMERKTE (Caspar_D, 16.11.2026: „die sprache muss steuern, welche page ich sehe").
+   Wer aus dem KlangTresor hierherkommt, bringt die Sprache seiner Oberflaeche in der Adresse mit - die ist
+   ein ausdruecklicher Wunsch und wiegt schwerer als die Sprache, in der jemand diese Seite zuletzt gelesen
+   hat. Sie wird auch gemerkt, damit der naechste Besuch OHNE Parameter dieselbe Sprache zeigt. */
 function spracheWaehlen(){
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q && S.kopf.h[q]) { try { localStorage.setItem('kt-features-sprache', q); } catch(e){} return q; }
   try { const s = localStorage.getItem('kt-features-sprache'); if (s && S.kopf.h[s]) return s; } catch(e){}
-  const q = new URLSearchParams(location.search).get('lang'); if (q && S.kopf.h[q]) return q;
   for (const l of (navigator.languages || [navigator.language || 'en'])) { const k = (l||'').slice(0,2); if (S.kopf.h[k]) return k; }
   return 'en';
 }
