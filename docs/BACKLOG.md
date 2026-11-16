@@ -139,10 +139,10 @@ Mit 1.1.13 stehen im Fenster „Wer" und am Fuß der Lasche „System" die Wege 
 „Брошюра (PDF)" — sind ein Entwurf von Claude, nicht Henrys Übersetzung. Sie gehören in die nächste Runde
 der Tabelle `ui-sprache-en-ru.xlsx`, wie alles andere Russische seit 1.0.90.
 
-Außerdem offen, falls die Oberfläche dort je wächst: die Feature-Seite merkt sich die zuletzt gewählte
-Sprache im `localStorage` und schlägt damit das `?lang=` aus der App. Wer die Seite einmal auf Englisch
-gelesen hat, bekommt sie aus dem russischen KlangTresor wieder englisch. Gemessen, nicht behoben — ob das
-stört, entscheidet Caspar_D.
+Die Sprachwahl der Feature-Seite ist am selben Tag entschieden und gebaut: `?lang=` schlägt jetzt den
+`localStorage` und wird gemerkt (Caspar_D: *„die sprache muß steuern, welche page ich sehe"*). Dabei kam
+heraus, dass der erste Befund nur halb stimmte — der Speicher wird erst beim Klick auf einen Sprachknopf
+gesetzt; ohne diesen Klick hatte `?lang=` auch vorher schon gegolten.
 
 ### Die Topline ist ein Schatten und sollte eine Fläche sein (offen, 14.11.2026)
 Anlass: Caspar_D vermisste die Toplines in den Profildiagrammen — *„kann es sein, das die top lines in den
