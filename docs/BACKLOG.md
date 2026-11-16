@@ -448,7 +448,115 @@ die vier eigenen Songs ohne Zeitmarken schon existiert. Holen über den
 lokalen Server (kein CORS-Problem), Zwischenspeicher als **eine**
 gepackte Datei.
 
+### Russisch kommt auf der Bühne nicht an (offen, 16.11.2026)
+
+Caspar_D: *„whisper zeigt auf der Bühne gar kein russisch, nichtmal die Übersetzung"* — und
+*„heisst daju nicht geben?"* zur Zeile „Ich teile mich". Im Liedtext steht `Я таю вся` (*ich
+schmelze ganz*), nicht `даю` (*ich gebe*); Whisper hat `таю` lautlich zu „teile" eingedeutscht.
+
+**Zwei verschiedene Fehler, gemessen am Bestand:**
+
+**a) Ein Lauf, der zu früh war.** „KlangTresor – Снег по кнопке" ist durchgehend russisch
+(obere Hälfte: 696 kyrillische gegen 0 lateinische Zeichen). Die Russisch-Erkennung in
+`bin/whisper.js:260` würde dafür heute „ru" sagen — sie kam am 26.10.2026, der Whisper-Lauf
+des Songs ist vom 22.10.2026. Er wurde seither nie wiederholt. **Ein neuer Lauf genügt.**
+
+**b) Gemischte Lieder kann die Regel nicht.** Sie entscheidet nach Mehrheit
+(`if (b.kyr > b.lat) sprache = 'ru'`), und whisper.cpp nimmt pro Lauf nur **eine** Sprache
+(`-l`). Deutsche Strophen mit russischem Refrain fallen damit immer auf „de":
+
+| Song | kyrillisch | lateinisch | lief mit |
+|---|---|---|---|
+| Kupala-Nacht | 543 | 2026 | de |
+| Rusalka / Русалка | 401 | 2174 | de |
+| Snegurotschka / Снегурочка | 298 | 3442 | de |
+
+Die Folge steht wörtlich in `library/whisper.ndjson`: `Огонь горит` und `Согрей меня` fehlen
+ganz, `Я таю вся` wurde „Ich teile mich", und mitten im Text steht „Untertitelung im Auftrag
+des ZDF, 2020" — dieselbe Halluzination, die der Kommentar bei `whisper.js:252` für den
+russischen Song beschreibt. Sie kommt wieder, weil Whisper gezwungen wird, Russisch auf
+Deutsch zu hören. Über den ganzen Bestand gibt es **kein einziges** „ru": 262 „de", 27 „en".
+
+**Vorgeschlagener Weg.** Der Text wird nicht gebraucht — er steht im Katalog, russische Zeilen
+inklusive. Whisper liefert nur die **Zeiten**, und `whisper-abgleich.js` legt die echten Lyrics
+darauf. Also zwei Läufe je gemischtem Song, `-l de` und `-l ru`, und der Abgleich nimmt je Zeile
+die Zeiten aus dem Lauf, dessen Sprache zu ihr passt.
+
+**Aufwand und Schranke.** Ein Lauf hat bei Snegurotschka 1815 s gerechnet (für 406 s Audio).
+Vier Songs mit je zwei Läufen sind rund **vier Stunden** — das braucht Caspar_Ds Startschuss.
+
+**Die fehlende Übersetzung ist ein drittes Thema.** Whisper hat sie nie geliefert, weil
+KlangTresor sie nie angefordert hat (`-tr` wird nicht benutzt). Ob unter der russischen Zeile
+eine deutsche stehen soll, ist eine Entwurfsfrage für die Bühne und noch nicht gestellt.
+
+**Der Lückenlauf ist gebaut und misst sich selbst (16.11.2026).** `bin/lueckentext.js` rechnet
+nur die Stellen, die in der bereinigten Lyrik fehlen — bei Snegurotschka 92 s Audio statt 406 s,
+in **132 s** statt vier Stunden, je Lücke mit eigener Sprache und dem erwarteten Text als
+`--prompt`. Ergebnis nach `library/lueckentext.json`: 5 von 9 Lücken getroffen.
+
+**Woran die anderen vier scheiterten — nicht an Whisper.** Caspar_D fragte: *„ist die russische
+Spracherkennung tatsächlich so schlecht oder hast du falsche fragmente übermittelt?"* Es waren
+die Fragmente. Der Beweis steht im Lauf selbst: die Lücke 166,31–182,64 s, als *deutsch* mit
+„Funken fliegen! Eisen glüht!" abgeschickt, bringt als erste Worte „Dreh mich, aber nicht zu
+viel" zurück — Text, der in keiner erwarteten Zeile steht und also **vor** diesen Schnitt
+gehört. Er lag in der Lücke davor, die mit `-l ru` und „Согрей меня" lief; dort kam deutscher
+Gesang an, und Whisper halluzinierte „Субтитры сделал DimaTorzok". Die Gegenprobe im selben
+Lauf: 346,86–352,4 s mit `-l ru` traf 4 von 5 Worten. **Russisch kann Whisper, es muss nur
+russisches Audio bekommen.**
+
+Die Ursache ist eine Zeile in `luecken()`: enthält eine Lücke beide Sprachen, wird ihre Zeit
+**anteilig nach Zeilenzahl** aufgeteilt — eine Schätzung, die vom wirklichen Sprachwechsel
+nichts weiß. **Der Weg:** die ganze Lücke in beiden Sprachen hören und jede Zeile dort anlegen,
+wo sie passt, statt die Grenze vorher zu raten. Kostet beim Rechnen das Doppelte der Lücke,
+nicht des Songs.
+
+**Vorrang:** Caspar_D, 16.11.2026: *„schreibs ins backlog, kürzungsbaustelle erst"*.
+
+
 ---
+
+
+### Ein eigenes Verfahren für Sunos Schlagmuster (offen, 16.11.2026)
+
+Caspar_D: *„wie wäre es denn, wenn du dir mal bei gelegenheit ein verfahren erarbeitest, das
+genau sunos beat patterns als ergebnis bringt"*.
+
+**Warum das ein guter Auftrag ist.** Für 346 von 347 Songs liegt Sunos Schlagmuster im Katalog
+(`s.schlaege`, geerntet über `/api/gen/<id>/downbeats`): Zeitpunkt und Zählzeit 1–2–3–4 je
+Schlag, rund 350 000 Punkte. Es gibt also eine Referenz, gegen die jedes eigene Verfahren
+gemessen werden kann — nicht geschätzt, gemessen.
+
+**Wofür es gebraucht wird.** Fremde Songs bekommen von Suno nie ein Muster, und eigene erst
+nach der Ernte. Kupala-Nacht war am 16.11.2026 der eine Song ohne — der neueste, also gerade
+der, den Caspar_D kürzen wollte.
+
+**Die Zielgröße, bevor gerechnet wird.** Nicht der BPM-Fehler, sondern die Lage der Punkte:
+F-Maß gegen Sunos Schläge mit der in der Literatur üblichen Toleranz (±70 ms), getrennt für
+alle Schläge und für die Taktanfänge. Und immer mit Zufallsboden daneben: ein beliebiges
+Raster erreichte am 16.11.2026 bei Snegurotschka 35,3 % der Bassdrum-Ausbeute, Sunos
+Taktanfänge 100 %. Ohne diesen Boden sagt eine Trefferquote nichts.
+
+**Zwei Fragen, die vor der Arbeit zu klären sind:**
+
+1. **Mit welchen Mitteln?** Sunos Muster kommt mit großer Wahrscheinlichkeit aus einem
+   neuronalen Netz — dafür sprechen die schwankenden Schlagabstände (Streuung 12,6 ms bei
+   Snegurotschka) und die mitgelieferten Zählzeiten. Klassische Signalverarbeitung nähert das
+   an, trifft es aber kaum exakt. Die Hausregel „nur Whisper" begrenzt die Mittel; ob sie hier
+   gilt, entscheidet Caspar_D.
+2. **Erst der Stand der Technik.** Beat- und Downbeat-Tracking ist ein eigenes Feld mit
+   etablierten Maßen und Verfahren. Das wird gelesen, bevor etwas gebaut wird.
+
+**Was an Vorarbeit liegt.** `bin/takt.js` (16.11.2026) rechnet Tempo, Phase und Taktanfang aus
+`stems/drums.flac`. Es trifft Sunos acht exakte Studio-Tempi auf 0,01 % und Snegurotschkas
+abgenommene Schnitte auf 7 ms, verfehlt Kupala aber um 61 ms. Im Kopf der Datei stehen vier
+verworfene Verfahren mit ihren Zahlen — lokale Phasen, Tempo je Songhälfte, Einzelschläge
+anpeilen, Energie-Ausbeute ohne Signifikanztest. Wer hier weiterarbeitet, liest sie zuerst.
+Im Haus liegen außerdem eine FFT (`bin/stoerfrequenz.js:75`) und der Goertzel-Algorithmus für
+eine einzelne Frequenz (`bin/toene.js:224`).
+
+**Ein Taktgitter aus einer BPM-Zahl ist grundsätzlich schlechter als ein Muster.** Die Zahl
+nimmt an, dass der Song gleichmäßig läuft; jeder Hundertstel-Fehler sammelt sich über die
+Länge. Das Muster nimmt nichts an. Wer das Verfahren baut, gibt eine Liste aus, keine Zahl.
 
 ## Mittel
 
