@@ -1,0 +1,1004 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Kürzen-Labor</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- WERKSTATT, NICHT BETRIEB. Prüft den Entwurf aus docs/KUERZEN.md am echten Song.
+     Läuft über bin/kuerzen-labor.js auf eigenem Port, fasst die App nicht an.
+
+     ALLES LIEGT IM SONG (Caspar_D, 16.11.2026): „der song muß ein langer horizontaler
+     balken sein, er muß die abschnittfarben haben, ich muß mich reinzoomen können, der
+     Text muß whisperaligniert sein, ich klicke rein, alle nachbarbalken erscheinen im
+     song, nicht senkrecht als tabelle darunter."
+
+     DER AUFBAU VON OBEN NACH UNTEN (Caspar_D, 16.11.2026: „über der Klickfläche einen
+     streifen platz lassen, dort erscheinen die möglichen schnittstellen"):
+
+       0 … 96     Streifen der Schnittstellen: je Vorschlag ein Pfeil, oben das
+                  Set-Flag und der Anfasser, darunter die Labelfahnen
+       96 … 204   Klickfläche: Abschnittfarben, Hüllkurve, Taktstriche
+       ab 204     Der Text, alle Sprachspuren dicht beieinander
+
+     Die Hüllkurve ist ein SVG mit viewBox in SEKUNDEN und preserveAspectRatio="none".
+     Dadurch skaliert sie beim Zoomen von selbst mit der Bahnbreite - kein Neuzeichnen,
+     keine Canvas-Breitengrenze bei 32767 px. -->
+<style>
+/* DIE HAUSFARBEN, nicht neu erfunden (Caspar_D, 16.11.2026: „die klangtresor
+   systemfarben hast du nicht gefunden, schau dir den analyzer an"). Abgeschrieben
+   aus web/index.html: der Grundsatz, die Flächen, der Rand, die Schrift - und der
+   Akzent UNBUNT, weil im Haus die Farbe erst mit dem Cover kommt. Mein eigenes
+   Blau, Grün, Gelb und Rot waren daneben erfunden.
+   Die drei Zustandsfarben ebenso von dort: fertig, Warnung, Fehler. */
+:root{
+  --grund:#0c0c0d; --feld:#161618; --feld2:#242427; --rand:#333336;
+  --text:#ececed; --schwach:#8b8b90; --akzent:#c9c9cd;
+  --gut:#59d18c; --mittel:#f97b14; --schlecht:#e31c79;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--grund);color:var(--text);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+.huelle{padding:16px 18px 30px}
+h1{font-size:16px;font-weight:500;margin:0 0 2px}
+.unter{color:var(--schwach);font-size:12px;margin:0 0 14px}
+select,button{font:inherit;color:var(--text);background:var(--feld2);
+  border:1px solid var(--rand);border-radius:7px;padding:6px 10px;vertical-align:middle}
+button{cursor:pointer} button:hover{background:#2e2e32}
+input[type=range]{vertical-align:middle;width:180px;accent-color:var(--akzent)}
+.kopf{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.marke{font-size:11.5px;color:var(--schwach);border:1px solid var(--rand);
+  border-radius:4px;padding:2px 8px;white-space:nowrap}
+/* DIE BILANZ NEBEN DEM TITEL (Caspar_D: „Oben neben dem Titel steht dessen länge und
+   nach einem Schrägstrich, die Länge, die jetzt erreicht wäre.") */
+.bilanz{font-size:13px;font-variant-numeric:tabular-nums;border-color:#44444a;color:var(--text)}
+/* Nicht die Zustandsfarbe: Grün heißt am Pfeil, dass der Pegel sauber ist. */
+.bilanz b{font-weight:500;color:var(--text)}
+
+.schlagsvg{position:absolute;left:0;width:100%;pointer-events:none}
+.keinschlag{position:absolute;left:0;width:100%;font-size:10.5px;color:var(--schlecht);
+  padding-left:4px;line-height:20px}
+/* DIE BILDLAUFLEISTE wie im Haus (Caspar_D, 16.11.2026: „die scrollbar bitte in
+   panelfarbe"). Wörtlich aus web/index.html übernommen - dort steht sie seit dem
+   08.11.2026: ein halbdurchsichtiger grauer Griff ohne Spur, auf jedem Grund gleich
+   ruhig. scrollbar-color gilt für Chrome und Firefox, Safari kennt nur die
+   ::-webkit-Regeln. */
+.fenster{scrollbar-color:rgba(255,255,255,.2) transparent}
+.fenster::-webkit-scrollbar{width:10px;height:10px;background:transparent}
+.fenster::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:6px;
+  border:2px solid transparent;background-clip:padding-box}
+.fenster::-webkit-scrollbar-thumb:hover{background-color:rgba(255,255,255,.34)}
+.fenster::-webkit-scrollbar-track,.fenster::-webkit-scrollbar-corner{background:transparent}
+.fenster{overflow-x:auto;overflow-y:hidden;border:1px solid var(--rand);
+  border-radius:9px;background:var(--feld)}
+.bahn{position:relative;height:320px;min-width:100%}
+/* DER KLICK IN DIE FLÄCHE (Caspar_D, 16.11.2026: „mouseklicks in die fläche gehen
+   nicht"). Der Grund: die Abschnittsflächen werden NACH der Klickfläche gezeichnet
+   und lagen damit darüber - sie haben den Klick geschluckt. Jetzt nimmt nichts in
+   der Fläche mehr Mauszeiger an außer der Klickfläche selbst, und die liegt mit
+   z-index 5 über allem Gezeichneten. */
+.klick{position:absolute;left:0;height:94px;width:100%;cursor:crosshair;z-index:5}
+/* Mehrzeilig, aber gedeckelt: drei Zeilen, dann Auslassungspunkte. Der volle
+   Wortlaut steht im Tooltip. */
+.regie{position:absolute;font-size:9.5px;line-height:11px;color:var(--schwach);
+  overflow:hidden;padding-left:3px;border-left:1px solid #ffffff1f;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  pointer-events:auto;cursor:help}
+.keinewelle{position:absolute;left:0;width:100%;background:#000;pointer-events:none;
+  font-size:10.5px;color:var(--schwach);padding:4px 6px}
+.absname{position:absolute;height:12px;font-size:10.5px;line-height:12px;
+  letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;padding-left:3px}
+.huellsvg{position:absolute;left:0;height:94px;width:100%;pointer-events:none}
+.schlagsvg{pointer-events:none}
+.takt{position:absolute;height:24px;width:1px;background:#ffffff26;pointer-events:none}
+
+/* DER TEXT: KRÄFTIGER UND DICHT BEIEINANDER (Caspar_D, 16.11.2026: „die Lyricsbalken
+   unter der Klickfläche kräftiger und alle zusammen, nicht den zweitsprachigen weiter
+   unten sondern nahe des anderen"). */
+.zeilenband{position:absolute;height:6px;background:#ffffff42;border-radius:3px}
+.zeilenband.gefunden{background:#c9c9cdb0}
+.zeilenband.mehrfach{background:#59d18c9e}
+/* 10,5 px ist die Untergrenze für Nebenwerte, rgb(154) die für 4,5:1 auf dem dunklen
+   Grund (Hausregeln). #ffffff55 lag bei 1,9:1 - das war nicht lesbar, nur dekorativ. */
+.spurname{position:absolute;left:2px;font-size:10.5px;color:var(--schwach);letter-spacing:.5px}
+.wort{position:absolute;height:14px;font-size:11.5px;line-height:14px;
+  color:#cfcfd4;white-space:nowrap;border-left:1px solid #ffffff26;
+  padding-left:3px;padding-right:2px;transition:color .08s,background .08s}
+.wort.mehrfach{color:#9fd9b6}
+.wort.geschaetzt{opacity:.5;font-style:italic}
+.wort.an{color:#fff;background:#c9c9cd40;border-radius:3px;border-left-color:#c9c9cd;
+  text-shadow:0 0 8px #c9c9cd90;opacity:1}
+.fehlt{position:absolute;height:16px;font-size:11px;line-height:15px;
+  color:var(--schlecht);white-space:nowrap;overflow:hidden;padding:0 4px;font-style:italic;
+  border:1px dashed #e31c7966;border-radius:3px;background:#e31c790f}
+.achse{position:absolute;height:13px;left:0}
+.achse span{position:absolute;transform:translateX(-50%);font-size:10.5px;color:var(--schwach)}
+
+/* DER PLAYHEAD, WIEDER DEUTLICH SICHTBAR (Caspar_D, 16.11.2026: „Mausklick setzt den
+   playhead, der bitte wieder zu sehen sein soll"). Er lag vorher unter der gleich
+   breiten Schnittlinie an derselben Stelle. Jetzt: 2 px weiß mit Schein und einer
+   Raute am Kopf, über allem. */
+.playhead{position:absolute;width:2px;background:#fff;z-index:30;pointer-events:none;
+  box-shadow:0 0 7px #ffffffcc,0 0 2px #fff}
+.playhead::before{content:'';position:absolute;top:-5px;left:-4px;width:10px;height:10px;
+  background:#fff;border-radius:2px;transform:rotate(45deg);box-shadow:0 0 6px #ffffffaa}
+
+/* DIE SCHNITTSTELLEN IM STREIFEN: PFEIL + ANFASSER + SET-FLAG + LABELFAHNEN */
+.stelle{position:absolute;width:0;z-index:12;cursor:pointer}
+.stelle .stiel{position:absolute;left:-1px;width:2px;background:currentColor;opacity:.75}
+.stelle .spitze{position:absolute;left:-5px;width:0;height:0;
+  border-left:5px solid transparent;border-right:5px solid transparent;
+  border-top:7px solid currentColor}
+.stelle.aktiv{z-index:18}
+.stelle.aktiv .stiel{width:3px;left:-1.5px;opacity:1}
+/* DER PFEIL IST DAS BEDIENELEMENT (16.11.2026). Vorher hingen ein Haken-Kasten von
+   21 px und ein Ziehgriff von 17 px an einem 2 px breiten Stiel - zwei Trefferflächen,
+   die sich bei 14 px/s schon um einen Bildpunkt überlappten (nachgemessen). Die
+   Geste steht längst in docs/KUERZEN.md: Klick setzt, Doppelklick entfernt, Ziehen
+   verschiebt. 32 Klickziele sind damit 16.
+
+   DIE SPITZE TRÄGT DEN ZUSTAND statt eines eigenen Kastens: gedämpft, solange der
+   Vorschlag nur ein Vorschlag ist, voll gedeckt, sobald er gesetzt ist - die
+   Hausform (Fläche gedämpft, Kontur in voller Stärke) auf einen Schalter angewandt.
+
+   DER STIEL TRÄGT DEN TEXTBRUCH, nicht mehr die Farbe: wo der Text an der Naht
+   bricht, ist er unterbrochen. Eine kategoriale Eigenschaft bekommt eine
+   kategoriale Form, keine zweite Bedeutung einer Farbe. */
+.stelle .stiel.bricht{background:repeating-linear-gradient(to bottom,
+  currentColor 0 3px,transparent 3px 7px)}
+.stelle .spitze{opacity:.55}
+.stelle.gesetzt .spitze,.stelle.gesetzt .stiel{opacity:1}
+.stelle .fass{position:absolute;left:-7px;width:15px;top:0;cursor:ew-resize;z-index:1}
+/* Die Schranken der Pegelskala als Haarlinien - eine Höhe ohne Maßstab ist Grafik,
+   keine Information. */
+.dbmass{position:absolute;left:0;height:1px;background:#ffffff14;pointer-events:none}
+.dbmass span{position:absolute;left:3px;top:-12px;font-size:10.5px;color:var(--schwach)}
+.fahnen{position:absolute;left:5px;width:82px;pointer-events:none}
+.fahnen.links{left:auto;right:4px;text-align:right}
+.fahne.gross{font-size:12px;font-weight:500}
+.fahne{height:17px;font-size:10.5px;line-height:15px;padding:0 4px;margin-bottom:1px;
+  background:#0f1115e0;border:1px solid var(--rand);border-left:3px solid currentColor;
+  border-radius:0 3px 3px 0;white-space:nowrap;overflow:hidden;
+  font-variant-numeric:tabular-nums;color:var(--text)}
+.fahnen.links .fahne{border-left:1px solid var(--rand);border-right:3px solid currentColor;
+  border-radius:3px 0 0 3px}
+.fahne.schwach{color:var(--schwach)}
+.fahne.bricht{color:var(--schlecht)}
+
+/* DIE GESETZTE KÜRZUNG: SCHRAFFIERT UND NICHT MEHR MITGESPIELT */
+/* WAS NICHT MEHR GILT, IST GRAU (Caspar_D, 16.11.2026: „mach die invalidierten
+   flächen bitte hellgrau"). Vorher lag dort die Fehlerfarbe des Hauses - aber eine
+   gekürzte Stelle ist kein Fehler, sie ist nur weg. Grau sagt „gilt nicht", ohne
+   zu alarmieren; die Daten darunter bleiben gedämpft sichtbar. */
+.weg{position:absolute;z-index:6;pointer-events:none;
+  border-left:1px solid #ffffff4d;border-right:1px solid #ffffff4d;
+  background:repeating-linear-gradient(135deg,#ffffff2b 0 5px,#0000 5px 11px),#0c0c0dcc}
+.wegtext{position:absolute;z-index:7;font-size:11.5px;color:#d6d6da;pointer-events:none;
+  white-space:nowrap;text-shadow:0 1px 4px #000,0 0 8px #000;font-variant-numeric:tabular-nums}
+.spanne{position:absolute;background:#c9c9cd14;z-index:3;pointer-events:none}
+
+.hoeren{margin:16px 0 0;padding:13px 15px;background:var(--feld);
+  border:1px solid var(--rand);border-radius:9px;display:none}
+.hoeren.an{display:block}
+.hoeren h2{font-size:13px;font-weight:500;margin:0 0 2px}
+.wo{color:var(--schwach);font-size:12px;margin:0 0 11px}
+.paar{display:flex;gap:22px;flex-wrap:wrap}
+.paar>div{flex:1;min-width:230px}
+.paar label{display:block;font-size:11.5px;color:var(--schwach);margin:0 0 4px}
+audio{width:100%;height:32px}
+.hinweis{color:var(--schwach);font-size:11.5px;margin:14px 0 0;max-width:1000px}
+code{background:#ffffff0f;padding:1px 4px;border-radius:3px}
+kbd{background:#242427;border:1px solid #44444a;border-radius:3px;padding:0 4px;font-size:10.5px}
+</style>
+
+<div class="huelle">
+  <h1>Kürzen-Labor</h1>
+  <p class="unter">In den Song klicken setzt Schnitt und Abspielkopf. Im Streifen darüber stehen die
+    möglichen Schnittstellen; ihre <b>Höhe ist der Pegelsprung</b> an der Naht, ein unterbrochener
+    Stiel heißt, der Text bricht. Ein <b>Klick</b> auf einen Pfeil kürzt bis dorthin, ein zweiter hebt
+    es auf, <b>Ziehen</b> verschiebt ihn, <kbd>←</kbd> <kbd>→</kbd> um ein Zwanzigstel.
+    <kbd>Leertaste</kbd> spielt und hält an.</p>
+
+  <div class="kopf">
+    <select id="songwahl"><option>lädt …</option></select>
+    <span class="marke bilanz" id="bilanz">—</span>
+    <button id="zufall">anderer Song</button>
+    <button id="play" title="Leertaste">▶︎ abspielen</button>
+    <span class="marke" id="stand">0:00</span>
+    <span class="marke">Zoom</span><input type="range" id="zoom" min="1" max="100" value="3" step="0.5">
+    <span class="marke" id="zoomwert"></span>
+    <span class="marke" id="quelle"></span>
+  </div>
+
+  <div class="fenster" id="fenster"><div class="bahn" id="bahn"></div></div>
+
+  <div class="hoeren" id="hoeren">
+    <h2>Die Naht hören</h2>
+    <p class="wo" id="hoerwo"></p>
+    <div class="paar">
+      <div><label>Mit Sprung — so klingt es gekürzt</label><audio id="aNaht" controls preload="none"></audio></div>
+      <div><label>Original — dieselbe Stelle ungeschnitten</label><audio id="aOrig" controls preload="none"></audio></div>
+    </div>
+    <p class="hinweis" id="hoerhinweis"></p>
+  </div>
+
+  <p class="hinweis" id="legende"></p>
+</div>
+
+<audio id="song" preload="none"></audio>
+<script>
+const $ = (s) => document.querySelector(s);
+
+/* GEOMETRIE, von oben nach unten.
+   Ganz oben Sunos Schlagmuster (Caspar_D, 16.11.2026: „ggf auch das beatpattern von
+   suno hier darstellen, vielleicht ganz oben") - es ist die Primärquelle, auf der
+   die ganze Kürzung beruht, also gehört es sichtbar und nicht in eine Fußnote. */
+/* Die Maße der Welle wie im Analyzer: dort ist BF_KUERZEL = 12 die Zeile der
+   Abschnittskürzel und BF_ABSCHNITT = 94 die Bahn darunter. Meine 108 ließen die
+   Welle flacher wirken als dort - dieselben Daten, nur mehr Luft darum. */
+/* Der Streifen trägt jetzt die Pegelskala: die Pfeilhöhe ist der Sprung an der
+   Naht. 96 px waren für den alten Fünferstapel, der 17 px in die Zeile der
+   Abschnittskürzel lief und verdeckte, was er orientieren sollte. */
+const SCHLAGSPUR = 20, STREIFEN = 56, KUERZEL = 12, WELLE = 94;
+const DB_VOLL = 6;        /* ab hier ist der Pfeil so hoch wie der Streifen */
+const OBEN_STREIFEN = SCHLAGSPUR, OBEN_KUERZEL = SCHLAGSPUR + STREIFEN;
+/* Die Regiezeile zwischen Kürzeln und Welle wächst mit dem, was sie zeigt -
+   höchstens drei Zeilen, sonst frisst eine Regieanweisung die halbe Bahn.
+   Keine feste Höhe, wo nichts steht: Screenspace ist das höchste Gut. */
+let REGIEH = 0, OBEN_WELLE = OBEN_KUERZEL + KUERZEL, TEXT0 = OBEN_WELLE + WELLE;
+function hoehenSetzen(){
+  OBEN_WELLE = OBEN_KUERZEL + KUERZEL + REGIEH;
+  TEXT0 = OBEN_WELLE + WELLE;
+}
+
+let SONG = null, SCHNITT = null, KAND = [], AKTIV = null, PX = 3;
+let SPURENDE = TEXT0 + 40, WORTLISTE = [], LEUCHTET = -1;
+/* VERSATZ: die Feinverschiebung je Vorschlag, in Sekunden (Pfeiltasten, Anfasser).
+   REGIONEN: die gesetzten Kürzungen {von,bis} - sie werden nicht mitgespielt. */
+let VERSATZ = {}, REGIONEN = [], ZIEHT = null;
+
+const zeit = (s) => (s<0?'-':'') + Math.floor(Math.abs(s)/60) + ':' + String(Math.floor(Math.abs(s)%60)).padStart(2,'0');
+const x = (t) => t * PX;
+/* DEZIMALKOMMA ÜBERALL (Hausregel 14). Eine Zahl mit Punkt liest sich im Deutschen
+   als Tausendertrennung - „1.5 dB" sähe nach anderthalbtausend aus. */
+const za = (v, n) => Number(v).toFixed(n).replace('.', ',');
+/* KÜRZEL STATT NAMEN (Caspar_D, 18.08.2026), abgeschrieben aus analyzer.js:
+
+     I  Intro      V  Verse / Strophe    Bk Break
+     B  Bridge     C  Chorus / Refrain   E  Ende
+     H  Hook
+
+   Der Grund ist Platz: ausgeschrieben passt ein Name nur in breite Blöcke, und
+   schmale blieben stumm. Eine Nummer wird mitgenommen - aus „Verse 2" wird V2.
+   Unbekanntes wird auf ZWEI Buchstaben gekürzt statt auf einen, sonst stünde ein
+   zweites I neben dem Intro. */
+function kuerzel(name){
+  const n = String(name).toLowerCase();
+  const nr = (String(name).match(/\d+/) || [''])[0];
+  if (/intro/.test(n))           return 'I';
+  if (/break/.test(n))           return 'Bk';
+  if (/bridge/.test(n))          return 'B';
+  if (/hook/.test(n))            return 'H';   /* vor dem Refrain */
+  if (/verse|strophe/.test(n))   return 'V' + nr;
+  if (/chorus|refrain/.test(n))  return 'C' + nr;
+  if (/outro|ende\b|^end/.test(n)) return 'E';
+  return String(name).replace(/[^A-Za-zÄÖÜäöü]/g, '').slice(0,2)
+         .replace(/^./, c => c.toUpperCase());
+}
+/* Sunos Marke trägt hinter dem Abschnittsnamen die ganze Regieanweisung:
+   „Verse 1 – clear baritone, half-spoken, bayan pad". Für die Zeile zählt nur
+   der Name; der Rest bleibt im Tooltip. */
+const absName = (n) => String(n || '').split(/\s[–—-]\s|,/)[0].trim();
+const ziel = (i) => KAND[i].ziel + (VERSATZ[i] || 0);
+const weggeschnitten = () => REGIONEN.reduce((s,r) => s + (r.bis - r.von), 0);
+const regionVon = (t) => REGIONEN.find(r => Math.abs(r.von - t) < 1e-6);
+
+async function songsLaden(){
+  const d = await (await fetch('/api/songs')).json();
+  const w = $('#songwahl');
+  w.innerHTML = d.songs.map(s => `<option value="${s.id}">${s.titel}</option>`).join('');
+  const vor = d.songs.find(s => /Snegurotschka/i.test(s.titel)) || d.songs[0];
+  w.value = vor.id;
+  await songLaden(vor.id);
+}
+
+async function songLaden(id){
+  SONG = await (await fetch('/api/song?id=' + encodeURIComponent(id))).json();
+  const a = $('#song');
+  a.pause(); a.src = '/api/audio?id=' + encodeURIComponent(id); a.currentTime = 0;
+  $('#play').textContent = '▶︎ abspielen';
+  SCHNITT = null; KAND = []; AKTIV = null; VERSATZ = {}; REGIONEN = [];
+  $('#hoeren').classList.remove('an');
+  $('#quelle').textContent = SONG.abschnittQuelle === 'marken'
+    ? 'Abschnitte aus den Lyrics-Marken'
+    : SONG.abschnittQuelle === 'suno-ab' ? 'Abschnitte: Sunos A/B (keine Marken im Text)'
+    : 'keine Abschnitte';
+  PX = pxMin();
+  $('#zoom').min = PX.toFixed(3); $('#zoom').max = 150; $('#zoom').value = PX;
+  malen();
+}
+
+/* DIE HÜLLKURVE IN DER HAUSFORM (nachgelesen in web/fremd/analyzer.js, Caspar_D,
+   16.11.2026: „schau dir bitte ganz genau an, wie die hüllkurve dargestellt ist").
+   Drei Dinge hatte ich falsch:
+
+   1. DIE FARBE LIEGT IN DER WELLE, nicht als Rechteck dahinter. Ein waagerechter
+      Verlauf mit harten Stopps trägt die Abschnittsfarben über die Songlänge -
+      „der waagerechte Verlauf bleibt: Er trägt die ABSCHNITTSFARBEN über die Länge
+      des Songs". Meine Abschnitte lagen als eigene Flächen darunter: sie färbten
+      den Grund statt die Daten.
+   2. DIE TOPLINE NUR OBEN, und in der Farbe des Gegenstands, nicht in Weiß. Ich
+      hatte beide Kanten umrandet - „eine Kontur auch unten wäre die naheliegende
+      Antwort und die falsche: Sie zöge eine zweite Linie durch jede Spitze und
+      ließe den Block zuwachsen."
+   3. DIE SCHWARZE HAARLINIE AUF DER MITTE (Caspar_D, 25.08.2026) fehlte ganz. Ein
+      Rand oben und keiner unten lässt die obere Hälfte schwerer wirken; die Linie
+      gibt dem Auge die Achse, an der es spiegelt. Voll deckend, ein Bildpunkt,
+      crispEdges - eine halbdurchsichtige Linie würde zum Schleier statt zum Schnitt.
+
+   Fläche 0,5, Kontur 1 px in voller Stärke. */
+function huellSvg(){
+  const h = SONG.huelle;
+  if (!h || !h.length)
+    /* KEINE HÜLLKURVE? Dann grau auf Schwarz (Hausform) - das sagt „hier läuft der
+       Song", während eine leere Bahn sich wie ein Fehler liest. */
+    return `<div class="keinewelle" style="top:${OBEN_WELLE}px;height:${WELLE}px">keine Wellendaten von Suno</div>`;
+  const n = h.length, dt = SONG.dauer / n;
+  let oben = '', unten = '';
+  for (let i = 0; i < n; i++)
+    oben += `${i ? 'L' : 'M'}${(i*dt).toFixed(3)} ${(1 - Math.abs(h[i][1])).toFixed(3)} `;
+  for (let i = n - 1; i >= 0; i--)
+    unten += `L${(i*dt).toFixed(3)} ${(1 + Math.abs(h[i][0])).toFixed(3)} `;
+
+  /* Der Verlauf: je Abschnitt zwei Stopps derselben Farbe, also harte Kanten. */
+  const F = SONG.farben || {};
+  let fuell = '#e8e8ec', defs = '';
+  if (SONG.abschnitte && SONG.abschnitte.length){
+    let stopps = '';
+    for (const a of SONG.abschnitte){
+      const c = F[a.art] || F.rand || '#888';
+      const p1 = Math.max(0, Math.min(1, a.von / SONG.dauer)) * 100;
+      const p2 = Math.max(0, Math.min(1, a.bis / SONG.dauer)) * 100;
+      stopps += `<stop offset="${p1.toFixed(2)}%" stop-color="${c}"/>`
+              + `<stop offset="${p2.toFixed(2)}%" stop-color="${c}"/>`;
+    }
+    defs = `<defs><linearGradient id="wellefarbe" x1="0" y1="0" x2="1" y2="0">${stopps}</linearGradient></defs>`;
+    fuell = 'url(#wellefarbe)';
+  }
+  return `<svg class="huellsvg" style="top:${OBEN_WELLE}px" viewBox="0 0 ${SONG.dauer} 2"
+    preserveAspectRatio="none">${defs}
+    <path d="${oben}${unten}Z" fill="${fuell}" opacity="0.5"/>
+    <path d="${oben}" fill="none" stroke="${fuell}" stroke-width="1" vector-effect="non-scaling-stroke"/>
+    <line x1="0" y1="1" x2="${SONG.dauer}" y2="1" stroke="#000" stroke-width="1"
+      shape-rendering="crispEdges" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
+/* DAS SCHLAGMUSTER IN DER HAUSFORM (nachgelesen in taktZeichnen, analyzer.js).
+   Es sind MARKEN, keine Striche - und daran hängt mehr, als es aussieht:
+
+   FESTE HÖHEN, und zwar Buchstabenhöhen (Caspar_D, 24.08.2026: „nein, wir brauchen
+   fixe höhen" und „wie ein j ... und wie ein n"). Die Eins ist so hoch wie ein j,
+   die Zählzeiten 2-3-4 wie ein n. Nicht aus dem Platz gerechnet - beim Zoomen soll
+   die Bahn ruhig bleiben und nicht atmen.
+
+   HÖHE UND BREITE SIND ZWEI DINGE (derselbe Tag: „bei überblick dürfen sich die
+   Quadrate nie berühren, dann lieber schmaler zeichnen und daraus hochkant-Rechtecke
+   machen"). Die Höhe trägt die Sichtbarkeit, die Breite die Trennung: jede Marke
+   bekommt ihre Breite aus dem Abstand zu ihren TATSÄCHLICHEN Nachbarn - Sunos
+   Schläge sind nicht gleichmäßig -, lässt immer einen Bildpunkt Luft und wird nie
+   breiter als hoch.
+
+   AUSDÜNNEN STATT STAPELN: die 2-3-4 erst ab 7 px je Schlag; reicht auch das für
+   die Eins nicht, wird jede zweite, vierte, achte gezeigt.
+
+   Gezeichnet in Bildpunkten, nicht in Sekunden: die Marken sollen beim Zoomen ihre
+   Form behalten, nicht mitgestreckt werden. */
+const TAKT_EINS = '#e31c79';   /* die Eins des Takts - das Haus-Rot */
+const TAKT_REST = '#ffffff';   /* die Zählzeiten 2-3-4 */
+
+function schlagSvg(breitePx){
+  const S = SONG.schlaege || [];
+  if (!S.length)
+    return `<div class="keinschlag" style="top:0;height:${SCHLAGSPUR}px">kein Schlagmuster von Suno — die Vorschläge hätten keine Grundlage</div>`;
+
+  const abst = [];
+  for (let i = 1; i < S.length; i++) abst.push(S[i][0] - S[i-1][0]);
+  abst.sort((a,b) => a-b);
+  const schlagS = abst[abst.length >> 1] || 0.5;
+  const pxProSchlag = schlagS * PX, pxProTakt = pxProSchlag * 4;
+  const mitRest = pxProSchlag >= 7;
+  let jedeNte = 1;
+  if (!mitRest) while (pxProTakt * jedeNte < 7 && jedeNte < 64) jedeNte *= 2;
+
+  const hoch = Math.min(13, Math.round(SCHLAGSPUR * 0.72));      /* die Eins: wie ein j */
+  const hochKlein = Math.min(8, Math.round(SCHLAGSPUR * 0.5));   /* 2-3-4: wie ein n */
+
+  const marken = [];
+  for (const [t, zz] of S){
+    const eins = zz === 1;
+    if (!eins && !mitRest) continue;
+    if (eins && jedeNte > 1 && Math.round(t / (schlagS * 4)) % jedeNte) continue;
+    marken.push({ t, eins });
+    if (marken.length > 4000) break;
+  }
+
+  const mitte = SCHLAGSPUR / 2, teile = [];
+  for (let i = 0; i < marken.length; i++){
+    const m = marken[i], xb = x(m.t);
+    const davor  = i > 0 ? xb - x(marken[i-1].t) : 1e9;
+    const danach = i < marken.length-1 ? x(marken[i+1].t) - xb : 1e9;
+    const h = m.eins ? hoch : hochKlein;
+    const b = Math.max(1, Math.min(h, Math.floor(Math.min(davor, danach)) - 1));
+    const o = mitte - h/2, links = xb - b/2, c = m.eins ? TAKT_EINS : TAKT_REST;
+    /* Fläche halb deckend, darauf die Kante in VOLLER Farbe - in der Farbe der
+       Marke selbst, nicht in Weiß. */
+    teile.push(`<rect x="${links.toFixed(1)}" y="${o.toFixed(1)}" width="${b.toFixed(1)}" height="${h}" fill="${c}" opacity="0.5"/>`);
+    if (h > 2) teile.push(`<rect x="${links.toFixed(1)}" y="${o.toFixed(1)}" width="${b.toFixed(1)}" height="1" fill="${c}"/>`);
+  }
+  return `<svg class="schlagsvg" style="top:0;height:${SCHLAGSPUR}px;width:${breitePx}px"
+    viewBox="0 0 ${breitePx} ${SCHLAGSPUR}">${teile.join('')}</svg>`;
+}
+
+function bilanzSetzen(){
+  const weg = weggeschnitten();
+  const neu = SONG.dauer - weg;
+  $('#bilanz').innerHTML = weg < 0.005
+    ? `${zeit(SONG.dauer)}`
+    : `${zeit(SONG.dauer)} / <b>${zeit(neu)}</b> <span style="color:var(--schwach)">−${za(weg,1)} s</span>`;
+}
+
+function malen(){
+  const b = $('#bahn');
+  const BREITE = Math.max(x(SONG.dauer), $('#fenster').clientWidth - 6);
+  b.style.width = BREITE + 'px';
+  const F = SONG.farben || {};
+  /* Wie hoch muss die Regiezeile sein? Aus der schmalsten Box und ihrem Text
+     gerechnet, gedeckelt bei drei Zeilen. */
+  REGIEH = 0;
+  for (const r of (SONG.regie || [])){
+    const br = x(r.bis - r.von);
+    if (br < 26) continue;
+    const proZeile = Math.max(1, Math.floor((br - 7) / 5.6));
+    REGIEH = Math.max(REGIEH, Math.min(3, Math.ceil(r.text.length / proZeile)) * 11 + 3);
+  }
+  hoehenSetzen();
+  const teile = [];
+
+  /* ---- Sunos Schlagmuster ganz oben ----
+     TAKT UND TAKTSCHLAG SIND ZWEI DINGE (Hausregel): hier stehen die SCHLÄGE, je
+     einer ein Strich. Die Zählzeit Eins reicht über die volle Höhe, die übrigen
+     bleiben kurz - so liest man den Takt als Gruppe, ohne eine Rangfolge zwischen
+     2, 3 und 4 zu behaupten, die es nicht gibt. */
+  teile.push(schlagSvg(BREITE));
+
+  /* ---- Klickfläche: Abschnitte, Hüllkurve, Taktstriche ---- */
+  teile.push(`<div class="klick" id="klick" style="top:${OBEN_WELLE}px"></div>`);
+  teile.push(huellSvg());
+  /* DIE KÜRZEL ALS EIGENE ZEILE ÜBER DER TOPLINE, in der FARBE ihres Abschnitts
+     (Caspar_D, 23.08.2026) - „vorher lagen sie weiß im Block und mussten sich
+     gegen die Füllung behaupten". Ausgeschrieben, wo der Name passt, sonst das
+     Kürzel; unter 1,5 % Blockbreite bleibt nur der Tooltip. Eine Fläche brauchen
+     sie nicht mehr: die Farbe steht jetzt in der Welle selbst. */
+  for (const a of SONG.abschnitte){
+    const br = x(a.bis - a.von);
+    if (br / BREITE < 0.015) continue;
+    const name = absName(a.name);
+    if (!name) continue;
+    const c = F[a.art] || F.rand || '#888';
+    const passt = name.length * 6.6 + 6 <= br;
+    teile.push(`<div class="absname" style="left:${x(a.von)}px;top:${OBEN_KUERZEL}px;width:${br}px;color:${c}"
+      title="${String(a.name).replace(/"/g,'&quot;')}">${passt ? name : kuerzel(name)}</div>`);
+  }
+  /* DIE REGIEANWEISUNGEN, MEHRZEILIG (Caspar_D, 16.11.2026: „wir brauchen sie hier
+     wirklich zur Orientierung"). Sie teilen den Song nicht - „Baritone, whispering"
+     ist kein Abschnitt -, aber sie sagen, was an dieser Stelle gesungen wird. Ihre
+     eigene Zeile zwischen den Kürzeln und der Welle, umbrechend statt abgeschnitten. */
+  for (const r of (SONG.regie || [])){
+    const br = x(r.bis - r.von);
+    if (br < 26) continue;
+    teile.push(`<div class="regie" style="left:${x(r.von)}px;top:${OBEN_KUERZEL + KUERZEL}px;width:${br - 2}px;height:${REGIEH - 3}px"
+      title="${r.text.replace(/"/g,'&quot;')}">${r.text}</div>`);
+  }
+
+  const schritt = PX < 5 ? 8 : PX < 12 ? 4 : PX < 28 ? 2 : 1;
+  let n = 0;
+  for (const [t, zz] of SONG.schlaege){
+    if (zz !== 1) continue;
+    if (n++ % schritt) continue;
+    teile.push(`<div class="takt" style="left:${x(t)}px;top:${OBEN_WELLE+84}px"></div>`);
+  }
+
+  /* ---- Der Text, alle Sprachspuren dicht beieinander ----
+     JEDES WORT AN SEINER EIGENEN ZEIT (Caspar_D: „richte bitte jedes wort richtig
+     aus, nicht nur den Zeilen Anfang"). Wortlaut aus der bereinigten Lyrik, Zeiten
+     aus Whisper, verheiratet über bin/whisper-text.js. Ein Wort, dessen Zeit nur
+     zwischen den Nachbarn eingehängt ist, wird blasser gezeichnet - geschätzt ist
+     nicht gemessen.
+
+     ALLE SPRACHSPUREN, ABER NAHE BEIEINANDER (Caspar_D, 16.11.2026: „alle zusammen,
+     nicht den zweitsprachigen weiter unten sondern nahe des anderen"). In der
+     Übersicht liegen die Bänder darum unmittelbar untereinander. */
+  const spuren = {};
+  const eintragen = (sp, z, geloest) => { (spuren[sp] = spuren[sp] || []).push({ ...z, geloest }); };
+  for (const z of SONG.zeilen) eintragen(z.sprache || 'de', z, false);
+  for (const f of (SONG.fehlend || [])) if (f.geloest) eintragen(f.sprache || 'de', f, true);
+  const reihen = Object.keys(spuren).sort();
+  WORTLISTE = [];
+
+  /* ZUERST DIE BÄNDER, DICHT ÜBEREINANDER. Je Sprache eine Zeile von 8 px - damit
+     liegt die zweite Sprache unmittelbar unter der ersten, nicht eine Treppentiefe
+     weiter unten. In der Übersicht ist das alles, was gezeichnet wird. */
+  let oben = TEXT0 + 6;
+  for (const sp of reihen){
+    if (PX >= 8) teile.push(`<div class="spurname" style="top:${oben - 1}px">${sp.toUpperCase()}</div>`);
+    for (const z of spuren[sp]){
+      const br = x(z.bis - z.von);
+      if (br < 2) continue;
+      teile.push(`<div class="zeilenband${z.mal > 1 ? ' mehrfach' : ''}${z.geloest ? ' gefunden' : ''}"
+        style="left:${x(z.von)}px;width:${br}px;top:${oben}px"
+        title="${z.txt.replace(/"/g,'&quot;')}${z.mal>1?`  (${z.mal}× im Song)`:''}${z.geloest?'  — aus dem Lückenlauf':''}"></div>`);
+    }
+    oben += 8;
+  }
+
+  /* DANN DIE WORTE, IN EINER GEMEINSAMEN TREPPE.
+     Caspar_D, 16.11.2026: „jede Zeile untereinander" mit der Skizze
+
+         Der
+           Meister
+             schläft
+               das
+
+     In einer Zeile rutscht jedes Wort eine Reihe tiefer, wenn links kein Platz mehr
+     ist, und nie wieder hoch. BERICHTIGT (gemessen: 78 Überlappungen): auch die
+     NÄCHSTE Zeile darf nicht blind oben anfangen - Whispers Zeiten überlappen sich,
+     und dann stand „Frosthauch" auf „Flamme". Darum merkt sich `kante` je Reihe die
+     rechte Kante des letzten Wortes, und eine neue Zeile beginnt in der ersten
+     Reihe, die an ihrer Stelle frei ist.
+
+     Die Treppe ist für alle Sprachen GEMEINSAM. Das hält die zweite Sprache dicht
+     an der ersten; wo beide gleichzeitig Text hätten, weicht das spätere Wort nach
+     unten aus - so wie bei zwei Zeilen derselben Sprache auch. */
+  let tiefe = 0;
+  if (PX >= 8){
+    const wortO = oben + 5;
+    const kante = [];
+    const alle = [];
+    for (const sp of reihen) for (const z of spuren[sp]) alle.push(z);
+    alle.sort((a, b) => a.von - b.von);
+    const gesammelt = [];
+    for (const z of alle){
+      const ws = (z.worte && z.worte.length)
+        ? z.worte.map(w => ({ von: w[0], bis: w[1], txt: w[2], sicher: w[3] }))
+        : [{ von: z.von, bis: z.bis, txt: z.txt, sicher: 0 }];
+      let reihe = 0;
+      const anfang = x(z.von);
+      while (kante[reihe] != null && kante[reihe] > anfang - 2) reihe++;
+      for (const w of ws){
+        const links = x(w.von);
+        const breite = w.txt.length * 6.4 + 8;
+        while (kante[reihe] != null && kante[reihe] > links - 2) reihe++;
+        kante[reihe] = links + breite;
+        tiefe = Math.max(tiefe, reihe + 1);
+        gesammelt.push({ von: w.von, bis: w.bis, txt: w.txt, sicher: w.sicher,
+                         links, top: wortO + reihe * 14, mal: z.mal });
+      }
+    }
+    /* Nach Zeit sortieren: leuchten() läuft über die Liste vorwärts. */
+    gesammelt.sort((a, b) => a.von - b.von);
+    gesammelt.forEach((w, i) => {
+      WORTLISTE.push({ von: w.von, bis: w.bis });
+      teile.push(`<div class="wort${w.sicher ? '' : ' geschaetzt'}${w.mal > 1 ? ' mehrfach' : ''}" data-w="${i}"
+        style="left:${w.links}px;top:${w.top}px"
+        title="${w.txt.replace(/"/g,'&quot;')} · ${za(w.von,2)} s${w.sicher?'':' (geschätzt)'}">${w.txt}</div>`);
+    });
+    oben = wortO + tiefe * 14;
+  }
+  oben += 4;
+  SPURENDE = oben;
+
+  /* FEHLENDE ZEILEN SICHTBAR MACHEN. Whisper hat sie nie gehört, also stehen sie in
+     keiner Zeit. Ihre Lage ist aus der Reihenfolge geschätzt und wird rot
+     gestrichelt gezeigt - eine Lücke, die man sieht, ist besser als ein Text, der
+     vollständig aussieht. */
+  for (const f of (SONG.fehlend || [])){
+    if (f.geloest) continue;
+    const br = x(f.bis - f.von);
+    if (br < 3) continue;
+    teile.push(`<div class="fehlt" style="left:${x(f.von)}px;width:${br}px;top:${SPURENDE + 2}px"
+      title="Fehlt in der bereinigten Lyrik — Whisper hat es nicht gehört. Lage geschätzt.&#10;${f.txt.replace(/"/g,'&quot;')}">${br > 30 ? f.txt : ''}</div>`);
+  }
+  const achsO = SPURENDE + ((SONG.fehlend || []).some(f => !f.geloest) ? 24 : 8);
+
+  const grob = PX < 3 ? 60 : PX < 8 ? 30 : PX < 20 ? 10 : PX < 50 ? 5 : 2;
+  let achse = '';
+  for (let t = 0; t <= SONG.dauer; t += grob) achse += `<span style="left:${x(t)}px">${zeit(t)}</span>`;
+  teile.push(`<div class="achse" style="width:${x(SONG.dauer)}px;top:${achsO}px">${achse}</div>`);
+  const UNTEN = achsO + 20;
+  b.style.height = UNTEN + 'px';
+
+  /* ---- Die gesetzten Kürzungen: schraffiert, mit der Bilanz in der Mitte ----
+     Caspar_D, 16.11.2026: „ein schraffiertes overlay macht den teil aus. mitten drin
+     steht, wieviele Sekunden wir schon erwischt haben." */
+  const summe = weggeschnitten();
+  for (const r of REGIONEN){
+    const br = x(r.bis - r.von);
+    teile.push(`<div class="weg" style="left:${x(r.von)}px;width:${br}px;top:${OBEN_WELLE}px;height:${UNTEN-OBEN_WELLE}px"></div>`);
+    const txt = REGIONEN.length > 1
+      ? `−${za(r.bis-r.von,2)} s  ·  Σ ${za(summe,2)}`
+      : `−${za(r.bis-r.von,2)} s`;
+    if (br > 54)
+      teile.push(`<div class="wegtext" style="left:${x(r.von)+br/2}px;top:${OBEN_WELLE+WELLE/2-9}px;transform:translateX(-50%)">${txt}</div>`);
+  }
+
+  /* ---- Der Streifen der Schnittstellen ----
+     Caspar_D: „ein Pfeil mit mehreren labelfahnen dran, wo wichtige sachen drauf
+     stehen, unter anderem auch die Farbe. die haben oben einen anfasser, um sie zu
+     verschieben." Die Fahnen klappen nur aus, wenn zum Nachbarpfeil Platz ist -
+     sonst stünden bei kleinem Zoom sechzehn Sätze übereinander. */
+  if (AKTIV != null && KAND[AKTIV]){
+    const a = Math.min(SCHNITT, ziel(AKTIV)), bb = Math.max(SCHNITT, ziel(AKTIV));
+    teile.push(`<div class="spanne" style="left:${x(a)}px;width:${x(bb-a)}px;top:${OBEN_WELLE}px;height:${WELLE}px"></div>`);
+  }
+  /* DER PLATZ WIRD GEMESSEN, NICHT GEZÄHLT - und der Startschnitt zählt mit. */
+  const punkte = KAND.map((k,i) => ({ i, p: x(ziel(i)) }));
+  if (SCHNITT != null) punkte.push({ i: 'start', p: x(SCHNITT) });
+  punkte.sort((a,b2) => a.p - b2.p);
+  const luft = {};
+  punkte.forEach((pt, j) => {
+    luft[pt.i] = { vor:  j ? pt.p - punkte[j-1].p : 1e9,
+                   nach: j < punkte.length-1 ? punkte[j+1].p - pt.p : 1e9 };
+  });
+  /* Der Maßstab zu den Höhen: die beiden Schranken als Haarlinien. */
+  if (KAND.length) for (const g of [1.5, DB_VOLL]){
+    const y = OBEN_STREIFEN + STREIFEN - (9 + Math.min(1, g/DB_VOLL) * (STREIFEN - 11));
+    teile.push(`<div class="dbmass" style="top:${y.toFixed(1)}px;width:${BREITE}px"><span>${za(g,1)} dB</span></div>`);
+  }
+  KAND.forEach((k, i) => teile.push(stelleHtml(i, luft[i])));
+  if (SCHNITT != null) teile.push(startHtml(luft['start']));
+
+  teile.push(`<div class="playhead" id="ph" style="left:-9px;top:${OBEN_WELLE}px;height:${UNTEN-OBEN_WELLE}px"></div>`);
+  b.innerHTML = teile.join('');
+  LEUCHTET = -1;
+  bilanzSetzen();
+  phSetzen($('#song').currentTime || 0);
+  leuchten($('#song').currentTime || 0);
+  draehte();
+  randmitziehen();
+  $('#zoomwert').textContent = za(PX,1) + ' px/s';
+  $('#legende').innerHTML = `<b>Ganz oben Sunos Schlagmuster</b> — jeder Strich ein Taktschlag,
+    die Zählzeit Eins über die volle Höhe. Es ist die Primärquelle der ganzen Kürzung: ein
+    Vorschlag gilt genau dann, wenn er ein Vielfaches von vier Schlägen entfernt liegt.
+    Darunter die Hüllkurve aus Sunos Wellendaten, und sie <b>trägt</b> die Abschnittsfarben
+    (<span style="color:${F.strophe}">Strophe</span>, <span style="color:${F.refrain}">Refrain</span>,
+     <span style="color:${F.bruecke}">Brücke</span>, <span style="color:${F.rand}">Rand</span>) —
+    Fläche halb deckend, Topline oben in vollem Ton, schwarze Haarlinie auf der Mitte, wie im
+    Analyzer. Über ihr stehen die Abschnittsnamen in ihrer Farbe und darunter Sunos
+    Regieanweisungen; die Striche am Fuß der Welle wiederholen die Taktanfänge als Lineal.
+    Darunter der Text: jedes Wort an seiner eigenen Zeit, Wortlaut aus der bereinigten Lyrik
+    (<code>library/lyrik.json</code>), Zeiten aus Whisper. Grün, wenn die Zeile im Song mehrfach
+    vorkommt; blass und kursiv, wenn die Zeit nur zwischen den Nachbarn eingehängt ist.
+    Im Streifen oben steht jeder Vorschlag als Pfeil: seine <b>Höhe und seine Farbe</b> sind derselbe
+    Wert, der Pegelsprung an der Naht — <span style="color:#59d18c">grün</span> bis 1,5 dB,
+    <span style="color:#f97b14">orange</span> darüber, <span style="color:#e31c79">pink</span> ab 6 dB,
+    <span style="color:#8b8b90">grau</span>, wo er sich nicht bestimmen ließ. Die beiden Haarlinien
+    sind die Schranken dazu. Ein <b>unterbrochener Stiel</b> heißt, der Text bricht an der Naht; eine
+    <b>voll gedeckte Spitze</b> heißt, hier ist gekürzt. Es ist dieselbe Palette wie bei den
+    Abschnitten — dort als gedämpfte Fläche, hier als Pfeil.
+    <b>Der Pegel ist RMS-basiert</b>, nicht über 24 Bänder wie in der Übergabe. Zoom mit dem Mausrad oder dem Regler; Umschalt+Rad fährt waagerecht.`;
+}
+
+/* DIE FARBE SAGT GENAU EINE SACHE: den Pegelsprung an der Naht, in den drei
+   Zustandsfarben des Hauses. Vorher hieß Pink „Text bricht" ODER „über 6 dB".
+   Grau heißt unsicher - der Pegel ließ sich nicht bestimmen. */
+function farbe(k){
+  if (k.pegel == null) return '#8b8b90';
+  if (k.pegel >= DB_VOLL) return '#e31c79';   /* die Legende sagt „ab 6 dB" - dann auch ab */
+  if (k.pegel > 1.5) return '#f97b14';
+  return '#59d18c';
+}
+/* DIE HÖHE IST DIE PEGELDIFFERENZ (Caspar_D, 16.11.2026: „die pfeile sollten wieder
+   dezibeldifferenzhöhen bekommen"). Linear bis DB_VOLL, darüber gekappt - und eine
+   Grundlänge bleibt, damit auch ein Pfeil mit 0 dB ein Pfeil ist. Ein unbestimmter
+   Pegel bekommt die Grundlänge und Grau; eine erfundene Höhe wäre eine Behauptung. */
+function pfeilHoch(k){
+  const grund = 9;
+  if (k.pegel == null) return grund;
+  return grund + Math.min(1, k.pegel / DB_VOLL) * (STREIFEN - grund - 2);
+}
+
+/* EINE SCHNITTSTELLE. Oben der Kopf des Pfeils - seine Höhe ist der Pegelsprung -,
+   darunter der Stiel, unten die Spitze. Und die reicht jetzt bis an die Welle:
+   vorher endete sie 48 px davor (nachgemessen), und ein Zeiger, der vor seinem Ziel
+   aufhört, ordnet seine Werte dem falschen Ort zu.
+
+   NUR ZWEI FAHNEN, UND NUR AM ANGEKLICKTEN. Von den fünf trugen drei nichts Neues:
+   der dB-Wert steht jetzt in Farbe UND Höhe, der Textbruch in der Stielform, und die
+   Taktzahl ist der Listenplatz, der als Entfernung im Bild steht. Übrig bleiben die
+   gesparten Sekunden - die Hauptzahl, denn die Ziellänge ist eine Bilanz - und der
+   Handversatz, der einzige Wert, den der Nutzer selbst erzeugt hat. Alles Weitere
+   steht im Panel darunter, das beim Anklicken ohnehin aufgeht. */
+function stelleHtml(i, luft){
+  const k = KAND[i], c = farbe(k), p = x(ziel(i)), an = i === AKTIV;
+  const r = regionVon(SCHNITT);
+  const gesetzt = !!(r && Math.abs(r.bis - ziel(i)) < 1e-6);
+  const vers = VERSATZ[i] || 0;
+  /* HÖHE UND BREITE SIND ZWEI DINGE (Hausform, taktZeichnen): wird es eng, wird die
+     Marke schmaler, statt dass die Pfeile übereinanderschieben. Ausgedünnt werden
+     die Beschriftungen, nie die Auswahl. */
+  const frei = Math.floor(Math.min(luft.vor, luft.nach));
+  const spB = Math.max(3, Math.min(10, frei - 1));
+  const stB = frei < 4 ? 1 : (an ? 3 : 2);
+  const unten = STREIFEN + KUERZEL + REGIEH - 7;      /* wo die Spitze sitzt */
+  const kopf = Math.max(0, STREIFEN - pfeilHoch(k));  /* die Pegelhöhe */
+  const fahnen = !an ? '' : `<div class="fahnen" style="top:${kopf}px">
+      <div class="fahne gross">−${za(k.spart,2)} s</div>
+      ${vers ? `<div class="fahne">${vers>0?'+':''}${za(vers,2)} s von Hand</div>` : ''}
+    </div>`;
+  return `<div class="stelle${an?' aktiv':''}${gesetzt?' gesetzt':''}" data-i="${i}"
+    style="left:${p}px;top:${OBEN_STREIFEN}px;color:${c}"
+    title="${k.takte} Takte · spart ${za(k.spart,2)} s · ${k.pegelVz==null?'Pegel nicht bestimmbar'
+      :'Pegelsprung '+(k.pegelVz>0?'+':'')+za(k.pegelVz,1)+' dB — die Pfeilhöhe'} · ${k.text.glatt?'Naht glatt':'Text bricht'}${gesetzt?' · gesetzt (Klick hebt auf)':''}">
+    ${fahnen}
+    <div class="fass" style="height:${unten}px"></div>
+    <div class="stiel${k.text.glatt ? '' : ' bricht'}" style="top:${kopf}px;height:${unten-kopf}px;width:${stB}px;left:${-stB/2}px"></div>
+    <div class="spitze" style="top:${unten}px;border-left-width:${(spB/2).toFixed(1)}px;border-right-width:${(spB/2).toFixed(1)}px;left:${-spB/2}px"></div>
+  </div>`;
+}
+
+/* DER STARTSCHNITT steht im selben Streifen, weiß und ohne Fahnen: seine Zeit steht
+   im Kopf, und im Song ist er die Linie mit der Raute. Er zählt beim Platz mit -
+   vorher drängelte er sich ungemessen mit dem ersten Vorschlag. */
+function startHtml(luft){
+  const frei = Math.floor(Math.min(luft.vor, luft.nach));
+  const spB = Math.max(3, Math.min(10, frei - 1));
+  const unten = STREIFEN + KUERZEL + REGIEH - 7;
+  return `<div class="stelle start" data-start="1" title="Startschnitt — ziehen verschiebt ihn"
+    style="left:${x(SCHNITT)}px;top:${OBEN_STREIFEN}px;color:#ffffff;z-index:14">
+    <div class="fass" style="height:${unten}px"></div>
+    <div class="stiel" style="top:0;height:${unten}px;width:2px;left:-1px"></div>
+    <div class="spitze" style="top:${unten}px;border-left-width:${(spB/2).toFixed(1)}px;border-right-width:${(spB/2).toFixed(1)}px;left:${-spB/2}px"></div>
+  </div>`;
+}
+
+function draehte(){
+  const b = $('#bahn');
+  /* KLICK SETZT, ZIEHEN VERSCHIEBT (docs/KUERZEN.md). Unterschieden wird an der
+     zurückgelegten Strecke: wer mehr als drei Bildpunkte zieht, wollte schieben.
+     Ein zweiter Klick auf denselben Pfeil hebt die Kürzung wieder auf - ein
+     Doppelklick tut damit von selbst das Richtige. */
+  b.querySelectorAll('.stelle').forEach(el => {
+    el.addEventListener('mousedown', (ev) => {
+      ev.stopPropagation(); ev.preventDefault();
+      ZIEHT = { was: el.dataset.start ? 'start' : +el.dataset.i, startX: ev.clientX, weg: 0 };
+    });
+  });
+  b.querySelectorAll('.klick').forEach(el => el.addEventListener('click', klickInSong));
+}
+
+/* Ein Pfeil wurde angeklickt, nicht gezogen. */
+function pfeilGeklickt(i){
+  const r = regionVon(SCHNITT);
+  const schon = r && Math.abs(r.bis - ziel(i)) < 1e-6;
+  AKTIV = i;
+  setzen(i);                       /* setzt - oder hebt auf, wenn schon gesetzt */
+  if (schon) $('#hoeren').classList.remove('an');
+  else nahtLaden(i);
+}
+
+/* ---- Setzen und Aufheben einer Kürzung ----
+   Caspar_D, 16.11.2026: „klicke ich die an, dann wird die region vom startschnitt bis
+   genau zum markierten Schnitt gecancelt und nicht mehr mitgespielt … die flags an der
+   schraffierten region bleiben stehen, sodass ich sie wieder entschraffieren kann, der
+   start bleibt aber stehen, dann kann ich ggf einen alternativen Schnittort auswählen."
+
+   Darum: je Startschnitt höchstens EINE Region. Ein anderes Set-Flag ersetzt sie,
+   dasselbe hebt sie auf. SCHNITT und KAND bleiben in beiden Fällen stehen. */
+function setzen(i){
+  const z = ziel(i), a = Math.min(SCHNITT, z), e = Math.max(SCHNITT, z);
+  const da = regionVon(SCHNITT);
+  if (da && Math.abs(da.bis - z) < 1e-6) REGIONEN = REGIONEN.filter(r => r !== da);
+  else {
+    REGIONEN = REGIONEN.filter(r => r !== da);
+    REGIONEN.push({ von: a, bis: e });
+    REGIONEN.sort((p,q) => p.von - q.von);
+  }
+  malen();
+}
+
+/* DER PLAYHEAD LÄUFT MIT. Eigenes Element, das nur verschoben wird - die Bahn neu zu
+   malen wäre bei 60 Bildern je Sekunde Unsinn. */
+function phSetzen(t){
+  const el = document.getElementById('ph');
+  if (!el || !SONG) return;
+  el.style.left = x(t) + 'px';
+  $('#stand').textContent = zeit(t) + ' · ' + za(t,2) + ' s';
+}
+/* DIE WORTE LEUCHTEN MIT. Gesucht wird nicht bei jedem Bild durch alle 500 Worte,
+   sondern nur, solange der Zeiger noch nicht steht - die Liste ist nach Zeit sortiert,
+   und der Kopf läuft vorwärts. Angefasst wird das DOM nur beim Wechsel. */
+function leuchten(t){
+  let i = LEUCHTET;
+  if (i >= 0 && WORTLISTE[i] && t >= WORTLISTE[i].von && t <= WORTLISTE[i].bis) return;
+  if (i < 0 || !WORTLISTE[i] || t < WORTLISTE[i].von) i = 0;
+  while (i < WORTLISTE.length && WORTLISTE[i].bis < t) i++;
+  const neu = (i < WORTLISTE.length && t >= WORTLISTE[i].von) ? i : -1;
+  if (neu === LEUCHTET) return;
+  const alt = document.querySelector('.wort.an');
+  if (alt) alt.classList.remove('an');
+  if (neu >= 0){
+    const el = document.querySelector(`.wort[data-w="${neu}"]`);
+    if (el) el.classList.add('an');
+  }
+  LEUCHTET = neu;
+}
+
+function mitlaufen(){
+  const a = $('#song');
+  if (SONG && !a.paused){
+    /* DIE GESETZTEN REGIONEN WERDEN NICHT MITGESPIELT. So hört er beim Abspielen
+       die gekürzte Fassung, ohne dass etwas gerendert wird. */
+    for (const r of REGIONEN){
+      if (a.currentTime >= r.von - 0.004 && a.currentTime < r.bis - 0.03){
+        try { a.currentTime = r.bis; } catch(e){}
+        break;
+      }
+    }
+    phSetzen(a.currentTime);
+    leuchten(a.currentTime);
+    const f = $('#fenster'), links = f.scrollLeft, rechts = links + f.clientWidth;
+    const px = x(a.currentTime);
+    if (px < links + 40 || px > rechts - 80) f.scrollLeft = px - f.clientWidth * 0.35;
+  }
+  requestAnimationFrame(mitlaufen);
+}
+requestAnimationFrame(mitlaufen);
+
+function spielen(){
+  const a = $('#song');
+  if (a.paused){ a.play().catch(()=>{}); $('#play').textContent = '❙❙ anhalten'; }
+  else { a.pause(); $('#play').textContent = '▶︎ abspielen'; }
+}
+$('#play').addEventListener('click', spielen);
+$('#song').addEventListener('pause', () => $('#play').textContent = '▶︎ abspielen');
+$('#song').addEventListener('seeked', () => phSetzen($('#song').currentTime));
+
+/* TASTEN. Leertaste spielt und hält an; die Pfeiltasten verschieben die angeklickte
+   Schnittstelle um ein Zwanzigstel (Caspar_D, 16.11.2026). */
+document.addEventListener('keydown', (e) => {
+  const imFeld = e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT';
+  if (e.code === 'Space' && !imFeld){ e.preventDefault(); spielen(); return; }
+  if (imFeld || !SONG) return;
+  if (e.code !== 'ArrowLeft' && e.code !== 'ArrowRight') return;
+  const d = (e.code === 'ArrowLeft' ? -1 : 1) * 0.05;
+  e.preventDefault();
+  if (AKTIV != null && KAND[AKTIV]){
+    VERSATZ[AKTIV] = (VERSATZ[AKTIV] || 0) + d;
+    const r = regionVon(SCHNITT);
+    if (r) setzen(AKTIV); else malen();
+    nahtLaden(AKTIV);
+  } else if (SCHNITT != null){
+    SCHNITT = Math.max(0.2, Math.min(SONG.dauer - 0.5, SCHNITT + d));
+    REGIONEN = []; malen(); kandidatenLaden();
+  }
+});
+
+/* ZIEHEN AM ANFASSER */
+document.addEventListener('mousemove', (e) => {
+  if (!ZIEHT || !SONG) return;
+  ZIEHT.weg += Math.abs(e.clientX - ZIEHT.startX);
+  if (ZIEHT.weg < 3){ ZIEHT.startX = e.clientX; return; }   /* noch ein Klick, kein Zug */
+  const d = (e.clientX - ZIEHT.startX) / PX;
+  ZIEHT.startX = e.clientX;
+  if (ZIEHT.was === 'start'){
+    SCHNITT = Math.max(0.2, Math.min(SONG.dauer - 0.5, SCHNITT + d));
+    malen();
+  } else {
+    VERSATZ[ZIEHT.was] = (VERSATZ[ZIEHT.was] || 0) + d;
+    const r = regionVon(SCHNITT);
+    if (r) setzen(ZIEHT.was); else malen();
+  }
+});
+document.addEventListener('mouseup', () => {
+  if (!ZIEHT) return;
+  const z = ZIEHT; ZIEHT = null;
+  if (z.weg < 3){                                   /* geklickt, nicht gezogen */
+    if (z.was !== 'start') pfeilGeklickt(z.was);
+    return;
+  }
+  if (z.was === 'start'){ REGIONEN = []; kandidatenLaden(); }
+  else nahtLaden(z.was);
+});
+
+function klickInSong(ev){
+  if (!SONG || ZIEHT) return;
+  const r = $('#bahn').getBoundingClientRect();
+  const t = Math.max(0.2, Math.min(SONG.dauer - 0.5, (ev.clientX - r.left) / PX));
+  /* IN DIE SCHRAFFUR GEKLICKT? Dann wird der Start wieder der, mit dem sie
+     entstanden ist (Caspar_D, 16.11.2026: „damit ich sie ggf einfach verlängern
+     kann"). Sonst müsste er den alten Startpunkt auf den Pixel treffen, um einen
+     anderen Endpunkt zu wählen. */
+  const drin = REGIONEN.find(g => t >= g.von && t <= g.bis);
+  SCHNITT = drin ? drin.von : t;
+  AKTIV = null; VERSATZ = {};
+  $('#hoeren').classList.remove('an');
+  /* Der Abspielkopf springt mit: man will hören, was man anklickt. */
+  try { $('#song').currentTime = SCHNITT; } catch (e) {}
+  malen(); kandidatenLaden();
+}
+
+async function kandidatenLaden(){
+  const d = await (await fetch(`/api/kandidaten?id=${encodeURIComponent(SONG.id)}&t=${SCHNITT}&max=16`)).json();
+  KAND = d.fehler ? [] : d.kandidaten;
+  VERSATZ = {};
+  malen();
+}
+
+function nahtLaden(i){
+  const k = KAND[i], z = ziel(i), vers = VERSATZ[i] || 0;
+  const q = `id=${encodeURIComponent(SONG.id)}&t=${SCHNITT}&u=${z}`;
+  $('#aNaht').src = '/api/naht?' + q;
+  $('#aOrig').src = '/api/original?' + q;
+  const spart = Math.abs(z - SCHNITT);
+  $('#hoerwo').textContent = `${zeit(SCHNITT)} → ${zeit(z)} · ${k.takte} Takte · spart ${za(spart,2)} s`
+    + (vers ? `  (verschoben um ${vers>0?'+':''}${za(vers,2)} s)` : '');
+  const dbSatz = k.pegelVz == null ? 'Der Pegelsprung ließ sich hier nicht bestimmen.'
+    : `Der Pegel springt um <b>${(k.pegelVz>0?'+':'')+za(k.pegelVz,1)} dB</b>, das ist das `
+      + `${za(Math.pow(10, Math.abs(k.pegelVz)/20), 2)}-fache der Amplitude. `
+      + `<b>Belegt ist nur, was außerhalb liegt:</b> bis 1,5 dB gilt als unauffällig, ab 6 dB als `
+      + `untauglich — dazwischen steht bisher kein Hörbeleg, die Zahl ist dort ein Anhaltspunkt.`;
+  $('#hoerhinweis').innerHTML = dbSatz + ` Beide Ausschnitte beginnen zwei Takte vor dem Schnitt und enden zwei Takte `
+    + `nach dem Zielpunkt. Links mit Sprung, 120 ms energieerhaltend überblendet (<code>qsin</code>); rechts `
+    + `dieselbe Stelle ungeschnitten, also ${za(spart,2)} s länger. Übersprungen werden `
+    + `<b>${za(k.schlaege,2)} Schläge</b>, gefordert sind ${4*k.takte}.`
+    + (vers ? `  <b>Von Hand verschoben</b> — der Taktabstand stimmt dann nicht mehr genau; das ist der Preis
+        der Korrektur nach Gehör.` : '');
+  $('#hoeren').classList.add('an');
+}
+
+$('#zoom').addEventListener('input', (e) => zoomAuf(+e.target.value));
+/* DAS MAUSRAD ZOOMT (Caspar_D, 16.11.2026: „mouserad soll zoomen") - ohne Taste.
+   Zum Fahren bleibt die Bildlaufleiste, Umschalt+Rad und das Ziehen des Anfassers;
+   waagerechte Radbewegung (Trackpad) fährt weiter wie gewohnt. */
+$('#fenster').addEventListener('wheel', (e) => {
+  if (e.shiftKey) return;
+  if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+  e.preventDefault();
+  zoomAuf(PX * (e.deltaY < 0 ? 1.14 : 1/1.14), e.clientX);
+}, { passive:false });
+
+/* GANZ HERAUSGEZOOMT IST DER GANZE SONG (Caspar_D, 16.11.2026: „maximaler zoom out
+   ist bildschirmbreite"). Weiter hinaus gibt es nichts zu sehen - nur leere Bahn. */
+const pxMin = () => Math.max(0.02, ($('#fenster').clientWidth - 6) / (SONG ? SONG.dauer : 1));
+
+function zoomAuf(neu, mausX){
+  if (!SONG) return;
+  const f = $('#fenster'), r = f.getBoundingClientRect();
+  const ankerX = (mausX == null ? r.width/2 : mausX - r.left);
+  const tAnker = (f.scrollLeft + ankerX) / PX;
+  PX = Math.max(pxMin(), Math.min(150, neu));
+  $('#zoom').min = pxMin().toFixed(3);
+  $('#zoom').value = Math.min(150, PX);
+  malen();
+  f.scrollLeft = tAnker * PX - ankerX;
+}
+
+/* BESCHRIFTUNGEN AM LINKEN RAND MITZIEHEN. Die Spurnamen und die Schranken der
+   Pegelskala gehören an den Rand des SICHTBAREN Ausschnitts, nicht an den Anfang
+   der Bahn - sonst sind sie nach dem ersten Scrollen weg. Derselbe Weg wie
+   namenAusrichten() im Analyzer: bei jeder Sichtänderung ein paar Elemente
+   verschieben, das kostet nichts. */
+function randmitziehen(){
+  const l = $('#fenster').scrollLeft;
+  document.querySelectorAll('.spurname').forEach(e => e.style.transform = `translateX(${l}px)`);
+  document.querySelectorAll('.dbmass span').forEach(e => e.style.transform = `translateX(${l}px)`);
+}
+$('#fenster').addEventListener('scroll', randmitziehen, { passive:true });
+
+$('#songwahl').addEventListener('change', (e) => songLaden(e.target.value));
+$('#zufall').addEventListener('click', () => {
+  const w = $('#songwahl'); if (w.options.length < 2) return;
+  let i; do { i = Math.floor(Math.random()*w.options.length); } while (w.options[i].value === w.value);
+  w.selectedIndex = i; songLaden(w.value);
+});
+
+songsLaden();
+</script>
