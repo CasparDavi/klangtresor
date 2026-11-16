@@ -124,3 +124,9 @@ docs/features/img/auto-tarja.webp
 # Betonungsliste der KlangFeder aus dem Duden-Wissensnetz (Kern 2026-11-11.3): bleibt bewusst draussen -
 # Caspar_D, 11.11.2026: „b“ (Kern ja, Liste nein). Ohne sie rechnet der Kern wie 11.2; siehe bin/textanalyse.js.
 /bin/textanalyse/betonung-korrektur-de.tsv
+
+# Kuerzen-Labor: die Rezepte sind Joergs Arbeitsstaende an seinen eigenen Liedern
+# (welche Stelle er aus welchem Song schneidet), nicht Programm. Sie tragen seine
+# Song-IDs und gehoeren so wenig ins weitergegebene Repo wie library/ selbst.
+labor/kuerzen/rezepte.json
+labor/kuerzen/rezepte.json.neu

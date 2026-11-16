@@ -51,6 +51,14 @@ input[type=range]{vertical-align:middle;width:180px;accent-color:var(--akzent)}
 .bilanz{font-size:13px;font-variant-numeric:tabular-nums;border-color:#44444a;color:var(--text)}
 /* Nicht die Zustandsfarbe: Grün heißt am Pfeil, dass der Pegel sauber ist. */
 .bilanz b{font-weight:500;color:var(--text)}
+.ziel input{width:46px;font:inherit;font-size:12px;font-variant-numeric:tabular-nums;
+  color:var(--text);background:var(--feld2);border:1px solid var(--rand);border-radius:4px;
+  padding:1px 5px;text-align:center}
+/* Der Sicherungsstand sagt, was ist, nicht was läuft: „gesichert" oder die
+   Störung. Ein Werkzeug, das Arbeit hält, muss zeigen, dass es sie hält. */
+.stand{font-variant-numeric:tabular-nums}
+.stand.arbeitet{color:var(--akzent)}
+.stand.fehler{color:var(--schlecht);border-color:var(--schlecht)}
 
 .schlagsvg{position:absolute;left:0;width:100%;pointer-events:none}
 .keinschlag{position:absolute;left:0;width:100%;font-size:10.5px;color:var(--schlecht);
@@ -200,6 +208,8 @@ kbd{background:#242427;border:1px solid #44444a;border-radius:3px;padding:0 4px;
   <div class="kopf">
     <select id="songwahl"><option>lädt …</option></select>
     <span class="marke bilanz" id="bilanz">—</span>
+    <span class="marke ziel">Ziel <input id="ziel" type="text" inputmode="numeric" placeholder="6:00" size="4"></span>
+    <span class="marke stand" id="gesichert">—</span>
     <button id="zufall">anderer Song</button>
     <button id="play" title="Leertaste">▶︎ abspielen</button>
     <span class="marke" id="stand">0:00</span>
@@ -255,6 +265,61 @@ let SPURENDE = TEXT0 + 40, WORTLISTE = [], LEUCHTET = -1;
    REGIONEN: die gesetzten Kürzungen {von,bis} - sie werden nicht mitgespielt. */
 let VERSATZ = {}, REGIONEN = [], ZIEHT = null;
 
+/* ================== DAS REZEPT ==================
+   Caspar_D, 16.11.2026: Speicherung zuerst - damit beim Bauen der nächsten
+   Stücke (Überblendung, Rampen, Zuschnitt, Tempo) nichts verlorengeht.
+
+   Eine Wahrheit je Lied, gehalten im Laborserver (labor/kuerzen/rezepte.json).
+   Gesichert wird nach jeder Änderung, aber nicht bei jedem Mausruck: 600 ms
+   nach der letzten. Beim Ziehen eines Pfeils sind das ein Schreibvorgang
+   statt sechzig. */
+let ZIEL = null;            /* gewünschte Länge in Sekunden, oder null */
+let SICHER = null;          /* Zeitgeber der verzögerten Sicherung */
+
+function rezeptJetzt(){
+  return { zuschnitt: null, schnitte: REGIONEN.map(r => ({ von: r.von, bis: r.bis })),
+           blende: 0.12, rampe: { ein: 0, aus: 0 }, tempo: 1, ziel: ZIEL };
+}
+
+function sichern(){
+  if (!SONG) return;
+  clearTimeout(SICHER);
+  $('#gesichert').textContent = 'ändert …';
+  $('#gesichert').className = 'marke stand arbeitet';
+  SICHER = setTimeout(async () => {
+    try {
+      const a = await fetch('/api/rezept', { method:'PUT',
+        headers:{'content-type':'application/json'},
+        body: JSON.stringify({ id: SONG.id, rezept: rezeptJetzt() }) });
+      const d = await a.json();
+      if (d.fehler) throw new Error(d.fehler);
+      const t = d.stand ? new Date(d.stand) : new Date();
+      $('#gesichert').textContent = 'gesichert ' + String(t.getHours()).padStart(2,'0')
+        + ':' + String(t.getMinutes()).padStart(2,'0');
+      $('#gesichert').className = 'marke stand';
+    } catch (e) {
+      /* Keine Meldung ohne Ausweg: was nicht gesichert ist, steht noch im
+         Fenster - also sagen, dass ein erneuter Versuch genügt. */
+      $('#gesichert').textContent = 'nicht gesichert — klicken zum Wiederholen';
+      $('#gesichert').className = 'marke stand fehler';
+      $('#gesichert').onclick = sichern;
+    }
+  }, 600);
+}
+
+async function rezeptLaden(id){
+  REGIONEN = []; ZIEL = null;
+  try {
+    const d = await (await fetch('/api/rezept?id=' + encodeURIComponent(id))).json();
+    const r = d.rezept || {};
+    REGIONEN = (r.schnitte || []).map(x => ({ von: x.von, bis: x.bis })).sort((a,b) => a.von - b.von);
+    ZIEL = r.ziel || null;
+  } catch (e) {}
+  $('#ziel').value = ZIEL ? zeit(ZIEL) : '';
+  $('#gesichert').textContent = REGIONEN.length ? 'gesichert' : '—';
+  $('#gesichert').className = 'marke stand';
+}
+
 const zeit = (s) => (s<0?'-':'') + Math.floor(Math.abs(s)/60) + ':' + String(Math.floor(Math.abs(s)%60)).padStart(2,'0');
 const x = (t) => t * PX;
 /* DEZIMALKOMMA ÜBERALL (Hausregel 14). Eine Zahl mit Punkt liest sich im Deutschen
@@ -294,7 +359,8 @@ const regionVon = (t) => REGIONEN.find(r => Math.abs(r.von - t) < 1e-6);
 async function songsLaden(){
   const d = await (await fetch('/api/songs')).json();
   const w = $('#songwahl');
-  w.innerHTML = d.songs.map(s => `<option value="${s.id}">${s.titel}</option>`).join('');
+  w.innerHTML = d.songs.map(s =>
+    `<option value="${s.id}">${s.titel}${s.rezept ? `   — gekürzt um ${za(s.rezept.weg,1)} s` : ''}</option>`).join('');
   const vor = d.songs.find(s => /Snegurotschka/i.test(s.titel)) || d.songs[0];
   w.value = vor.id;
   await songLaden(vor.id);
@@ -305,7 +371,8 @@ async function songLaden(id){
   const a = $('#song');
   a.pause(); a.src = '/api/audio?id=' + encodeURIComponent(id); a.currentTime = 0;
   $('#play').textContent = '▶︎ abspielen';
-  SCHNITT = null; KAND = []; AKTIV = null; VERSATZ = {}; REGIONEN = [];
+  SCHNITT = null; KAND = []; AKTIV = null; VERSATZ = {};
+  await rezeptLaden(id);
   $('#hoeren').classList.remove('an');
   $('#quelle').textContent = SONG.abschnittQuelle === 'marken'
     ? 'Abschnitte aus den Lyrics-Marken'
@@ -440,9 +507,18 @@ function schlagSvg(breitePx){
 function bilanzSetzen(){
   const weg = weggeschnitten();
   const neu = SONG.dauer - weg;
+  /* ZAHL MIT BEZUG: nicht nur, wie lang es jetzt ist, sondern wie weit es
+     noch bis zum Ziel ist - das ist die Frage, die der Nutzer hat. */
+  let rest = '';
+  if (ZIEL){
+    const d = neu - ZIEL;
+    rest = d <= 0
+      ? ` <span style="color:var(--gut)">Ziel erreicht</span>`
+      : ` <span style="color:var(--schwach)">noch ${za(d,1)} s</span>`;
+  }
   $('#bilanz').innerHTML = weg < 0.005
-    ? `${zeit(SONG.dauer)}`
-    : `${zeit(SONG.dauer)} / <b>${zeit(neu)}</b> <span style="color:var(--schwach)">−${za(weg,1)} s</span>`;
+    ? `${zeit(SONG.dauer)}${rest}`
+    : `${zeit(SONG.dauer)} / <b>${zeit(neu)}</b> <span style="color:var(--schwach)">−${za(weg,1)} s</span>${rest}`;
 }
 
 function malen(){
@@ -802,6 +878,7 @@ function setzen(i){
     REGIONEN.sort((p,q) => p.von - q.von);
   }
   malen();
+  sichern();
 }
 
 /* DER PLAYHEAD LÄUFT MIT. Eigenes Element, das nur verschoben wird - die Bahn neu zu
@@ -992,6 +1069,21 @@ function randmitziehen(){
   document.querySelectorAll('.dbmass span').forEach(e => e.style.transform = `translateX(${l}px)`);
 }
 $('#fenster').addEventListener('scroll', randmitziehen, { passive:true });
+
+/* Die Ziellänge als „6:00" oder als Sekundenzahl - beides ist natürlich, also
+   versteht das Feld beides. Was es nicht versteht, wird nicht stillschweigend
+   zu null: das Feld zeigt dann wieder, was gilt. */
+$('#ziel').addEventListener('change', (e) => {
+  const t = e.target.value.trim();
+  if (!t) ZIEL = null;
+  else {
+    const m = /^(\d+):([0-5]?\d)$/.exec(t);
+    const v = m ? (+m[1]) * 60 + (+m[2]) : (/^\d+(\.\d+)?$/.test(t) ? +t : null);
+    if (v != null && v > 10) ZIEL = v;
+  }
+  e.target.value = ZIEL ? zeit(ZIEL) : '';
+  bilanzSetzen(); sichern();
+});
 
 $('#songwahl').addEventListener('change', (e) => songLaden(e.target.value));
 $('#zufall').addEventListener('click', () => {

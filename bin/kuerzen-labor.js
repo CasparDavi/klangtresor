@@ -743,18 +743,98 @@ function datei(res, p, typ) {
   fs.createReadStream(p).pipe(res);
 }
 
+/* ================== DAS REZEPT ==================
+ * Caspar_D, 16.11.2026: „am besten wäre, sich nur die Schnittpositionen zu
+ * merken und den song on the fly zu rendern für einen export. Alles andere
+ * wird on the fly beim abspielen gemacht."
+ *
+ * Darum gibt es genau EINE Wahrheit je Lied, und sie ist winzig: wo
+ * geschnitten wird, wie lang die Naht blendet, was vorn und hinten wegfällt,
+ * wie schnell gespielt wird. Abspielen und Export lesen dasselbe - sonst
+ * klingt der Export anders als die Probe.
+ *
+ * WO. Eine SAMMELDATEI neben dem Labor, nicht je Lied eine: die Arbeitsplatte
+ * hat 1 MB Blockgröße, und 300 Rezepte à 300 Byte wären 300 MB statt 0,1.
+ * Nicht in library/ - das ist der Bestand, und dieses Werkzeug ist Werkstatt
+ * (Caspar_D, 16.11.2026: Ablage „c", erst laborintern, der Weg in die App
+ * kommt, wenn das Werkzeug steht).
+ *
+ * WAS NICHT DRINSTEHT. Felder für noch nicht gebaute Dinge legt diese Fassung
+ * nicht an. Ein Rezept nennt, was es kann; was fehlt, bekommt beim Lesen
+ * seinen Standardwert. So wächst die Datei mit dem Werkzeug, ohne dass ein
+ * Feld etwas verspricht, das nichts tut. */
+const REZEPTE = path.join(WURZEL, 'labor', 'kuerzen', 'rezepte.json');
+
+const STANDARD = { zuschnitt: null, schnitte: [], blende: 0.12,
+                   rampe: { ein: 0, aus: 0 }, tempo: 1, ziel: null };
+
+function rezepteLesen() {
+  try { return JSON.parse(fs.readFileSync(REZEPTE, 'utf8')); }
+  catch (e) { return { stand: null, lieder: {} }; }
+}
+
+function rezeptVon(id) {
+  const r = (rezepteLesen().lieder || {})[id] || {};
+  return { ...STANDARD, ...r, rampe: { ...STANDARD.rampe, ...(r.rampe || {}) } };
+}
+
+/* Geschrieben wird über eine Nebendatei und dann umbenannt: ein Abbruch
+   mitten im Schreiben soll nicht die Rezepte aller Lieder zerstören. */
+function rezeptSchreiben(id, rezept) {
+  const alles = rezepteLesen();
+  alles.lieder = alles.lieder || {};
+  const leer = !rezept || (!(rezept.schnitte || []).length && !rezept.zuschnitt
+    && (rezept.tempo || 1) === 1 && !rezept.ziel
+    && !(rezept.rampe && (rezept.rampe.ein || rezept.rampe.aus)));
+  if (leer) delete alles.lieder[id];          /* nichts eingestellt: kein Eintrag */
+  else alles.lieder[id] = { ...rezept, stand: new Date().toISOString() };
+  alles.stand = new Date().toISOString();
+  fs.mkdirSync(path.dirname(REZEPTE), { recursive: true });
+  const neben = REZEPTE + '.neu';
+  fs.writeFileSync(neben, JSON.stringify(alles, null, 1));
+  fs.renameSync(neben, REZEPTE);
+  return alles.lieder[id] || null;
+}
+
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   const p = u.pathname;
   try {
     if (p === '/' || p === '/index.html') return datei(res, SEITE, 'text/html; charset=utf-8');
 
+    if (p === '/api/rezept' && req.method === 'PUT') {
+      let roh = '';
+      req.on('data', (d) => { roh += d; if (roh.length > 200000) req.destroy(); });
+      req.on('end', () => {
+        try {
+          const b = JSON.parse(roh);
+          if (!b || !b.id) throw new Error('kein Lied angegeben');
+          const r = rezeptSchreiben(b.id, b.rezept || {});
+          json(res, { ok: true, rezept: r, stand: (r && r.stand) || null });
+        } catch (e) { json(res, { fehler: String(e.message || e) }, 400); }
+      });
+      return;
+    }
+    if (p === '/api/rezept') {
+      const id = u.searchParams.get('id');
+      if (!id) return json(res, { fehler: 'kein Lied angegeben' }, 400);
+      return json(res, { id, rezept: rezeptVon(id) });
+    }
+
     if (p === '/api/songs') {
       /* nur Songs mit Schlagmuster - ohne geht es nicht, und das wird gesagt */
       const k = katalog();
+      /* Wer ein Rezept hat, soll es an der Liste sehen - sonst sucht man ein
+         halb gekürztes Lied unter dreihundert wieder. */
+      const rez = (rezepteLesen().lieder) || {};
       const liste = Object.entries(k)
         .filter(([, s]) => s.schlaege && s.schlaege.length > 16 && !s.instrumental)
-        .map(([id, s]) => ({ id, titel: s.titel, dauer: Math.round(s.dauer), schlaege: s.schlaege.length }))
+        .map(([id, s]) => {
+          const r = rez[id];
+          const weg = r ? (r.schnitte || []).reduce((n, x) => n + (x.bis - x.von), 0) : 0;
+          return { id, titel: s.titel, dauer: Math.round(s.dauer), schlaege: s.schlaege.length,
+                   rezept: r ? { weg: Math.round(weg * 10) / 10, stand: r.stand } : null };
+        })
         .sort((a, b) => a.titel.localeCompare(b.titel, 'de'));
       const ohne = Object.values(k).filter(s => !s.schlaege || s.schlaege.length <= 16).length;
       return json(res, { songs: liste, ohneMuster: ohne });
