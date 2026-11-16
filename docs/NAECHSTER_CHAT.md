@@ -9989,14 +9989,8 @@ der alten Einrichtung). Entfernen über „KlangTresor entfernen“, danach libr
   danach in Parallels neu anmelden, Originale löscht Caspar_D selbst.
 
 **Wiedervorlage:**
-- **Henry in die Credits** – vorbereitet, eingesetzt wird erst nach ihrer Zustimmung (Caspar_D hat ihr den Text gegeben).
-  Suno-Konto `error_henry` (Anzeige „Error_Henry“, geprüft). Block wie Tarja/Casto, Rolle über dem Namen, Link „Songs auf Suno“:
-  - DE: Rolle „Russisch“ · „Bringt die russische Fassung Schritt für Schritt vom KI-Entwurf zu einer guten Übersetzung.
-    Die Arbeit läuft noch: Wo es holpert, ist sie noch nicht angekommen.“
-  - EN: Rolle „Russian“ · „Is step by step turning the AI-drafted Russian version into a proper translation. Work in
-    progress: where it still reads rough, she hasn't got there yet.“
-  - RU: Rolle „Русский язык“ · „Шаг за шагом превращает черновой перевод, сделанный ИИ, в хороший русский текст. Работа
-    продолжается: там, где ещё шероховато, она просто пока не дошла.“ (Henry weiblich – PRAVILA Ж)
+- **Henry steht in den Credits** (16.11.2026) – sie hat selbst darum gebeten; Rolle „Russisch“,
+  Block wie Tarja/Casto mit Suno-Link (`error_henry`), Wortlaut von Caspar_D in allen drei Sprachen.
 - Mac-App per Glocke: erledigt 30.10.2026 (macOS-26-VM, 1.0.138 → 1.0.141). Alle drei Installer in je einer VM
   geprüft (Win, macOS Intel, Ubuntu). **Apple Silicon** prüft Caspar_D selbst auf seinem Laptop – nicht erinnern.
 - Windows 10: Neuinstallation in `KlangTresor-neu` (zwei Knöpfe, Firewall-Hinweis) noch nicht geprüft.
