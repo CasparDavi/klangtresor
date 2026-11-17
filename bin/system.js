@@ -27,15 +27,16 @@ const { execFile } = require('node:child_process');
 
 const WURZEL = path.join(__dirname, '..');
 const LIB = path.join(WURZEL, 'library');
-const EXE = process.platform === 'win32' ? '.exe' : '';
 
 /* ffmpeg und ffprobe: zuerst der Werkzeugordner der Einrichtung, dann der Suchpfad - wie die Starter es halten.
    ASYNCHRON: der Server darf dabei nicht stehen - er liefert nebenher Musik aus. */
 const versuch = (befehl) => new Promise(r => execFile(befehl, ['-version'], { timeout: 5000, windowsHide: true },
   (fehler, aus) => r(fehler ? null : String(aus))));
 async function programm(name) {
-  const eigen = path.join(WURZEL, 'werkzeug', 'ffmpeg', 'bin', name + EXE);
-  for (const befehl of fs.existsSync(eigen) ? [eigen, name] : [name]) {
+  /* Wo das Werkzeug liegt, sagt bin/werkzeug.js (seit 17.11.2026, eine Suche fuer das ganze Haus).
+     Gefragt wird danach trotzdem das Programm selbst - nur es kennt seine Fassung. */
+  const gefunden = require('./werkzeug.js').finde(name);
+  for (const befehl of gefunden && gefunden !== name ? [gefunden, name] : [name]) {
     const aus = await versuch(befehl);
     if (aus !== null) return { da: true, wert: (/version\s+(\S+)/.exec(aus) || [])[1] || '', pfad: befehl };
   }

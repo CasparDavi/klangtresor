@@ -68,14 +68,12 @@ const DATEI   = path.join(WURZEL, 'library', 'whisper.ndjson');
                Homebrew oder dem Paketverwalter installiertes, ohne dass gesucht wird.
      Modell    im Modellordner (bin/modellordner.js) - large-v3, sonst large-v3-turbo oder medium.
    bin/whisper-holen.js und bin/system.js fragen dieselbe Funktion (wo()). */
-const EXE = process.platform === 'win32' ? '.exe' : '';
 const MODELLNAMEN = ['ggml-large-v3.bin', 'ggml-large-v3-turbo.bin', 'ggml-medium.bin'];
-const istDatei = (p) => { try { return fs.statSync(p).isFile(); } catch (e) { return false; } };
-const imPfad = (name) => { const r = spawnSync(EXE ? 'where' : 'which', [name], { encoding: 'utf8' });
-  return r.status === 0 && (r.stdout || '').trim() ? r.stdout.trim().split(/\r?\n/)[0] : null; };
+/* Werkzeuge findet bin/werkzeug.js (seit 17.11.2026) - dieselbe Suche stand im Haus viermal, jede
+   ein wenig anders. Die Orte von whisper-cli (werkzeug/whisper/ und dort Release/) stehen jetzt
+   dort, nicht hier. */
 function wo() {
-  const zu = path.join(WURZEL, 'werkzeug', 'whisper');
-  const programm = [path.join(zu, 'whisper-cli' + EXE), path.join(zu, 'Release', 'whisper-cli' + EXE)].find(istDatei) || imPfad('whisper-cli');
+  const programm = require('./werkzeug.js').finde('whisper-cli');
   const mo = require('./modellordner.js').modellOrdner();
   const modell = MODELLNAMEN.map(n => path.join(mo, n)).find(p => { try { return fs.statSync(p).size > 100000000; } catch (e) { return false; } });
   return { programm: programm || null, modell: modell || null, modellOrdner: mo };

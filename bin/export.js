@@ -113,6 +113,7 @@ const http = require('node:http');
 const { spawn, spawnSync } = require('node:child_process');
 const K    = require('./katalog.js');
 const { Behaelter } = require('./behaelter.js');
+const WERKZEUG = require('./werkzeug.js');
 
 const WURZEL = path.join(__dirname, '..');
 const LIB    = path.join(WURZEL, 'library');
@@ -286,7 +287,12 @@ const eigene = Object.values(katalog.songs).filter(s => !s.fremd)
    ohne Stick anzulegen hieße, auf die Systemplatte zu exportieren. */
 if ((ZIEL + path.sep).startsWith(WURZEL + path.sep) || ZIEL === WURZEL) abbruch('Das Ziel liegt im KlangTresor selbst: ' + ZIEL);
 if (!fs.existsSync(path.dirname(ZIEL))) abbruch('Der Ort ist nicht eingehängt: ' + path.dirname(ZIEL));
-for (const w of ['rsync', 'ffmpeg']) if (spawnSync('which', [w]).status !== 0) abbruch(w + ' fehlt - ohne geht der Export nicht');
+/* WERKZEUGE FINDET bin/werkzeug.js (17.11.2026). Hier stand `which` - das gibt es auf Windows nicht,
+   dort heisst es `where`. Damit galt auch das MITGELIEFERTE ffmpeg als fehlend (werkzeug/ffmpeg/bin/
+   ffmpeg.exe), und der Export brach hier ab mit „ffmpeg fehlt". Gemeldet von Apex, Windows:
+   „bekomme dann die Meldung, das noch kein Export auf K:\Klangtresor bereit ist" - das war die
+   Standzeile der Oberflaeche, der echte Grund stand nur in library/export-lauf.json. */
+for (const w of ['rsync', 'ffmpeg']) if (!WERKZEUG.da(w)) abbruch(w + ' fehlt - ohne geht der Export nicht');
 
 console.log(`\n  ${probe ? 'Probe (nichts wird ins Ziel geschrieben)' : 'Archiv-Export'} → ${ZIEL}`);
 console.log(`  ${eigene.length} Titel von ${anzeigename} (@${handle})${stems ? ', mit Stems' : ', ohne Stems'}, ohne WAV\n`);
@@ -452,7 +458,7 @@ function musikBauen(eintrag, zielDatei) {
       '-metadata', `track=${eintrag.nr}`,
       '-metadata', `date=${(s.erstellt || '').slice(0, 4)}`,
       '-f', 'mp3', tmp);
-    const k = spawn('ffmpeg', argv, { stdio: ['ignore', 'ignore', 'pipe'] });
+    const k = spawn(WERKZEUG.pfad('ffmpeg'), argv, { stdio: ['ignore', 'ignore', 'pipe'] });
     kindProzesse.add(k); k.on('close', () => kindProzesse.delete(k));
     let fehler = ''; k.stderr.setEncoding('utf8'); k.stderr.on('data', d => { fehler += d; });
     k.on('error', (e) => aufloesen({ ok: false, grund: e.message }));

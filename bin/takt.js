@@ -60,13 +60,11 @@ const SR = 11025;        /* fuer den Puls reicht das - Schlaege sind tief und br
 const HOP = 128;         /* 86 Fenster je Sekunde: ein Schlag bei 160 BPM ist 32 Fenster lang */
 const BPM_MIN = 60, BPM_MAX = 160, BPM_SCHRITT = 0.01;
 
-/* ---------- ffmpeg finden: derselbe Weg, den die App geht ---------- */
-function ffmpegPfad() {
-  const eigen = path.join(WURZEL, 'werkzeug', 'ffmpeg', 'bin', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
-  if (fs.existsSync(eigen)) return eigen;
-  return 'ffmpeg';       /* im PATH - so laeuft es auf Caspar_Ds Rechner */
-}
-const FFMPEG = ffmpegPfad();
+/* ---------- ffmpeg finden: derselbe Weg, den die App geht ----------
+   Seit dem 17.11.2026 fragt das bin/werkzeug.js - dieselbe Suche stand im Haus viermal, und die
+   Fassung im Export kannte `where` nicht und scheiterte auf Windows (Apex). Erst das Mitgelieferte
+   unter werkzeug/, dann der Suchpfad; findet sie nichts, bleibt der nackte Name. */
+const FFMPEG = require('./werkzeug.js').pfad('ffmpeg');
 
 /* ---------- Rohspur holen ----------
  * Zwei Spuren in EINEM ffmpeg-Lauf: die ganze Trommelspur fuer das
