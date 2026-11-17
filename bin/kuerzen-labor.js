@@ -873,6 +873,94 @@ function rezeptSchreiben(id, rezept) {
   return alles.lieder[id] || null;
 }
 
+/* ---------- DIE FASSUNG BAUEN ----------
+ * Ein einziger ffmpeg-Lauf aus dem Rezept, nicht eine Kette von Dateien:
+ * atrim schneidet die Stücke, acrossfade näht sie zusammen, atempo macht das
+ * Tempo, afade die Rampen. Nur so bleibt die Rechnung an EINER Stelle.
+ *
+ * Die Reihenfolge ist nicht beliebig. atempo kommt VOR den Rampen, weil die
+ * Rampenlängen in Sekunden der fertigen Fassung gemeint sind - stünden sie
+ * davor, wäre eine Rampe von 3 s bei 92 % plötzlich 3,26 s lang.
+ *
+ * acrossfade legt die Stücke ÜBEREINANDER: das Ergebnis ist je Naht um deren
+ * Dauer kürzer als die Summe der Stücke. Dieselbe Rechnung macht die Bilanz
+ * in der Oberfläche (endlaenge()), damit die angezeigte Länge die gebaute ist. */
+const EXPORTE = path.join(WURZEL, 'labor', 'kuerzen', 'export');
+
+function stuecke(id) {
+  const rez = rezeptVon(id);
+  const s = katalog()[id];
+  if (!s) throw new Error('unbekanntes Lied');
+  const dauer = s.dauer;
+  const a0 = (rez.zuschnitt && rez.zuschnitt.vorn) || 0;
+  const a1 = (rez.zuschnitt && rez.zuschnitt.hinten != null) ? rez.zuschnitt.hinten : dauer;
+  const schnitte = (rez.schnitte || [])
+    .filter(r => r.bis > a0 && r.von < a1)
+    .map(r => ({ von: Math.max(a0, r.von), bis: Math.min(a1, r.bis) }))
+    .sort((p, q) => p.von - q.von);
+  const seg = [];
+  let t = a0;
+  for (const r of schnitte) {
+    if (r.von > t + 0.01) seg.push([t, r.von]);
+    t = Math.max(t, r.bis);
+  }
+  if (a1 > t + 0.01) seg.push([t, a1]);
+  /* Je Naht: nie länger als das kürzere der beiden Stücke, und nie länger als
+     das, was dazwischen weggeschnitten wurde - sonst griffe die Blende über
+     den Schnitt hinaus in Material, das gar nicht mehr da ist. */
+  const blenden = [];
+  for (let i = 0; i + 1 < seg.length; i++) {
+    const weg = seg[i + 1][0] - seg[i][1];
+    blenden.push(Math.max(0.02, Math.min(STANDARD.blende,
+      seg[i][1] - seg[i][0], seg[i + 1][1] - seg[i + 1][0], weg)));
+  }
+  return { rez, seg, blenden, a0, a1, dauer };
+}
+
+function fassungBauen(id) {
+  const { rez, seg, blenden } = stuecke(id);
+  if (!seg.length) throw new Error('nichts übrig');
+  const wav = path.join(SONGS, id, 'audio.wav');
+  const quelle = fs.existsSync(wav) ? wav : path.join(SONGS, id, 'audio.mp3');
+  if (!fs.existsSync(quelle)) throw new Error('kein Ton');
+  const tempo = rez.tempo || 1;
+  const laenge = (seg.reduce((s, g) => s + (g[1] - g[0]), 0)
+                  - blenden.reduce((s, d) => s + d, 0)) / tempo;
+
+  const f = [];
+  seg.forEach((g, i) => f.push(`[0:a]atrim=start=${g[0].toFixed(4)}:end=${g[1].toFixed(4)},asetpts=N/SR/TB[s${i}]`));
+  let letzte = 's0';
+  blenden.forEach((d, i) => {
+    f.push(`[${letzte}][s${i + 1}]acrossfade=d=${d.toFixed(4)}:c1=qsin:c2=qsin[x${i}]`);
+    letzte = 'x' + i;
+  });
+  const nach = [];
+  if (Math.abs(tempo - 1) > 1e-6) nach.push(`atempo=${tempo.toFixed(4)}`);
+  const ein = (rez.rampe && rez.rampe.ein) || 0;
+  const aus = (rez.rampe && rez.rampe.aus) || 0;
+  if (ein > 0.01) nach.push(`afade=t=in:st=0:d=${ein.toFixed(3)}:curve=${RAMPENKURVE}`);
+  if (aus > 0.01) nach.push(`afade=t=out:st=${Math.max(0, laenge - aus).toFixed(3)}:d=${aus.toFixed(3)}:curve=${RAMPENKURVE}`);
+  if (nach.length) { f.push(`[${letzte}]${nach.join(',')}[aus]`); letzte = 'aus'; }
+
+  fs.mkdirSync(EXPORTE, { recursive: true });
+  const ziel = path.join(EXPORTE, id + '.mp3');
+  const r = spawnSync(FFMPEG, ['-v', 'error', '-y', '-i', quelle,
+    '-filter_complex', f.join(';'), '-map', `[${letzte}]`,
+    '-c:a', 'libmp3lame', '-q:a', '2', ziel], { stdio: ['ignore', 'ignore', 'pipe'] });
+  if (r.status !== 0) throw new Error((r.stderr || '').toString().slice(0, 400));
+  /* Nachgemessen statt behauptet: was ffmpeg wirklich geschrieben hat. */
+  let echt = null;
+  try {
+    const p2 = spawnSync(FFMPEG.replace(/ffmpeg(\.exe)?$/, 'ffprobe$1'),
+      ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', ziel],
+      { stdio: ['ignore', 'pipe', 'pipe'] });
+    if (p2.status === 0) echt = Math.round(parseFloat(String(p2.stdout)) * 1000) / 1000;
+  } catch (e) {}
+  return { weg: ziel, stuecke: seg.length, blenden: blenden.length,
+           gerechnet: Math.round(laenge * 1000) / 1000, gemessen: echt,
+           groesse: fs.statSync(ziel).size, stand: new Date().toISOString() };
+}
+
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   const p = u.pathname;
@@ -948,6 +1036,28 @@ const server = http.createServer((req, res) => {
         deckung: deckung(id),
         fehlend: fehlendeZeilen(id)
       });
+    }
+
+    if (p === '/api/fassung' && req.method === 'POST') {
+      const id = u.searchParams.get('id');
+      try { return json(res, fassungBauen(id)); }
+      catch (e) { return json(res, { fehler: String(e.message || e) }, 500); }
+    }
+
+    if (p === '/api/fassung') {
+      const id = u.searchParams.get('id');
+      const f = path.join(EXPORTE, id + '.mp3');
+      if (!fs.existsSync(f)) { res.writeHead(404); return res.end('nicht gebaut'); }
+      const st = fs.statSync(f);
+      const r = req.headers.range && /bytes=(\d*)-(\d*)/.exec(req.headers.range);
+      if (r) {
+        const von = r[1] ? +r[1] : 0, bis = r[2] ? +r[2] : st.size - 1;
+        res.writeHead(206, { 'Content-Type': 'audio/mpeg', 'Accept-Ranges': 'bytes',
+          'Content-Range': `bytes ${von}-${bis}/${st.size}`, 'Content-Length': bis - von + 1 });
+        return fs.createReadStream(f, { start: von, end: bis }).pipe(res);
+      }
+      res.writeHead(200, { 'Content-Type': 'audio/mpeg', 'Accept-Ranges': 'bytes', 'Content-Length': st.size });
+      return fs.createReadStream(f).pipe(res);
     }
 
     if (p === '/api/kandidaten') {

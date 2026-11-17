@@ -157,6 +157,9 @@ Zu rechnen ist beim Abspielen also fast nichts. Gerechnet wird beim Entwerfen.
 **Offen:** ob zwei gleichzeitig laufende `<audio>` über AirPlay sauber durchkommen. Nicht
 gemessen. Falls nicht, bleibt dort der harte Schnitt oder die exportierte Fassung.
 
+Im Labor sind beide Decks seit dem 17.11.2026 gebaut und gemessen (siehe unten). Der Weg in die
+App ist davon unberührt — dort hängt die Frage an AirPlay, nicht an der Rechnung.
+
 ## Überblenden und Pegel
 
 Ein Stoßschnitt ist erlaubt — Caspar_D: *„es kann auch durchaus ein stoßschnitt sein, dann
@@ -187,13 +190,48 @@ bei 100,53 (3,9 dB, Wert 0,52), und er steckt in den verworfenen Fassungen A, B 
 Caspar_D nur als Ganzes verworfen hat. Ob er für sich allein holpert, ist unbekannt. Ein
 Hörbeleg wäre: 100,53 einzeln bauen, einmal roh und einmal mit Rampe.
 
+## Zuschnitt, Rampen, Tempo, Export — gebaut am 17.11.2026
+
+Caspar_D: *„jetzt sind noch überblendung und fade rampen, ggf auch mit zuschnitt am anfang und
+ende nötig. Sowie Geschwindigkeit und speicherung von allem."* — und zur Reihenfolge:
+*„c b a speicherung zuerst"*, dazu *„erstmal eine automatic, wenn vorn und hinten stille sind"*
+und *„suno macht eine sigmoidale ausblendkurve"*.
+
+**Stille finden.** 20-ms-Fenster, Schwelle 50 dB unter dem Normalpegel des Liedes (dessen 90er
+Perzentil), Boden bei −65 dBFS; als Stille zählt erst, was 0,3 s durchgehend darunter liegt.
+Gegengerechnet gegen `silencedetect`: das sagt bei *Unter der Haut I* 327,77 s, diese Rechnung
+326,42 s — kein Widerspruch, sondern Einzelprobe gegen 20-ms-Mittel. Die Strecke dazwischen
+misst im Mittel −61,6 dB bei Spitzen von −43,3 dB.
+
+**Die Sigmoide ist gemessen, nicht geraten.** Der erste Versuch nahm eine Konstante aus dem
+Gedächtnis (k = 5,23) und lag daneben. Gegen einen Sinus mit `afade=curve=losi` gehalten und
+über neun Stützstellen gefittet: **k = 7,38**, Abstand zu ffmpeg unter 0,9 Prozentpunkten.
+Labor und Export benutzen dieselbe Kurve.
+
+**Die Naht liegt mittig auf dem Schnitt**, wie `nahtBauen()` es seit jeher macht: eine halbe
+Blende davor, eine halbe dahinter, `qsin` auf beiden Seiten. Gemessen bleibt die Quadratsumme
+der beiden Pegel über die ganze Blende bei 1,000.
+
+**Was ein Sprung im laufenden `<audio>` kostet.** Zwei Decks auf dieselbe Stelle gesetzt und
+gleichzeitig gestartet liefen **67 ms auseinander**; mehrfaches Nachziehen half nicht, es kippte
+nur das Vorzeichen. Der Verlust wird darum eingerechnet statt bekämpft: jeder Sprung zielt um
+42 ms zu weit nach vorn, und es wird genau zweimal gesprungen — beim Anlaufen und zur Mitte des
+Vorlaufs. Damit liegt die Naht auf **±1 ms** (drei Läufe: +1, +1, −1).
+
+**Der Export** ist ein einziger ffmpeg-Lauf aus dem Rezept: `atrim` schneidet die Stücke,
+`acrossfade` näht sie, `atempo` macht das Tempo, `afade=curve=losi` die Rampen — in dieser
+Reihenfolge, weil die Rampenlängen in Sekunden der fertigen Fassung gemeint sind. Ein Lauf über
+ein fünfminütiges Lied dauert rund 5 s. Gerechnete und gemessene Länge gehen um weniger als
+10 ms auseinander (Raster der mp3-Blöcke), und beide Zahlen stehen in der Oberfläche.
+
+**Die Bilanz zählt die Blenden mit.** `acrossfade` legt zwei Stücke übereinander, das Ergebnis
+ist je Naht um deren Dauer kürzer. Ohne diesen Posten wäre die Anzeige je Schnitt 0,12 s zu lang.
+
 ## Was fehlt und entschieden ist
 
-- **Rubber Band** wird vom Export gebraucht oder von niemandem — beim Abspielen kann der Browser
-  die tonhöhenfeste Streckung selbst. Ob der Export es nutzt, ist offen; Caspar_D, 16.11.2026:
-  *„aber das können wir immer noch entscheiden"*. Falls ja, kommt es wie ffmpeg per
-  `quellen.txt` (GPL, wird geholt, nicht mitgeliefert): Windows- und macOS-Binaries 1,7 bzw.
-  1,4 MB, Linux nur Quelltext oder `rubberband-cli` aus dem Paketverwalter.
+- **Rubber Band wird nicht gebraucht.** Caspar_D, 16.11.2026, Entscheidung a: `playbackRate` mit
+  `preservesPitch` beim Hören, `atempo` beim Export. Damit entfällt die GPL-Abhängigkeit, die
+  sonst wie ffmpeg per `quellen.txt` hätte geholt werden müssen.
 - **Der Ort**: das Medien-Fenster am Titel, als weitere Tonfassung neben `eigen.mp3`. Nicht das
   Effektclip-Studio — das baut ein Rezept auf vorhandenem Ton, das Kürzen verändert den Ton
   selbst. Bedienung als eigenes Studio-Fenster nach dem Muster von `tbs-modul.js`.

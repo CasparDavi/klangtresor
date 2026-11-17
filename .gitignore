@@ -130,3 +130,4 @@ docs/features/img/auto-tarja.webp
 # Song-IDs und gehoeren so wenig ins weitergegebene Repo wie library/ selbst.
 labor/kuerzen/rezepte.json
 labor/kuerzen/rezepte.json.neu
+labor/kuerzen/export/

@@ -225,7 +225,9 @@ kbd{background:#242427;border:1px solid #44444a;border-radius:3px;padding:0 4px;
     es auf, <b>Ziehen</b> verschiebt ihn, <kbd>←</kbd> <kbd>→</kbd> um ein Zwanzigstel.
     <kbd>Leertaste</kbd> spielt und hält an. <b>Anfang und Ende</b> sucht das Labor selbst,
     wenn dort Stille liegt; die beiden <b>Kanten</b> lassen sich weiterziehen, und die <b>Rampen</b>
-    blenden sigmoidal ein und aus — in derselben Form, die Suno am Liedende benutzt.</p>
+    blenden sigmoidal ein und aus — in derselben Form, die Suno am Liedende benutzt. Die Nähte
+    werden beim Hören <b>überblendet</b>, nicht übersprungen. <b>Fassung bauen</b> macht aus
+    allem zusammen eine Datei.</p>
 
   <div class="kopf">
     <select id="songwahl"><option>lädt …</option></select>
@@ -234,7 +236,10 @@ kbd{background:#242427;border:1px solid #44444a;border-radius:3px;padding:0 4px;
     <span class="marke ziel" title="Rampe am Anfang und am Ende, in Sekunden — sigmoidal wie Sunos eigene Ausblendung">Rampe
       <input id="rEin" type="text" inputmode="decimal" placeholder="0" size="2">
       <input id="rAus" type="text" inputmode="decimal" placeholder="0" size="2"></span>
+    <span class="marke">Tempo</span><input type="range" id="tempo" min="85" max="115" value="100" step="1">
+    <span class="marke" id="tempowert">100 %</span>
     <span class="marke stand" id="gesichert">—</span>
+    <button id="bauen">Fassung bauen</button>
     <button id="zufall">anderer Song</button>
     <button id="play" title="Leertaste">▶︎ abspielen</button>
     <span class="marke" id="stand">0:00</span>
@@ -244,6 +249,13 @@ kbd{background:#242427;border:1px solid #44444a;border-radius:3px;padding:0 4px;
   </div>
 
   <div class="fenster" id="fenster"><div class="bahn" id="bahn"></div></div>
+
+  <div class="hoeren" id="fassung">
+    <h2>Die gekürzte Fassung</h2>
+    <p class="wo" id="fasswo"></p>
+    <audio id="aFassung" controls preload="none"></audio>
+    <p class="hinweis" id="fasshinweis"></p>
+  </div>
 
   <div class="hoeren" id="hoeren">
     <h2>Die Naht hören</h2>
@@ -259,6 +271,10 @@ kbd{background:#242427;border:1px solid #44444a;border-radius:3px;padding:0 4px;
 </div>
 
 <audio id="song" preload="none"></audio>
+<!-- DAS ZWEITE DECK. Caspar_D, 16.11.2026 (Entscheidung b): echte Überblendung
+     an den Nähten statt eines harten Sprungs - wie der Anschluss im Haus. Das
+     zweite Element trägt dieselbe Quelle und wird nur an der Naht gebraucht. -->
+<audio id="song2" preload="none"></audio>
 <script>
 const $ = (s) => document.querySelector(s);
 
@@ -301,13 +317,32 @@ let VERSATZ = {}, REGIONEN = [], ZIEHT = null;
 let ZIEL = null;            /* gewünschte Länge in Sekunden, oder null */
 /* ZUSCHNITT: wo das Lied anfängt und aufhört, in Sekunden des Originals.
    null heißt „ungeschnitten". RAMPE: die eigene Ein- und Ausblendung. */
-let ZUSCHNITT = null, RAMPE = { ein: 0, aus: 0 };
+let ZUSCHNITT = null, RAMPE = { ein: 0, aus: 0 }, TEMPO = 1;
+/* AUDIO ist das Deck, das gerade spielt, FOLGE das andere. An einer Naht laufen
+   beide; danach tauschen sie die Rollen - das Lied läuft weiter, ohne zu springen.
+   NAHT hält die laufende Überblendung: ab wann und wie lange. */
+let AUDIO = null, FOLGE = null, NAHT = null, VORLAUF = null, VORLAUFOK = false;
+const NAHTDAUER = 0.12;     /* Sekunden, dieselbe Länge wie in bin/kuerzen-labor.js */
+/* Ein <audio> fängt nicht im selben Augenblick an zu laufen, in dem play()
+   gerufen wird - gemessen rund 12 ms Verzug, in denen es noch auf der Stelle
+   steht. Fiele das in die Blende, wäre dort ein Loch. Darum läuft das zweite
+   Deck eine Viertelsekunde vorher stumm an und ist genau dann an seiner
+   Stelle, wenn die Blende beginnt. */
+const VORLAUFZEIT = 0.6;
+/* Was ein Sprung im laufenden Deck kostet, gemessen am 17.11.2026 in Chrome auf
+   diesem Rechner. Der Weg dahin, damit man ihn nachrechnen kann: zwei Decks auf
+   dieselbe Stelle gesetzt und gleichzeitig gestartet liefen 67 ms auseinander;
+   mehrfaches Nachziehen half nicht, es kippte nur das Vorzeichen. Mit 65 ms
+   Vorhalt blieben +23 ms übrig, also sind es 42. Damit gemessen: Versatz an der
+   Naht +1, +1 und -1 ms in drei Läufen. */
+const STILLSTAND = 0.042;
 let SICHER = null;          /* Zeitgeber der verzögerten Sicherung */
 
 function rezeptJetzt(){
   return { zuschnitt: ZUSCHNITT ? { vorn: ZUSCHNITT.vorn, hinten: ZUSCHNITT.hinten } : null,
            schnitte: REGIONEN.map(r => ({ von: r.von, bis: r.bis })),
-           blende: 0.12, rampe: { ein: RAMPE.ein, aus: RAMPE.aus }, tempo: 1, ziel: ZIEL };
+           blende: NAHTDAUER, rampe: { ein: RAMPE.ein, aus: RAMPE.aus },
+           tempo: TEMPO, ziel: ZIEL };
 }
 
 function sichern(){
@@ -337,7 +372,7 @@ function sichern(){
 }
 
 async function rezeptLaden(id){
-  REGIONEN = []; ZIEL = null; ZUSCHNITT = null; RAMPE = { ein: 0, aus: 0 };
+  REGIONEN = []; ZIEL = null; ZUSCHNITT = null; RAMPE = { ein: 0, aus: 0 }; TEMPO = 1;
   let hatte = false;
   try {
     const d = await (await fetch('/api/rezept?id=' + encodeURIComponent(id))).json();
@@ -346,6 +381,7 @@ async function rezeptLaden(id){
     ZIEL = r.ziel || null;
     if (r.zuschnitt){ ZUSCHNITT = { vorn: r.zuschnitt.vorn || 0, hinten: r.zuschnitt.hinten }; hatte = true; }
     if (r.rampe){ RAMPE = { ein: r.rampe.ein || 0, aus: r.rampe.aus || 0 }; }
+    if (r.tempo && r.tempo !== 1){ TEMPO = r.tempo; hatte = true; }
   } catch (e) {}
   /* DIE AUTOMATIK. Steht noch nichts im Rezept und hat das Lied vorn oder hinten
      Stille, wird sie weggeschnitten - ohne Frage, denn nichts geht dabei verloren
@@ -360,6 +396,9 @@ async function rezeptLaden(id){
   $('#ziel').value = ZIEL ? zeit(ZIEL) : '';
   $('#rEin').value = RAMPE.ein ? za(RAMPE.ein,1) : '';
   $('#rAus').value = RAMPE.aus ? za(RAMPE.aus,1) : '';
+  $('#tempo').value = Math.round(TEMPO*100);
+  $('#tempowert').textContent = za(TEMPO*100,0) + ' %';
+  tempoSetzen();
   $('#gesichert').textContent = (REGIONEN.length || hatte) ? 'gesichert' : '—';
   $('#gesichert').className = 'marke stand';
   /* Die Automatik wird GLEICH gesichert. Ein Zuschnitt, der nur im Fenster steht,
@@ -407,6 +446,15 @@ const weggeschnitten = () => REGIONEN.reduce((s,r) => s + (r.bis - r.von), 0);
 const zuAnf = () => ZUSCHNITT ? ZUSCHNITT.vorn : 0;
 const zuEnd = () => ZUSCHNITT ? ZUSCHNITT.hinten : (SONG ? SONG.dauer : 0);
 const abgeschnitten = () => SONG ? (zuAnf() + (SONG.dauer - zuEnd())) : 0;
+/* DIE ENDLÄNGE, wie sie der Export liefert. Jede Blende kostet ihre eigene
+   Dauer: acrossfade legt zwei Stücke übereinander, die Summe ist um d kürzer.
+   Ohne diesen Posten wäre die Bilanz je Schnitt 0,12 s zu lang - und nichts
+   darf lügen, auch nicht um eine Zehntelsekunde. */
+function endlaenge(){
+  if (!SONG) return 0;
+  const blenden = REGIONEN.reduce((s,r) => s + nahtDauer(r), 0);
+  return ((zuEnd() - zuAnf()) - weggeschnitten() - blenden) / TEMPO;
+}
 /* Steht die Kante noch da, wo die Stille aufhört? Dann heißt die Zahl „Stille" -
    wer selbst weitergeschnitten hat, soll das auch sehen. */
 const wieStille = (w) => !!(SONG && SONG.stille && ZUSCHNITT
@@ -416,10 +464,16 @@ const wieStille = (w) => !!(SONG && SONG.stille && ZUSCHNITT
    Caspar_D, 17.11.2026: „suno macht eine sigmoidale ausblendkurve." Wer hinten
    selbst schneidet, soll dieselbe Kurve hören wie bei einem Lied, das von sich
    aus endet - sonst klingt der eigene Schluss wie ein Abschalten.
-   Gerechnet wird die logistische Kurve, auf 0 und 1 gespannt; in ffmpeg heißt
-   dieselbe Familie `afade=curve=losi`, und deren Steilheit (k = 4·ln(1/(1−0,787)−1))
-   ist hier übernommen, damit Labor und Export gleich klingen. */
-const K_SIG = 4 * Math.log(1/(1-0.787) - 1);
+   Gerechnet wird die logistische Kurve, auf 0 und 1 gespannt - dieselbe Familie,
+   die ffmpeg `afade=curve=losi` nennt.
+
+   DIE STEILHEIT IST GEMESSEN, NICHT GERATEN. Der erste Versuch übernahm eine
+   Konstante aus dem Gedächtnis (k = 5,23) und lag daneben: gegen einen Sinus
+   mit afade=curve=losi gehalten, war ffmpegs Kurve deutlich steiler. Gefittet
+   über neun Stützstellen ergibt sich k = 7,38; damit bleibt der Abstand zu
+   ffmpeg unter 0,9 Prozentpunkten (am größten in der Mitte). So klingt im
+   Labor, was später gebaut wird. */
+const K_SIG = 7.38;
 function sigm(u){
   if (u <= 0) return 0;
   if (u >= 1) return 1;
@@ -427,6 +481,21 @@ function sigm(u){
   const b = f(0), o = f(1);
   return (f(u) - b) / (o - b);
 }
+/* GESCHWINDIGKEIT OHNE TONHÖHE (Caspar_D, 16.11.2026, Entscheidung a).
+   Das <audio>-Element kann das von sich aus: preservesPitch hält die Tonhöhe,
+   während playbackRate die Geschwindigkeit ändert. Kein Rubber Band, keine
+   eigene Rechnung - beim Export macht ffmpegs atempo dasselbe.
+   Gilt für BEIDE Decks, sonst klänge die Naht anders als das Lied. */
+function tempoSetzen(){
+  for (const d of [AUDIO, FOLGE]){
+    if (!d) continue;
+    d.preservesPitch = true;
+    d.mozPreservesPitch = true;
+    d.webkitPreservesPitch = true;
+    d.playbackRate = TEMPO;
+  }
+}
+
 /* Die Lautstärke an der Stelle t - nur die Rampen, nichts sonst. */
 function lautstaerke(t){
   let g = 1;
@@ -448,12 +517,14 @@ async function songsLaden(){
 
 async function songLaden(id){
   SONG = await (await fetch('/api/song?id=' + encodeURIComponent(id))).json();
-  const a = $('#song');
-  a.pause(); a.src = '/api/audio?id=' + encodeURIComponent(id); a.currentTime = 0;
+  AUDIO = $('#song'); FOLGE = $('#song2'); NAHT = null; VORLAUF = null;
+  const quelle = '/api/audio?id=' + encodeURIComponent(id);
+  for (const d of [AUDIO, FOLGE]){ d.pause(); d.src = quelle; d.volume = 1; try { d.currentTime = 0; } catch(e){} }
   $('#play').textContent = '▶︎ abspielen';
   SCHNITT = null; KAND = []; AKTIV = null; VERSATZ = {};
   await rezeptLaden(id);
   $('#hoeren').classList.remove('an');
+  $('#fassung').classList.remove('an');
   $('#quelle').textContent = SONG.abschnittQuelle === 'marken'
     ? 'Abschnitte aus den Lyrics-Marken'
     : SONG.abschnittQuelle === 'suno-ab' ? 'Abschnitte: Sunos A/B (keine Marken im Text)'
@@ -586,7 +657,9 @@ function schlagSvg(breitePx){
 
 function bilanzSetzen(){
   const weg = weggeschnitten() + abgeschnitten();
-  const neu = SONG.dauer - weg;
+  /* Das Tempo zählt mit: schneller heißt kürzer. Gerechnet wird auf der
+     gekürzten Länge, nicht auf der ganzen - sonst stimmte die Zahl nicht. */
+  const neu = endlaenge();
   /* ZAHL MIT BEZUG: nicht nur, wie lang es jetzt ist, sondern wie weit es
      noch bis zum Ziel ist - das ist die Frage, die der Nutzer hat. */
   let rest = '';
@@ -596,7 +669,7 @@ function bilanzSetzen(){
       ? ` <span style="color:var(--gut)">Ziel erreicht</span>`
       : ` <span style="color:var(--schwach)">noch ${za(d,1)} s</span>`;
   }
-  $('#bilanz').innerHTML = weg < 0.005
+  $('#bilanz').innerHTML = (weg < 0.005 && TEMPO === 1)
     ? `${zeit(SONG.dauer)}${rest}`
     : `${zeit(SONG.dauer)} / <b>${zeit(neu)}</b> <span style="color:var(--schwach)">−${za(weg,1)} s</span>${rest}`;
 }
@@ -859,8 +932,8 @@ function malen(){
   b.innerHTML = teile.join('');
   LEUCHTET = -1;
   bilanzSetzen();
-  phSetzen($('#song').currentTime || 0);
-  leuchten($('#song').currentTime || 0);
+  phSetzen((AUDIO && AUDIO.currentTime) || 0);
+  leuchten((AUDIO && AUDIO.currentTime) || 0);
   draehte();
   randmitziehen();
   $('#zoomwert').textContent = za(PX,1) + ' px/s';
@@ -1038,28 +1111,109 @@ function leuchten(t){
   LEUCHTET = neu;
 }
 
+/* ---------- DIE NAHT WIRD ÜBERBLENDET ----------
+   Caspar_D, 16.11.2026 (Entscheidung b): zwei Decks mit echter Überblendung
+   statt des harten Sprungs. Gerechnet wird wie in ffmpegs acrossfade, damit
+   das Labor klingt wie der Export - und MITTIG auf dem Schnitt, genau wie
+   nahtBauen() in bin/kuerzen-labor.js es seit jeher macht: eine halbe Blende
+   liegt vor dem Schnitt, eine halbe dahinter, Kurve qsin auf beiden Seiten.
+   Zwei Viertelsinus, deren Quadratsumme eins bleibt; eine lineare Blende
+   hätte in der Mitte ein Loch.
+
+   Danach tauschen die Decks die Rollen. Das eine läuft weiter, wo das andere
+   aufgehört hat; nichts wird gesucht, nichts springt. */
+const qsinAuf = (u) => Math.sin(Math.min(1, Math.max(0, u)) * Math.PI / 2);
+const qsinAb  = (u) => Math.cos(Math.min(1, Math.max(0, u)) * Math.PI / 2);
+
+/* Wie lang darf die Blende hier sein? Nie mehr als die Hälfte dessen, was auf
+   beiden Seiten an Lied übrig ist - sonst griffe sie in den Nachbarschnitt. */
+function nahtDauer(r){
+  let vor = zuAnf(), nach = zuEnd();
+  for (const o of REGIONEN){
+    if (o === r) continue;
+    if (o.bis <= r.von) vor = Math.max(vor, o.bis);
+    if (o.von >= r.bis) nach = Math.min(nach, o.von);
+  }
+  return Math.max(0.02, Math.min(NAHTDAUER, r.von - vor, nach - r.bis, r.bis - r.von));
+}
+
 function mitlaufen(){
-  const a = $('#song');
-  if (SONG && !a.paused){
+  const a = AUDIO;
+  if (SONG && a && !a.paused){
     /* DER ZUSCHNITT GILT AUCH BEIM HÖREN: vor dem Anfang wird vorgespult, am Ende
        ist Schluss - und die Rampen regeln die Lautstärke mit, sigmoidal wie Sunos
        eigene Ausblendung. */
     if (a.currentTime < zuAnf() - 0.01){ try { a.currentTime = zuAnf(); } catch(e){} }
     if (a.currentTime >= zuEnd() - 0.004){
-      a.pause();
+      anhalten();
       try { a.currentTime = zuAnf(); } catch(e){}
-      a.volume = 1;
       phSetzen(zuAnf());
       requestAnimationFrame(mitlaufen);
       return;
     }
-    a.volume = lautstaerke(a.currentTime);
-    /* DIE GESETZTEN REGIONEN WERDEN NICHT MITGESPIELT. So hört er beim Abspielen
-       die gekürzte Fassung, ohne dass etwas gerendert wird. */
-    for (const r of REGIONEN){
-      if (a.currentTime >= r.von - 0.004 && a.currentTime < r.bis - 0.03){
-        try { a.currentTime = r.bis; } catch(e){}
-        break;
+    if (NAHT){
+      /* Eine Blende läuft: beide Decks regeln gegeneinander. */
+      const u = (a.currentTime - NAHT.start) / NAHT.d;
+      if (u >= 1){
+        a.pause(); a.volume = 1; VORLAUF = null;
+        const neu = FOLGE; FOLGE = a; AUDIO = neu;
+        NAHT = null;
+        AUDIO.volume = lautstaerke(AUDIO.currentTime);
+      } else {
+        a.volume = lautstaerke(a.currentTime) * qsinAb(u);
+        FOLGE.volume = lautstaerke(FOLGE.currentTime) * qsinAuf(u);
+      }
+    } else {
+      a.volume = lautstaerke(a.currentTime);
+      for (const r of REGIONEN){
+        const d = nahtDauer(r);
+        const t = a.currentTime;
+        /* VORLAUF: das zweite Deck läuft stumm an, damit es im Augenblick der
+           Blende schon richtig läuft. Dabei ist EIN SPRUNG IM LAUFENDEN DECK
+           NICHT UMSONST: nachgemessen kostet er rund 42 ms, in denen das Deck
+           steht. Zweimal dieselbe Stelle, gleichzeitig gestartet, liefen 67 ms
+           auseinander - mehrfaches Nachziehen half nicht, es kippte nur das
+           Vorzeichen. Darum wird der Verlust EINGERECHNET statt bekämpft: jeder
+           Sprung zielt um STILLSTAND zu weit nach vorn, und es wird genau zweimal
+           gesprungen - einmal beim Anlaufen, einmal zur Mitte des Vorlaufs.
+           Damit liegt die Naht auf ±1 ms. */
+        /* Die Blende fängt `d` vor dem Schnitt an - diese Prüfung zuerst, sonst
+           verdeckte der laufende Vorlauf sie und der Schnitt fiele aus. */
+        if (t >= r.von - d/2 && t < r.von + d/2){
+          try {
+            if (VORLAUF !== r){        /* ohne Vorlauf hineingesprungen */
+              FOLGE.currentTime = r.bis - d/2;
+              FOLGE.volume = 0;
+              FOLGE.play().catch(()=>{});
+            }
+            VORLAUF = null; VORLAUFOK = false;
+            NAHT = { start: r.von - d/2, d };
+          } catch(e){}
+          break;
+        }
+        if (VORLAUF === r && !VORLAUFOK && t >= r.von - d/2 - VORLAUFZEIT/2){
+          const soll = (r.bis - d/2) - ((r.von - d/2) - t) + STILLSTAND;
+          try { FOLGE.currentTime = soll; } catch(e){}
+          VORLAUFOK = true;
+          break;
+        }
+        if (VORLAUF === r) break;         /* läuft schon, nichts zu tun */
+        if (!VORLAUF && t >= r.von - d/2 - VORLAUFZEIT && t < r.von - d/2){
+          try {
+            FOLGE.currentTime = (r.bis - d/2) - ((r.von - d/2) - t) + STILLSTAND;
+            FOLGE.volume = 0;
+            FOLGE.play().catch(()=>{});
+            VORLAUF = r; VORLAUFOK = false;
+          } catch(e){}
+          break;
+        }
+        /* RÜCKFALL: wer mitten in eine schraffierte Fläche springt, wird hart
+           weitergesetzt - dort ist keine Blende mehr möglich, und stillschweigend
+           das Weggeschnittene zu spielen wäre falsch. */
+        if (a.currentTime >= r.von && a.currentTime < r.bis - 0.03){
+          try { a.currentTime = r.bis; } catch(e){}
+          break;
+        }
       }
     }
     phSetzen(a.currentTime);
@@ -1072,14 +1226,33 @@ function mitlaufen(){
 }
 requestAnimationFrame(mitlaufen);
 
+/* Anhalten hält BEIDE Decks an und räumt eine laufende Blende weg. */
+function anhalten(){
+  for (const d of [AUDIO, FOLGE]) if (d){ d.pause(); d.volume = 1; }
+  NAHT = null; VORLAUF = null;
+  $('#play').textContent = '▶︎ abspielen';
+}
+
 function spielen(){
-  const a = $('#song');
-  if (a.paused){ a.play().catch(()=>{}); $('#play').textContent = '❙❙ anhalten'; }
-  else { a.pause(); $('#play').textContent = '▶︎ abspielen'; }
+  if (!AUDIO) return;
+  if (AUDIO.paused){
+    AUDIO.volume = lautstaerke(AUDIO.currentTime);
+    AUDIO.play().catch(()=>{});
+    $('#play').textContent = '❙❙ anhalten';
+  } else anhalten();
 }
 $('#play').addEventListener('click', spielen);
-$('#song').addEventListener('pause', () => $('#play').textContent = '▶︎ abspielen');
-$('#song').addEventListener('seeked', () => phSetzen($('#song').currentTime));
+/* Die Aufschrift des Knopfes darf nicht lügen. Sie wechselt aber erst, wenn
+   BEIDE Decks stehen - an einer Naht hält eins von beiden planmäßig an. */
+for (const el of [$('#song'), $('#song2')])
+  el.addEventListener('pause', () => {
+    if ($('#song').paused && $('#song2').paused) $('#play').textContent = '▶︎ abspielen';
+  });
+$('#song').addEventListener('seeked', () => { if (AUDIO === $('#song')) phSetzen(AUDIO.currentTime); });
+$('#song2').addEventListener('seeked', () => { if (AUDIO === $('#song2')) phSetzen(AUDIO.currentTime); });
+/* Zwei Tonquellen zugleich wären Krach: wer eine Probe startet, hält das Lied an. */
+for (const id of ['#aFassung', '#aNaht', '#aOrig'])
+  $(id).addEventListener('play', () => { if (AUDIO && !AUDIO.paused) anhalten(); });
 
 /* TASTEN. Leertaste spielt und hält an; die Pfeiltasten verschieben die angeklickte
    Schnittstelle um ein Zwanzigstel (Caspar_D, 16.11.2026). */
@@ -1150,7 +1323,10 @@ function klickInSong(ev){
   AKTIV = null; VERSATZ = {};
   $('#hoeren').classList.remove('an');
   /* Der Abspielkopf springt mit: man will hören, was man anklickt. */
-  try { $('#song').currentTime = SCHNITT; } catch (e) {}
+  /* Ein Klick setzt den Kopf - eine laufende Blende ist damit hinfällig. */
+  NAHT = null; VORLAUF = null;
+  if (FOLGE){ FOLGE.pause(); FOLGE.volume = 1; }
+  if (AUDIO){ try { AUDIO.currentTime = SCHNITT; } catch (e) {} AUDIO.volume = lautstaerke(SCHNITT); }
   malen(); kandidatenLaden();
 }
 
@@ -1250,8 +1426,56 @@ function rampeFeld(feld, welche){
     malen(); sichern();
   });
 }
+/* Der Tempo-Regler. 85 bis 115 Prozent - darüber hinaus wird aus dem Lied ein
+   anderes, und dafür ist dieses Werkzeug nicht da. */
+$('#tempo').addEventListener('input', (e) => {
+  TEMPO = (+e.target.value) / 100;
+  $('#tempowert').textContent = za(TEMPO*100,0) + ' %';
+  tempoSetzen(); bilanzSetzen();
+});
+$('#tempo').addEventListener('change', sichern);
+
 rampeFeld('#rEin', 'ein');
 rampeFeld('#rAus', 'aus');
+
+/* ---- Die Fassung bauen ----
+   Ein ffmpeg-Lauf auf dem Laborserver, aus dem Rezept. Vorher wird gesichert:
+   gebaut wird, was gespeichert ist, nicht was im Fenster steht - sonst hörte er
+   etwas anderes, als die Datei enthält. */
+$('#bauen').addEventListener('click', async () => {
+  if (!SONG) return;
+  clearTimeout(SICHER);
+  const k = $('#bauen');
+  k.disabled = true; k.textContent = 'baut …';
+  $('#fasswo').textContent = '';
+  try {
+    await fetch('/api/rezept', { method:'PUT', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ id: SONG.id, rezept: rezeptJetzt() }) });
+    const d = await (await fetch('/api/fassung?id=' + encodeURIComponent(SONG.id), { method:'POST' })).json();
+    if (d.fehler) throw new Error(d.fehler);
+    $('#fassung').classList.add('an');
+    const ab = d.gemessen != null ? Math.abs(d.gemessen - d.gerechnet) : null;
+    $('#fasswo').innerHTML = `<b>${zeit(d.gemessen != null ? d.gemessen : d.gerechnet)}</b> `
+      + `· ${d.stuecke} ${d.stuecke === 1 ? 'Stück' : 'Stücke'}`
+      + (d.blenden ? `, ${d.blenden} ${d.blenden === 1 ? 'Naht' : 'Nähte'}` : '')
+      + ` · ${za(d.groesse/1048576,1)} MB`;
+    /* Was die Bilanz versprochen hat und was wirklich herauskam - beides steht da.
+       Eine Abweichung unter einem Frame ist der mp3-Raster, keine Ungenauigkeit. */
+    $('#fasshinweis').textContent = ab == null ? ''
+      : ab < 0.001 ? `Gerechnet und gemessen gleich: ${za(d.gerechnet,3)} s.`
+      : `Gerechnet ${za(d.gerechnet,3)} s, gemessen ${za(d.gemessen,3)} s — `
+        + (ab < 0.03 ? 'der Unterschied liegt im Raster der mp3-Blöcke.' : `Unterschied ${za(ab,3)} s.`);
+    const a = $('#aFassung');
+    a.src = '/api/fassung?id=' + encodeURIComponent(SONG.id) + '&t=' + Date.now();
+    a.load();
+  } catch (e) {
+    $('#fassung').classList.add('an');
+    $('#fasswo').textContent = 'Nicht gebaut: ' + e.message;
+    $('#fasshinweis').textContent = 'Noch einmal auf „Fassung bauen" — und wenn es wieder scheitert, '
+      + 'steht der Grund im Protokoll des Laborservers.';
+  }
+  k.disabled = false; k.textContent = 'Fassung bauen';
+});
 
 $('#songwahl').addEventListener('change', (e) => songLaden(e.target.value));
 $('#zufall').addEventListener('click', () => {
