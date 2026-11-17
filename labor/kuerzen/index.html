@@ -183,6 +183,26 @@ input[type=range]{vertical-align:middle;width:180px;accent-color:var(--akzent)}
   white-space:nowrap;text-shadow:0 1px 4px #000,0 0 8px #000;font-variant-numeric:tabular-nums}
 .spanne{position:absolute;background:#c9c9cd14;z-index:3;pointer-events:none}
 
+/* DER ZUSCHNITT: die Kante, an der das Lied anfängt und aufhört.
+   Caspar_D, 17.11.2026: „erstmal eine automatic, wenn vorn und hinten stille sind.
+   dann eine Rampe festlegen dürfen, ggf auch weiter schneiden." Die Kante ist
+   darum anfassbar - der gefundene Punkt ist ein Vorschlag, nicht ein Beschluss. */
+.kante{position:absolute;z-index:15;width:11px;margin-left:-5px;cursor:ew-resize}
+.kante i{position:absolute;left:5px;top:0;bottom:0;width:1px;background:var(--text)}
+.kante b{position:absolute;left:0;top:0;width:11px;height:11px;border-radius:2px;
+  background:var(--text);opacity:.85}
+.kante:hover b{opacity:1}
+.rampsvg{position:absolute;z-index:8;pointer-events:none;overflow:visible}
+/* Sunos eigene Ausblendung: eine Marke, kein Regler. Sie sagt, wo ein eigener
+   Schluss anfangen müsste, wenn man die fremde Sigmoide nicht mitnehmen will. */
+.ausbl{position:absolute;z-index:9;width:1px;pointer-events:none;
+  background:repeating-linear-gradient(#8b8b90 0 3px,#0000 3px 6px)}
+.ausbl span{position:absolute;left:4px;top:0;font-size:10.5px;color:var(--schwach);
+  white-space:nowrap;text-shadow:0 1px 4px #000}
+/* Am rechten Rand schlägt die Beschriftung nach innen um, sonst stünde sie
+   außerhalb der Bahn - und die Ausblendung liegt fast immer am rechten Rand. */
+.ausbl span.links{left:auto;right:4px}
+
 .hoeren{margin:16px 0 0;padding:13px 15px;background:var(--feld);
   border:1px solid var(--rand);border-radius:9px;display:none}
 .hoeren.an{display:block}
@@ -203,12 +223,17 @@ kbd{background:#242427;border:1px solid #44444a;border-radius:3px;padding:0 4px;
     möglichen Schnittstellen; ihre <b>Höhe ist der Pegelsprung</b> an der Naht, ein unterbrochener
     Stiel heißt, der Text bricht. Ein <b>Klick</b> auf einen Pfeil kürzt bis dorthin, ein zweiter hebt
     es auf, <b>Ziehen</b> verschiebt ihn, <kbd>←</kbd> <kbd>→</kbd> um ein Zwanzigstel.
-    <kbd>Leertaste</kbd> spielt und hält an.</p>
+    <kbd>Leertaste</kbd> spielt und hält an. <b>Anfang und Ende</b> sucht das Labor selbst,
+    wenn dort Stille liegt; die beiden <b>Kanten</b> lassen sich weiterziehen, und die <b>Rampen</b>
+    blenden sigmoidal ein und aus — in derselben Form, die Suno am Liedende benutzt.</p>
 
   <div class="kopf">
     <select id="songwahl"><option>lädt …</option></select>
     <span class="marke bilanz" id="bilanz">—</span>
     <span class="marke ziel">Ziel <input id="ziel" type="text" inputmode="numeric" placeholder="6:00" size="4"></span>
+    <span class="marke ziel" title="Rampe am Anfang und am Ende, in Sekunden — sigmoidal wie Sunos eigene Ausblendung">Rampe
+      <input id="rEin" type="text" inputmode="decimal" placeholder="0" size="2">
+      <input id="rAus" type="text" inputmode="decimal" placeholder="0" size="2"></span>
     <span class="marke stand" id="gesichert">—</span>
     <button id="zufall">anderer Song</button>
     <button id="play" title="Leertaste">▶︎ abspielen</button>
@@ -274,11 +299,15 @@ let VERSATZ = {}, REGIONEN = [], ZIEHT = null;
    nach der letzten. Beim Ziehen eines Pfeils sind das ein Schreibvorgang
    statt sechzig. */
 let ZIEL = null;            /* gewünschte Länge in Sekunden, oder null */
+/* ZUSCHNITT: wo das Lied anfängt und aufhört, in Sekunden des Originals.
+   null heißt „ungeschnitten". RAMPE: die eigene Ein- und Ausblendung. */
+let ZUSCHNITT = null, RAMPE = { ein: 0, aus: 0 };
 let SICHER = null;          /* Zeitgeber der verzögerten Sicherung */
 
 function rezeptJetzt(){
-  return { zuschnitt: null, schnitte: REGIONEN.map(r => ({ von: r.von, bis: r.bis })),
-           blende: 0.12, rampe: { ein: 0, aus: 0 }, tempo: 1, ziel: ZIEL };
+  return { zuschnitt: ZUSCHNITT ? { vorn: ZUSCHNITT.vorn, hinten: ZUSCHNITT.hinten } : null,
+           schnitte: REGIONEN.map(r => ({ von: r.von, bis: r.bis })),
+           blende: 0.12, rampe: { ein: RAMPE.ein, aus: RAMPE.aus }, tempo: 1, ziel: ZIEL };
 }
 
 function sichern(){
@@ -308,16 +337,36 @@ function sichern(){
 }
 
 async function rezeptLaden(id){
-  REGIONEN = []; ZIEL = null;
+  REGIONEN = []; ZIEL = null; ZUSCHNITT = null; RAMPE = { ein: 0, aus: 0 };
+  let hatte = false;
   try {
     const d = await (await fetch('/api/rezept?id=' + encodeURIComponent(id))).json();
     const r = d.rezept || {};
     REGIONEN = (r.schnitte || []).map(x => ({ von: x.von, bis: x.bis })).sort((a,b) => a.von - b.von);
     ZIEL = r.ziel || null;
+    if (r.zuschnitt){ ZUSCHNITT = { vorn: r.zuschnitt.vorn || 0, hinten: r.zuschnitt.hinten }; hatte = true; }
+    if (r.rampe){ RAMPE = { ein: r.rampe.ein || 0, aus: r.rampe.aus || 0 }; }
   } catch (e) {}
+  /* DIE AUTOMATIK. Steht noch nichts im Rezept und hat das Lied vorn oder hinten
+     Stille, wird sie weggeschnitten - ohne Frage, denn nichts geht dabei verloren
+     und die Kante bleibt anfassbar. Unter einer Zehntelsekunde bleibt alles, wie
+     es ist: dafür lohnt kein Eingriff. */
+  if (!hatte && SONG && SONG.stille){
+    const st = SONG.stille;
+    const v = st.vorn > 0.1 ? st.vorn : 0;
+    const h = st.hinten < SONG.dauer - 0.1 ? st.hinten : SONG.dauer;
+    if (v || h < SONG.dauer) ZUSCHNITT = { vorn: v, hinten: h };
+  }
   $('#ziel').value = ZIEL ? zeit(ZIEL) : '';
-  $('#gesichert').textContent = REGIONEN.length ? 'gesichert' : '—';
+  $('#rEin').value = RAMPE.ein ? za(RAMPE.ein,1) : '';
+  $('#rAus').value = RAMPE.aus ? za(RAMPE.aus,1) : '';
+  $('#gesichert').textContent = (REGIONEN.length || hatte) ? 'gesichert' : '—';
   $('#gesichert').className = 'marke stand';
+  /* Die Automatik wird GLEICH gesichert. Ein Zuschnitt, der nur im Fenster steht,
+     wäre beim nächsten Laden wieder da - aber ein Zuschnitt, den Jörg aufgehoben
+     hat, käme dann auch wieder. Darum ist der gefundene Stand sofort der
+     gespeicherte, und ein aufgehobener bleibt aufgehoben. */
+  if (ZUSCHNITT && !hatte) sichern();
 }
 
 const zeit = (s) => (s<0?'-':'') + Math.floor(Math.abs(s)/60) + ':' + String(Math.floor(Math.abs(s)%60)).padStart(2,'0');
@@ -354,6 +403,37 @@ function kuerzel(name){
 const absName = (n) => String(n || '').split(/\s[–—-]\s|,/)[0].trim();
 const ziel = (i) => KAND[i].ziel + (VERSATZ[i] || 0);
 const weggeschnitten = () => REGIONEN.reduce((s,r) => s + (r.bis - r.von), 0);
+/* Der Zuschnitt in Zeiten des ORIGINALS: wo es anfängt, wo es aufhört. */
+const zuAnf = () => ZUSCHNITT ? ZUSCHNITT.vorn : 0;
+const zuEnd = () => ZUSCHNITT ? ZUSCHNITT.hinten : (SONG ? SONG.dauer : 0);
+const abgeschnitten = () => SONG ? (zuAnf() + (SONG.dauer - zuEnd())) : 0;
+/* Steht die Kante noch da, wo die Stille aufhört? Dann heißt die Zahl „Stille" -
+   wer selbst weitergeschnitten hat, soll das auch sehen. */
+const wieStille = (w) => !!(SONG && SONG.stille && ZUSCHNITT
+  && Math.abs((w === 'vorn' ? zuAnf() : zuEnd()) - SONG.stille[w]) < 0.005);
+
+/* DIE RAMPENFORM IST SUNOS FORM, nicht eine Einstellung.
+   Caspar_D, 17.11.2026: „suno macht eine sigmoidale ausblendkurve." Wer hinten
+   selbst schneidet, soll dieselbe Kurve hören wie bei einem Lied, das von sich
+   aus endet - sonst klingt der eigene Schluss wie ein Abschalten.
+   Gerechnet wird die logistische Kurve, auf 0 und 1 gespannt; in ffmpeg heißt
+   dieselbe Familie `afade=curve=losi`, und deren Steilheit (k = 4·ln(1/(1−0,787)−1))
+   ist hier übernommen, damit Labor und Export gleich klingen. */
+const K_SIG = 4 * Math.log(1/(1-0.787) - 1);
+function sigm(u){
+  if (u <= 0) return 0;
+  if (u >= 1) return 1;
+  const f = (v) => 1/(1 + Math.exp(-K_SIG*(v-0.5)));
+  const b = f(0), o = f(1);
+  return (f(u) - b) / (o - b);
+}
+/* Die Lautstärke an der Stelle t - nur die Rampen, nichts sonst. */
+function lautstaerke(t){
+  let g = 1;
+  if (RAMPE.ein > 0.01) g = Math.min(g, sigm((t - zuAnf()) / RAMPE.ein));
+  if (RAMPE.aus > 0.01) g = Math.min(g, sigm((zuEnd() - t) / RAMPE.aus));
+  return Math.max(0, Math.min(1, g));
+}
 const regionVon = (t) => REGIONEN.find(r => Math.abs(r.von - t) < 1e-6);
 
 async function songsLaden(){
@@ -505,7 +585,7 @@ function schlagSvg(breitePx){
 }
 
 function bilanzSetzen(){
-  const weg = weggeschnitten();
+  const weg = weggeschnitten() + abgeschnitten();
   const neu = SONG.dauer - weg;
   /* ZAHL MIT BEZUG: nicht nur, wie lang es jetzt ist, sondern wie weit es
      noch bis zum Ziel ist - das ist die Frage, die der Nutzer hat. */
@@ -694,6 +774,50 @@ function malen(){
   /* ---- Die gesetzten Kürzungen: schraffiert, mit der Bilanz in der Mitte ----
      Caspar_D, 16.11.2026: „ein schraffiertes overlay macht den teil aus. mitten drin
      steht, wieviele Sekunden wir schon erwischt haben." */
+  /* ---- Der Zuschnitt vorn und hinten ----
+     Dieselbe Schraffur wie bei einer gesetzten Kürzung: was nicht mehr gilt, sieht
+     überall gleich aus. Dazu die anfassbare Kante und, wenn eine Rampe steht, ihre
+     Kurve - man soll sehen, über welche Strecke es leiser wird. */
+  if (ZUSCHNITT){
+    const hoeheU = UNTEN - OBEN_WELLE;
+    if (zuAnf() > 0.001){
+      teile.push(`<div class="weg" style="left:0;width:${x(zuAnf())}px;top:${OBEN_WELLE}px;height:${hoeheU}px"></div>`);
+      if (x(zuAnf()) > 54)
+        teile.push(`<div class="wegtext" style="left:${x(zuAnf())/2}px;top:${OBEN_WELLE+WELLE/2-9}px;transform:translateX(-50%)">−${za(zuAnf(),2)} s${wieStille('vorn') ? '  ·  Stille' : ''}</div>`);
+    }
+    if (zuEnd() < SONG.dauer - 0.001){
+      const br = x(SONG.dauer - zuEnd());
+      teile.push(`<div class="weg" style="left:${x(zuEnd())}px;width:${br}px;top:${OBEN_WELLE}px;height:${hoeheU}px"></div>`);
+      if (br > 54)
+        teile.push(`<div class="wegtext" style="left:${x(zuEnd())+br/2}px;top:${OBEN_WELLE+WELLE/2-9}px;transform:translateX(-50%)">−${za(SONG.dauer-zuEnd(),2)} s${wieStille('hinten') ? '  ·  Stille' : ''}</div>`);
+    }
+    /* Die Rampen als Kurve über der Welle. */
+    const kurve = (von, dauerR, ein) => {
+      const n = 24, pk = [];
+      for (let j = 0; j <= n; j++){
+        const u = j/n, t = ein ? von + u*dauerR : von - u*dauerR;
+        pk.push(`${x(t).toFixed(1)},${(OBEN_WELLE + WELLE - sigm(u)*WELLE).toFixed(1)}`);
+      }
+      return `<svg class="rampsvg" style="left:0;top:0;width:${BREITE}px;height:${OBEN_WELLE+WELLE}px">
+        <polyline points="${pk.join(' ')}" fill="none" stroke="var(--text)" stroke-width="1" opacity="0.65"/>
+      </svg>`;
+    };
+    if (RAMPE.ein > 0.01) teile.push(kurve(zuAnf(), RAMPE.ein, true));
+    if (RAMPE.aus > 0.01) teile.push(kurve(zuEnd(), RAMPE.aus, false));
+    /* Die Kanten zuletzt, damit sie über der Schraffur greifbar sind. */
+    for (const [w, t] of [['vorn', zuAnf()], ['hinten', zuEnd()]])
+      teile.push(`<div class="kante" data-kante="${w}" title="${w === 'vorn' ? 'Anfang' : 'Ende'} — ziehen schneidet weiter"
+        style="left:${x(t)}px;top:${OBEN_WELLE}px;height:${hoeheU}px"><i></i><b></b></div>`);
+  }
+
+  /* Wo Suno selbst anfängt auszublenden - geschätzt, und das steht auch dran. */
+  if (SONG.stille && SONG.stille.ausblende > 1 && SONG.stille.ausblende < SONG.dauer - 0.5){
+    const t = SONG.stille.ausblende;
+    const umschlag = x(t) > BREITE - 200 ? ' links' : '';
+    teile.push(`<div class="ausbl" style="left:${x(t)}px;top:${OBEN_WELLE}px;height:${WELLE}px"
+      title="Hier beginnt Sunos eigene Ausblendung — geschätzt aus dem Pegelverlauf"><span class="${umschlag.trim()}">Ausblendung (geschätzt)</span></div>`);
+  }
+
   const summe = weggeschnitten();
   for (const r of REGIONEN){
     const br = x(r.bis - r.von);
@@ -847,6 +971,12 @@ function draehte(){
       ZIEHT = { was: el.dataset.start ? 'start' : +el.dataset.i, startX: ev.clientX, weg: 0 };
     });
   });
+  b.querySelectorAll('.kante').forEach(el => {
+    el.addEventListener('mousedown', (ev) => {
+      ev.stopPropagation(); ev.preventDefault();
+      ZIEHT = { was: el.dataset.kante, startX: ev.clientX, weg: 0 };
+    });
+  });
   b.querySelectorAll('.klick').forEach(el => el.addEventListener('click', klickInSong));
 }
 
@@ -911,6 +1041,19 @@ function leuchten(t){
 function mitlaufen(){
   const a = $('#song');
   if (SONG && !a.paused){
+    /* DER ZUSCHNITT GILT AUCH BEIM HÖREN: vor dem Anfang wird vorgespult, am Ende
+       ist Schluss - und die Rampen regeln die Lautstärke mit, sigmoidal wie Sunos
+       eigene Ausblendung. */
+    if (a.currentTime < zuAnf() - 0.01){ try { a.currentTime = zuAnf(); } catch(e){} }
+    if (a.currentTime >= zuEnd() - 0.004){
+      a.pause();
+      try { a.currentTime = zuAnf(); } catch(e){}
+      a.volume = 1;
+      phSetzen(zuAnf());
+      requestAnimationFrame(mitlaufen);
+      return;
+    }
+    a.volume = lautstaerke(a.currentTime);
     /* DIE GESETZTEN REGIONEN WERDEN NICHT MITGESPIELT. So hört er beim Abspielen
        die gekürzte Fassung, ohne dass etwas gerendert wird. */
     for (const r of REGIONEN){
@@ -965,7 +1108,15 @@ document.addEventListener('mousemove', (e) => {
   if (ZIEHT.weg < 3){ ZIEHT.startX = e.clientX; return; }   /* noch ein Klick, kein Zug */
   const d = (e.clientX - ZIEHT.startX) / PX;
   ZIEHT.startX = e.clientX;
-  if (ZIEHT.was === 'start'){
+  if (ZIEHT.was === 'vorn' || ZIEHT.was === 'hinten'){
+    /* Weiter schneiden, aber nie über den anderen hinaus - fünf Sekunden Lied
+       müssen stehen bleiben, sonst wäre die Kante nicht mehr zu finden. */
+    if (!ZUSCHNITT) ZUSCHNITT = { vorn: 0, hinten: SONG.dauer };
+    const ms = (v) => Math.round(v * 1000) / 1000;
+    if (ZIEHT.was === 'vorn') ZUSCHNITT.vorn = ms(Math.max(0, Math.min(ZUSCHNITT.hinten - 5, ZUSCHNITT.vorn + d)));
+    else ZUSCHNITT.hinten = ms(Math.max(ZUSCHNITT.vorn + 5, Math.min(SONG.dauer, ZUSCHNITT.hinten + d)));
+    malen(); bilanzSetzen();
+  } else if (ZIEHT.was === 'start'){
     SCHNITT = Math.max(0.2, Math.min(SONG.dauer - 0.5, SCHNITT + d));
     malen();
   } else {
@@ -978,9 +1129,10 @@ document.addEventListener('mouseup', () => {
   if (!ZIEHT) return;
   const z = ZIEHT; ZIEHT = null;
   if (z.weg < 3){                                   /* geklickt, nicht gezogen */
-    if (z.was !== 'start') pfeilGeklickt(z.was);
+    if (z.was !== 'start' && z.was !== 'vorn' && z.was !== 'hinten') pfeilGeklickt(z.was);
     return;
   }
+  if (z.was === 'vorn' || z.was === 'hinten'){ sichern(); return; }
   if (z.was === 'start'){ REGIONEN = []; kandidatenLaden(); }
   else nahtLaden(z.was);
 });
@@ -1084,6 +1236,22 @@ $('#ziel').addEventListener('change', (e) => {
   e.target.value = ZIEL ? zeit(ZIEL) : '';
   bilanzSetzen(); sichern();
 });
+
+/* Die Rampen in Sekunden. Komma wie Punkt - im Deutschen tippt man ein Komma.
+   Länger als die halbe Strecke zwischen den Kanten geht nicht: zwei Rampen, die
+   sich überlappen, hätten in der Mitte ein Loch. */
+function rampeFeld(feld, welche){
+  $(feld).addEventListener('change', (e) => {
+    const t = e.target.value.trim().replace(',', '.');
+    let v = /^\d+(\.\d+)?$/.test(t) ? +t : 0;
+    const platz = Math.max(0, (zuEnd() - zuAnf()) / 2 - 0.1);
+    RAMPE[welche] = Math.min(v, platz);
+    e.target.value = RAMPE[welche] ? za(RAMPE[welche],1) : '';
+    malen(); sichern();
+  });
+}
+rampeFeld('#rEin', 'ein');
+rampeFeld('#rAus', 'aus');
 
 $('#songwahl').addEventListener('change', (e) => songLaden(e.target.value));
 $('#zufall').addEventListener('click', () => {

@@ -83,9 +83,9 @@ function whisper(id) {
  * Das Mischsignal wird einmal auf 11025 Hz mono gelegt und je Schlag der
  * RMS in dB genommen. Ein Schlag ist bei 150 BPM 400 ms, also rund 4400
  * Samples - genug für einen stabilen Wert. */
-const PEGEL = {};
-function pegelJeSchlag(id, schlaege) {
-  if (PEGEL[id]) return PEGEL[id];
+/* Die Proben einmal entpacken und im Zwischenspeicher halten: Pegel je Schlag
+   und die Stillesuche brauchen dieselben Zahlen. */
+function proben(id) {
   const wav = path.join(SONGS, id, 'audio.wav');
   const quelle = fs.existsSync(wav) ? wav : path.join(SONGS, id, 'audio.mp3');
   const tmp = path.join(os.tmpdir(), `kuerzen-${id}.f32`);
@@ -94,7 +94,77 @@ function pegelJeSchlag(id, schlaege) {
       '-f', 'f32le', tmp], { stdio: ['ignore', 'ignore', 'pipe'] });
   }
   const b = fs.readFileSync(tmp);
-  const x = new Float32Array(b.buffer, b.byteOffset, b.length / 4);
+  return new Float32Array(b.buffer, b.byteOffset, b.length / 4);
+}
+
+/* ---------- Stille vorn und hinten ----------
+ * Caspar_D, 17.11.2026: „erstmal eine automatic, wenn vorn und hinten stille
+ * sind" - und: „suno macht eine sigmoidale ausblendkurve".
+ *
+ * Gemessen wird in 20-ms-Fenstern. Die Schwelle ist NICHT absolut: ein leise
+ * gemastertes Lied hätte sonst keinen Anfang. Bezug ist das 90er Perzentil
+ * der Fensterpegel (also der laute Normalfall des Liedes), davon 50 dB
+ * hinunter, mit einem Boden bei -65 dBFS gegen Rauschen aus dem mp3.
+ *
+ * Dazu der Anfang der Ausblendung: der letzte Zeitpunkt, an dem das Lied noch
+ * nahe seinem Normalpegel war. Das ist eine SCHÄTZUNG und heißt in der
+ * Oberfläche so - Sunos Sigmoide hat keinen scharfen Knick, den man messen
+ * könnte. Sie sagt, wo ein eigener Schnitt hinten anfangen müsste, wenn man
+ * die fremde Ausblendung nicht mitnehmen will. */
+const STILLE = {};
+function stille(id) {
+  if (STILLE[id]) return STILLE[id];
+  let x;
+  try { x = proben(id); } catch (e) { return null; }
+  const F = Math.round(SR * 0.02), N = Math.floor(x.length / F);
+  if (N < 10) return null;
+  const db = new Float64Array(N);
+  for (let i = 0; i < N; i++) {
+    let s = 0;
+    for (let j = i * F; j < (i + 1) * F; j++) s += x[j] * x[j];
+    db[i] = 10 * Math.log10(s / F + 1e-12);
+  }
+  const sortiert = Array.from(db).sort((a, b) => a - b);
+  const bezug = sortiert[Math.floor(N * 0.9)];
+  const schwelle = Math.max(bezug - 50, -65);
+  /* Stille ist eine STRECKE, kein Fenster: erst 0,3 s durchgehend unter der
+     Schwelle gelten als Stille - sonst macht ein einzelnes leises Fenster
+     mitten im Lied einen Anfang.
+     GEGENGERECHNET gegen ffmpegs silencedetect (Unter der Haut I): das sagt
+     Stille ab 327,77 s, diese Rechnung ab 326,42 s. Kein Widerspruch, zwei
+     Maße - silencedetect vergleicht EINZELPROBEN mit der Schwelle, hier wird
+     über 20 ms gemittelt. Nachgemessen hat die Strecke 326,42 s bis zum Ende
+     im Mittel -61,6 dB bei Spitzen von -43,3 dB, also 50 dB unter dem
+     Normalpegel des Liedes. Der Mittelwert ist das Maß, das zum Hören passt;
+     die Spitzen stehen auf der sicheren Seite zu seinen Gunsten. */
+  const MIN = 15;                                     /* 15 Fenster = 0,3 s */
+  let a = 0;
+  while (a < N && db[a] < schwelle) a++;
+  if (a >= N) return null;
+  if (a < MIN) a = 0;                                 /* zu kurz: keine Stille */
+  let b = N - 1;
+  while (b > a && db[b] < schwelle) b--;
+  if (N - 1 - b < MIN) b = N - 1;
+  const dauer = x.length / SR;
+  /* 20 ms Luft nach außen: der erste Einsatz soll nicht angeschnitten werden. */
+  const vorn = a ? Math.max(0, (a * 0.02) - 0.02) : 0;
+  const hinten = b < N - 1 ? Math.min(dauer, ((b + 1) * 0.02) + 0.02) : dauer;
+  let e = b;
+  while (e > a && db[e] < bezug - 6) e--;
+  const aus = STILLE[id] = {
+    vorn: Math.round(vorn * 1000) / 1000,
+    hinten: Math.round(hinten * 1000) / 1000,
+    ausblende: Math.round(((e + 1) * 0.02) * 1000) / 1000,
+    schwelle: Math.round(schwelle * 10) / 10,
+    bezug: Math.round(bezug * 10) / 10
+  };
+  return aus;
+}
+
+const PEGEL = {};
+function pegelJeSchlag(id, schlaege) {
+  if (PEGEL[id]) return PEGEL[id];
+  const x = proben(id);
   const out = new Float64Array(schlaege.length);
   for (let i = 0; i < schlaege.length; i++) {
     const t0 = schlaege[i][0];
@@ -768,6 +838,12 @@ const REZEPTE = path.join(WURZEL, 'labor', 'kuerzen', 'rezepte.json');
 const STANDARD = { zuschnitt: null, schnitte: [], blende: 0.12,
                    rampe: { ein: 0, aus: 0 }, tempo: 1, ziel: null };
 
+/* Die Rampenform ist keine Einstellung, sondern eine Nachbildung: Suno blendet
+   sigmoidal aus (Caspar_D, 17.11.2026). Wer am Ende selbst schneidet, soll
+   dieselbe Kurve hören wie bei einem Lied, das von sich aus endet. In ffmpeg
+   heißt sie `losi` (logistic sigmoid), in der Oberfläche wird sie gerechnet. */
+const RAMPENKURVE = 'losi';
+
 function rezepteLesen() {
   try { return JSON.parse(fs.readFileSync(REZEPTE, 'utf8')); }
   catch (e) { return { stand: null, lieder: {} }; }
@@ -783,7 +859,8 @@ function rezeptVon(id) {
 function rezeptSchreiben(id, rezept) {
   const alles = rezepteLesen();
   alles.lieder = alles.lieder || {};
-  const leer = !rezept || (!(rezept.schnitte || []).length && !rezept.zuschnitt
+  const z = rezept && rezept.zuschnitt;
+  const leer = !rezept || (!(rezept.schnitte || []).length && !(z && (z.vorn || z.hinten != null))
     && (rezept.tempo || 1) === 1 && !rezept.ziel
     && !(rezept.rampe && (rezept.rampe.ein || rezept.rampe.aus)));
   if (leer) delete alles.lieder[id];          /* nichts eingestellt: kein Eintrag */
@@ -864,6 +941,7 @@ const server = http.createServer((req, res) => {
         farben: abschnitteVon(id).farben,
         abschnittQuelle: abschnitteVon(id).quelle,
         huelle: huellkurve(id, 2000),
+        stille: stille(id),
         zeilen: zeilenVon(id).map(z => ({ von: z.von, bis: z.bis, txt: z.txt, mal: z.malImSong,
           sprache: /[\u0400-\u04FF]/.test(z.txt) ? 'ru' : 'de',
           worte: (z.worte || []).map(w => [Math.round(w.von*1000)/1000, Math.round(w.bis*1000)/1000, w.txt, w.sicher ? 1 : 0]) })),
