@@ -32,7 +32,13 @@ const { BEIFANG, filterBauen, aufraeumen } = require('./spiegeln.js');
 const WERKZEUG = require('./werkzeug.js');
 
 const ZEIGEN = process.argv.includes('--zeigen');
-const rsyncPfad = WERKZEUG.finde('rsync');
+/* Welches rsync? Auf dem Mac liegen zwei: Apples openrsync (/usr/bin/rsync,
+   Protokoll 29) und das echte GNU-rsync (3.5.0 aus Homebrew), das auch Linux
+   benutzt. Gemessen wird gegen das, was die Suche findet - mit KT_RSYNC laesst
+   sich das andere waehlen. docs/handbuch/SKIZZEN.md fuehrte als offene Frage,
+   ob sich beide bei --delete-excluded unterschiedlich verhalten; hier ist sie
+   messbar. */
+const rsyncPfad = process.env.KT_RSYNC || WERKZEUG.finde('rsync');
 if (!rsyncPfad) {
   console.log('\n  Kein rsync da - der Vergleich kann nicht laufen.');
   console.log('  Das ist KEIN Bestanden: ohne die Gegenseite ist nichts gemessen.\n');

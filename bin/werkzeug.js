@@ -38,9 +38,15 @@ const istDatei = (p) => { try { return fs.statSync(p).isFile(); } catch (e) { re
 
 /* Im Suchpfad des Systems: `where` auf Windows, `which` sonst. Beide geben den
    Pfad auf der Standardausgabe; `where` kann mehrere Zeilen liefern, die erste
-   gilt. Gibt den Pfad oder null. */
+   gilt. Gibt den Pfad oder null.
+
+   OHNE ENDUNG GEFRAGT (17.11.2026): hier stand `where ffmpeg.exe`. Das findet
+   nur eine .exe - unter Windows kann ein Werkzeug aber als .cmd oder .bat im
+   Suchpfad liegen (so kommt npm dort an). `where ffmpeg` loest die Endung ueber
+   PATHEXT selbst auf und findet beides. Gefunden beim Vorbereiten des
+   Windows-Laufs, nicht durch einen Fehlschlag. */
 function imPfad(name) {
-  const r = spawnSync(EXE ? 'where' : 'which', [name + EXE], { encoding: 'utf8' });
+  const r = spawnSync(EXE ? 'where' : 'which', [name], { encoding: 'utf8' });
   if (r.status !== 0) return null;
   const erste = String(r.stdout || '').trim().split(/\r?\n/)[0];
   return erste && istDatei(erste) ? erste : (erste || null);
@@ -78,7 +84,8 @@ function da(name) { return !!finde(name); }
 module.exports = { finde, pfad, da, imPfad, EXE };
 
 if (require.main === module) {
-  for (const n of ['ffmpeg', 'ffprobe', 'whisper-cli', 'rsync', 'git', 'node']) {
+  /* rsync steht hier nicht mehr: der Export braucht es seit dem 17.11.2026 nicht (bin/spiegeln.js). */
+  for (const n of ['ffmpeg', 'ffprobe', 'whisper-cli', 'git', 'node']) {
     const p = finde(n);
     console.log('  ' + n.padEnd(14) + (p ? p.replace(WURZEL + path.sep, '') : '— nicht gefunden'));
   }
