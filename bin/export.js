@@ -963,6 +963,15 @@ async function kopieren(liste, was, jeTitel) {
   return { dateien, bytes: bytesFertig };
 }
 /* Die eigenen Titel, neueste zuerst - die Reihenfolge der Vorführung. */
+/* WAS GEFEHLT HAT, STEHT AM SCHLUSS - NICHT NUR MITTENDRIN.
+
+   Der Sternenhimmel wurde seit dem 06.10.2026 in KEINEM Export mehr gebaut
+   (ein Muster in bin/himmel-export.js griff ins Leere). Gemerkt hat es
+   niemand: der Ausfall war eine Zeile unter vierzig, und der Lauf meldete
+   danach „fertig". Ein Paket, dem ein Stueck fehlt, darf sich nicht
+   vollstaendig nennen (Hausregel 4). Was hier landet, steht am Ende noch
+   einmal und setzt den Rueckgabewert. */
+const maengel = [];
 const neuesteZuerst = eigene.slice().sort((a, b) => (b.erstellt || '').localeCompare(a.erstellt || ''));
 const hatMp3 = (s) => fs.existsSync(path.join(SONGS, s.id, 'audio.mp3'));
 /* Was NICHT über den Kopierer geht (und nie auf den Stick): dieselben
@@ -1206,7 +1215,18 @@ function zaehlen(ordner, ohne) {
     const rh = spawnSync(process.execPath, ['bin/himmel-export.js', '--musik', 'Musik', '--namen', namenDatei, '--ziel', path.join(ZIEL, 'Sternenhimmel.html')],
                          { cwd: WURZEL, encoding: 'utf8' });
     if (rh.status === 0) zeile('   Sternenhimmel.html: ' + (rh.stdout || '').trim().split('\n').pop());
-    else zeile(`   Sternenhimmel nicht gebaut (Exit ${rh.status}): ${((rh.stderr || rh.stdout || '').trim().split('\n').filter(Boolean).slice(-2).join(' | '))}`);
+    else {
+      /* DIE ERSTEN ZEILEN, NICHT DIE LETZTEN (17.11.2026): hier stand
+         slice(-2), und das sind bei einem geworfenen Fehler die untersten
+         Stapelzeilen - „at node:internal/main/run_main_module:36:49".
+         Die Meldung, die sagt WAS fehlt, stand ganz oben und wurde
+         abgeschnitten. Gesucht wird darum die erste Zeile, die wie eine
+         Fehlermeldung aussieht, sonst die erste ueberhaupt. */
+      const roh = String(rh.stderr || rh.stdout || '').trim().split('\n').map(z => z.trim()).filter(Boolean);
+      const sagt = roh.find(z => /^[A-Za-z]*Error\b/.test(z)) || roh[0] || 'keine Ausgabe';
+      zeile(`   Sternenhimmel NICHT gebaut (Exit ${rh.status}): ${sagt}`);
+      maengel.push(`Sternenhimmel.html fehlt — ${sagt}`);
+    }
   }
   const rn = nodeKopieren();
   dateien += rn.dateien; bytes += rn.bytes;
@@ -1432,9 +1452,17 @@ function zaehlen(ordner, ohne) {
     zeile(`Probe: ${dateien} Dateien, ${(bytes / 1073741824).toFixed(2)} GB würden im Ziel liegen (Sternenhimmel, Startskripte und LIES-MICH.md nicht mitgezählt)`);
   }
 
-  lauf.ergebnis = { dateien, bytes, dauerS: dauerS(), probestart: probestartErgebnis };
+  lauf.ergebnis = { dateien, bytes, dauerS: dauerS(), probestart: probestartErgebnis, maengel: maengel.slice() };
   lauf.laeuft = false; lauf.fertig = true; lauf.schritt = 'fertig'; lauf.fortschritt = null;
   laufSchreiben(true);
-  console.log(`\n  ${probe ? 'Probe' : 'Export'} fertig nach ${dauerS()} s.${probestartErgebnis.startsWith('fehlgeschlagen') ? ' Der Probestart aber nicht - siehe oben.' : ''}\n`);
-  if (probestartErgebnis.startsWith('fehlgeschlagen') || rm.fehl) process.exitCode = 3;
+  if (maengel.length) {
+    zeile('');
+    zeile(`UNVOLLSTÄNDIG: ${maengel.length} Stück fehlt${maengel.length > 1 ? 'en' : ''} im Paket.`);
+    for (const m of maengel) zeile('   • ' + m);
+    laufSchreiben(true);
+  }
+  console.log(`\n  ${probe ? 'Probe' : 'Export'} ${maengel.length ? 'durch, aber UNVOLLSTÄNDIG' : 'fertig'} nach ${dauerS()} s.${probestartErgebnis.startsWith('fehlgeschlagen') ? ' Der Probestart aber nicht - siehe oben.' : ''}`);
+  for (const m of maengel) console.log('    • ' + m);
+  console.log('');
+  if (probestartErgebnis.startsWith('fehlgeschlagen') || rm.fehl || maengel.length) process.exitCode = 3;
 })().catch(abbruch);

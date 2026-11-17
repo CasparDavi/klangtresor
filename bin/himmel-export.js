@@ -117,11 +117,34 @@ function funktion(name) {
   const m = html.match(new RegExp(`\\n(?:async )?function ${name}\\(`));
   if (!m) throw new Error('nicht gefunden: ' + name);
   let i = m.index + 1, tiefe = 0, start = i;
+  /* ERST DEN PARAMETERKOPF ZU ENDE LESEN (17.11.2026). Hier stand nur
+     „bis zur ersten geschweiften Klammer" - und bei
+
+       function wahlHtml(schl, eintraege, jetzt, o = {}){
+
+     ist das die Klammer des Vorgabewerts, nicht der Rumpf. Gezaehlt wurde
+     auf und sofort wieder zu, herausgeschnitten kam die halbe Zeile, und
+     die Exportdatei hatte einen Syntaxfehler. Also: die runde Klammer des
+     Kopfes sauber zumachen, DANN den Rumpf suchen. */
+  while (html[i] !== '(') i++;
+  for (let k = 0; i < html.length; i++) {
+    if (html[i] === '(') k++;
+    else if (html[i] === ')' && --k === 0) { i++; break; }
+  }
   while (html[i] !== '{') i++;
   for (; i < html.length; i++) { if (html[i] === '{') tiefe++; else if (html[i] === '}' && --tiefe === 0) break; }
   return html.slice(start, i + 1);
 }
 function konstante(re) { const m = html.match(re); if (!m) throw new Error('nicht gefunden: ' + re); return m[0]; }
+/* Die Farben der Palette 'nebel' aus KLANGRAUM_PALETTEN, als festes Array -
+   siehe die Begruendung unten bei nebelArray(). Faellt die Palette weg oder
+   heisst sie anders, wirft es, wie jedes andere Muster auch. */
+function nebelArray() {
+  const block = deklaration('KLANGRAUM_PALETTEN');
+  const m = /\{\s*id:\s*'nebel'[\s\S]*?f:\s*(\[[^\]]*\])/.exec(block);
+  if (!m) throw new Error("nicht gefunden: die Palette 'nebel' in KLANGRAUM_PALETTEN");
+  return 'const NEBEL = ' + m[1] + ';';
+}
 /* Eine mehrzeilige Deklaration schneiden - konstante() nimmt nur eine
    Zeile, und WL, STRUDEL und SCHWADEN gehen ueber drei bis zwanzig.
    Geklammert wird gezaehlt, wie bei funktion(); Schluss ist, wenn die
@@ -141,12 +164,34 @@ function deklaration(name) {
 }
 
 const code = [
+  /* DIE UEBERSETZUNG, GANZ VORN (17.11.2026). Seit dem 16.10.2026 ist die
+     Oberflaeche zweisprachig, und die hier geschnittenen Teile rufen rund
+     110-mal t('...') auf. Die alleinstehende Datei kannte kein t - sie
+     waere im Browser sofort stehengeblieben, auch mit allen Namen an Bord.
+     web/ui-sprache.js setzt am Ende `wurzel.t = t` und wendet die Sprache
+     auf das Markup an; es muss also VOR allem anderen laufen und hinter dem
+     Markup stehen (das tut es: der Code sitzt im <script> am Seitenende).
+     Eingebettet wie rabe.js darunter, nicht nachgeladen - die Datei soll
+     nichts ausser sich selbst brauchen. */
+  fs.readFileSync(path.join(WURZEL, 'web', 'ui-sprache.js'), 'utf8'),
   /* Der Rabe (25.08.2026): eigenes Modul, hier ganz eingebettet - das
      Gestalt-Dropdown steht im geschnittenen Panel, und ohne rabeZeichnen
      bliebe die dritte Wahl ein unsichtbarer Flieger. module.exports am
      Ende ist durch den typeof-Guard im Modul selbst abgesichert. */
   fs.readFileSync(path.join(WURZEL, 'web', 'fremd', 'rabe.js'), 'utf8'),
-  konstante(/const NEBEL = \[[^\n]*\];/),
+  /* NEBEL kam bis zum 06.10.2026 als festes Array aus der Seite. Seit den
+     Klangraum-Paletten (1.0.26) steht dort `let NEBEL = klangraumPal().f`,
+     und das Muster griff ins Leere - seitdem entstand in KEINEM Export mehr
+     ein Sternenhimmel. Gemerkt hat es niemand, weil der Ausfall nur eine
+     Zeile im Protokoll war (bin/export.js, dort steht jetzt mehr).
+
+     Die ganze Palettenmaschine mitzunehmen ginge nicht: KLANGRAUM_PALETTEN
+     holt jeden Namen ueber window.t(), also die Uebersetzung, und die hat
+     eine alleinstehende Datei nicht. Gebraucht werden hier ohnehin nur die
+     Farben - also die der Palette 'nebel', als festes Array. Das ist genau
+     das Verhalten von vor dem 06.10., und der Himmel bekommt keine
+     Abhaengigkeit, die er nicht tragen kann. */
+  nebelArray(),
   konstante(/const karteFarbe = [^\n]*;/),
   funktion('koronaFarbe'),
   funktion('schwarzkoerper'), funktion('moffat'), funktion('saat'),
@@ -234,7 +279,35 @@ const code = [
      'function zeichnen' unbekannt. Gleiche Wirkung, als \\x22 geschrieben. */
   'function esc(t){ return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\\x22/g, "&quot;"); }',
   konstante(/const SPUR_DECKUNG = [^\n]*;/), deklaration('diaFlaeche'), deklaration('diaTopline'),
-  deklaration('RAUM_WAS'),                     /* Hinweistext der Raum-Pillen; ohne raumDa bleiben sie aus, gelesen wird er trotzdem */
+  /* RAUM_WAS trug die Hinweistexte der Raum-Pillen. Am 16.10.2026 ist es aus
+     der Seite verschwunden, als die Oberflaeche zweisprachig wurde - die
+     Texte kommen jetzt aus der Uebersetzung. Im alleinstehenden Himmel
+     erscheinen die Pillen ohnehin nicht (raumDa ist falsch), gelesen wird
+     der Name aber trotzdem. Ein leeres Objekt genuegt und holt sich keinen
+     Text, den es nicht mehr gibt. */
+  /* NACHGEWACHSEN SEIT OKTOBER (17.11.2026). Die Selbstpruefung am Ende
+     dieses Skripts meldete zehn Namen, die die Exportdatei benutzt, ohne sie
+     zu kennen - im Browser waere das ein ReferenceError, also ein stummer
+     Himmel. Sie sind seit dem 06.10. in die Seite gekommen (Marsianer,
+     Schnuere, Paletten) oder wurden dort umgebaut. */
+  deklaration('TOENER'), funktion('marsZeichnen'),
+  funktion('gruppenAnzeige'), funktion('karteFingerEinrichten'), funktion('karteObenHundert'),
+  funktion('legendenBeobachten'), funktion('schnurLeiste'),
+  funktion('wahlHtml'), funktion('wahlenBeobachten'),
+  /* Die Palettenwahl NICHT: sie holt jeden Namen ueber window.t(), und die
+     Uebersetzung traegt die alleinstehende Datei nicht. Vor dem 06.10. gab
+     es sie im Himmel auch nicht - ein leerer Rueckgabewert ist genau der
+     Zustand von damals, und er luegt niemanden an. */
+  "function klangraumFarbwahlHtml(){ return ''; }",
+  /* Zweite Welle der Kaskade (17.11.2026): was die erste mitbrachte.
+     Darunter schaumResonanz und schnurLaden - Schaeume und Schnuere. */
+  deklaration('GRUPPE_GANZ'), deklaration('KLANG_EN'),
+  funktion('karteFingerTipp'), deklaration('karteOben100'),
+  deklaration('legListe'), funktion('legendeMessen'), deklaration('legRO'),
+  deklaration('schaumResonanz'), deklaration('schnurLaden'),
+  deklaration('wahlListe'), deklaration('wahlRO'),
+  deklaration('WAHL_LUFT'), funktion('wahlMessen'),   /* dritte Welle: was die Wahl-Leiste zum Messen braucht */
+  'const RAUM_WAS = {};'
 ].join('\n\n')
   .replace(/\/media\/\$\{s\.id\}\/cover\.jpg/g, '${s.bild || \'\'}')   // Cover von Sunos CDN
   .replace(/`<button class="pille" id="karteexport"[^`]*`\)/, '``)');             // kein Export-Knopf in der Demo
