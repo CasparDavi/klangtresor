@@ -73,6 +73,7 @@ Verhältnis zum Aufwand.
 ---
 | Effektclip | Entscheidung | [Das Studio als eigene Datei (25.09.2026)](#das-studio-als-eigene-datei-25092026) |
 | Haus | erledigt | [Update aus dem Ordner: der Installer ist die Antwort (17.11.2026)](#update-aus-dem-ordner-der-installer-ist-die-antwort-17112026) |
+| Oberfläche | Entscheidung | [Private Titel in die Standardsicht holen — Tarjas Wunsch (17.11.2026)](#private-titel-in-die-standardsicht-holen-tarjas-wunsch-17112026) |
 
 ## Die tote Tonart — ERLEDIGT 24.08.2026
 
@@ -3625,3 +3626,68 @@ Mangel. Henry hat einen schnelleren Weg gefunden, nicht einen Fehler gemeldet. D
 nicht „wie sichern wir ihren Weg ab", sondern „ist das Problem nicht längst gelöst" — hier: seit
 1.0.134 durch die Installer. Gebaut, gemessen und wieder zurückgenommen wurde ein Umbau der
 Paketprüfung (`9f12bb3`, zurück mit `383fcce`).
+
+## Private Titel in die Standardsicht holen — Tarjas Wunsch (17.11.2026)
+
+**Zustand:** Entscheidung (wartet auf Tarjas Wort) · **Modul:** Oberfläche
+
+**Das Problem, von Caspar_D am 17.11.2026 weitergegeben:** Tarja hat mehrere Dutzend private Titel, von
+denen sie einige gern hört. Sie will nicht *alle* privaten im Filter erlauben — das sind ihr zu viele —
+sondern einige in die öffentliche Sicht mit aufnehmen.
+
+**Die Regel, die den Rahmen setzt** (Caspar_D): *„bilde nur ab was Suno auch zeigt"*. Eine Handmarke im
+KT („diesen Titel zeige ich") wäre eigene Wahrheit über den Veröffentlichungsstand und fällt damit aus.
+Die Auswahl muss bei Suno entstehen; der KT spiegelt sie.
+
+**Die Entscheidung (Caspar_D, 17.11.2026):** *„erlaube es im profil, private playlists anzuhaken"* — eine
+Einstellung im Profil, in der Playlists angehakt werden; deren Titel kommen in die Standardsicht.
+**Gebaut wird erst, wenn Tarja gesagt hat, ob das für sie trägt.**
+
+**Was schon daliegt (gemessen am 17.11.2026 an Caspar_Ds Bestand, 347 eigene Titel):**
+
+- Jeder Song trägt `s.playlists`, der Katalog kennt 27 Playlists mit `oeffentlich` je Playlist. Die
+  Oberfläche braucht also nichts nachzuladen.
+- **Die Playlist-Zugehörigkeit allein unterscheidet nichts:** alle 75 privaten Titel liegen in einer
+  Playlist — das ist der Standardweg, wie ein privater Titel überhaupt in den KT kommt (Caspar_D:
+  *„Dazu muss ich sie einer Playlist zugeordnet haben"*). Die Auswahl muss also **bestimmte** Playlists
+  benennen, nicht „liegt in einer".
+
+**Ein Befund, der die Form der Einstellung betrifft:** die privaten Titel liegen fast alle in
+**öffentlichen** Playlists. Die Sichtbarkeit einer Playlist sagt nichts über ihre Mitglieder.
+
+| Playlist | ist | Titel | davon privat |
+|---|---|---|---|
+| Fokus-Wanderung | öffentlich | 48 | 48 |
+| Sade without Sade – Instrumentals | öffentlich | 16 | 16 |
+| Mein NDH Inferno | öffentlich | 76 | 5 |
+| My Industrial Songs – more or less | öffentlich | 122 | 4 |
+| Gegenüber, AHNHEIM, Bio-Gefahr | öffentlich | | je 1–2 |
+| Nice Songs, Colabs | privat | je 1 | je 1 |
+
+**73 von 75 privaten Titeln liegen in öffentlichen Playlists, 2 in privaten.** Eine Liste, die nur
+private Playlists zum Anhaken anbietet, träfe bei Caspar_D also 2 von 75. **Vorschlag:** alle Playlists
+anbieten, je Playlist mit der Zahl „enthält N private Titel" — das ist die Zahl, nach der man auswählt.
+**Mitzufragen bei Tarja:** liegen ihre privaten Titel in privaten oder in öffentlichen Playlists?
+
+**Was unberührt bleiben muss** (sonst lügt es oder bricht):
+
+- `s.oeffentlich` behält seine Bedeutung. Die Marke „privat" bleibt auf der Kachel.
+- **Sternenhimmel zum Verschicken** (`bin/himmel-export.js:248`): nur `s.oeffentlich`, denn jeder Stern
+  führt zu suno.com — ein privater Titel hätte dort keine Seite. Auf dem Stick (`--relativ`) ist es
+  ohnehin schon anders: dort zählt, ob eine MP3 daliegt.
+- **Nachbarschaft und Hirsch-Zahl** (`web/index.html:17528` ff.): nur `s.oeffentlich`, weil Sunos
+  Profilseite nur Öffentliches zeigt und die eigene Zahl keinen anderen Maßstab haben darf
+  (Entscheidung vom 09.09.2026).
+
+**Verworfene Wege, mit Grund:**
+
+- **Handmarke im KT** (`library/zeigen.json` nach dem Muster von `instrumental.json`): verstößt gegen
+  „bilde nur ab was Suno auch zeigt".
+- **Das Herz** (`s.likes` bei einem privaten Titel, 17 von 75 bei Caspar_D): wäre ohne jede Einstellung
+  zu haben und bedeutet wörtlich „den mag ich". Nicht gewählt; offen geblieben ist dabei, ob Suno
+  erlaubt, einen eigenen privaten Titel zu herzen — die 17 könnten Herzen von Leuten sein, die den Link
+  bekamen.
+- **Oft gehört** (`s.plays`): bräuchte eine Schwelle, also einen Regler, und ist dünn — 11 Titel über 20
+  Abspielungen, 50 liegen bei 1–4.
+- **`freigeschaltet`** ist `is_download_unlocked`, also das Download-Guthaben — sagt nichts über
+  Weitergabe.
