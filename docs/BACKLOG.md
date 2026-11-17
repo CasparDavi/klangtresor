@@ -72,6 +72,7 @@ Verhältnis zum Aufwand.
 
 ---
 | Effektclip | Entscheidung | [Das Studio als eigene Datei (25.09.2026)](#das-studio-als-eigene-datei-25092026) |
+| Haus | zu planen | [Update aus dem Ordner ist schneller als über die Oberfläche (17.11.2026)](#update-aus-dem-ordner-ist-schneller-als-über-die-oberfläche-17112026) |
 
 ## Die tote Tonart — ERLEDIGT 24.08.2026
 
@@ -3562,3 +3563,47 @@ Mitzuändern beim Wegnehmen: README.md/.de/.ru, START-HIER/HERE/RU, `docs/EINRIC
 Setup/AppImage/DMG-Bau); dann Caspar_D die Liste „weg / bleibt / bleibt bis“ zeigen; Archiv als eigener Ordner
 außerhalb des Pakets (paket.js nimmt nur, was git kennt — also aus dem Baum nehmen, nicht bloß verstecken).
 
+
+## Update aus dem Ordner ist schneller als über die Oberfläche (17.11.2026)
+
+**Zustand:** zu planen · **Modul:** Haus
+
+Henry, 17.11.2026: „Beim KlangTresor geht das Update aus dem Ordner (neues Paket drüberlegen)
+deutlich schneller als über die Oberfläche."
+
+**Nachgesehen, woran das liegt.** Beide Wege laufen durch denselben Code: die Pille im Fenster
+„KlangTresor" geht auf `/api/system/holen?was=update` → `bin/system.js auftragStarten('update')` →
+`bin/aktualisieren.js`, und die Skripte `aktualisieren-*` rufen dasselbe. Es gibt also **keinen
+langsamen Oberflächenweg**, sondern zwei Dinge, die nur der Weg über die Oberfläche tut und das
+Drüberlegen von Hand nicht:
+
+1. **Das Zip von GitHub holen** (`holenDatei`, Zeile 235). Eine schlichte https-Verbindung, kein
+   Teilstück-Download, kein Wiederaufsetzen, 30 s Stillstandsgrenze. Wer das Paket schon im Ordner
+   hat, spart genau diese Zeit — und zwar um so mehr, je schlechter die Leitung nach GitHub ist.
+   Von Deutschland aus fällt das nicht auf; Henry sitzt nicht in Deutschland.
+2. **`npm ci`, wenn sich `package-lock.json` geändert hat** (`npmCiWennNoetig`, Zeile 365).
+
+**Und hier ist der Haken, der wichtiger ist als die Geschwindigkeit:** Punkt 2 fällt beim Drüberlegen
+von Hand weg. Hat ein Release Pakete geändert, läuft Henrys Installation danach mit den **alten**
+`node_modules` — und nichts sagt es ihr. Der Tab „System" prüft `fehlende()`, also nur, was ganz
+fehlt. `bin/pakete.js` hat mit `abweichungen()` schon die Prüfung, die genau das findet (jedes Paket
+in der Fassung, die `package-lock.json` verlangt) — **sie wird nirgends aufgerufen**. Das ist zu
+klären, bevor „Paket drüberlegen" als Weg empfohlen wird.
+
+**Zwei Richtungen, beide noch nicht entschieden:**
+
+- **Den Download schneller machen** — in Teilstücken parallel und mit Wiederaufsetzen, wie es die
+  Downloads an anderer Stelle schon tun. Hilft allen mit schlechter Leitung nach GitHub, ändert am
+  Ablauf nichts.
+- **Das vorhandene Paket annehmen** — liegt `KlangTresor.zip` (oder `KlangTresor-Update.zip`) im
+  Ordner, nimmt die Oberfläche es, statt zu laden. Dann läuft auch `npm ci` mit, und der schnelle Weg
+  bleibt ein vollständiger Weg. Dazu gehört, dass die Oberfläche die Fassung im Zip nennt, bevor sie
+  es nimmt.
+
+Unabhängig davon: **`abweichungen()` sichtbar machen.** Der Tab „System" soll nicht nur sagen, was
+fehlt, sondern auch, was in der falschen Fassung liegt — sonst merkt niemand, dass eine von Hand
+drübergelegte Fassung halb ist. Mit Knopf zum Richten (`npm ci`), wie beim Nachholen.
+
+**Offen für Henry:** wie lange der Weg über die Oberfläche bei ihr dauert, und wie viel davon auf
+„hole KlangTresor.zip" geht (der Balken sagt es). Erst dann steht fest, ob die Leitung die Ursache
+ist oder etwas anderes.
