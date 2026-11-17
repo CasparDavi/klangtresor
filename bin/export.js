@@ -53,12 +53,13 @@
  *   4 Analyse       die Analyse-Ablage je Titel, neueste zuerst
  *   5 Fernseher     Musik/ mit ID3, docs/
  *   6 Stems         nur mit --stems, ganz zuletzt ("die hört sich eh keiner an")
- *   7 Abschluss     ein rsync-Aufräumlauf über alles (holt Reste, räumt weg,
+ *   7 Abschluss     ein Aufräumlauf über alles (holt Reste, räumt weg,
  *                   was zu Hause fehlt), Beifang, LIES-MICH, Stand, Probestart
  * Die Stufen 1-4 und 6 schreibt dieses Skript selbst in die Behälter, Datei
- * für Datei in genau dieser Reihenfolge - rsync sortiert seine Liste immer
- * nach Namen. Geschrieben wird nur, was fehlt oder sich geändert hat (Größe
- * und Zeit, wie rsync -t mit --modify-window=2); Geändertes hängt hinten an,
+ * für Datei in genau dieser Reihenfolge - nach Namen sortiert käme der
+ * neueste Titel irgendwo in der Mitte. Geschrieben wird nur, was fehlt oder
+ * sich geändert hat (Größe und Zeit, 2-Sekunden-Fenster für FAT und exFAT);
+ * Geändertes hängt hinten an,
  * Gelöschtes verschwindet aus dem Verzeichnis, und ist mehr als ein Viertel
  * der Stücke Ballast, verdichtet Stufe 7 sie. Der Bestand-Kern und Musik/
  * bleiben echte Dateien (wenige bzw. für Fernseher nötig).
@@ -87,9 +88,9 @@
  *   { prozent, was: "Programm" | "Kern" | "Titel" | "Bilder" | "Analyse" | "Musik" | "Node" | "Stems" | "Abschluss",
  *     bytesGesamt, bytesFertig, bytesProSekunde, restS,
  *     dateienGesamt, dateienFertig }
- *   bytesGesamt kommt aus einer Vorabmessung je rsync-Schritt (Trockenlauf
- *   mit --stats, "Total transferred file size" - dauert Sekunden, dafür
- *   stimmt der Balken); bytesProSekunde ist gleitend über die letzten
+ *   bytesGesamt kommt aus einer Vorabmessung je Schritt (die Liste des
+ *   Kopierers nennt die Summe im Vorbeigehen, siehe vorabmessen()); 
+ *   bytesProSekunde ist gleitend über die letzten
  *   zehn Sekunden, restS daraus gerechnet. Bei Musik/ zählt der Anteil
  *   der Dateien. Höchstens viermal je Sekunde geschrieben.
  *
@@ -114,6 +115,7 @@ const { spawn, spawnSync } = require('node:child_process');
 const K    = require('./katalog.js');
 const { Behaelter } = require('./behaelter.js');
 const WERKZEUG = require('./werkzeug.js');
+const MEDIUM = require('./medium.js');
 
 const WURZEL = path.join(__dirname, '..');
 const LIB    = path.join(WURZEL, 'library');
@@ -142,7 +144,7 @@ const ZIEL = path.resolve(zielRoh);
    in den Ruhemodus gegangen" - und der Stick meldete sich als "nicht
    ordnungsgemäß ausgeworfen"). Ein Export auf einen langsamen Stick dauert
    eine Stunde; schläft der Rechner ein, verliert der Stick den Strom und
-   rsync schreibt ins Leere. caffeinate -i verhindert den Leerlaufschlaf,
+   der Export schreibt ins Leere. caffeinate -i verhindert den Leerlaufschlaf,
    solange dieser Prozess lebt (-w). Nur auf dem Mac, nur beim echten Lauf;
    der Morgenlauf des Servers macht es genauso. */
 if (process.platform === 'darwin' && !probe) {
@@ -172,8 +174,8 @@ const gesamtTempo = tempoMesserSpaeter();
 function tempoMesserSpaeter() { let m = null; return (b) => { if (!m) m = tempoMesser(); return m(b); }; }
 let zuletztGeschrieben = 0;
 function laufSchreiben(erzwingen) {
-  /* Höchstens viermal je Sekunde - rsync meldet Fortschritt öfter, und
-     jede Fassung geht über einen Umweg (tmp + rename), damit der Server
+  /* Höchstens viermal je Sekunde - der Kopierer meldet nach jedem 4-MB-Stück,
+     und jede Fassung geht über einen Umweg (tmp + rename), damit der Server
      nie eine halbe Datei liest. */
   const jetzt = Date.now();
   if (!erzwingen && jetzt - zuletztGeschrieben < 250) return;
@@ -194,9 +196,9 @@ function schritt(name) { lauf.schritt = name; lauf.fortschritt = null; zeile('»
 function stufe(nr, name) { lauf.stufe = { nr, von: STUFEN, name }; schritt(`Stufe ${nr} von ${STUFEN}: ${name}`); }
 
 /* ANHALTEN, SANFT. Das erste SIGTERM setzt nur die Flagge: die laufende
-   Datei wird fertig (bei rsync und ffmpeg: das Kind bekommt das Signal
-   und räumt seine halbe Datei selbst weg), dann schreibt der Lauf den
-   Stand und geht. Das zweite SIGTERM bricht hart ab. */
+   Datei wird fertig (der Kopierer schreibt über .tmp und rename, eine halbe
+   Datei bleibt also nie unter gutem Namen liegen; ffmpeg bekommt das Signal
+   und räumt selbst weg), dann schreibt der Lauf den Stand und geht. Das zweite SIGTERM bricht hart ab. */
 let anhalten = false;
 function anhaltenAnfordern(signal) {
   if (anhalten) return abbruch('abgebrochen (' + signal + ', zum zweiten Mal)');
@@ -207,7 +209,7 @@ function anhaltenAnfordern(signal) {
 
 /* DAS TEMPO, GLEITEND. Caspar_D, 09.09.2026: die Restzeit soll nicht
    bei jedem Ruckeln des Sticks springen - deshalb der Durchschnitt über
-   die letzten zehn Sekunden, nicht die Momentanzahl von rsync. Ein
+   die letzten zehn Sekunden, nicht die Momentanzahl. Ein
    Messer je Schritt: fuettern(bytesFertig) gibt Bytes je Sekunde oder
    null, solange keine Sekunde gemessen ist. */
 function tempoMesser() {
@@ -222,8 +224,8 @@ function tempoMesser() {
 }
 /* Der Fortschritt eines Schritts in die Mitschrift: mess = { was, gesamt,
    dateienGesamt, tempo } ist der Rahmen, fertig = { bytes, dateien, prozent }
-   der Stand. prozent kommt aus den Bytes, wo die Summe bekannt ist, sonst
-   aus dem, was rsync selbst meldet (im Trockenlauf gibt es keine Vorabmessung). */
+   der Stand. prozent kommt aus den Bytes, wo die Summe bekannt ist; in der
+   Probe gibt es keine Vorabmessung, dann bleibt er bei null. */
 function fortschritt(mess, fertig) {
   const gesamt = mess.gesamt || null;
   const bytesFertig = fertig.bytes || 0;
@@ -245,10 +247,11 @@ function fortschritt(mess, fertig) {
 }
 /* tempoMesser steht weiter unten; die Funktion wird gehoben, der Aufruf
    passiert erst beim ersten Fortschritt. */
-/* Die Kindprozesse (rsync, ffmpeg) sterben mit - sonst schreibt ein
-   verwaister rsync weiter auf den Stick, waehrend die Oberflaeche schon
-   "angehalten" sagt (09.09.2026: drei rsync blieben nach dem Anhalten
-   uebrig, zwei davon im Plattenwarten auf dem eingeschlafenen Stick). */
+/* Die Kindprozesse (ffmpeg) sterben mit - ein verwaistes Kind schriebe sonst
+   weiter auf den Stick, waehrend die Oberflaeche schon "angehalten" sagt
+   (09.09.2026, damals mit rsync: drei blieben nach dem Anhalten uebrig, zwei
+   davon im Plattenwarten auf dem eingeschlafenen Stick). Seit dem 17.11.2026
+   kopiert der Export selbst; dort reicht die Flagge anhalten. */
 const kindProzesse = new Set();
 function abbruch(grund) {
   lauf.laeuft = false; lauf.fertig = false; lauf.fehler = String(grund && grund.message || grund);
@@ -263,7 +266,7 @@ process.on('unhandledRejection', abbruch);
 process.on('SIGINT',  () => anhaltenAnfordern('SIGINT'));
 process.on('SIGTERM', () => anhaltenAnfordern('SIGTERM'));
 
-/* Läuft schon einer? Zwei rsyncs auf denselben Stick zerlegen sich
+/* Läuft schon einer? Zwei Exporte auf denselben Stick zerlegen sich
    gegenseitig; der Server fragt vorher, aber der Aufruf von Hand nicht. */
 try {
   const alt = JSON.parse(fs.readFileSync(LAUF, 'utf8'));
@@ -282,7 +285,7 @@ const anzeigename = (katalog.profil && katalog.profil.display_name) || handle;
 const eigene = Object.values(katalog.songs).filter(s => !s.fremd)
   .sort((a, b) => (a.erstellt || '').localeCompare(b.erstellt || ''));
 
-/* Das Ziel darf nicht im Haus liegen (rsync kopierte sonst in sich
+/* Das Ziel darf nicht im Haus liegen (der Export kopierte sonst in sich
    selbst hinein) und sein Elternordner muss DA sein: /Volumes/Stick
    ohne Stick anzulegen hieße, auf die Systemplatte zu exportieren. */
 if ((ZIEL + path.sep).startsWith(WURZEL + path.sep) || ZIEL === WURZEL) abbruch('Das Ziel liegt im KlangTresor selbst: ' + ZIEL);
@@ -292,123 +295,121 @@ if (!fs.existsSync(path.dirname(ZIEL))) abbruch('Der Ort ist nicht eingehängt: 
    ffmpeg.exe), und der Export brach hier ab mit „ffmpeg fehlt". Gemeldet von Apex, Windows:
    „bekomme dann die Meldung, das noch kein Export auf K:\Klangtresor bereit ist" - das war die
    Standzeile der Oberflaeche, der echte Grund stand nur in library/export-lauf.json. */
-for (const w of ['rsync', 'ffmpeg']) if (!WERKZEUG.da(w)) abbruch(w + ' fehlt - ohne geht der Export nicht');
+if (!WERKZEUG.da('ffmpeg')) abbruch('ffmpeg fehlt - ohne geht der Export nicht');
 
 console.log(`\n  ${probe ? 'Probe (nichts wird ins Ziel geschrieben)' : 'Archiv-Export'} → ${ZIEL}`);
 console.log(`  ${eigene.length} Titel von ${anzeigename} (@${handle})${stems ? ', mit Stems' : ', ohne Stems'}, ohne WAV\n`);
 laufSchreiben(true);
 
 /* ---------------------------------------------------------------- Das Medium */
-/* Welches Dateisystem unter dem Ziel liegt, sagt die mount-Ausgabe: auf
-   dem Mac "/dev/disk2s1 on /Volumes/INTENSO (exfat, local, ...)", unter
-   Linux "/dev/sdb1 on /media/x/STICK type vfat (rw,...)". Den
-   Einhängepunkt nennt df - nicht die längste passende mount-Zeile: auf
-   dem Mac liegt /Users über einen Firmlink auf /System/Volumes/Data, und
-   die Präfixsuche fände das versiegelte "/" (apfs, read-only) - ein
-   Export auf den Schreibtisch bräche dann grundlos ab (09.09.2026, beim
-   Prüfen gesehen). Die Präfixsuche bleibt als Rückfall, wenn df schweigt.
-   Gefragt wird nach dem nächsten Ordner, den es schon gibt - das Ziel
-   selbst gibt es beim ersten Export noch nicht. */
-function dateisystemVon(pfad) {
-  let da = pfad; while (da !== path.dirname(da) && !fs.existsSync(da)) da = path.dirname(da);
-  let punktDf = null;
-  { const df = (spawnSync('df', ['-P', da], { encoding: 'utf8' }).stdout || '').trim().split('\n').pop() || '';
-    const m = df.match(/^(.*?)\s+\d+\s+\d+\s+\d+\s+\d+%\s+(.+?)\s*$/); if (m) punktDf = m[2]; }
-  const aus = (spawnSync('mount', [], { encoding: 'utf8' }).stdout || '');
-  let bester = null;
-  for (const z of aus.split('\n')) {
-    const m = z.match(/^(.+?) on (.+?)(?: type (\S+))? \(([^)]*)\)\s*$/);
-    if (!m) continue;
-    const punkt = m[2];
-    if (punktDf ? punkt !== punktDf : (pfad !== punkt && !pfad.startsWith(punkt.endsWith('/') ? punkt : punkt + '/'))) continue;
-    if (bester && bester.pfad.length >= punkt.length) continue;
-    const optionen = m[4].split(',').map(o => o.trim().toLowerCase());
-    bester = { geraet: m[1], pfad: punkt, dateisystem: (m[3] || optionen[0] || '').toLowerCase(),
-               nurLesen: optionen.includes('read-only') || optionen.includes('ro') };
-  }
-  return bester;
-}
+/* Welches Dateisystem unter dem Ziel liegt, wieviel Platz da ist und ob sich
+   schreiben laesst, sagt bin/medium.js - auf allen drei Systemen. Hier stand
+   dafuer eigenes `df` und `mount`; beides gibt es auf Windows nicht, und Apex'
+   Export kam dort nicht durch (17.11.2026). Die Firmlink-Falle des Macs und
+   die Platzrechnung stehen jetzt dort, an einer Stelle, und der Server fragt
+   dieselbe. */
+
 /* Die 4-GB-Grenze von FAT32 trifft seit den Behältern nichts mehr: die
    Stücke bleiben unter 2 GB, und alles, was größer sein könnte (Stems),
    liegt in ihnen. Die frühere Prüfung zuGrosseDateien() ist damit weg
    (09.09.2026). */
 {
-  const medium = dateisystemVon(ZIEL);
-  if (!medium) zeile('Ziel: Dateisystem nicht ermittelt (kein Einhängepunkt in der mount-Ausgabe passt)');
+  const medium = MEDIUM.dateisystem(ZIEL);
+  const schreiben = MEDIUM.beschreibbar(ZIEL);
+  const platz = MEDIUM.platz(ZIEL);
+  /* OB SICH SCHREIBEN LAESST, WIRD PROBIERT (17.11.2026): eine Datei anlegen und wieder loeschen.
+     Vorher wurden die Optionen der mount-Zeile nach „read-only" durchsucht - das beantwortet die
+     Frage nur mittelbar, und auf Windows gibt es die Zeile gar nicht. Die Probe sagt genau das, was
+     der Export wissen muss. Gemessen am selben Tag: / meldet EROFS, der Schreibtisch darueber (per
+     Firmlink dasselbe Geraet) meldet „geht" - richtig in beiden Faellen. */
+  const fsys = medium ? medium.dateisystem : '';
+  const ntfs = fsys.startsWith('ntfs');                     /* Linux nennt es ntfs3 */
+  if (!schreiben.ok && ntfs && process.platform === 'darwin')
+    abbruch('NTFS ist auf dem Mac nur lesbar - der Stick müsste als exFAT formatiert werden');
+  if (!schreiben.ok) abbruch(`Auf das Ziel lässt sich nicht schreiben (${ZIEL}, ${schreiben.grund}${fsys ? ', ' + fsys : ''})`);
+  if (!medium) zeile('Ziel: Dateisystem nicht ermittelt - der Export läuft trotzdem, schreiben lässt sich dort');
   else {
-    lauf.zielDateisystem = medium.dateisystem;
-    zeile(`Ziel liegt auf ${medium.pfad} (${medium.dateisystem}${medium.nurLesen ? ', nur lesen' : ''})`);
-    const ntfs = medium.dateisystem.startsWith('ntfs');     /* Linux nennt es ntfs3 */
-    if (ntfs && medium.nurLesen && process.platform === 'darwin') abbruch('NTFS ist auf dem Mac nur lesbar - der Stick müsste als exFAT formatiert werden');
-    if (medium.nurLesen) abbruch(`Das Ziel ist nur lesbar eingehängt (${medium.pfad}, ${medium.dateisystem})`);
+    lauf.zielDateisystem = fsys;
+    zeile(`Ziel liegt auf ${medium.pfad} (${fsys})`
+      + (platz.frei != null ? `, ${(platz.frei / 1073741824).toFixed(1)} GB frei` : ''));
     if (ntfs && process.platform === 'darwin') zeile('   NTFS ist hier beschreibbar (fremder Treiber) - der Export läuft, aber ohne Gewähr');
-    if (medium.dateisystem === 'msdos' || medium.dateisystem === 'vfat' || medium.dateisystem === 'fat32')
+    if (fsys === 'msdos' || fsys === 'vfat' || fsys === 'fat32')
       zeile('   FAT32: die Behälter-Stücke bleiben unter 2 GB, es kann losgehen');
   }
 }
 
-/* ---------------------------------------------------------------- rsync */
-/* Ohne -p/-o/-g: der Stick ist exFAT oder FAT32 und kennt weder Rechte
-   noch Besitzer - rsync -a endete dort mit "chmod failed" und Exit 23.
-   -L löst Verweise auf (ein Stick kann keine tragen), --modify-window=2
-   verzeiht die 2-Sekunden-Uhr von FAT. --delete räumt weg, was zu Hause
-   fehlt; --delete-excluded auch das, was inzwischen ausgeschlossen ist
-   (eine WAV von einem früheren Export). */
-const BEIFANG = ['--exclude', '._*', '--exclude', '.DS_Store', '--exclude', '.git', '--exclude', '.git*', '--exclude', '*.lock', '--exclude', '*.tmp'];
-/* --info=progress2 meldet den ganzen Lauf statt jeder Datei; dazu gehört
-   --no-inc-recursive, sonst kennt rsync die Summe erst am Ende und die
-   Prozentzahl liefe rückwärts (Caspar_D, 09.09.2026). Die Zeile kommt
-   mit \r auf dieselbe Stelle: "  1,234,567  45%   12.34MB/s    0:01:23 (xfr#12, to-chk=100/2000)".
-   mess = { was, gesamt, vorher, tempo }: der Rahmen für die Mitschrift -
-   gesamt aus der Vorabmessung, vorher = Bytes, die frühere rsyncs
-   desselben Schritts schon geschafft haben (Programm/ sind fünf Aufrufe,
-   ein Balken). Ohne mess läuft rsync stumm - der Trockenlauf der Messung. */
-function rsync(quelle, ziel, zusatz, mess, trocken) {
-  return new Promise((aufloesen, verwerfen) => {
-    const argv = ['-rtL', '--modify-window=2', '--delete', '--delete-excluded', '--stats', '--info=progress2', '--no-inc-recursive',
-                  ...((probe || trocken) ? ['--dry-run'] : []), ...BEIFANG, ...(zusatz || []), quelle + '/', ziel + '/'];
-    if (!probe && !trocken) fs.mkdirSync(ziel, { recursive: true });
-    const k = spawn('rsync', argv, { stdio: ['ignore', 'pipe', 'pipe'] });
-    kindProzesse.add(k); k.on('close', () => kindProzesse.delete(k));
-    let aus = '', fehler = '', rest = '';
-    k.stdout.setEncoding('utf8');
-    k.stdout.on('data', (d) => {
-      aus += d;
-      if (!mess) return;
-      const teile = (rest + d).split(/[\r\n]/); rest = teile.pop();
-      for (const t of teile) {
-        const m = t.match(/^\s*([\d,.]+)\s+(\d+)%\s/);
-        if (!m) continue;
-        const hier = +m[1].replace(/[,.]/g, '');
-        fortschritt(mess, { bytes: (mess.vorher || 0) + hier, prozent: mess.gesamt ? null : +m[2] });
-      }
+/* ---------------------------------------------------------------- Spiegeln (war rsync) */
+/* HIER LIEF RSYNC - BIS ZUM 17.11.2026. Es gibt es auf Windows nicht, und
+   Apex' Export brach dort ab. Caspar_D hat entschieden: der eigene Kopierer
+   ueberall, rsync faellt - nicht zwei Kopierwege fuer dieselbe Aufgabe, von
+   denen jeder Fehler zweimal gefunden werden muss.
+
+   Der Kopierer machte die Stufen 1-4 und 6 schon; er bekam drei Dinge dazu,
+   die rsync hier tat:
+
+     1. DURCH DEN BAUM GEHEN. rsync bekam einen Ordner, der Kopierer eine
+        Liste. baumGehen() sammelt sie. Verweisen wird gefolgt (rsync -L: ein
+        Stick kann keine tragen), Kreise fangen wir ueber den echten Pfad ab.
+     2. FILTERMUSTER. musterZuRegex() deckt genau die Formen ab, die der
+        Export braucht: einen Namen mit * (gilt in jeder Tiefe, wie rsync),
+        ein / am Anfang (nur an der Wurzel), ein / am Ende (nur Ordner) -
+        und '--filter P <muster>' schuetzt vor dem Wegraeumen.
+     3. WEGRAEUMEN. aufraeumen() ist --delete und --delete-excluded: was zu
+        Hause fehlt, geht; was ausgeschlossen ist, auch (eine WAV von einem
+        frueheren Export, die Songs, die inzwischen im Behaelter liegen). Was
+        nur im Ziel lebt - export-stand.json, die Behaelter - ist geschuetzt
+        und bleibt.
+
+   GLEICH IST EINE DATEI, WENN GROESSE UND ZEIT STIMMEN (kopierListe, 2 s
+   Fenster) - dieselbe Regel wie rsync -t mit --modify-window=2, denn FAT und
+   exFAT runden auf zwei Sekunden.
+
+   UND DIE VORABMESSUNG KOSTET NICHTS MEHR. rsync brauchte dafuer einen
+   Trockenlauf je Schritt, der beide Seiten ansah; die Liste des Kopierers
+   nennt die Summe im Vorbeigehen. */
+const { BEIFANG, filterBauen, baumGehen, aufraeumen } = require('./spiegeln.js');
+
+/* Der Ersatz fuer rsync(): Quelle nach Ziel spiegeln. mess = { was, gesamt,
+   vorher, tempo } ist der Rahmen fuer die Mitschrift - gesamt aus der
+   Vorabmessung, vorher die Bytes, die fruehere Aufrufe desselben Schritts
+   schon geschafft haben (Programm/ sind vier Aufrufe, ein Balken). Rueckgabe
+   wie bei rsync: { dateien, uebertragen, bytes, bytesUebertragen }. */
+async function spiegeln(quelle, ziel, zusatz, mess) {
+  const filter = filterBauen(zusatz);
+  const baum = baumGehen(quelle, filter);
+  const liste = kopierListe(baum.dateien.map((d) => ({ von: path.join(quelle, d.rel), nach: path.join(ziel, d.rel) })));
+  if (!probe) fs.mkdirSync(ziel, { recursive: true });
+  const bisher = () => (mess && mess.vorher) || 0;
+  let bytesFertig = 0, dateien = 0;
+  if (mess) fortschritt(mess, { bytes: bisher(), dateien: 0 });
+  for (const o of liste.offen) {
+    if (anhalten) break;
+    if (!probe) kopiereDatei(o.von, o.nach, o.mtime, o.atime, (summe) => {
+      if (mess && o.bytes > 8 * 1048576) fortschritt(mess, { bytes: bisher() + bytesFertig + summe, dateien });
     });
-    k.stderr.setEncoding('utf8'); k.stderr.on('data', (d) => { fehler += d; });
-    k.on('error', verwerfen);
-    k.on('close', (code) => {
-      /* Angehalten: rsync hat sein Signal bekommen und die halbe Datei
-         selbst weggeräumt - kein Fehler, der Lauf endet gleich sauber. */
-      if (anhalten && code !== 0) return aufloesen({ dateien: 0, uebertragen: 0, bytes: 0, bytesUebertragen: 0, angehalten: true });
-      /* 24 = "some files vanished" - jemand hat zu Hause gerade etwas
-         umgeräumt; kein Grund, den ganzen Export wegzuwerfen. */
-      if (code !== 0 && code !== 24) return verwerfen(new Error(`rsync ${path.basename(ziel)}: Exit ${code}\n${fehler.trim().split('\n').slice(-5).join('\n')}`));
-      const zahl = (name) => { const z = aus.split('\n').find(x => x.startsWith(name)) || ''; const m = z.match(/:\s*([\d,.]+)/); return m ? +m[1].replace(/[,.]/g, '') : 0; };
-      aufloesen({ dateien: zahl('Number of files'), uebertragen: zahl('Number of regular files transferred'),
-                  bytes: zahl('Total file size'), bytesUebertragen: zahl('Total transferred file size') });
-    });
-  });
+    bytesFertig += o.bytes; dateien++;
+    if (mess) fortschritt(mess, { bytes: bisher() + bytesFertig, dateien });
+    /* Ein Atemzug je Datei, damit das Signal zum Anhalten zwischen zwei Dateien ankommt. */
+    await new Promise((r) => setImmediate(r));
+  }
+  /* Angehalten wird nichts weggeraeumt - der Stand im Ziel bleibt, wie er ist,
+     und der naechste Lauf setzt fort. */
+  const weg = anhalten ? [] : aufraeumen(quelle, ziel, filter, { trocken: probe });
+  return { dateien: baum.dateien.length, uebertragen: dateien, bytes: baum.bytes,
+           bytesUebertragen: bytesFertig, weggeraeumt: weg.length, angehalten: !!anhalten };
 }
-/* DIE VORABMESSUNG: ein Trockenlauf je rsync-Schritt, "Total transferred
-   file size" ist dann die Summe, gegen die der Balken läuft. Kostet
-   Sekunden (rsync muss beide Seiten einmal ansehen), spart aber den
-   Balken, der bei 100 % noch eine Stunde weiterläuft. In der Probe
-   entfällt sie - die Probe IST der Trockenlauf. Rückgabe: Bytes je
-   Aufruf, in derselben Reihenfolge wie die Paare. */
+/* DIE VORABMESSUNG: was waere zu uebertragen? Die Liste des Kopierers weiss es
+   ohne Lauf - rsync brauchte dafuer einen Trockenlauf je Schritt. In der Probe
+   entfaellt sie, die Probe IST die Messung. Rueckgabe: Bytes je Paar, in
+   derselben Reihenfolge. */
 async function vorabmessen(paare) {
   if (probe) return paare.map(() => 0);
   const ab = Date.now();
-  const summen = [];
-  for (const p of paare) summen.push((await rsync(p.quelle, p.ziel, p.zusatz, null, true)).bytesUebertragen);
+  const summen = paare.map((p) => {
+    const filter = filterBauen(p.zusatz);
+    const baum = baumGehen(p.quelle, filter);
+    return kopierListe(baum.dateien.map((d) => ({ von: path.join(p.quelle, d.rel), nach: path.join(p.ziel, d.rel) }))).bytesOffen;
+  });
   const gesamt = summen.reduce((a, b) => a + b, 0);
   zeile(`   Vorabmessung: ${(gesamt / 1048576).toFixed(0)} MB zu übertragen (${Math.round((Date.now() - ab) / 1000)} s)`);
   return summen;
@@ -898,8 +899,9 @@ async function probestart() {
 }
 
 /* ---------------------------------------------------------------- Der Kopierer */
-/* Die Stufen 1-4 und 6 laufen über diesen Kopierer statt über rsync, weil
-   nur er die REIHENFOLGE hält (neueste Titel zuerst). Gleich ist eine
+/* Alle Stufen laufen über diesen Kopierer (seit dem 17.11.2026 auch die, die
+   rsync hatte - siehe „Spiegeln" oben). Für die Stufen 1-4 und 6 war er von
+   Anfang an nötig, weil nur er die REIHENFOLGE hält (neueste Titel zuerst). Gleich ist eine
    Datei, wenn Größe und Zeit stimmen - dieselbe Regel wie rsync -t mit
    --modify-window=2 (FAT und exFAT runden auf zwei Sekunden). Kopiert
    wird über .tmp und rename, damit ein Abbruch nie eine halbe Datei
@@ -1162,7 +1164,7 @@ function zaehlen(ordner, ohne) {
   const programmMess = { was: 'Programm', gesamt: programmSummen.reduce((a, b) => a + b, 0), vorher: 0, tempo: tempoMesser() };
   for (let i = 0; i < programmPaare.length && !anhalten; i++) {
     const p = programmPaare[i];
-    const r = await rsync(p.quelle, p.ziel, p.zusatz, programmMess);
+    const r = await spiegeln(p.quelle, p.ziel, p.zusatz, programmMess);
     programmMess.vorher += programmSummen[i];
     dateien += r.dateien; bytes += r.bytes;
     zeile(`   ${programmOrdner[i]}/: ${r.dateien} Dateien, ${r.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'}`);
@@ -1255,7 +1257,7 @@ function zaehlen(ordner, ohne) {
   teilFertig('musik');
   if (fs.existsSync(path.join(WURZEL, 'docs'))) {
     const [ds] = await vorabmessen([{ quelle: path.join(WURZEL, 'docs'), ziel: path.join(PROGRAMM, 'docs'), zusatz: [] }]);
-    const rd = await rsync(path.join(WURZEL, 'docs'), path.join(PROGRAMM, 'docs'), [], { was: 'Programm', gesamt: ds, vorher: 0, tempo: tempoMesser() });
+    const rd = await spiegeln(path.join(WURZEL, 'docs'), path.join(PROGRAMM, 'docs'), [], { was: 'Programm', gesamt: ds, vorher: 0, tempo: tempoMesser() });
     dateien += rd.dateien; bytes += rd.bytes;
     zeile(`   docs/: ${rd.dateien} Dateien, ${rd.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'}`);
   }
@@ -1293,7 +1295,7 @@ function zaehlen(ordner, ohne) {
   /* Der Aufräumlauf über den Kern: holt, was Stufe 1 nicht kannte, räumt
      weg, was zu Hause fehlt. */
   const [datenSumme] = await vorabmessen([{ quelle: LIB, ziel: path.join(PROGRAMM, 'library'), zusatz: AUSSCHLUSS }]);
-  const rl = await rsync(LIB, path.join(PROGRAMM, 'library'), AUSSCHLUSS, { was: 'Abschluss', gesamt: datenSumme, vorher: 0, tempo: tempoMesser() });
+  const rl = await spiegeln(LIB, path.join(PROGRAMM, 'library'), AUSSCHLUSS, { was: 'Abschluss', gesamt: datenSumme, vorher: 0, tempo: tempoMesser() });
   if (anhalten) return angehalten(rn);
   zeile(`   Kern: ${rl.dateien} Dateien, ${rl.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'} (${(rl.bytesUebertragen / 1048576).toFixed(0)} MB)`);
 
