@@ -39,11 +39,13 @@ const ZEIGEN = process.argv.includes('--zeigen');
    ob sich beide bei --delete-excluded unterschiedlich verhalten; hier ist sie
    messbar. */
 const rsyncPfad = process.env.KT_RSYNC || WERKZEUG.finde('rsync');
-if (!rsyncPfad) {
-  console.log('\n  Kein rsync da - der Vergleich kann nicht laufen.');
-  console.log('  Das ist KEIN Bestanden: ohne die Gegenseite ist nichts gemessen.\n');
-  process.exit(2);
-}
+/* OHNE RSYNC WIRD TROTZDEM GEPRUEFT - GEGEN DIE AUFGESCHRIEBENE ERWARTUNG.
+   Auf Windows gibt es kein rsync, und genau dort muss der Lauf hin. Die
+   Erwartung steht in ZIEL unten ("WEG ..." oder "BLEIBT ..."), und sie ist
+   nicht geraten: auf dem Mac wird sie in jedem Lauf gegen echtes rsync
+   gehalten (siehe unten, "Erwartung gegen rsync"). Weicht dort etwas ab,
+   faellt der Lauf durch - die Erwartung kann also nicht unbemerkt verrutschen.
+   Ohne rsync sagt die Ausgabe deutlich, gegen WAS gemessen wurde. */
 
 /* ---------------------------------------------------------------- Die Fälle */
 /* Jeder Fall deckt eine Form ab, die im Export vorkommt. Was in beiden Bäumen
@@ -137,6 +139,18 @@ function unserLoescht(quelle, ziel, alle) {
 }
 
 /* ---------------------------------------------------------------- Lauf */
+/* Was laut ZIEL ueberleben soll - samt der Ordner, die es traegt. */
+function erwartetWeg(alle) {
+  const bleibt = new Set();
+  for (const [rel, text] of Object.entries(ZIEL)) {
+    if (/^WEG/.test(text)) continue;
+    bleibt.add(rel);
+    let t = rel;
+    while (t.includes('/')) { t = t.slice(0, t.lastIndexOf('/')); bleibt.add(t + '/'); }
+  }
+  return new Set(alle.filter((e) => !bleibt.has(e)));
+}
+
 const zu = fs.mkdtempSync(path.join(os.tmpdir(), 'klangtresor-spiegeln-'));
 const quelle = path.join(zu, 'zuhause');
 const ziel = path.join(zu, 'stick');
@@ -145,12 +159,25 @@ try {
   baumLegen(quelle, QUELLE);
   baumLegen(ziel, ZIEL);
   const alle = alleEintraege(ziel);
-  const rs = rsyncLoescht(quelle, ziel);
+  const erw = erwartetWeg(alle);
+  const rs = rsyncPfad ? rsyncLoescht(quelle, ziel) : erw;
   const un = unserLoescht(quelle, ziel, alle);
 
   console.log('\n  ' + alle.length + ' Einträge im Ziel, ' + Object.keys(QUELLE).length + ' zu Hause.');
-  console.log('  rsync ' + rsyncPfad + '\n');
-  const kopf = '  ' + 'Eintrag'.padEnd(34) + 'rsync'.padEnd(10) + 'wir'.padEnd(10) + 'Urteil';
+  console.log('  Gegenseite: ' + (rsyncPfad ? 'echtes rsync, ' + rsyncPfad
+    : 'die aufgeschriebene Erwartung (hier gibt es kein rsync — auf dem Mac wird sie gegen rsync gehalten)') + '\n');
+  /* ERWARTUNG GEGEN RSYNC: nur wo rsync da ist. Damit bleibt die Erwartung, mit
+     der anderswo gemessen wird, an die Wirklichkeit gebunden. */
+  if (rsyncPfad) {
+    const abw = [...new Set([...rs, ...erw])].filter((e) => rs.has(e) !== erw.has(e));
+    if (abw.length) {
+      schlecht += abw.length;
+      for (const e of abw) console.log('  ✗ Erwartung und rsync uneinig bei: ' + e
+        + '  (rsync ' + (rs.has(e) ? 'löscht' : 'behält') + ', aufgeschrieben ' + (erw.has(e) ? 'löscht' : 'behält') + ')');
+      console.log('');
+    } else console.log('  Die aufgeschriebene Erwartung deckt sich mit rsync.\n');
+  }
+  const kopf = '  ' + 'Eintrag'.padEnd(34) + (rsyncPfad ? 'rsync' : 'erwartet').padEnd(10) + 'wir'.padEnd(10) + 'Urteil';
   if (ZEIGEN) { console.log(kopf); console.log('  ' + '-'.repeat(kopf.length)); }
   for (const e of alle) {
     const a = rs.has(e), b = un.has(e);
@@ -164,7 +191,7 @@ try {
   }
   console.log('');
   if (schlecht) console.log('  ' + schlecht + ' von ' + alle.length + ' Entscheidungen weichen ab - NICHT BESTANDEN.\n');
-  else console.log('  Alle ' + alle.length + ' Entscheidungen gleich wie rsync - bestanden.');
+  else console.log('  Alle ' + alle.length + ' Entscheidungen gleich wie die Gegenseite - bestanden.');
 
   /* UND JETZT WIRKLICH LOESCHEN. Bis hierher war beides ein Trockenlauf; eine
      Absicht ist noch keine Tat. Der Zielbaum wird neu gelegt, aufraeumen()
@@ -174,7 +201,7 @@ try {
   baumLegen(ziel, ZIEL);
   aufraeumen(quelle, ziel, filterBauen(AUSSCHLUSS), { trocken: false });
   const uebrig = new Set(alleEintraege(ziel));
-  const sollBleiben = alle.filter((e) => !rs.has(e));
+  const sollBleiben = alle.filter((e) => !rs.has(e));   /* rs ist ohne rsync die Erwartung */
   const zuviel = [...uebrig].filter((e) => !sollBleiben.includes(e));
   const zuwenig = sollBleiben.filter((e) => !uebrig.has(e));
   if (zuviel.length || zuwenig.length) {
