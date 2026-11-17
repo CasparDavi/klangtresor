@@ -110,6 +110,7 @@
 const fs   = require('node:fs');
 const path = require('node:path');
 const net  = require('node:net');
+const zlib = require('node:zlib');
 const http = require('node:http');
 const { spawn, spawnSync } = require('node:child_process');
 const K    = require('./katalog.js');
@@ -1298,6 +1299,54 @@ function zaehlen(ordner, ohne) {
   const rl = await spiegeln(LIB, path.join(PROGRAMM, 'library'), AUSSCHLUSS, { was: 'Abschluss', gesamt: datenSumme, vorher: 0, tempo: tempoMesser() });
   if (anhalten) return angehalten(rn);
   zeile(`   Kern: ${rl.dateien} Dateien, ${rl.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'} (${(rl.bytesUebertragen / 1048576).toFixed(0)} MB)`);
+
+  /* DER KATALOG DARF NICHTS BEHAUPTEN, WAS NICHT MITKOMMT.
+
+     Gefunden am 17.11.2026, von Caspar_D am laufenden Archiv: im
+     exportierten KlangTresor liess sich kein Titel abspielen. Die Konsole
+     sagte, woran es lag:
+
+       GET /media/<id>/audio.wav  404
+       Wiedergabe blockiert: Failed to load because no supported source was found.
+
+     Die Kette: jeder Titel traegt im Katalog das Feld `wav` - die Groesse
+     seiner audio.wav (bin/aufbereiten.js). Der Export laesst die WAVs
+     bewusst weg (titelRestPaare, sie sind zu gross), kopiert den Katalog
+     aber unveraendert. Und die Seite waehlt die Tondatei so:
+
+       let bTon = localStorage.getItem('mysuno-ton') || (istHandy() ? 'mp3' : 'wav')
+
+     Am Rechner ist WAV die Voreinstellung. Also fragte das Archiv eine
+     Datei, die es nie bekommen hat - bei 346 von 347 Titeln. Am Handy fiel
+     es nie auf, weil dort MP3 voreingestellt ist, und der mobile
+     KlangTresor war ja der Zweck.
+
+     HIER STATT IN DER SEITE: web/index.html ist dieselbe Datei fuer das
+     Haus und fuer den Stick. Eine Sonderregel dort waere eine Ausnahme im
+     Arbeitsfile, und die WAV-Taste bliebe stehen und liefe beim Druecken
+     wieder ins Leere. Ohne das Feld waehlt dieselbe Zeile von selbst MP3,
+     der Umschalter zeigt WAV gar nicht erst an (wavDa ist falsch) - und
+     das Archiv behauptet nichts mehr, was nicht auf dem Stick liegt.
+
+     NACH DEM SPIEGELN, NICHT DAVOR: der Abgleich holt katalog.json.gz
+     jedes Mal frisch aus dem Haus. Was hier geschrieben wird, haelt also
+     genau bis zum naechsten Lauf - und der schreibt es neu. */
+  {
+    const kat = path.join(PROGRAMM, 'library', 'katalog.json.gz');
+    if (fs.existsSync(kat)) {
+      try {
+        const k = JSON.parse(zlib.gunzipSync(fs.readFileSync(kat)).toString('utf8'));
+        let n = 0;
+        for (const song of Object.values(k.songs || {})) if (song.wav != null) { delete song.wav; n++; }
+        if (n) {
+          fs.writeFileSync(kat, zlib.gzipSync(Buffer.from(JSON.stringify(k), 'utf8'), { level: 9 }));
+          zeile(`   Katalog: ${n} WAV-Angabe(n) entfernt — die WAVs bleiben zu Hause, das Archiv spielt MP3`);
+        }
+      } catch (e) {
+        zeile(`   Katalog liess sich nicht entwaven (${e.message}) — das Archiv wuerde WAVs verlangen, die nicht da sind`);
+      }
+    }
+  }
 
   /* GRABSTEINE: was zu Hause weg ist, verschwindet aus dem Verzeichnis
      (die Bytes bleiben als Ballast im Stück, bis verdichtet wird). Stems
