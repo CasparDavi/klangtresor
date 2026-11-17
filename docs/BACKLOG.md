@@ -3603,11 +3603,18 @@ Glocke von inside und dieses Scheiss Tool von aussen."*
   wurde gebaut, gemessen und wieder zurückgenommen (Commit `383fcce`): er klagte über genau die
   sechs Pakete oben, und eine Prüfung, die über Belangloses redet, findet irgendwann das Echte nicht.
 
-**Was offen bleibt — und zwar im Inneren:** Henrys Beobachtung ist ein Hinweis, dass **die Glocke zu
-langsam ist**. `KlangTresor.zip` ist 59,8 MB, und `holenDatei` (`bin/aktualisieren.js`) zieht es durch
-**eine** Verbindung, **ohne Fortsetzen**: bricht es bei 80 %, fängt alles von vorn an. Gemessen am
-17.11.2026 von hier aus: vier Teilstücke parallel bringen 1,2- bis 1,4-fachen Durchsatz (7,8 → 10,8
-und 6,6 → 7,8 MB/s), hier also 9 statt 12 Sekunden. Auf einer gedrosselten Fernverbindung ist der
-Gewinn üblicherweise viel größer — belegen lässt sich das von hier nicht. Range funktioniert
-(HTTP 206 vom GitHub-Release). **Entscheidung offen:** Teilstücke und Fortsetzen einbauen, oder
-darauf verzichten, weil der Installer der Weg ist und die Glocke nur noch kleine Fassungen holt.
+**Nichts bleibt offen.** Caspar_D, 17.11.2026: *„und wenn es eine glocke gibt, dann sollen sie da
+drauf drücken und die 50MB ziehen. Ich ärger mich grade, dass wir uns immer wieder ins Bockshorn
+jagen lassen. Das Problem ist längst gelöst."*
+
+Es gibt eine Glocke, sie holt das Paket, und für eine halbe Installation gibt es den Installer. Damit
+ist der Fall zu. Der Lader bleibt, wie er ist: eine Verbindung, kein Fortsetzen. Zum Nachlesen, falls
+die Frage je wiederkommt — gemessen am 17.11.2026 von Deutschland aus, `KlangTresor.zip` ist 59,8 MB,
+Range funktioniert (HTTP 206): vier Teilstücke parallel brachten 1,2- bis 1,4-fachen Durchsatz
+(7,8 → 10,8 und 6,6 → 7,8 MB/s), hier also neun statt zwölf Sekunden. Kein Anlass zum Bauen.
+
+**Was dieser Vormittag gekostet hat, und was daraus zu lernen ist:** eine gemeldete Umgehung ist kein
+Mangel. Henry hat einen schnelleren Weg gefunden, nicht einen Fehler gemeldet. Die erste Frage lautet
+nicht „wie sichern wir ihren Weg ab", sondern „ist das Problem nicht längst gelöst" — hier: seit
+1.0.134 durch die Installer. Gebaut, gemessen und wieder zurückgenommen wurde ein Umbau der
+Paketprüfung (`9f12bb3`, zurück mit `383fcce`).
