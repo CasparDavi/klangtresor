@@ -72,7 +72,7 @@ Verhältnis zum Aufwand.
 
 ---
 | Effektclip | Entscheidung | [Das Studio als eigene Datei (25.09.2026)](#das-studio-als-eigene-datei-25092026) |
-| Haus | zu planen | [Update aus dem Ordner ist schneller als über die Oberfläche (17.11.2026)](#update-aus-dem-ordner-ist-schneller-als-über-die-oberfläche-17112026) |
+| Haus | erledigt | [Update aus dem Ordner: der Installer ist die Antwort (17.11.2026)](#update-aus-dem-ordner-der-installer-ist-die-antwort-17112026) |
 
 ## Die tote Tonart — ERLEDIGT 24.08.2026
 
@@ -3564,46 +3564,50 @@ Setup/AppImage/DMG-Bau); dann Caspar_D die Liste „weg / bleibt / bleibt bis“
 außerhalb des Pakets (paket.js nimmt nur, was git kennt — also aus dem Baum nehmen, nicht bloß verstecken).
 
 
-## Update aus dem Ordner ist schneller als über die Oberfläche (17.11.2026)
+## Update aus dem Ordner: der Installer ist die Antwort (17.11.2026)
 
-**Zustand:** zu planen · **Modul:** Haus
+**Zustand:** erledigt (Antwort steht) · **Modul:** Haus
 
 Henry, 17.11.2026: „Beim KlangTresor geht das Update aus dem Ordner (neues Paket drüberlegen)
 deutlich schneller als über die Oberfläche."
 
-**Nachgesehen, woran das liegt.** Beide Wege laufen durch denselben Code: die Pille im Fenster
-„KlangTresor" geht auf `/api/system/holen?was=update` → `bin/system.js auftragStarten('update')` →
-`bin/aktualisieren.js`, und die Skripte `aktualisieren-*` rufen dasselbe. Es gibt also **keinen
-langsamen Oberflächenweg**, sondern zwei Dinge, die nur der Weg über die Oberfläche tut und das
-Drüberlegen von Hand nicht:
+**Die Antwort, von Caspar_D am selben Tag:** *„das ist doch alles kalter kaffee, wir haben längst
+installer die alles holen und beinhalten. Das sind altlasten, die sollen den installer nehmen und
+drüberbügeln, dann ist alles da."*
 
-1. **Das Zip von GitHub holen** (`holenDatei`, Zeile 235). Eine schlichte https-Verbindung, kein
-   Teilstück-Download, kein Wiederaufsetzen, 30 s Stillstandsgrenze. Wer das Paket schon im Ordner
-   hat, spart genau diese Zeit — und zwar um so mehr, je schlechter die Leitung nach GitHub ist.
-   Von Deutschland aus fällt das nicht auf; Henry sitzt nicht in Deutschland.
-2. **`npm ci`, wenn sich `package-lock.json` geändert hat** (`npmCiWennNoetig`, Zeile 365).
+Seit 1.0.134–1.0.139 gibt es Setup.exe, AppImage und Mac-App; sie bringen alles mit. Die Einrichtung
+erkennt ein vorhandenes Archiv am Katalog und führt es weiter (`bin/einrichten.js`, Zeile 1117: „Das
+vorhandene Archiv weiterführen?"). Wer eine halbe Installation hat, bügelt den Installer darüber.
+**Ein Paket von Hand drüberlegen ist kein Weg, den der KlangTresor stützt** — und soll es nicht
+werden. Caspar_D zu den zwei Eingängen: *„zwei wege, die das gleiche machen, der druck auf die
+Glocke von inside und dieses Scheiss Tool von aussen."*
 
-**Und hier ist der Haken, der wichtiger ist als die Geschwindigkeit:** Punkt 2 fällt beim Drüberlegen
-von Hand weg. Hat ein Release Pakete geändert, läuft Henrys Installation danach mit den **alten**
-`node_modules` — und nichts sagt es ihr. Der Tab „System" prüft `fehlende()`, also nur, was ganz
-fehlt. `bin/pakete.js` hat mit `abweichungen()` schon die Prüfung, die genau das findet (jedes Paket
-in der Fassung, die `package-lock.json` verlangt) — **sie wird nirgends aufgerufen**. Das ist zu
-klären, bevor „Paket drüberlegen" als Weg empfohlen wird.
+**Was dabei nachgesehen wurde, zum Nachlesen:**
 
-**Zwei Richtungen, beide noch nicht entschieden:**
+- Glocke und `aktualisieren-*` rufen dasselbe `bin/aktualisieren.js`. Der Mechanismus ist einer,
+  doppelt sind nur die Eingänge. Der äußere bleibt nach der Entscheidung vom 29.10.2026, solange
+  Installationen vor 1.0.133 existieren (siehe „Alte Installationsskripte archivieren").
+- `KlangTresor-Update.zip` ist **nicht** das Programmpaket, sondern nur `aktualisieren.js` plus die
+  drei Anlasser für Installationen ohne Updateskript. Nicht verwechseln.
+- **Korrektur zu einem Befund desselben Tages:** `abweichungen()` in `bin/pakete.js` ist **nicht**
+  toter Code — `bin/einrichten.js` (Zeile 1717) nutzt es, um npm zu überspringen, wenn node_modules
+  schon vollständig daliegt (die Setup.exe bringt es mit). Der erste Eintrag hier behauptete das
+  Gegenteil; durchsucht waren nur Server und Oberfläche.
+- **Das Lock verlangt sechs Pakete, die der Betrieb nicht braucht:** `tar` und sein Zweig
+  (`minipass`, `chownr`, `minizlib`, `yallist`, `@isaacs/fs-minipass`). `onnxruntime-node` nennt
+  `tar` für sein Installationsskript, das im Paket **nicht enthalten** ist; die Binärdatei liegt
+  fertig unter `bin/napi-v3`. Auf Caspar_Ds Rechner fehlten sie, und nichts fehlte dadurch. Nachgeholt
+  am 17.11.2026 — sie bleiben liegen, npm legt sie bei jeder Einrichtung ohnehin.
+- Die Prüfung `fehlende()` sieht nur die Pakete aus `package.json` (`onnxruntime-node`, `umap-js`).
+  Beide nennen ein `main`, die Prüfung arbeitet für sie also richtig. Ein Umbau auf das ganze Lock
+  wurde gebaut, gemessen und wieder zurückgenommen (Commit `383fcce`): er klagte über genau die
+  sechs Pakete oben, und eine Prüfung, die über Belangloses redet, findet irgendwann das Echte nicht.
 
-- **Den Download schneller machen** — in Teilstücken parallel und mit Wiederaufsetzen, wie es die
-  Downloads an anderer Stelle schon tun. Hilft allen mit schlechter Leitung nach GitHub, ändert am
-  Ablauf nichts.
-- **Das vorhandene Paket annehmen** — liegt `KlangTresor.zip` (oder `KlangTresor-Update.zip`) im
-  Ordner, nimmt die Oberfläche es, statt zu laden. Dann läuft auch `npm ci` mit, und der schnelle Weg
-  bleibt ein vollständiger Weg. Dazu gehört, dass die Oberfläche die Fassung im Zip nennt, bevor sie
-  es nimmt.
-
-Unabhängig davon: **`abweichungen()` sichtbar machen.** Der Tab „System" soll nicht nur sagen, was
-fehlt, sondern auch, was in der falschen Fassung liegt — sonst merkt niemand, dass eine von Hand
-drübergelegte Fassung halb ist. Mit Knopf zum Richten (`npm ci`), wie beim Nachholen.
-
-**Offen für Henry:** wie lange der Weg über die Oberfläche bei ihr dauert, und wie viel davon auf
-„hole KlangTresor.zip" geht (der Balken sagt es). Erst dann steht fest, ob die Leitung die Ursache
-ist oder etwas anderes.
+**Was offen bleibt — und zwar im Inneren:** Henrys Beobachtung ist ein Hinweis, dass **die Glocke zu
+langsam ist**. `KlangTresor.zip` ist 59,8 MB, und `holenDatei` (`bin/aktualisieren.js`) zieht es durch
+**eine** Verbindung, **ohne Fortsetzen**: bricht es bei 80 %, fängt alles von vorn an. Gemessen am
+17.11.2026 von hier aus: vier Teilstücke parallel bringen 1,2- bis 1,4-fachen Durchsatz (7,8 → 10,8
+und 6,6 → 7,8 MB/s), hier also 9 statt 12 Sekunden. Auf einer gedrosselten Fernverbindung ist der
+Gewinn üblicherweise viel größer — belegen lässt sich das von hier nicht. Range funktioniert
+(HTTP 206 vom GitHub-Release). **Entscheidung offen:** Teilstücke und Fortsetzen einbauen, oder
+darauf verzichten, weil der Installer der Weg ist und die Glocke nur noch kleine Fassungen holt.
