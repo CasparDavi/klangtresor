@@ -1842,6 +1842,30 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
       } catch (e) { jsonAntwort(res, { fehler: e.message }, 400); }
     });
   }
+  /* Welche Playlists in der Standardsicht mitlaufen (17.11.2026, Tarjas
+     Wunsch). Eigener Weg, wie beim exportZiel: so bleibt die
+     Handle-Pruefung unberuehrt und alle anderen Felder stehen. Im Archiv
+     greift die 405-Sperre weiter oben - dort wird die Auswahl nur
+     angewendet, nicht geaendert. */
+  if (p === '/api/zeige-listen' && req.method === 'POST') {
+    let roh = ''; req.on('data', c => { roh += c; if (roh.length > 65536) req.destroy(); });
+    return req.on('end', () => {
+      try {
+        const d = JSON.parse(roh);
+        const roheListe = Array.isArray(d.listen) ? d.listen : null;
+        if (!roheListe) return jsonAntwort(res, { fehler: 'listen fehlt (Feld mit den Kennungen)' }, 400);
+        /* Nur Kennungen, die es wirklich gibt - eine erfundene stuende sonst
+           fuer immer in der Datei und niemand koennte sie zuordnen. */
+        const k = katalogHolen();
+        const bekannt = new Set(Object.keys((k && k.playlists) || {}));
+        const listen = [...new Set(roheListe.map(String))].filter(x => bekannt.has(x)).slice(0, 500);
+        const alt = konfigLesen();
+        if (listen.length) alt.zeigeListen = listen; else delete alt.zeigeListen;
+        fs.writeFileSync(KONFIG, JSON.stringify(alt, null, 1));
+        jsonAntwort(res, { ok: true, listen, verworfen: roheListe.length - listen.length });
+      } catch (e) { jsonAntwort(res, { fehler: e.message }, 400); }
+    });
+  }
   if (p === '/api/konfig' && req.method === 'PUT') {
     let roh = '';
     req.on('data', s => { roh += s; });
@@ -3109,6 +3133,21 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
       // Playlists ungekürzt: Sie tragen die Reihenfolge und die
       // Einträge fremder Songs, die es im Songteil gar nicht gibt.
       playlists:  k.playlists ? Object.values(k.playlists) : [],
+      /* TARJAS WUNSCH (17.11.2026): Playlists, deren Titel in der
+         Standardsicht mitlaufen, obwohl Suno sie nicht oeffentlich zeigt.
+         „sie hat mehrere -zig songs, von denen sie einige gern hoert, die
+         aber nicht oeffentlich sind. Sie will aber nicht alle privaten im
+         Filter erlauben" - also eine Auswahl, keine Pauschale.
+
+         DIE REGEL BLEIBT HEIL (Caspar_D: „bilde nur ab was Suno auch
+         zeigt"): der Titel bleibt als privat gekennzeichnet, die
+         Schattenmarkierung steht weiter. Es wird nichts behauptet, es wird
+         nur nicht mehr weggefiltert, was die Besitzerin sehen will.
+
+         IM INDEX statt in einer eigenen Abfrage: beide Ladewege der
+         Oberflaeche bekommen sie damit ohne Zutun, und im Archiv gilt sie
+         genauso - konfig.json reist beim Export mit. */
+      zeigeListen: (() => { try { const z = konfigLesen().zeigeListen; return Array.isArray(z) ? z : []; } catch (e) { return []; } })(),
     });
   }
 

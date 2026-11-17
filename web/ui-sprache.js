@@ -142,6 +142,13 @@
     ["detail.ablegen.nein", "Abbrechen", "Cancel"],
     ["detail.ablegen.fertig", "„{titel}“ ist abgelegt – im Profil unter „Abgelegt“ kannst du ihn zurückholen oder endgültig löschen.", "“{titel}” is set aside – in your profile under “Set aside” you can bring it back or delete it for good."],
     ["detail.ablegen.fehler", "Das ging nicht ({grund}). Prüfe, ob KlangTresor noch läuft, und versuche es noch einmal.", "That did not work ({grund}). Check that KlangTresor is still running and try again."],
+    /* Listen, die in der Standardsicht mitlaufen (17.11.2026, Tarjas Wunsch).
+       Der Text sagt, was passiert, nicht wie es gebaut ist: die Titel werden
+       mit angezeigt, bleiben aber als privat gekennzeichnet. */
+    ["listen.titel", "Auch diese Listen zeigen", "Show these playlists too"],
+    ["listen.text", "Deine nicht öffentlichen Playlists. Was du hier ankreuzt, läuft in der normalen Titelansicht mit — die Titel bleiben als privat gekennzeichnet, sie werden nur nicht mehr weggefiltert.", "Your playlists that are not public. Whatever you tick here appears in the normal title view — the titles stay marked as private, they are simply no longer filtered out."],
+    ["listen.titelzahl", "{n} Titel", "{n} titles"],
+    ["listen.fehler", "Nicht gespeichert: {grund}", "Not saved: {grund}"],
     ["ablage.titel", "Abgelegt ({n})", "Set aside ({n})"],
     ["ablage.text", "Titel, die du aus dem Tresor genommen hast. Sie sind in keiner Ansicht zu sehen; ihre Dateien sind noch da. Wird einer bei Suno (wieder) öffentlich, kommt er von selbst zurück.", "Titles you took out of the vault. They show up in no view; their files are still here. If one becomes public on Suno (again), it comes back by itself."],
     ["ablage.daten", "erstellt {erstellt} · abgelegt {abgelegt}", "created {erstellt} · set aside {abgelegt}"],

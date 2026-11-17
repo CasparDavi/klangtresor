@@ -2686,6 +2686,16 @@ html.handy #ich{margin-left:12px}
 #detail .ablegen .chip.ja{border-color:var(--akzent);color:var(--text)}
 
 /* Abgelegte Titel im Profil (27.10.2026) */
+/* Die freigegebenen Listen (17.11.2026) - wie die Ablage darunter gebaut,
+   damit im Profil nicht zwei Listenformen nebeneinander stehen. Der Name
+   nimmt den Platz, die Titelzahl steht rechts und bleibt zurueckhaltend. */
+#profillisten .listenwahl{display:flex;flex-direction:column;margin-top:8px}
+#profillisten .listenzeile{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--rand);cursor:pointer}
+#profillisten .listenzeile input{flex:0 0 auto;cursor:pointer}
+#profillisten .listenzeile .ln{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#profillisten .listenzeile .lz{flex:0 0 auto;opacity:.6;font-variant-numeric:tabular-nums}
+#profillisten .listenzeile input:disabled{cursor:default}
+#profillisten .listenzeile:has(input:disabled){cursor:default;opacity:.7}
 #profilablage .ablageliste{display:flex;flex-direction:column;margin-top:8px}
 #profilablage .ablagezeile{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--rand)}
 #profilablage .at{flex:1 1 220px;min-width:0;color:var(--text)}
@@ -5202,6 +5212,15 @@ let register = 'tracks';
 let offenePlaylist = null;
 let playlists = [];
 const playlistVonId = new Map();
+/* WELCHE LISTEN IN DER STANDARDSICHT MITLAUFEN (17.11.2026, Tarjas Wunsch).
+   Kennungen von Playlists, deren Titel der Filter „öffentlich" durchlässt,
+   auch wenn Suno sie nicht öffentlich zeigt. Kommt aus /api/index (dort aus
+   library/konfig.json), gilt also auch im Archiv auf dem Stick.
+   Die Titel bleiben als privat gekennzeichnet — es wird nichts behauptet,
+   es wird nur nicht mehr weggefiltert. */
+let zeigeListen = new Set();
+const inZeigeListe = (s) => zeigeListen.size > 0
+  && Array.isArray(s.playlists) && s.playlists.some(id => zeigeListen.has(id));
 
 /* ZWEI DECKS (Anschluss, 23.08.2026): `audio` zeigt immer auf das Deck, das
    gerade den laufenden Song traegt - aller uebrige Code arbeitet unveraendert
@@ -5302,6 +5321,7 @@ async function start(){
   songVonId = new Map(alle.map(s => [s.id, s]));
   playlists = d.playlists || [];
   playlists.forEach(p => playlistVonId.set(p.id, p));
+  zeigeListen = new Set(d.zeigeListen || []);
   kachelStand = d.kachelStand || 0;
   katalogInfo = d;
   eingefrorenAnwenden();
@@ -5628,6 +5648,7 @@ async function katalogNachladen(){
   songVonId = new Map(alle.map(s => [s.id, s]));
   playlists = d.playlists || [];
   playlistVonId.clear(); playlists.forEach(p => playlistVonId.set(p.id, p));
+  zeigeListen = new Set(d.zeigeListen || []);
   kachelStand = d.kachelStand || 0;
   katalogInfo = d;
   /* Neue Modelle in die Auswahl, ohne Doppel; die Filter selbst bleiben stehen. */
@@ -8347,7 +8368,9 @@ function titelImFilter(){
   const sicht = $('sicht').value;
   return alle.filter(s=>{
     if (modell && s.modell !== modell) return false;
-    if (sicht === 'oeff'   && !s.oeffentlich) return false;
+    /* „öffentlich" heißt: was Suno zeigt — UND was in einer Liste steht,
+       die ausdrücklich freigegeben wurde (Profil → Meine Daten). */
+    if (sicht === 'oeff'   && !s.oeffentlich && !inZeigeListe(s)) return false;
     if (sicht === 'privat' &&  s.oeffentlich) return false;
     // Gemeint ist das EIGENE Video-Artwork (83 Songs), nicht Sunos
     // Lyric-Video - das hat fast jeder Song, es würde also nichts
@@ -18203,6 +18226,7 @@ function profilRegister(welches){
     f.hidden = f.dataset.preg !== welches);
   /* Die Nachbarschaft wird erst beim ersten Hinsehen gebaut - sie liest
      eine eigene Datei und soll den Seitenaufbau nicht aufhalten. */
+  if (welches === 'daten' && typeof profilListenFuellen === 'function') profilListenFuellen();
   if (welches === 'community' && typeof profilNachbarnFuellen === 'function') profilNachbarnFuellen();
   if (welches === 'handy') profilHandyFuellen();
   if (welches === 'system') profilSystemFuellen();
@@ -18402,6 +18426,51 @@ async function profilSystemFuellen(){
    Caspar_D: „Merkmalsvergabe mit der Moeglichkeit im Profil, Listenmitglieder komplett zu loeschen“. Erscheint nur, wenn
    etwas abgelegt ist. Zurueckholen nimmt das Merkmal weg; Endgueltig loeschen entfernt die Dateien und setzt den Titel
    auf die Nie-wieder-Liste - beides mit Rueckfrage im Fenster. */
+/* ---- LISTEN IN DER STANDARDSICHT (17.11.2026) -----------------------------
+   Tarja: mehrere Dutzend Titel, die sie gern hört, die bei Suno aber nicht
+   öffentlich stehen. Alle privaten durchzulassen wäre ihr zu viel — sie will
+   einige. Der Weg dorthin ist der, den sie ohnehin geht: private Titel
+   kommen über eine Playlist in den KlangTresor (Caspar_D: „es ist der
+   Standardweg für private Titel, sie überhaupt in den KT zu kriegen").
+   Also wird die Liste angehakt, nicht der Titel.
+
+   Angeboten werden nur die NICHT öffentlichen Listen: die öffentlichen
+   kommen ohnehin durch, ein Häkchen dort wäre ein Regler ohne Wirkung.
+   Gibt es keine private Liste, fehlt der Abschnitt ganz, statt leer
+   dazustehen. Im Archiv wird nur angezeigt, nicht geändert — dort ist die
+   Auswahl das, was beim Export galt. */
+function profilListenFuellen(){
+  const el = $('profillisten'); if (!el) return;
+  const privat = (playlists || []).filter(p => !p.oeffentlich);
+  el.hidden = !privat.length; if (!privat.length) return;
+  const fest = archivEingefroren();
+  const n = (id) => (alle || []).filter(x => Array.isArray(x.playlists) && x.playlists.includes(id)).length;
+  el.innerHTML = `<h3>${esc(t('listen.titel'))}</h3><p class="fussnote">${esc(t('listen.text'))}</p>`
+    + `<div class="listenwahl">${privat.map(p => {
+        const an = zeigeListen.has(p.id);
+        return `<label class="listenzeile"><input type="checkbox" data-pl="${esc(p.id)}"${an ? ' checked' : ''}${fest ? ' disabled' : ''}>`
+          + `<span class="ln">${esc(p.name || p.id)}</span>`
+          + `<span class="lz">${esc(t('listen.titelzahl', { n: n(p.id) }))}</span></label>`;
+      }).join('')}</div>`;
+  if (fest) return;
+  el.onchange = async (ev) => {
+    const b = ev.target.closest('input[data-pl]'); if (!b) return;
+    const gewaehlt = [...el.querySelectorAll('input[data-pl]:checked')].map(x => x.dataset.pl);
+    try {
+      const a = await fetch('/api/zeige-listen', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                                   body: JSON.stringify({ listen: gewaehlt }) });
+      const j = await a.json();
+      if (!j || j.fehler) throw new Error((j && j.fehler) || 'unbekannt');
+      zeigeListen = new Set(j.listen || []);
+      /* Sofort sichtbar: die Matrix neu zeichnen, ohne die Seite zu laden. */
+      if (typeof zeichnen === 'function') zeichnen();
+    } catch (e) {
+      b.checked = !b.checked;              /* nicht gespeichert, also auch nicht angezeigt */
+      kurzMeldung(t('listen.fehler', { grund: e.message }));
+    }
+  };
+}
+
 async function profilAblageFuellen(){
   const el = $('profilablage'); if (!el || archivEingefroren()) return;
   let d = null; try { d = await (await fetch('/api/ablage', { cache: 'no-store' })).json(); } catch (e) { return; }
@@ -19764,6 +19833,7 @@ function profilAuf(){
 
 ${t('profil.urheber.suno')}</pre>
       </div>
+      <div class="block" id="profillisten" hidden></div><!-- fuellt profilListenFuellen() -->
       <div class="block" id="profilablage" hidden></div><!-- fuellt profilAblageFuellen() -->
       </div><!-- /Register: Meine Daten -->
 
