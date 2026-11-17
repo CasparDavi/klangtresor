@@ -19092,6 +19092,12 @@ function exportZeichnen(d){
   else if (st && st.exportiertAm)
     stand.textContent = (d.fertig ? t('export.lauf.fertig') + ' ' : '') + t('export.lauf.stand', { tag: exportTag(st.exportiertAm), n: tZahl(Number(st.dateien || 0)), g: exportGroesse(st.bytes) })
       + (st.titel ? ', ' + t('export.lauf.titel', { n: Number(st.titel), z: tZahl(Number(st.titel)) }) : '') + (st.mitStems ? ', ' + t('export.lauf.mit_stems') : '') + (st.probestart ? ', ' + t('export.lauf.probestart', { x: st.probestart }) : '') + '.';
+  /* EIN GESCHEITERTER LAUF IST NICHT "BEREIT" (17.11.2026, Apex' Fall).
+     Diese Kette hatte keinen Zweig für d.fehler und fiel bis ganz nach
+     unten durch — die Zeile sagte dann "Noch kein Export auf {ziel} —
+     bereit.", also genau das, was im Ruhezustand steht. Wer auf Start
+     gedrückt hatte, las daraus, es sei nie etwas passiert. */
+  else if (d.fehler) stand.textContent = '✗ ' + d.fehler;
   else stand.textContent = t('export.lauf.bereit', { ziel: d.ziel });
 
   /* Der Lauf als EIN Abschnitt, nachgefuehrt statt neu gebaut: Wer die

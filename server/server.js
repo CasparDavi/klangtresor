@@ -3522,7 +3522,22 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
       if (stems) args.push('--stems');
       const k = cp.spawn(process.execPath, args, { cwd: WURZEL, stdio: 'ignore' });
       global.exportLauf = { seit: Date.now(), pid: k.pid, ziel, stems };
-      k.on('error', () => { global.exportLauf = null; });
+      /* EIN START, DER NICHT KLAPPT, DARF NICHT SPURLOS BLEIBEN (17.11.2026).
+         Hier stand nur `global.exportLauf = null` - der Fehler war weg, die
+         Laufdatei unberuehrt, und die Oberflaeche zeigte die Ruhezeile, als
+         waere nie jemand auf den Knopf gegangen. Jetzt wird er in die
+         Laufdatei geschrieben, die die Oberflaeche ohnehin liest; sie zeigt
+         ihn dann als "✗ ..." und klappt die Zeilen auf. */
+      k.on('error', (e) => {
+        global.exportLauf = null;
+        try {
+          fs.writeFileSync(EXPORT_LAUF, JSON.stringify({
+            laeuft: false, fertig: false, seit: new Date().toISOString(), ziel, probe: false, stems,
+            schritt: 'abgebrochen', fehler: 'Der Export liess sich nicht starten: ' + ((e && e.message) || e),
+            zeilen: [String(process.execPath) + ' ' + args.join(' ')], fortschritt: null,
+          }, null, 1));
+        } catch (x) {}
+      });
       k.on('close', () => { global.exportLauf = null; });
       jsonAntwort(res, { ok: true, laeuft: true });
     });
@@ -3643,8 +3658,35 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
        ein anderes Ziel, hat er dort nichts zu suchen (Caspar_D, 09.09.2026:
        "eine fertig-Meldung, obwohl ich noch nie was exportiert habe" - das
        war der Probelauf auf die SSD). Laufende Laeufe bleiben sichtbar. */
+    /* DERSELBE ORDNER, ANDERS GESCHRIEBEN (17.11.2026, Apex' Fall). Hier
+       stand ein Vergleich der nackten Zeichenketten. Der Export traegt aber
+       `path.resolve(...)` ein, die Konfiguration merkt sich die ROHE Eingabe
+       - und unter Windows ist derselbe Ordner auf mehrere Arten zu
+       schreiben:
+
+         K:\Klangtresor    -> K:\Klangtresor    gleich
+         K:\Klangtresor\   -> K:\Klangtresor    VERSCHIEDEN
+         K:/Klangtresor    -> K:\Klangtresor    VERSCHIEDEN
+
+       Ein Schlussstrich genuegte, und der fertige oder abgebrochene Lauf
+       galt als "zu einem anderen Ziel gehoerig" und wurde auf leer gesetzt.
+       Die Oberflaeche zeigte dann die Ruhezeile "Noch kein Export auf {ziel}
+       - bereit." - genau das, was Apex am 17.11.2026 gemeldet hat, und zwar
+       UNABHAENGIG davon, ob der Lauf gescheitert oder gelungen war. Ein
+       geglueckter Export waere genauso unsichtbar gewesen.
+
+       Jetzt werden beide Seiten aufgeloest; auf Windows und Mac zaehlt die
+       Gross-/Kleinschreibung nicht, auf Linux schon. */
+    const zielGleich = (a, b) => {
+      if (!a || !b) return false;
+      try {
+        let x = path.resolve(a), y = path.resolve(b);
+        if (process.platform !== 'linux') { x = x.toLowerCase(); y = y.toLowerCase(); }
+        return x === y;
+      } catch (e) { return a === b; }
+    };
     const laufZiel = lauf.ziel || null;
-    if (!lauf.laeuft && laufZiel && laufZiel !== ziel) lauf = { ...leer };
+    if (!lauf.laeuft && laufZiel && !zielGleich(laufZiel, ziel)) lauf = { ...leer };
     /* Ein Lauf, dessen Prozess nicht mehr lebt, laeuft nicht (09.09.2026:
        Server-Neustart und Ruhemodus waehrend eines Stick-Exports - die
        Mitschrift sagte "laeuft", der Prozess war weg). Einmal in die
