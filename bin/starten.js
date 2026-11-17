@@ -75,6 +75,29 @@ function server() {
     process.exit(code == null ? 1 : code);
   });
 }
+/* EIN UPDATE WIRD HIER ZU ENDE GEBRACHT (17.11.2026).
+
+   Henry, 17.11.2026: „Beim KlangTresor geht das Update aus dem Ordner (neues Paket drüberlegen)
+   deutlich schneller als über die Oberfläche." Das stimmt, und es hatte einen Preis: wer ein
+   Paket von Hand drüberlegt, bringt neue Programmdateien UND eine neue package-lock.json mit,
+   aber niemand setzt die Pakete dazu. bin/aktualisieren.js tut das (npmCiWennNoetig); von Hand
+   drüberlegen geht daran vorbei. Die Installation lief danach mit den Paketen der alten Fassung,
+   und nichts sagte es - bis zum 17.11.2026 konnte es auch nichts sagen, weil die Prüfung nur die
+   zwei Pakete aus package.json ansah (bin/pakete.js luecken()).
+
+   WARUM DAS KEINE RUECKNAHME DER REGEL VOM 28.10.2026 IST. Caspar_D damals: „wir machen gar nichts
+   hinterher" - 1.0.129 holte bei JEDEM Start still Pakete nach. Das hier ist ein anderer Fall:
+     · es läuft nur, wenn die Installation nicht zu package-lock.json passt - ein Zustand, den im
+       Betrieb nichts erzeugt, sondern nur ein halb eingespieltes Update,
+     · es ist nicht still: es steht da, mit Fortschrittsbalken (bin/melden.js),
+     · und es holt nichts hinterher, sondern bringt zu Ende, was begonnen wurde.
+   Modelle und Werkzeuge bleiben davon unberührt: die werden weiterhin nur GENANNT.
+
+   Der Weg über `node server/server.js` (Docker, eigene Startskripte) kommt hier nicht vorbei -
+   dort zeigt es der Tab „System" mit seinem Knopf. */
+try { require('./pakete.js').fertigstellen(); }
+catch (e) { console.log('\n  ' + T('Die Programmbausteine liessen sich nicht pruefen: {grund}', { grund: e.message }) + '\n'); }
+
 /* FEHLT ETWAS, SAGT DER START ES - HOLEN TUT ER NICHTS (28.10.2026). Der Server selbst braucht keine Pakete und keine
    Modelle; ohne sie werden spaeter einzelne Morgenschritte rot. Der Start nennt es gleich und den Weg: Profil → System,
    dort steht ein Knopf. (1.0.129 holte hier die Pakete still nach - Caspar_D: „wir machen gar nichts hinterher".) */

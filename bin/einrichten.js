@@ -1483,9 +1483,11 @@ function firewallFragtGleich() {
     else if (process.platform === 'darwin') zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt, wird geholt (rund 60 MB)'), 'laeuft');
     else zeile('ffmpeg', T('ffmpeg zur Medienbearbeitung'), T('fehlt — der Paketverwalter holt es, ein Befehl'), 'wink');
 
-    /* ALLE Pakete aus package.json, nicht nur onnxruntime-node (Lutz, 23.10.2026: umap-js fehlte, und
-       die Einrichtung hielt die Pakete fuer vollstaendig) - bin/pakete.js. */
-    const paketeDa = require('./pakete.js').fehlende().length === 0;
+    /* ALLE Pakete aus package-lock.json, nicht nur onnxruntime-node (Lutz, 23.10.2026: umap-js fehlte,
+       und die Einrichtung hielt die Pakete fuer vollstaendig) - bin/pakete.js. Seit dem 17.11.2026
+       zaehlt dasselbe Mass wie unten bei paketeFertig: auch eine falsche Fassung ist eine Luecke,
+       sonst sagte diese Zeile "sind da" und die naechste holte doch. */
+    const paketeDa = require('./pakete.js').abweichungen().length === 0;
     zeile('pakete', T('Pakete: Programmbausteine des Servers'), paketeDa ? T('sind da') : T('fehlen, werden geholt (19 Pakete, rund 240 MB)'), paketeDa ? 'fertig' : 'laeuft');
 
     /* Die Zahl der Modelle kommt aus bin/modelle-holen.js selbst (07.10.2026): hier stand fest
