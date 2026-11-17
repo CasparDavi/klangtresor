@@ -3603,6 +3603,13 @@ Glocke von inside und dieses Scheiss Tool von aussen."*
   wurde gebaut, gemessen und wieder zurückgenommen (Commit `383fcce`): er klagte über genau die
   sechs Pakete oben, und eine Prüfung, die über Belangloses redet, findet irgendwann das Echte nicht.
 
+**Warum der schnellere Weg nichts wert ist.** Caspar_D, 17.11.2026: *„wenn etwas nur die Hälfte der
+Daten zieht dann ist es auch schneller fertig, wen wunderts — ist dann aber unvollständig oder klappt
+nicht richtig."* Nachgerechnet trifft das genau: beide Wege holen dasselbe Paket (59,8 MB). Was das
+Drüberlegen von Hand **auslässt**, ist `npm ci`, also `node_modules` — die Einrichtung rechnet dafür
+mit rund 240 MB, auf Caspar_Ds Rechner sind es 939 MB. Der große Teil ist der ausgelassene. Die
+Zeitersparnis IST die Unvollständigkeit, nicht ihr Preis.
+
 **Nichts bleibt offen.** Caspar_D, 17.11.2026: *„und wenn es eine glocke gibt, dann sollen sie da
 drauf drücken und die 50MB ziehen. Ich ärger mich grade, dass wir uns immer wieder ins Bockshorn
 jagen lassen. Das Problem ist längst gelöst."*
