@@ -47,10 +47,7 @@ async function werkzeuge() {
   const [ff, fp] = await Promise.all([programm('ffmpeg'), programm('ffprobe')]);
   let pakete = { da: false, fehlen: ['?'], anzahl: 0 };
   try {
-    /* GANZ FEHLEND UND FALSCHE FASSUNG SIND DIESELBE LUECKE (17.11.2026). Vorher stand hier
-       fehlende() - ein Paket in der falschen Nummer galt damit als da, und der Tab war gruen,
-       waehrend die Installation nicht zur Fassung passte. abweichungen() nennt beides, lesbar. */
-    const fehlen = require('./pakete.js').abweichungen();
+    const fehlen = require('./pakete.js').fehlende();
     let anzahl = 0;
     try { anzahl = Object.keys(JSON.parse(fs.readFileSync(path.join(WURZEL, 'package-lock.json'), 'utf8')).packages || {})
             .filter(k => k.startsWith('node_modules/')).length; } catch (e) {}

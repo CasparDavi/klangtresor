@@ -342,53 +342,5 @@
  "  KlangTresor ist auf {adresse} — schon im Browser offen, kein neuer Tab.": {
   "en": "  KlangTresor is at {adresse} — already open in your browser, no new tab.",
   "ru": "  KlangTresor на {adresse} — уже открыт в браузере, новая вкладка не нужна."
- },
- "  Das Update ist noch nicht fertig: {n} Programmbausteine passen nicht zu dieser Fassung.": {
-  "en": "  The update is not finished yet: {n} program components do not match this version.",
-  "ru": "  Обновление ещё не завершено: {n} компонентов программы не соответствуют этой версии."
- },
- "Das wird jetzt zu Ende gebracht — einmalig, danach startet es wie immer.": {
-  "en": "This will be finished now — once; after that it starts as usual.",
-  "ru": "Сейчас это будет завершено — один раз, дальше запуск как обычно."
- },
- "  Es fehlen noch: {namen}. Ausweg: Profil → System, dort steht ein Knopf.": {
-  "en": "  Still missing: {namen}. Way out: Profile → System, there is a button.",
-  "ru": "  Ещё не хватает: {namen}. Выход: Профиль → Система, там есть кнопка."
- },
- "  Fertig — die Programmbausteine passen jetzt zur Fassung.": {
-  "en": "  Done — the program components now match the version.",
-  "ru": "  Готово — компоненты программы теперь соответствуют версии."
- },
- "Die Programmbausteine liessen sich nicht pruefen: {grund}": {
-  "en": "The program components could not be checked: {grund}",
-  "ru": "Не удалось проверить компоненты программы: {grund}"
- },
- "Es bleibt etwas offen — npm legt den Baum einmal ganz …": {
-  "en": "Something is still open — npm will lay out the whole tree once …",
-  "ru": "Кое-что ещё не закрыто — npm один раз выстроит всё дерево …"
- },
- "package-lock.json wieder auf den Stand des Release gelegt — npm hatte sie umgeschrieben.": {
-  "en": "package-lock.json restored to the release state — npm had rewritten it.",
-  "ru": "package-lock.json возвращён к состоянию выпуска — npm его перезаписал."
- },
- "  Das Update ist noch nicht fertig: ein Programmbaustein passt nicht zu dieser Fassung.": {
-  "en": "  The update is not finished yet: one program component does not match this version.",
-  "ru": "  Обновление ещё не завершено: один компонент программы не соответствует этой версии."
- },
- "einer fehlt": {
-  "en": "one missing",
-  "ru": "одного не хватает"
- },
- "{n} fehlen": {
-  "en": "{n} missing",
-  "ru": "{n} не хватает"
- },
- "einer in einer anderen Fassung": {
-  "en": "one in a different version",
-  "ru": "один в другой версии"
- },
- "{n} in einer anderen Fassung": {
-  "en": "{n} in a different version",
-  "ru": "{n} в другой версии"
  }
 }
