@@ -24,7 +24,7 @@
    Gefragt werden nur Quellen, die das Dateisystem nicht berühren:
 
      ps -eo pid,stat,command     Prozesse im Zustand U (die Signatur)
-     ioreg -p IOUSB              angesteckte USB-Geräte (7 ms, reines IOKit)
+     ioreg -p IOUSB -l           USB-Geräte mit Seriennummer und Anschluss
      ioreg -c IOMedia            Datenträger, auch nicht gemountete
      GET localhost:8788          lebt der KlangTresor noch (nur ein Socket)
 
@@ -104,26 +104,76 @@ const KRITISCH = /UVFSXPCService|UserFS|fskitd|\bfskit|mount_|\bfsck|diskarbitra
 /* Prozesse im Zustand U. Der eigene Wächter und seine Kinder können nicht
    darunter sein (sie fassen kein Dateisystem an). */
 async function wartende() {
-  const r = await frage('ps', ['-eo', 'pid,stat,command'], 4000);
+  /* MIT ELTERN-PID (17.11.2026): in der Liste standen `(ioreg)` und `(ps)` - die
+     eigenen Pruefkinder des Waechters, waehrend sie das IOKit lasen. Ein Waechter
+     darf sich nicht selbst melden; das ist Rauschen an genau der Stelle, an der
+     der echte Fall auffallen muss. Kinder des eigenen Prozesses fallen heraus. */
+  const r = await frage('ps', ['-eo', 'pid,ppid,stat,command'], 4000);
   if (r.haengt) return { haengt: true, liste: [] };
   const liste = [];
   for (const z of r.text.split('\n').slice(1)) {
-    const m = /^\s*(\d+)\s+(\S+)\s+(.*)$/.exec(z);
-    if (!m || !m[2].startsWith('U')) continue;
-    liste.push({ pid: +m[1], stat: m[2], befehl: m[3].slice(0, 76), kritisch: KRITISCH.test(m[3]) });
+    const m = /^\s*(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/.exec(z);
+    if (!m || !m[3].startsWith('U')) continue;
+    if (+m[1] === process.pid || +m[2] === process.pid) continue;
+    liste.push({ pid: +m[1], stat: m[3], befehl: m[4].slice(0, 76), kritisch: KRITISCH.test(m[4]) });
   }
   return { haengt: false, liste, kritische: liste.filter((x) => x.kritisch) };
 }
-/* Angesteckte USB-Geräte, nur die Namen. */
+/* Angesteckte USB-Geraete - mit Seriennummer UND Anschlussort.
+
+   WARUM NICHT NUR DER NAME (17.11.2026): hier stand nur der Produktname. Im
+   Hub von Joerg steckt dauerhaft ein "Intenso Speed Line" (der Stick
+   "reconstruct", exFAT, mit einer PyRECONSTRUCT-Umgebung drauf) - und das
+   verdaechtige Laufwerk vom 16.11.2026 heisst GENAUSO. Zwei Geraete, eine
+   Zeile: nicht auseinanderzuhalten. Die Seriennummer unterscheidet sie, der
+   Anschlussort sagt, wo es steckt.
+
+   DEN ORT LIEST DER BAUM, NICHT EIN FELD: `ioreg -p IOUSB` rueckt jede Ebene um
+   zwei Zeichen ein. Die oberste Ebene ist der Controller des Mac (XHC1, XHC2,
+   AppleUSBVHCIBCE), darunter haengen Hubs und Geraete. Steht zwischen
+   Controller und Geraet ein Hub, haengt es am Hub - sonst direkt an einer Buchse
+   des Mac. Das `-l` holt dazu die Eigenschaften, die Seriennummer darunter.
+
+   DER ORT SCHUETZT NICHT: der fskit-Dienst sitzt im System, nicht im Kabel. Ein
+   Geraet am Hub legt denselben Dienst lahm wie eines an der Buchse. Der Ort ist
+   zum Wiederfinden da, nicht zur Beruhigung. */
+function ortAus(stapel) {
+  const steuer = String(stapel[1] || '?').replace(/@.*$/, '');
+  const zwischen = stapel.slice(2, -1).filter(Boolean);
+  const hubs = zwischen.filter((x) => /hub/i.test(x)).length;
+  return hubs ? `am Hub (${steuer}, ${hubs} Stufe${hubs > 1 ? 'n' : ''})` : `direkt am Mac (${steuer})`;
+}
+/* Was in der Zeile steht. Die Seriennummer gekuerzt - die letzten acht Zeichen
+   reichen zum Unterscheiden und machen die Zeile nicht unlesbar. */
+const kennung = (g) => g.name + (g.seriennr ? ' (' + g.seriennr.slice(-8) + ')' : '');
+const zeileVon = (g) => kennung(g) + ' — ' + g.ort;
+
 async function usbGeraete() {
-  const r = await frage('ioreg', ['-p', 'IOUSB', '-w0'], 4000);
-  if (r.haengt) return { haengt: true, namen: [] };
-  const namen = [];
+  const r = await frage('ioreg', ['-p', 'IOUSB', '-l', '-w0'], 6000);
+  if (r.haengt) return { haengt: true, liste: [], zeilen: [] };
+  const liste = [], stapel = [];
+  let jetzt = null;
   for (const z of r.text.split('\n')) {
-    const m = /\+-o\s+(.+?)@[0-9a-f]+\s+</.exec(z);
-    if (m && m[1] !== 'Root') namen.push(m[1].trim());
+    const k = z.indexOf('+-o ');
+    if (k >= 0) {
+      const m = /\+-o\s+(.+?)(?:@[0-9a-fA-F]+)?\s+<class\s+([^,]+),/.exec(z);
+      if (!m) { jetzt = null; continue; }
+      const tiefe = Math.floor(k / 2);
+      stapel.length = tiefe;
+      stapel[tiefe] = m[1].trim();
+      jetzt = null;
+      if (m[2].trim() === 'IOUSBHostDevice') {
+        jetzt = { name: m[1].trim(), seriennr: '', ort: ortAus(stapel) };
+        liste.push(jetzt);
+      }
+      continue;
+    }
+    if (jetzt && !jetzt.seriennr) {
+      const s = /"USB Serial Number"\s*=\s*"(.*)"/.exec(z);
+      if (s) jetzt.seriennr = s[1].trim();
+    }
   }
-  return { haengt: false, namen };
+  return { haengt: false, liste, zeilen: liste.map(zeileVon) };
 }
 /* Datenträger - auch solche, die NICHT gemountet sind. Hier taucht ein
    hängendes Laufwerk auf, während mount und df es nicht kennen. */
@@ -132,7 +182,10 @@ async function datentraeger() {
   if (r.haengt) return { haengt: true, namen: [] };
   const namen = [];
   for (const z of r.text.split('\n')) {
-    const m = /\+-o\s+(.+?)\s+<class IOMedia/.exec(z);
+    /* Das Komma ist Absicht: `<class IOMedia,` ist der Datentraeger, `<class
+       IOMediaBSDClient,` nur sein Zugriffsobjekt - ohne das Komma stand es als
+       eigener "Datentraeger" in der Liste (17.11.2026 gesehen). */
+    const m = /\+-o\s+(.+?)\s+<class IOMedia,/.exec(z);
     if (m) namen.push(m[1].replace(/@\w+$/, '').trim());
   }
   return { haengt: false, namen: [...new Set(namen)] };
@@ -150,6 +203,7 @@ function server() {
 const fehlt = (a, b) => a.filter((x) => !b.includes(x));
 let vorherUSB = null, vorherTraeger = null, warU = false, warServer = null;
 let vorherU = 0, vorherBegleiter = 0;
+let letzterBegleiterSatz = null, begleiterTakte = 0, gemeldeteBegleiter = null;
 
 async function nachsehen(erster) {
   const [p, u, t, s] = await Promise.all([wartende(), usbGeraete(), datentraeger(), server()]);
@@ -165,7 +219,8 @@ async function nachsehen(erster) {
 
   if (erster) {
     sag('Wächter läuft. Er fasst /Volumes nicht an — daran hängt sich jeder fest, der nachsieht.');
-    sag('USB angesteckt:  ' + (u.namen.length ? u.namen.join(', ') : '—'));
+    sag('USB angesteckt:  ' + u.zeilen.length + ' Gerät(e)');
+    for (const z of u.zeilen) sag('                 ' + z);
     sag('Datenträger:     ' + (t.namen.length ? t.namen.join(', ') : '—'));
     sag('KlangTresor:     ' + s);
     sag('Prozesse in U:   ' + (!p.liste.length ? 'keine (gesund)'
@@ -174,17 +229,27 @@ async function nachsehen(erster) {
     if (PROTOKOLL) sag('Protokoll:       ' + PROTOKOLL);
     console.log('');
   } else {
-    for (const n of fehlt(u.namen, vorherUSB)) sag('USB ANGESTECKT:  ' + n, true);
-    for (const n of fehlt(vorherUSB, u.namen)) sag('USB abgezogen:   ' + n);
+    for (const n of fehlt(u.zeilen, vorherUSB)) sag('USB ANGESTECKT:  ' + n, true);
+    for (const n of fehlt(vorherUSB, u.zeilen)) sag('USB abgezogen:   ' + n);
     for (const n of fehlt(t.namen, vorherTraeger)) sag('Datenträger da:  ' + n, true);
     for (const n of fehlt(vorherTraeger, t.namen)) sag('Datenträger weg: ' + n);
     if (s !== warServer) sag('KlangTresor:     ' + s, s !== 'antwortet' && s !== 'läuft nicht');
   }
 
-  /* Alarm nur fuer Kritische; Begleiter werden leise genannt, wenn sie sich aendern. */
-  if (!erster && p.liste.length !== vorherU) {
-    const b = p.liste.filter((x) => !x.kritisch);
-    if (b.length !== vorherBegleiter) sag('in U (Begleiter, keine Ursache): ' + (b.length ? b.map((x) => x.befehl.split('/').pop().split(' ')[0]).join(', ') : 'keine'));
+  /* Alarm nur fuer Kritische. Begleiter werden leise genannt - aber ERST, WENN SIE
+     STEHENBLEIBEN (17.11.2026): launchd und backupd blinken im Normalbetrieb
+     dauernd kurz in U, und der Waechter schrieb darueber alle zwei Sekunden eine
+     Zeile. Beim echten Fall waere der Alarm darin untergegangen. Gemeldet wird
+     nur, was DREI Takte (sechs Sekunden) unveraendert steht - dann ist es kein
+     Blinken mehr. */
+  if (!erster) {
+    const b = p.liste.filter((x) => !x.kritisch).map((x) => x.befehl.split('/').pop().split(' ')[0]).sort().join(', ');
+    if (b === letzterBegleiterSatz) begleiterTakte++;
+    else { letzterBegleiterSatz = b; begleiterTakte = 1; }
+    if (begleiterTakte === 3 && b !== gemeldeteBegleiter) {
+      gemeldeteBegleiter = b;
+      sag('in U, seit 6 s unveraendert (Begleiter, keine Ursache): ' + (b || 'keine'));
+    }
   }
   const istU = p.kritische.length > 0;
   if (istU && !warU) {
@@ -213,7 +278,7 @@ async function nachsehen(erster) {
     sag('Der Server antwortet nicht, und ' + p.liste.length + ' Prozess(e) stehen in U — nachsehen lohnt.', true);
   }
 
-  vorherUSB = u.namen; vorherTraeger = t.namen; warU = istU; warServer = s;
+  vorherUSB = u.zeilen; vorherTraeger = t.namen; warU = istU; warServer = s;
   vorherU = p.liste.length; vorherBegleiter = p.liste.filter((x) => !x.kritisch).length;
 }
 
