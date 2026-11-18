@@ -2321,6 +2321,22 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
 .laut button:hover{background:var(--flaeche2)}
 .leer{text-align:center;color:var(--schwach);padding:70px 20px;grid-column:1/-1;max-width:46em;margin:0 auto}  /* grid-column 1/-1 seit 18.11.2026: im Raster wurde der Satz sonst in EINE Kachelspalte gequetscht     (rund 130 px, achtfacher Umbruch - gesehen beim Installationstest in der Ubuntu-VM). */
 @media (max-width:520px){
+  /* DIE HITPARADEN: FUENF AUF EINMAL, DER REST SEITWAERTS (18.11.2026).
+
+     Caspar_D: „die beiden hitparaden werden bei schmalen screens im avatar
+     fenster zu klein, weil sie immer auf dem ganzen Screen zu sehen sein
+     wollen." Beide zeigen zehn Titel (slice(0,10)); mit flex:1 1 0 teilten
+     sie sich die Breite, auf einem 375-Punkte-Schirm blieben je rund 32
+     Punkte - ein Daumennagel, auf dem nichts mehr zu erkennen ist.
+
+     Jetzt bekommt jede Kachel ein Fuenftel der Breite (abzueglich der vier
+     Fugen), und die uebrigen fuenf stehen rechts daneben zum Schieben.
+     scroll-snap haelt sie an der Kante, damit nicht ein halbes Bild stehen
+     bleibt. Nur hier unten - auf breiten Schirmen bleibt alles, wie es war. */
+  .topreihe{overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;
+            padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .topreihe .topk{flex:0 0 calc((100% - 24px) / 5);scroll-snap-align:start}
+
   .dkopf img{width:100%;height:auto;aspect-ratio:1}
   /* Spaltenzahl NICHT überschreiben - die wird in spaltenAnwenden()
      bereits nach der Fensterbreite gedeckelt. */
