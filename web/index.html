@@ -5342,7 +5342,7 @@ async function start(){
     $('modell').appendChild(o);
   }
   zeichnen();
-  hashOeffnen();
+  hashOeffnen(true);
   tonHinweis();
   fassungErinnern();
 }
@@ -8000,14 +8000,45 @@ async function zeitVergleichAuf(id){
   malen();
 }
 
-function hashOeffnen(){
+/* DIE ANSICHT GEHOERT NICHT IN DIE ADRESSE - DER TON SCHON (18.11.2026).
+
+   Gemeldet von Tarja: „wenn ich kt oeffne, laedt er im albums view." Stimmt.
+   Drei Stellen schreiben beim blossen Blaettern in die Adresse, und alle drei
+   wirkten beim naechsten Oeffnen:
+
+     #playlist=<id>   Album geoeffnet      -> dieses Album ging auf
+     #playlists       zurueck zur Uebersicht -> Alben statt Werke  (Tarjas Fall)
+     #song=<id>       einen Titel gespielt -> der Titel fing an zu spielen
+
+   Der dritte ist ABSICHT und bleibt. Caspar_D, 18.11.2026: „das war dafuer
+   gedacht, das kt immer weiterspielt, auch wenn der server mal neu gestartet
+   wird" - server.js startet sich bei Aenderung selbst neu, die Seite laedt neu,
+   und der Anhang holt den Ton zurueck.
+
+   Die beiden anderen tragen nichts: sie entstehen NUR durch Klicks in dieser
+   Seite, niemand baut so einen Link von Hand. Beim Start werden sie darum
+   uebergangen und aus der Adresse geraeumt - der Einstieg ist immer die
+   Uebersicht (Caspar_D: „die Uebersichtsseite soll immer der einstieg sein").
+   Waehrend der Sitzung wirken sie weiter, sonst ginge der Vor-/Zurueck-Knopf
+   des Browsers ins Leere.
+
+   Was dabei verloren geht, ist abgesprochen - Caspar_D: „ton geht weiter,
+   kontext geht verloren, koennte ich mit leben." Wer in einem Album war und
+   dabei hoerte, landet nach dem Neustart in der Werke-Uebersicht, und die
+   Musik laeuft weiter. */
+function hashRaeumen(){
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+}
+
+function hashOeffnen(beimStart){
   const pl = /^#playlist=([0-9a-f-]{36})$/i.exec(location.hash);
   if (pl){
+    if (beimStart) return hashRaeumen();
     if (playlistVonId.has(pl[1])) return playlistAuf(pl[1]);
     console.log('Unbekannte Playlist-ID in der Adresse:', pl[1]);
     return;
   }
-  if (location.hash === '#playlists') return registerSetzen('playlists');
+  if (location.hash === '#playlists') return beimStart ? hashRaeumen() : registerSetzen('playlists');
 
   const vg = /^#vergleich=([0-9a-f-]{36})$/i.exec(location.hash);
   if (vg) return zeitVergleichAuf(vg[1]);
@@ -8016,7 +8047,7 @@ function hashOeffnen(){
   if (!song(m[1])) { console.log('Unbekannte Song-ID in der Adresse:', m[1]); return; }
   spielenNachId(m[1]);
 }
-window.addEventListener('hashchange', hashOeffnen);
+window.addEventListener('hashchange', () => hashOeffnen(false));   /* ohne Hülle käme das Event als Argument an - und wäre wahr */
 
 /* ------------------------------------------------------------------
    DAS SUCHFELD: FREITEXT UND SCHLUESSEL:WERT.
