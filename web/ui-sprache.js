@@ -238,6 +238,11 @@
     ['monat.11', 'November', 'November'],
     ['monat.12', 'Dezember', 'December'],
 
+    ['leer.archiv', 'Dein Archiv ist noch leer. Sobald der KlangTresor deine Titel von Suno geholt hat, stehen sie hier.', 'Your archive is still empty. As soon as KlangTresor has fetched your tracks from Suno, they will appear here.'],
+    ['leer.holen', 'Titel jetzt holen', 'Fetch tracks now'],
+    ['leer.kein_alias', 'Der KlangTresor weiß noch nicht, wie du bei Suno heißt. Sag es ihm einmal, dann kann er deine Titel holen.', 'KlangTresor does not know your Suno name yet. Tell it once, and it can fetch your tracks.'],
+    ['leer.alias_setzen', 'Suno-Namen eintragen', 'Enter Suno name'],
+    ['morgen.erst_alias', 'Sag zuerst, wie du bei Suno heißt — dann frage ich dort nach deinen Titeln.', 'Tell me your Suno name first — then I will ask there for your tracks.'],
     ['leer.nichts', 'Nichts gefunden. Ändere die Suche oder lockere die Filter oben („Filter zurücksetzen“ stellt alles wieder her).', 'Nothing found. Change the search or loosen the filters above (“Reset filters” puts everything back).'],
     ['leer.zeit_hinweis', 'Die Zeitspanne läuft rückwärts: seit {seit}, aber bis {bis}. Stell „seit“ vor „bis“ ein (Filter oder Suchfeld) oder setz die Filter zurück.', 'The date range runs backwards: since {seit}, but until {bis}. Set “since” before “until” (filter or search box) or reset the filters.'],
 

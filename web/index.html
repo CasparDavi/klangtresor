@@ -2319,7 +2319,7 @@ html.toener .bart::after{content:'';position:absolute;inset:0;z-index:0;
    uebrigen (weiter oben); hier bleibt nur, was die Lautstaerkegruppe
    eigen hat. */
 .laut button:hover{background:var(--flaeche2)}
-.leer{text-align:center;color:var(--schwach);padding:70px 20px}
+.leer{text-align:center;color:var(--schwach);padding:70px 20px;grid-column:1/-1;max-width:46em;margin:0 auto}  /* grid-column 1/-1 seit 18.11.2026: im Raster wurde der Satz sonst in EINE Kachelspalte gequetscht     (rund 130 px, achtfacher Umbruch - gesehen beim Installationstest in der Ubuntu-VM). */
 @media (max-width:520px){
   .dkopf img{width:100%;height:auto;aspect-ratio:1}
   /* Spaltenzahl NICHT überschreiben - die wird in spaltenAnwenden()
@@ -5198,6 +5198,7 @@ const posVon = (id) => sichtbar.findIndex(s => s.id === id);
 // Nötig, weil Titel nicht eindeutig sind: "Lakritz" gibt es zweimal
 // (einmal veröffentlicht, einmal nicht), "Morgendämmerung" viermal.
 // Wer über den Titel referenziert, erwischt irgendwann den falschen.
+let HANDLE = null;          /* der Suno-Name aus library/konfig.json, siehe start() */
 let songVonId = new Map();
 
 // Fremde Songs aus Playlists. Sie liegen NICHT im Archiv und stehen
@@ -5301,6 +5302,10 @@ async function start(){
   const r = await fetch('/api/index');
   const d = await r.json();
   alle = d.songs;
+  /* DER SUNO-NAME, EINMAL GEMERKT (18.11.2026). Die leere Werke-Ansicht muss wissen, ob sie
+     „hol deine Titel" sagen darf oder erst nach dem Namen fragen muss - und sie zeichnet
+     synchron. Bis dahin kannte nur aliasZeigen() den Namen, und das erst im Morgen-Dialog. */
+  try { HANDLE = ((await (await fetch('/api/konfig', { cache: 'no-store' })).json()) || {}).handle || null; } catch (e) { HANDLE = null; }
   /* Die Version kommt aus package.json und wird vom Server
      durchgereicht. Sie steht im Fenster hinter dem Namen; fehlt sie,
      steht dort ein Strich statt einer erfundenen Zahl. */
@@ -8593,6 +8598,25 @@ function zeichnen(){
 
   const r = $('raster');
   if (!liste.length){
+    /* LEERES ARCHIV IST NICHT „FILTER ZU ENG" (18.11.2026, Installationstest in der Ubuntu-VM).
+       Beim ersten Start stand hier „Nichts gefunden. Ändere die Suche oder lockere die Filter
+       oben" - es gab aber keine zu lockern, der Nutzer hatte nichts gefiltert. Der Satz schob
+       ihm eine Ursache unter, die es nicht gab, und verschwieg die einzige, die hilft.
+
+       UND DER ERSTE SCHRITT IST NICHT DAS HOLEN (Caspar_D, 18.11.2026: „er muss doch erstmal
+       den alias irgendwo eingeben"). Ohne den Suno-Namen kann der KlangTresor niemanden fragen.
+       Darum drei Lagen statt zwei. Im ausgelieferten Archiv gibt es den roten Knopf nicht
+       (archivEingefroren); dann steht nur der Satz, ohne einen Weg, den es dort nicht gibt. */
+    if (!alle.length){
+      const mk = $('morgenknopf');
+      const wegDa = !!(mk && !mk.hidden);
+      const satz = HANDLE ? t('leer.archiv') : t('leer.kein_alias');
+      const knopf = wegDa
+        ? `<br><button class="knopf" style="margin-top:18px" onclick="morgenAuf()">${HANDLE ? t('leer.holen') : t('leer.alias_setzen')}</button>`
+        : '';
+      r.innerHTML = `<div class="leer">${satz}${knopf}</div>`;
+      return;
+    }
     const v = zeitspanneVerkehrt();
     r.innerHTML = v
       ? `<div class="leer">${t('leer.nichts')}<br><small>${t('leer.zeit_hinweis', { seit: MONATSNAME(v.seit), bis: MONATSNAME(v.bis) })}</small></div>`
@@ -22513,6 +22537,16 @@ async function morgenAuf(frisch){
   $('morgentext').textContent = t('morgen.frage_suno');
   $('morgenkasten').querySelector('h2').textContent = t('morgen.frage');
   $('morgenknopf').classList.add('laeuft');
+  /* ERST DER NAME, DANN DIE FRAGE (18.11.2026). Hier ging die Sammlung sofort los - auch wenn
+     gar kein Suno-Name gesetzt war. Der Server startete bin/sammeln.js, das niemanden kennt,
+     und der Nutzer sah einen Fehlschlag statt der einen Frage, die zu stellen war.
+     aliasZeigen() steht oben schon und bietet das Feld an; wir warten jetzt darauf. */
+  try { HANDLE = ((await (await fetch('/api/konfig', { cache: 'no-store' })).json()) || {}).handle || null; } catch (e) {}
+  if (!HANDLE) {
+    $('morgentext').textContent = t('morgen.erst_alias');
+    $('morgenknopf').classList.remove('laeuft');
+    return;
+  }
   try { await fetch('/api/morgen/sammeln' + (frisch ? '?frisch=1' : ''), { method:'POST' }); }
   catch (e){ $('morgentext').textContent = t('morgen.server_nicht', { fehler: e.message });
              $('morgenknopf').classList.remove('laeuft'); return; }
