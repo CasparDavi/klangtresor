@@ -90,7 +90,29 @@ function fehlende() {
    WARUM HIER UND NICHT VIERMAL: dieselbe Antwort auf dieselbe Frage gehoert an
    eine Stelle. Die drei Installer-Bauer (setup-bauen, dmg-bauen, appimage-bauen)
    brauchen sie nicht - die rufen npm schon mit --ignore-scripts. Das Docker-Abbild
-   steht ausserhalb von Node und setzt die Variable in docker/Dockerfile selbst. */
+   steht ausserhalb von Node und setzt die Variable in docker/Dockerfile selbst.
+
+   GEMESSEN am 18.11.2026 auf Linux/x64 (Container, echte 404), und das Ergebnis
+   ist je Weg verschieden - genau so steht es, nicht schaerfer:
+
+     npm install (voll, bin/einrichten.js)   Exit 1, npm baut ALLES zurueck.
+                                             Echter Abbruch, und zwar im einzigen
+                                             Schritt der Einrichtung, der sich
+                                             nicht ueberspringen laesst.
+     npm ci (bin/aktualisieren.js)           Exit 1. Echter Abbruch - Tarjas Fall.
+     je Paket (nachholen() hier)             npm gibt auch Exit 1, aber nachholen()
+                                             sieht den Rueckgabewert nicht an. Und
+                                             onnxruntime-node liegt da trotzdem
+                                             schon: der erste --ignore-scripts-Auf-
+                                             ruf (fuer ein anderes Paket) legt den
+                                             GANZEN Baum hin, ohne fremde Skripte.
+                                             Hier war also nichts kaputt - nur eine
+                                             verschluckte Fehlermeldung. Mit dem
+                                             Schalter gibt npm jetzt auch hier 0.
+
+   Dass der Weg hier nur aus Versehen gut ausging, ist kein Grund, ihn so zu
+   lassen: ein npm, das scheitert und niemandem davon erzaehlt, ist genau die
+   Sorte stiller Fehler, die Lutz' umap-js (23.10.2026) so lange gekostet hat. */
 function npmUmgebung() {
   return Object.assign({}, process.env, { ONNXRUNTIME_NODE_INSTALL_CUDA: 'skip' });
 }

@@ -10146,10 +10146,65 @@ vorbei). **Der Prüffall trifft:** mit dem alten `bin/pakete.js` steht dort
 - Die beiden Dockerfiles — **gar nicht geprüft**, dazu braucht es einen Docker-Bau
   auf Linux.
 
-**Der entscheidende Beweis fehlt noch:** ein echter Lauf auf Linux/x64, wo Microsofts
-Skript überhaupt anspringt (auf macOS ist `IS_LINUX_X64` falsch, dort kann kein
-Prüffall treffen). Dafür steht die Ubuntu-24.04-VM bereit; ein voller Lauf dauert
-länger als zwei Minuten und braucht Caspar_Ds Startschuß.
+## Nachtrag 18.11.2026, vormittags — auf Linux/x64 gemessen
+
+Caspar_D: *„teste auf ubuntu und bei funktionierendem test, mach das release."*
+
+Die Ubuntu-VM „Ubuntu KlangTresor" lief, aber der Zugang war weg: SSH-Schlüssel und
+Passwort lagen im Scratchpad der Sitzung 37f6b667 und sind geräumt, `prlctl exec`
+antwortet nicht (Parallels Tools zu alt oder isoliert). **Gemessen wurde darum in
+Containern auf `linux/amd64`** — Ubuntu 24.04.5 für den Mechanismus, `node:20-bookworm-slim`
+für unseren Code und das echte Abbild. Gleiche Architektur, echter Netzzugang, echte 404.
+
+| Probe | Ergebnis |
+|---|---|
+| Ubuntu 24.04, `npm install` ohne Schalter | **Exit 1**, genau Tarjas 404 |
+| dieselbe Lage mit `…CUDA=skip` | **Exit 0**, 8 Pakete in 2 s |
+| CPU-Bibliothek danach | liegt (`libonnxruntime.so.1.20.1`), lädt, rechnet |
+| `docker/Dockerfile` (Tarjas Fassung) gebaut | **läuft durch**, onnxruntime lädt im Abbild, CUDA-Datei fehlt und wird nicht gebraucht |
+| derselbe Bau **ohne** Tarjas Zeile | **scheitert** — der Bau-Prüffall trifft |
+| `npm ci` mit `npmUmgebung()` | Exit 0, 19 Pakete |
+| voller `npm install` mit dem Schalter | Exit 0, `fehlende()` leer |
+
+**Und eine Berichtigung, die ich mir selbst eingetragen habe.** Oben steht „vier
+Stellen". Gemessen gilt das so nur für drei:
+
+- `bin/einrichten.js` (voller `npm install`) — Exit 1, npm baut **alles** zurück,
+  der Ordner ist hinterher weg. Echter Abbruch im einzigen Schritt der Einrichtung,
+  der sich nicht überspringen läßt.
+- `bin/aktualisieren.js` (`npm ci`) — Exit 1, wirft. Tarjas Fall.
+- `docker/Dockerfile` — Exit 1. Tarjas Befund.
+- `bin/pakete.js` (je Paket) — npm gibt **auch** Exit 1, aber `nachholen()` sieht den
+  Rückgabewert nicht an, und `onnxruntime-node` liegt zu dem Zeitpunkt längst da:
+  der erste `--ignore-scripts`-Aufruf (für ein anderes Paket) legt den **ganzen**
+  Baum hin, ohne fremde Skripte. **Hier war also nichts kaputt** — nur eine
+  verschluckte Fehlermeldung. Der Schalter bleibt trotzdem: ein npm, das scheitert
+  und niemandem davon erzählt, ist die Sorte stiller Fehler, die Lutz' umap-js
+  (23.10.2026) so lange gekostet hat. Der Kommentar in `bin/pakete.js` steht jetzt
+  auf dem Gemessenen.
+
+## Nebenbefund: `docker build` scheitert auf dem Mac, nicht auf Linux
+
+Beim Bau auf dieser Maschine:
+
+```
+error from sender: failed to xattr docker/._Dockerfile: operation not permitted
+```
+
+`.dockerignore` hatte `._*`, und das greift in .dockerignore **nur auf der obersten
+Ebene** — `docker/._Dockerfile` paßte nicht darauf. Jetzt steht dort `**/._*` (und
+`**/.DS_Store`). Das trifft nur den Mac auf exFAT, also genau den Rechner, auf dem
+gebaut wird; auf Linux gibt es diese Dateien nicht.
+
+**Was damit NICHT behoben ist:** ein `._`-Nachbar der `.dockerignore` **selbst**
+(`._.dockerignore`) läßt sich durch kein Muster ausschließen, weil Docker diese Datei
+liest, bevor Muster gelten. Gebaut wurde darum aus einer Kopie außerhalb von exFAT
+(`cp -RX`, also ohne erweiterte Attribute). Wer auf dem Mac direkt baut, braucht
+vorher `dot_clean .` — oder wir bauen künftig immer aus einer solchen Kopie. **Offene
+Entwurfsfrage, nicht gebaut.**
+
+Und eine eigene Lehre: `cp` schleppt erweiterte Attribute mit und legt dabei auf
+exFAT `._`-Dateien an. Beim Einsetzen aus einem Sandkasten gehört **`cp -X`** dahin.
 
 ## Wiedervorlage
 

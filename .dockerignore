@@ -10,9 +10,18 @@
 # Was das Abbild wirklich braucht, holt sich das Dockerfile mit COPY:
 # package.json, package-lock.json, bin/, browser/, server/, web/.
 
-# macOS-Beifang, besonders auf exFAT
+# macOS-Beifang, besonders auf exFAT.
+#
+# ZWEI STERNE, NICHT EINER (18.11.2026): hier stand `._*`, und das trifft in
+# .dockerignore nur die oberste Ebene. `docker/._Dockerfile` passte nicht
+# darauf, und der Bau brach schon beim Lesen des Dockerfiles ab:
+#   error from sender: failed to xattr docker/._Dockerfile: operation not permitted
+# Auf Linux faellt das niemandem auf - dort gibt es diese Dateien nicht. Es
+# trifft nur den Mac auf exFAT, also genau den Rechner, auf dem gebaut wird.
+**/._*
 ._*
 .DS_Store
+**/.DS_Store
 .Spotlight-V100
 .Trashes
 
