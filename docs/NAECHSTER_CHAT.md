@@ -10361,3 +10361,51 @@ Sorte Antwort: sie klingt richtig und schließt die Sache zu früh.
 Richtig bleibt davon nur der Nebenbefund, den `3c8ded1` behebt: die
 Alben-Ansicht beachtete `zeigeListen` nicht. Das war unabhängig davon ein
 eigener Fehler und ist weiterhin behoben.
+
+---
+
+# 18.11.2026, 11:20 — 1.1.16 veröffentlicht
+
+[v1.1.16](https://github.com/CasparDavi/klangtresor/releases/tag/v1.1.16), Marke
+`Latest`, fünf Erzeugnisse, alle geprüft. Fassung im Paket 1.1.16, die heutigen
+Berichtigungen sind drin (vier Stellen in `web/index.html`, 24 Morgenschritte,
+der CUDA-Schalter in der `Update.zip`). DMG-SHA-256
+`ee2d2000ad45dcae55cafca43a6fe22c204626e3c1e2bf43457ed35ebcb65a62`.
+
+Enthalten sind fünf Commits:
+
+| | |
+|---|---|
+| `0246d12` | die Meldung nennt den Browser, der wirklich aufgeht |
+| `4aeacb7` | der Leertext beim ersten Start, samt Alias-Sperre |
+| `74548a8` | der Einstieg ist immer die Übersicht — Tarjas Fall |
+| `3c8ded1` | freigegebene Liste erscheint auch unter den Alben |
+| `f7bf7ce` | die Morgenschritte kennen „Liedtexte vermessen" |
+
+**Im Text der Release-Notes stand zuerst „vor 1.1.73" statt „vor 1.0.73"** —
+ein Zahlendreher, nachträglich berichtigt. Die Update.zip gilt für
+Installationen vor **1.0.73**.
+
+## Wiedervorlage
+
+- **Henrys Durchsicht** steht für alles an, was heute an Englisch und Russisch
+  dazugekommen ist, alles von Claude geschrieben:
+  `bin/texte/aktualisieren.json` (zwei Texte), `bin/texte/einrichten.json`
+  (einer), `web/ui-sprache.js` und `web/ui-sprache-ru.js` (je fünf),
+  `docs/handbuch/MORGENSCHRITTE-uebersetzt.json` (ein Schritt, zwei Sprachen).
+- **Die Beschreibung des Schritts „Liedtexte vermessen"** in
+  `docs/handbuch/MORGENSCHRITTE.json` ist ein Entwurf von Claude in Caspar_Ds
+  Redaktion — er darf sie überschreiben.
+- **`docker/Dockerfile.cuda`** bleibt unbaubar, solange
+  `github.com/microsoft/onnxruntime` 404 gibt. Woher die CUDA-Bibliotheken
+  künftig kommen: offene Entwurfsfrage.
+- **`._.dockerignore` auf exFAT** — `docker build` auf dem Mac braucht vorher
+  `dot_clean .` oder eine Kopie außerhalb von exFAT. Nicht entschieden.
+- **Der Songkürzer** (`labor/kuerzen/index.html`) hat weiter sechs nicht
+  eingecheckte Änderungen; Caspar_D wollte dort selbst weiterprobieren.
+- **Die toten Schaltflächen im exportierten Archiv** (Song Analyzer, Klang- und
+  Groupieschaum, Videoplayer im eigenen Fenster) — aufgenommen, nicht gebaut.
+- **Vier Punkte zum Bekanntmachen des Repos** (Diskussionen einschalten,
+  Schlagwörter setzen, gegenseitige Verweise mit der KlangFeder, Werbewege)
+  warten auf Caspar_Ds Wort. Die Frage, ob awesome-selfhosted offenen Code
+  verlangt, ist beantwortet: ja, und wir haben ihn (MIT).
