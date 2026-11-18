@@ -11,7 +11,11 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# Linux/x64: das Installationsskript von onnxruntime-node 1.20.1 holt immer
+# onnxruntime-linux-x64-gpu-1.20.1.tgz. Die Adresse antwortet mit 404
+# (18.11.2026), und npm ci bricht ab. Die CPU-Bibliothek steckt schon im
+# npm-Paket; der Klangraum rechnet damit. Das CUDA-Image bleibt davon getrennt.
+RUN ONNXRUNTIME_NODE_INSTALL_CUDA=skip npm ci --omit=dev
 
 COPY bin ./bin
 COPY browser ./browser
