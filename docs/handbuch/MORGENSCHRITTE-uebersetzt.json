@@ -179,6 +179,16 @@
    "was": "Даёт каждой песне в пространстве историй три характеристики: о чём она (сюжет, например любовь или машина), как говорит (позиция, например признание или обвинение) и каким тоном (например нежно или упрямо). Относится ко всем песням с текстом, всегда заново; каждая группа получает свою самую частую характеристику. В первый раз замораживается эталонная шкала по тогдашнему собранию, чтобы последующие оценки оставались сравнимыми."
   }
  },
+ "textanalyse": {
+  "en": {
+   "name": "Measure the lyrics — syllables, stresses and rhymes for new and changed texts",
+   "was": "Measures syllables, stresses and rhymes for every one of your own tracks that has lyrics and builds a profile from them — the basis for searching by metre and rhyme form and for comparing texts. No AI is involved: the work is done with pronunciation dictionaries (German, English and, since 13 November 2026, two Russian ones) and with rules. The calculation comes from KlangFeder and sits here unchanged; whoever changes it changes it there and brings it over — one calculation, not two. Measured against Haider’s gold data it gets 95.7 % of the syllables right in German and 91.5 % in English; there is no test set for song lyrics yet, so those figures hold for poems. The submitted lyrics are taken from [Intro] onwards — forewords, playlist notes and links before that stay out. A track is recalculated only when its text or the calculation has changed; texts in a foreign script appear without lines. The dictionaries take a good 340 MB once loaded, so this step runs in a process of its own."
+  },
+  "ru": {
+   "name": "Измерение текстов песен — слоги, ударения и рифмы для новых и изменённых текстов",
+   "was": "Для каждого вашего трека с текстом измеряет слоги, ударения и рифмы и составляет из них описание — основу для поиска по размеру и форме рифмы и для сравнения текстов. Искусственный интеллект не используется: расчёт идёт по произносительным словарям (немецкий, английский, а с 13 ноября 2026 года и два русских) и по правилам. Расчёт пришёл из KlangFeder и лежит здесь без изменений; кто меняет его, меняет там и переносит сюда — один расчёт, а не два. По эталонным данным Хайдера он верно определяет 95,7 % слогов в немецком и 91,5 % в английском; для песенных текстов проверочного набора пока нет, эти числа относятся к стихам. Берётся присланный текст начиная с [Intro] — предисловия, заметки о плейлистах и ссылки перед ним остаются в стороне. Трек пересчитывается только если изменился его текст или сам расчёт; тексты в чужой письменности остаются без строк. Загруженные словари занимают около 340 МБ, поэтому шаг работает в отдельном процессе."
+  }
+ },
  "nachbarn-profile": {
   "en": {
    "name": "Neighbourhood: fetch the newcomers' profiles",
