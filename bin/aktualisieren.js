@@ -368,9 +368,28 @@ function npmCiWennNoetig(vorherHash) {
   if (vorherHash && vorherHash.equals(nachher)) return false;
   const n = npmAufruf();
   sag(T('  Pakete neu setzen (package-lock hat sich geaendert) …'));
-  const r = spawnSync(n.befehl, n.vorn.concat(['ci', '--omit=dev']), { cwd: WURZEL, stdio: 'inherit', shell: n.schale });
+  /* MIT ONNXRUNTIME_NODE_INSTALL_CUDA=skip (18.11.2026, Tarjas Befund): ohne den Schalter brach dieser
+     Nachzug auf Linux/x64 an einer 404 bei Microsoft ab. Begruendung steht in bin/pakete.js bei npmUmgebung(). */
+  const r = spawnSync(n.befehl, n.vorn.concat(['ci', '--omit=dev']),
+    { cwd: WURZEL, stdio: 'inherit', shell: n.schale, env: require('./pakete.js').npmUmgebung() });
   if (r.status !== 0) throw new Error(T('npm ci ist gescheitert.'));
   return true;
+}
+
+/* DER AUSWEG, WENN DER NACHZUG DOCH SCHEITERT - UND WARUM ER EIN BEFEHL IST.
+
+   Bis zum 18.11.2026 stand hier „die Pakete musst du von Hand setzen: npm ci". Genau dieser Befehl
+   fuehrte in dieselbe Wand, an der der Nachzug gescheitert war: ohne den Schalter holt das fremde
+   Installationsskript die CUDA-Datei und bricht ab. Wir haben den Nutzer also mit einem Rat
+   weggeschickt, von dem wir wussten, dass er nicht funktioniert.
+
+   Und es kann kein Verweis auf „Profil → System → Programmbausteine" sein, so nahe das laege:
+   `npm ci` LEERT node_modules, bevor es neu setzt. Nach einem Abbruch mitten darin startet der Server
+   womoeglich nicht mehr - dann gibt es kein Profil und keinen Tab, auf den man zeigen koennte. */
+function handBefehl() {
+  return process.platform === 'win32'
+    ? 'set ONNXRUNTIME_NODE_INSTALL_CUDA=skip && npm ci --omit=dev'
+    : 'ONNXRUNTIME_NODE_INSTALL_CUDA=skip npm ci --omit=dev';
 }
 
 function composeBauen(laeuft) {
@@ -765,14 +784,14 @@ async function main() {
       /* Ein alter, angehaltener Container kann neben einer inzwischen direkt laufenden Installation stehen
          (Pruefung bei der Uebernahme) - dann braucht auch der Ordner seine Pakete und seinen Neustart. */
       if (fs.existsSync(path.join(WURZEL, 'node_modules'))) {
-        try { npmCiWennNoetig(lockVorher); } catch (e) { sag('  ' + e.message); sag(T('  Die Pakete musst du von Hand setzen: npm ci')); }
+        try { npmCiWennNoetig(lockVorher); } catch (e) { sag('  ' + e.message); sag(T('  Von Hand nachholen:  {befehl}', { befehl: handBefehl() })); }
         sag(T('  Laeuft dein KlangTresor ohne Container: den Server einmal neu starten (starten-linux.sh /\n  starten-macos.command / starten-windows.cmd) und die Seite hart neu laden.'));
       }
     }
   } else {
     try { npmCiWennNoetig(lockVorher); } catch (e) {
       sag('  ' + e.message);
-      sag(T('  Das Programm liegt, die Pakete musst du von Hand setzen: npm ci'));
+      sag(T('  Das Programm liegt. Die Pakete von Hand nachholen:  {befehl}', { befehl: handBefehl() }));
     }
     /* Hier wurden bis 28.10.2026 fehlende Pakete still nachgeholt (bin/pakete.js, Lutz' umap-js vom 23.10.). Seit der
        Regel „alles in der Einrichtung, nichts hinterher" zeigt der Tab „System" im Profil, was fehlt, und holt es dort

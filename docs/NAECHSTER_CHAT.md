@@ -10050,3 +10050,115 @@ farbiger Knoten an jedem Abschnittswechsel; „nur songs mit TExt“; natürlich
   (Zeilenzeiten stehen in denselben Wortmarken). Langsames Schwingen der Schnüre wäre möglich, kostet Neuzeichnen je Bild.
 - Russisch der neuen Texte `raum.*schnur*`, `schnur.*` (26 Schlüssel) hat Claude geschrieben, nach `docs/ru/PRAVILA.md`
   (Caspar_D: „das russisch schaffst du erstmal selbst“), 1.0.161 → in Henrys nächste Durchsicht.
+
+---
+
+# 18.11.2026 — Wiedervorlage: KlangTresor-Update.zip ist 0,0 MB
+
+Im Release **v1.1.14** stehen fünf Erzeugnisse. Vier haben plausible Größen
+(Setup.exe 84,2 MB, DMG 156,9 MB, AppImage 105,6 MB, zip 59,8 MB).
+`KlangTresor-Update.zip` meldet dagegen **0,0 MB**.
+
+Das kann richtig sein, wenn das Update-Paket nur die geänderten Dateien trägt —
+es kann aber auch ein leeres Archiv sein, und dann würde der
+Fassungs-Nachzug aus der Oberfläche heraus nichts einspielen.
+
+**Caspar_D, 18.11.2026: „flagge das mal als demnächst zu erledigen."**
+Nachzusehen ist: Inhaltsverzeichnis des Archivs, wie `bin/aktualisieren.js`
+es erwartet, und ob die Glocke danach einen brauchbaren Nachzug fährt.
+Nicht gemessen, nur aufgefallen.
+
+---
+
+# 18.11.2026 — Die verschwundene CUDA-Datei von onnxruntime
+
+Gemeldet von **Tarja** (Pull Request #11, 04:33): beim Einspielen von 1.1.14 blieb
+`./aktualisieren-linux.sh` am Docker-Bau stehen, `npm ci` brach ab mit
+
+```
+Downloading ".../v1.20.1/onnxruntime-linux-x64-gpu-1.20.1.tgz"
+Error: Failed to download the binaries: 404 Not Found.
+```
+
+## Was dahintersteckt — zwei Dinge, beide nicht unsere
+
+1. **Das Installationsskript fragt nie nach der Hardware.** In
+   `onnxruntime-node@1.20.1/script/install.js` ist `tryGetCudaVersion()` ein Rumpf
+   mit `return 11` und einem TODO. Auf Linux/x64 wird die CUDA-11-Datei damit
+   **immer** geholt, sobald `libonnxruntime_providers_cuda.so` nicht im Paket liegt —
+   auch auf einem Rechner ohne jede Nvidia-Karte.
+2. **Das Verzeichnis `github.com/microsoft/onnxruntime` gibt 404.** Nicht nur die
+   Datei: das ganze Verzeichnis, gemessen über zwei verschiedene Leitungen, während
+   `github.com/microsoft/vscode` normal antwortet. `microsoft/onnxruntime-genai`
+   ebenso weg; die Organisation `onnxruntime` trägt nur Zusatzmodule. **Warum, wissen
+   wir nicht** — für uns zählt nur, daß dort nichts mehr zu holen ist.
+
+## Was bei uns dran war — vier Stellen, nicht eine
+
+Tarjas PR deckte `docker/Dockerfile`. Beim Nachrechnen kamen drei weitere heraus:
+
+| Stelle | vorher | jetzt |
+|---|---|---|
+| `docker/Dockerfile` | nackter `npm ci` | `ONNXRUNTIME_NODE_INSTALL_CUDA=skip` (Tarja, PR #11) |
+| `bin/einrichten.js:1733` | `npm install` mit Skripten | Schalter über `laeuft(…, {umgebung})` |
+| `bin/aktualisieren.js:371` | `npm ci` mit Skripten | Schalter über `npmUmgebung()` |
+| `bin/pakete.js` `lauf(mitSkript, [])` | mit Skripten | Schalter über `npmUmgebung()` |
+
+Der Schalter wohnt **an einer Stelle**: `npmUmgebung()` in `bin/pakete.js`, dort steht
+auch die ganze Begründung. Die drei Installer-Bauer (`setup-bauen`, `dmg-bauen`,
+`appimage-bauen`) brauchen ihn nicht — die rufen npm schon mit `--ignore-scripts`.
+**Darum waren Setup.exe, DMG und AppImage nie betroffen**, und wer nur das Zip
+entpackt hat, merkte von der Sache nichts. Die Einrichtung dagegen wäre auf Linux
+im einzigen Schritt gescheitert, der sich nicht überspringen läßt.
+
+## Der Rat, der in dieselbe Wand führte
+
+`bin/aktualisieren.js` fing den Abbruch ab und sagte: *„die Pakete musst du von Hand
+setzen: npm ci"* — genau der Befehl, an dem es gerade gescheitert war. Jetzt steht
+dort `handBefehl()` mit dem Schalter, plattformrichtig (Windows `set … &&`).
+**Kein Verweis auf „Profil → System"**, so nahe das läge: `npm ci` leert
+`node_modules` zuerst, nach einem Abbruch mitten darin gibt es womöglich keinen
+Server mehr, der ein Profil zeigen könnte.
+
+## `docker/Dockerfile.cuda` — nicht baubar, und das steht jetzt dort
+
+Zwei Fehler, einer davon unser: im Kopf steht CUDA 12.4, geholt wurde wegen
+`return 11` die CUDA-**11**-Bibliothek. Jetzt ausdrücklich `=12`. Der zweite Fehler
+ist die 404, und die können wir nicht beheben — `skip` wäre keine Lösung, dann wäre
+es ein CPU-Abbild unter falschem Namen. Es versucht es also und bricht mit **Grund
+und Ausweg** ab (CPU-Abbild nehmen), statt mit einer nackten 404 aus npm heraus.
+Kommen die Dateien zurück, baut es von selbst wieder.
+
+## Wie geprüft
+
+Ein falsches `npm`, das nur sagt, was es in der Umgebung vorfindet, plus eine
+node-Kopie in einem Ordner ohne npm daneben (sonst greift `npmAufruf()` am PATH
+vorbei). **Der Prüffall trifft:** mit dem alten `bin/pakete.js` steht dort
+`UNGESETZT`, mit dem neuen `skip`.
+
+- `bin/pakete.js` `nachholen()` — **live geprüft**, echter Code, echter spawnSync.
+- `bin/aktualisieren.js` `npmCiWennNoetig()` — **live geprüft**, echte Funktion
+  (im Sandkasten kurz zusätzlich exportiert, die Auslieferfassung trägt das nicht).
+- `bin/einrichten.js` — **nicht live geprüft.** Die Datei hat keinen
+  `require.main`-Schutz und keine Exporte, Requiren startet die Einrichtung. Geprüft
+  ist dort nur durch Lesen: `npmLaufen` holt `npmUmgebung()` und gibt sie beiden
+  Zweigen mit, `laeuft()` mischt `optionen.umgebung` in die Kindumgebung.
+- Die beiden Dockerfiles — **gar nicht geprüft**, dazu braucht es einen Docker-Bau
+  auf Linux.
+
+**Der entscheidende Beweis fehlt noch:** ein echter Lauf auf Linux/x64, wo Microsofts
+Skript überhaupt anspringt (auf macOS ist `IS_LINUX_X64` falsch, dort kann kein
+Prüffall treffen). Dafür steht die Ubuntu-24.04-VM bereit; ein voller Lauf dauert
+länger als zwei Minuten und braucht Caspar_Ds Startschuß.
+
+## Wiedervorlage
+
+- **Ubuntu-Lauf** als Beweis (siehe oben) — nicht gemacht, braucht den Startschuß.
+- **Russisch** der zwei neuen Texte in `bin/texte/aktualisieren.json`
+  (`Von Hand nachholen`, `Das Programm liegt. Die Pakete von Hand nachholen`) hat
+  Claude geschrieben → in Henrys nächste Durchsicht.
+- **Antwort an Tarja** steht noch aus: daß ihr Befund stimmt, daß das Verzeichnis
+  selbst verschwunden ist (das weiß sie noch nicht), und daß drei weitere Stellen
+  im Haus dieselbe Datei anforderten.
+- **Offen als Entwurfsfrage, nicht gebaut:** woher das CUDA-Abbild seine
+  Bibliotheken künftig bekommt, wenn Microsoft sie nicht zurückbringt.

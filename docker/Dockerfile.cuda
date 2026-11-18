@@ -47,7 +47,32 @@ RUN chmod 755 /usr/local/bin/whisper-cli
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# ZWEI DINGE STIMMEN HIER NICHT, UND EINES KOENNEN WIR NICHT BEHEBEN (18.11.2026).
+#
+# Erstens: oben steht CUDA 12.4, das Installationsskript von onnxruntime-node 1.20.1
+# fragt aber nie, welche CUDA-Fassung da ist - tryGetCudaVersion() ist ein Rumpf mit
+# `return 11`. Ohne Schalter holt dieses Abbild also die CUDA-11-Bibliotheken in ein
+# CUDA-12.4-Abbild. Darum steht hier jetzt ausdruecklich =12.
+#
+# Zweitens, und das ist die Wand: das Verzeichnis github.com/microsoft/onnxruntime
+# gibt 404 - nicht nur die eine Datei, das ganze Verzeichnis, gemessen ueber zwei
+# verschiedene Leitungen, waehrend andere Microsoft-Verzeichnisse normal antworten.
+# Solange dort nichts liegt, ist dieses Abbild NICHT baubar, und zwar unabhaengig
+# davon, was hier steht. `skip` waere keine Loesung: dann fehlt dem CUDA-Abbild
+# genau das, wofuer es da ist, und es waere ein CPU-Abbild unter falschem Namen.
+#
+# Darum: versuchen, und beim Fehlschlag mit dem Grund abbrechen statt mit einer
+# nackten 404 aus npm heraus. Kommen die Dateien zurueck, baut es von selbst wieder.
+RUN ONNXRUNTIME_NODE_INSTALL_CUDA=12 npm ci --omit=dev \
+ || { echo ""; \
+      echo "KlangTresor: Das CUDA-Abbild laesst sich derzeit nicht bauen."; \
+      echo "Grund: onnxruntime-node 1.20.1 holt seine CUDA-Bibliotheken von"; \
+      echo "       github.com/microsoft/onnxruntime - dieses Verzeichnis antwortet"; \
+      echo "       seit dem 18.11.2026 mit 404 (nicht nur die Datei, das Verzeichnis)."; \
+      echo "Ausweg: das CPU-Abbild nehmen - docker/Dockerfile, ohne das CUDA-Overlay:"; \
+      echo "       docker compose -f docker/docker-compose.yml up -d --build"; \
+      echo "       Whisper und Klanganalyse laufen dort auf der CPU, alles andere gleich."; \
+      echo ""; exit 1; }
 
 COPY bin ./bin
 COPY browser ./browser

@@ -520,7 +520,9 @@ function laeuft(befehl, argumente, optionen) {
        Einrichtung selbst (laeuftAbbrechbar). */
     const kind = spawn(befehl, argumente, { stdio: ['ignore', 'pipe', 'pipe'], shell: brauchtSchale,
       detached: eigeneGruppe,
-      env: Object.assign({}, process.env, { KT_MELDEN: '1' }) });
+      /* optionen.umgebung: nur npmLaufen gibt etwas mit (der CUDA-Schalter, siehe dort). Die anderen
+         Kinder - Modelle, sammeln, wiederherstellen - erben weiter nur KT_MELDEN. */
+      env: Object.assign({}, process.env, { KT_MELDEN: '1' }, (optionen && optionen.umgebung) || {}) });
     kind.eigeneGruppe = eigeneGruppe;
     let restAus = '', restErr = '';
     /* Zeichen fuer Zeichen durchgereicht, nur die Meldezeilen bleiben
@@ -1690,16 +1692,21 @@ function firewallFragtGleich() {
      Laufwerksbuchstaben ab. Darunter ist cmd.exe zufrieden - auch in
      npms eigenen Kindprozessen, denn die erben das Arbeitsverzeichnis.
      Der Buchstabe verschwindet mit der cmd-Sitzung von selbst. */
+  /* MIT ONNXRUNTIME_NODE_INSTALL_CUDA=skip (18.11.2026): sonst scheitert dieser Schritt auf Linux/x64
+     am Installationsskript von onnxruntime-node, das eine Datei bei Microsoft holen will, die es nicht
+     mehr gibt - und dieser Schritt ist der einzige der Einrichtung, der sich NICHT ueberspringen laesst.
+     Begruendung steht in bin/pakete.js bei npmUmgebung(). */
   async function npmLaufen(args) {
     const na = npmAufruf();
+    const umgebung = require('./pakete.js').npmUmgebung();
     if (process.platform === 'win32' && WURZEL.startsWith('\\\\')) {
       tut(T('Der Ordner liegt auf einer Freigabe — ich blende ihn kurz als Laufwerk ein.'));
       const teile = [`pushd "${WURZEL}"`, '&&',
                      `"${na.befehl}"`, ...na.vorn.map((v) => `"${v}"`), ...args].join(' ');
-      const e = spawnSync('cmd', ['/d', '/c', teile], { stdio: 'inherit' });
+      const e = spawnSync('cmd', ['/d', '/c', teile], { stdio: 'inherit', env: umgebung });
       return e.status === 0;
     }
-    return laeuft(na.befehl, [...na.vorn, ...args]);
+    return laeuft(na.befehl, [...na.vorn, ...args], { umgebung });
   }
   /* await, nicht vergessen: npmLaufen ist async. Ohne await steht hier ein
      Promise, und !Promise ist immer falsch - ein gescheitertes npm install

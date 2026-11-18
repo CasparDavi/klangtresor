@@ -295,17 +295,9 @@
   "en": "  The container has been rebuilt and is stopped, as before. To start it: docker start klangtresor",
   "ru": "  Контейнер пересобран и остановлен, как и раньше. Запуск: docker start klangtresor"
  },
- "  Die Pakete musst du von Hand setzen: npm ci": {
-  "en": "  You have to install the packages by hand: npm ci",
-  "ru": "  Пакеты нужно установить вручную: npm ci"
- },
  "  Laeuft dein KlangTresor ohne Container: den Server einmal neu starten (starten-linux.sh /\n  starten-macos.command / starten-windows.cmd) und die Seite hart neu laden.": {
   "en": "  If your KlangTresor runs without a container: restart the server once (starten-linux.sh /\n  starten-macos.command / starten-windows.cmd) and hard-reload the page.",
   "ru": "  Если ваш KlangTresor работает без контейнера: один раз перезапустите сервер (starten-linux.sh /\n  starten-macos.command / starten-windows.cmd) и перезагрузите страницу с очисткой кэша."
- },
- "  Das Programm liegt, die Pakete musst du von Hand setzen: npm ci": {
-  "en": "  The program is in place; you have to install the packages by hand: npm ci",
-  "ru": "  Программа на месте; пакеты нужно установить вручную: npm ci"
  },
  "  Fertig. Den laufenden Server einmal neu starten:": {
   "en": "  Done. Restart the running server once:",
@@ -342,5 +334,13 @@
  "  KlangTresor ist auf {adresse} — schon im Browser offen, kein neuer Tab.": {
   "en": "  KlangTresor is at {adresse} — already open in your browser, no new tab.",
   "ru": "  KlangTresor на {adresse} — уже открыт в браузере, новая вкладка не нужна."
+ },
+ "  Von Hand nachholen:  {befehl}": {
+  "en": "  Install them by hand:  {befehl}",
+  "ru": "  Установить вручную:  {befehl}"
+ },
+ "  Das Programm liegt. Die Pakete von Hand nachholen:  {befehl}": {
+  "en": "  The program is in place. Install the packages by hand:  {befehl}",
+  "ru": "  Программа на месте. Установите пакеты вручную:  {befehl}"
  }
 }

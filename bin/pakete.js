@@ -56,6 +56,45 @@ function fehlende() {
 
 /* npm neben dem laufenden Node - wie npmAufruf in einrichten.js und aktualisieren.js:
    kommt Node aus werkzeug/, steht npm nicht im PATH. */
+/* DIE UMGEBUNG FUER JEDEN NPM-AUFRUF, DER INSTALLATIONSSKRIPTE LAUFEN LAESST.
+
+   Gemeldet von Tarja (18.11.2026, Linux, Pull Request #11): beim Einspielen von
+   1.1.14 brach der Docker-Bau bei `npm ci` ab.
+
+     Downloading ".../v1.20.1/onnxruntime-linux-x64-gpu-1.20.1.tgz"
+     Error: Failed to download the binaries: 404 Not Found.
+
+   NACHGERECHNET am 18.11.2026 in script/install.js von onnxruntime-node 1.20.1:
+   die Funktion, die die CUDA-Fassung des Rechners ermitteln soll, ist ein Rumpf -
+
+     function tryGetCudaVersion() {
+       // TODO: try to get the CUDA version from the system ( `nvcc --version` )
+       return 11;
+     }
+
+   Sie sieht sich das System also NIE an. Auf Linux/x64 wird die CUDA-Datei damit
+   immer geholt, sobald libonnxruntime_providers_cuda.so nicht im Paket liegt -
+   auch auf einem Rechner ohne jede Nvidia-Karte.
+
+   UND DIE ADRESSE ANTWORTET NICHT MEHR. Nicht nur die Datei fehlt: das ganze
+   Verzeichnis github.com/microsoft/onnxruntime gibt 404, gemessen am 18.11.2026
+   ueber zwei verschiedene Leitungen, waehrend github.com/microsoft/vscode
+   normal antwortet. Es ist also nicht unsere Leitung. Warum es weg ist, wissen
+   wir nicht - fuer uns zaehlt nur, dass dort nichts mehr zu holen ist.
+
+   Die CPU-Bibliothek steckt im npm-Paket selbst, und mit der rechnen Klangraum,
+   Klanganalyse und Einbettungen. Die CUDA-Datei braucht hier niemand. `skip`
+   beendet das fremde Skript, bevor es ins Netz geht (Zeile 117 liest die
+   Variable, `skip` setzt NO_INSTALL und steigt mit 0 aus).
+
+   WARUM HIER UND NICHT VIERMAL: dieselbe Antwort auf dieselbe Frage gehoert an
+   eine Stelle. Die drei Installer-Bauer (setup-bauen, dmg-bauen, appimage-bauen)
+   brauchen sie nicht - die rufen npm schon mit --ignore-scripts. Das Docker-Abbild
+   steht ausserhalb von Node und setzt die Variable in docker/Dockerfile selbst. */
+function npmUmgebung() {
+  return Object.assign({}, process.env, { ONNXRUNTIME_NODE_INSTALL_CUDA: 'skip' });
+}
+
 function npmAufruf() {
   const nd = path.dirname(process.execPath);
   for (const k of [path.join(nd, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
@@ -86,7 +125,7 @@ function nachholen(sag = (t) => console.log(t)) {
       melden.lauf({ was: 'Programmbausteine werden geholt', n: nr - 1, von: alle, nEinheit: 'Paket', quelle: 'registry.npmjs.org', jetzt: name });
       sag(`  Paket nachholen: ${fassung(name)} …`);
       spawnSync(npm.befehl, npm.vorn.concat(['install', '--no-save', '--no-fund', '--no-audit', ...extra, fassung(name)]),
-        { cwd: WURZEL, stdio: 'inherit', shell: npm.schale });
+        { cwd: WURZEL, stdio: 'inherit', shell: npm.schale, env: npmUmgebung() });
     }
   };
   /* Erst die ohne Skript - die koennen nicht an einem fremden Skript scheitern. */
@@ -114,7 +153,7 @@ function abweichungen() {
   return aus;
 }
 
-module.exports = { fehlende, nachholen, abweichungen };
+module.exports = { fehlende, nachholen, abweichungen, npmUmgebung };
 
 if (require.main === module) {
   const fehlt = fehlende();
