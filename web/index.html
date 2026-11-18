@@ -14603,8 +14603,15 @@ function alsSong(e){
 /** Die Playlists, die gerade angezeigt werden sollen. */
 function playlistAuswahl(){
   const s = $('plSicht').value;
+  /* FREIGEGEBENE LISTEN GELTEN HIER WIE IN DEN WERKEN (18.11.2026).
+
+     Gefunden beim Nachgehen eines Befunds von Tarja: die Werke-Ansicht zeigt unter
+     „Öffentlich" auch die Titel einer privaten Liste, die im Avatarpanel freigegeben
+     ist (inZeigeListe) - die Alben-Ansicht sah dagegen nur p.oeffentlich an. Die
+     Liste gab ihre Titel also her, erschien selbst aber nirgends. Zwei Antworten auf
+     dieselbe Frage, und eine davon war falsch. */
   let l = playlists.filter(p =>
-    s === 'oeff' ? p.oeffentlich : s === 'privat' ? !p.oeffentlich : true);
+    s === 'oeff' ? (p.oeffentlich || zeigeListen.has(p.id)) : s === 'privat' ? !p.oeffentlich : true);
   const nach = {
     gross: (a,b) => b.eintraege.length - a.eintraege.length,
     name:  (a,b) => a.name.localeCompare(b.name, 'de'),
