@@ -62,8 +62,8 @@ function erstNachsehen(versuch, weiter) {
 function browserSobaldDa(versuch = 0) {
   if (geoeffnet || versuch > 60) return;
   antwortet((ja) => {
-    if (ja) { geoeffnet = true; erstNachsehen(0, () => { const chrome = seiteAufmachen(ADRESSE + '?sprache=' + sprache());
-      console.log('\n' + (chrome ? T('  KlangTresor ist auf {adresse} — Browser geht auf (Chrome).', { adresse: ADRESSE })
+    if (ja) { geoeffnet = true; erstNachsehen(0, () => { const browser = seiteAufmachen(ADRESSE + '?sprache=' + sprache());
+      console.log('\n' + (browser ? T('  KlangTresor ist auf {adresse} — Browser geht auf ({browser}).', { adresse: ADRESSE, browser })
         : T('  KlangTresor ist auf {adresse} — Browser geht auf.', { adresse: ADRESSE })) + '\n'); }); }
     else setTimeout(() => browserSobaldDa(versuch + 1), 500);
   });

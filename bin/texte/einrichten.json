@@ -1583,9 +1583,9 @@
   "en": "In a moment Windows asks whether “Node.js JavaScript Runtime” may access the network.",
   "ru": "Сейчас Windows спросит, можно ли «Node.js JavaScript Runtime» выходить в сеть."
  },
- "KlangTresor geht in Chrome auf.": {
-  "en": "KlangTresor opens in Chrome.",
-  "ru": "KlangTresor открывается в Chrome."
+ "KlangTresor geht in {browser} auf.": {
+  "en": "KlangTresor opens in {browser}.",
+  "ru": "KlangTresor открывается в {browser}."
  },
  "KlangTresor geht in deinem Standardbrowser auf — Chrome habe ich nicht gefunden.": {
   "en": "KlangTresor opens in your default browser — I could not find Chrome.",

@@ -30,7 +30,25 @@ function chromeFinden() {
   return ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser'].find((n) => da(n)) || null;
 }
 
-/* Gibt true zurueck, wenn Chrome genommen wurde. */
+/* WIE DAS DING HEISST, DAS WIR GEFUNDEN HABEN (18.11.2026).
+
+   Beim Installationstest in der Ubuntu-VM meldete die Einrichtung „KlangTresor
+   geht in Chrome auf", obwohl dort kein Chrome installiert ist. chromeFinden()
+   hatte `chromium` aus dem Snap-Paket unter /snap/bin genommen - ein anderes
+   Programm, und die Meldung nannte es Chrome.
+
+   Das Verhalten bleibt, wie Caspar_D es will: „natuerlich soll er chrome starten
+   wenn er da ist, nur wenn chrome/chromium nicht da sind, soll er den
+   Standardbrowser nehmen." Nur der Name wird jetzt mitgegeben, damit die Meldung
+   sagen kann, was wirklich aufgeht. */
+function nameVon(pfad) {
+  if (!pfad) return null;
+  const n = String(pfad).toLowerCase();
+  return /chromium/.test(n) ? 'Chromium' : 'Chrome';
+}
+
+/* Gibt den NAMEN des genommenen Chrome-artigen Browsers zurueck ('Chrome' oder
+   'Chromium'), oder null, wenn der Standardbrowser des Systems aufgeht. */
 function seiteAufmachen(adresse) {
   const chrome = chromeFinden();
   const w = chrome
@@ -39,7 +57,7 @@ function seiteAufmachen(adresse) {
       : process.platform === 'darwin' ? ['open', [adresse]]
         : ['xdg-open', [adresse]];
   try { spawn(w[0], w[1], { stdio: 'ignore', detached: true }).unref(); } catch (e) {}
-  return !!chrome;
+  return nameVon(chrome);
 }
 
-module.exports = { chromeFinden, seiteAufmachen, da };
+module.exports = { chromeFinden, nameVon, seiteAufmachen, da };

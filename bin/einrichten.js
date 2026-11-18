@@ -921,8 +921,8 @@ function firewallFragtGleich() {
     if (srv.listening) {
       ZUSTAND.adresse = `http://127.0.0.1:${port}/`;
       const seiteWartet = SEITE_WUNSCH && port === SEITE_WUNSCH;   /* nach dem Umzug: die alte Seite kommt herueber */
-      const inChrome = (OHNE_BROWSER || seiteWartet) ? false : seiteAufmachen(ZUSTAND.adresse);
-      matt(T('Die Einrichtung läuft auch als Seite: {adresse}', { adresse: ZUSTAND.adresse }) + (inChrome ? ' (Chrome)' : ''));
+      const browser = (OHNE_BROWSER || seiteWartet) ? null : seiteAufmachen(ZUSTAND.adresse);
+      matt(T('Die Einrichtung läuft auch als Seite: {adresse}', { adresse: ZUSTAND.adresse }) + (browser ? ` (${browser})` : ''));
       matt(T('Hier im Fenster siehst du dasselbe — und hier kannst du auch antworten.'));
       /* unref: die Seite haelt die Einrichtung nicht am Leben. Sie endet,
          wenn die Arbeit endet - danach laeuft der KlangTresor-Server
@@ -2170,7 +2170,8 @@ function firewallFragtGleich() {
     setTimeout(() => process.exit(0), 3000);   /* der Seite Zeit lassen, „fertig" noch abzuholen */
     return;
   }
-  if (seiteAufmachen('http://localhost:8788/?sprache=' + sprache())) gut(T('KlangTresor geht in Chrome auf.'));
+  const browser = seiteAufmachen('http://localhost:8788/?sprache=' + sprache());
+  if (browser) gut(T('KlangTresor geht in {browser} auf.', { browser }));
   else {
     wink(T('KlangTresor geht in deinem Standardbrowser auf — Chrome habe ich nicht gefunden.'));
     matt(T('Zum Hören und Stöbern reicht jeder Browser. Nur das Lesezeichen für die'));

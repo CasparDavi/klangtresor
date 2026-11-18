@@ -311,9 +311,9 @@
   "en": "  Then hard-reload the page.",
   "ru": "  Затем перезагрузите страницу с очисткой кэша."
  },
- "  KlangTresor ist auf {adresse} — Browser geht auf (Chrome).": {
-  "en": "  KlangTresor is at {adresse} — the browser is opening (Chrome).",
-  "ru": "  KlangTresor доступен по адресу {adresse} — открывается браузер (Chrome)."
+ "  KlangTresor ist auf {adresse} — Browser geht auf ({browser}).": {
+  "en": "  KlangTresor is at {adresse} — the browser is opening ({browser}).",
+  "ru": "  KlangTresor доступен по адресу {adresse} — открывается браузер ({browser})."
  },
  "  KlangTresor ist auf {adresse} — Browser geht auf.": {
   "en": "  KlangTresor is at {adresse} — the browser is opening.",
