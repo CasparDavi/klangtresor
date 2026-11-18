@@ -10064,9 +10064,20 @@ es kann aber auch ein leeres Archiv sein, und dann würde der
 Fassungs-Nachzug aus der Oberfläche heraus nichts einspielen.
 
 **Caspar_D, 18.11.2026: „flagge das mal als demnächst zu erledigen."**
-Nachzusehen ist: Inhaltsverzeichnis des Archivs, wie `bin/aktualisieren.js`
-es erwartet, und ob die Glocke danach einen brauchbaren Nachzug fährt.
-Nicht gemessen, nur aufgefallen.
+
+**ERLEDIGT am 18.11.2026 beim Bau von 1.1.15.** Das Archiv ist **nicht leer**. Es
+trägt genau die vier Dateien, für die es gebaut ist, 57 759 Byte im Ganzen:
+
+```
+46693  aktualisieren.js
+ 4028  aktualisieren-macos.command
+ 3785  aktualisieren-windows.cmd
+ 3253  aktualisieren-linux.sh
+```
+
+Das sind 56 KB, und `gh release view` rundet auf Megabyte — daher die „0,0 MB".
+Gegengeprüft: die `aktualisieren.js` darin trägt den neuen Schalter und
+`handBefehl()`. Hier war also nichts kaputt, nur eine irreführende Anzeige.
 
 ---
 
@@ -10217,3 +10228,43 @@ exFAT `._`-Dateien an. Beim Einsetzen aus einem Sandkasten gehört **`cp -X`** d
   im Haus dieselbe Datei anforderten.
 - **Offen als Entwurfsfrage, nicht gebaut:** woher das CUDA-Abbild seine
   Bibliotheken künftig bekommt, wenn Microsoft sie nicht zurückbringt.
+
+
+---
+
+# 18.11.2026, 09:40 — 1.1.15 veröffentlicht
+
+Caspar_D: *„bei funktionierendem test, mach das release."* Der Test stand, also
+ist es heraus: [v1.1.15](https://github.com/CasparDavi/klangtresor/releases/tag/v1.1.15),
+Marke `Latest`, alle fünf Erzeugnisse hochgeladen und einzeln geprüft.
+
+| | | |
+|---|---|---|
+| `KlangTresor.zip` | 59,8 MB | trägt `.dockerignore`, `bin/pakete.js`, `bin/aktualisieren.js`, `bin/einrichten.js`, beide Dockerfiles |
+| `KlangTresor-Update.zip` | 56 KB | vier Dateien, `aktualisieren.js` mit Schalter und `handBefehl()` |
+| `KlangTresor-Setup.exe` | 84,2 MB | PE32, Nullsoft-Installer |
+| `KlangTresor-x86_64.AppImage` | 105,6 MB | ELF 64-bit, static-pie |
+| `KlangTresor.dmg` | 157,9 MB | SHA-256 `bd3f437d9cd506f99c3e5a28c172a424d94466eb4e69ef6e4b90045a684ca817` |
+
+Kein `--clobber`, wie die Hausregel will. `latest/download/` hinkt GitHub-seitig
+noch ein paar Minuten hinterher — kein Fehler.
+
+## Was aus dieser Runde offen bleibt
+
+- **Russisch** der zwei neuen Texte in `bin/texte/aktualisieren.json` hat Claude
+  selbst geschrieben → in Henrys nächste Durchsicht.
+- **Ubuntu-VM „Ubuntu KlangTresor": kein Zugang mehr.** SSH-Schlüssel und Passwort
+  lagen im Scratchpad der Sitzung 37f6b667 und sind geräumt; `prlctl exec` antwortet
+  nicht (Parallels Tools zu alt oder isoliert). Für den nächsten Linux-Test muß der
+  Zugang neu eingerichtet werden — oder wir bleiben bei Containern, die für diese
+  Frage gereicht haben. **Lehre: Zugangsmaterial gehört nicht in den Scratchpad.**
+- **`docker build` auf dem Mac** — `**/._*` ist drin, der Fall `._.dockerignore`
+  bleibt offen (Docker liest die Datei, bevor Muster gelten). Entwurfsfrage: immer
+  aus einer Kopie außerhalb von exFAT bauen, oder `dot_clean` davor.
+- **`docker/Dockerfile.cuda`** — woher künftig die CUDA-Bibliotheken, wenn Microsoft
+  sie nicht zurückbringt. Nicht gebaut, nicht entschieden.
+- **Unverändert liegen geblieben** (nicht Teil dieser Runde): der Songkürzer in
+  `labor/kuerzen/index.html` mit sechs nicht eingecheckten Änderungen, die toten
+  Schaltflächen im exportierten Archiv, die Knotenschnur im Sternenhimmel, und die
+  vier Punkte zum Bekanntmachen des Repos (Diskussionen, Schlagwörter, gegenseitige
+  Verweise, Werbewege), zu denen Caspar_Ds Entscheidung aussteht.
