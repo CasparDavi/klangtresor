@@ -10268,3 +10268,60 @@ noch ein paar Minuten hinterher — kein Fehler.
   Schaltflächen im exportierten Archiv, die Knotenschnur im Sternenhimmel, und die
   vier Punkte zum Bekanntmachen des Repos (Diskussionen, Schlagwörter, gegenseitige
   Verweise, Werbewege), zu denen Caspar_Ds Entscheidung aussteht.
+
+---
+
+# 18.11.2026, 10:23 — Installationstest in der Ubuntu-VM: bestanden
+
+Nachdem Caspar_D die Parallels Tools neu installiert hatte, trägt `prlctl exec`, und die
+VM ließ sich ganz von hier aus fahren. Damit ist der Test gelaufen, der seit heute früh
+offen stand — **die Einrichtung auf Linux**, bis dahin nur gelesen, nicht gesehen.
+
+**Aufbau:** leerer Ordner `/home/tester/KT-test-1115`, `KlangTresor.zip` von
+`releases/latest` (geprüft: 1.1.15, trägt die Berichtigung, kein oberster Ordner),
+`./einrichten-linux.sh --text --ohne-browser`, Antworten per `yes j`.
+
+**Ergebnis: bestanden.** Kein Handgriff nachzuschieben, keine Sackgasse.
+
+```
+[4/11] Programmbausteine des Servers: 19 Pakete werden geladen und eingerichtet
+   [ok]  Pakete sind da.
+...
+[11/11] Fertig
+   [ok]  Auf dem Schreibtisch liegt jetzt „KlangTresor"
+```
+
+4,8 GB, 18 Modelldateien, Server auf 8788, `/api/fassung` meldet `1.1.15`, und die
+Oberfläche steht in Firefox. **Keine einzige echte 404 im ganzen Protokoll** — die zwei
+Treffer auf „404" waren Zählerstände von wget (`40400K`, `40450K`).
+
+Damit ist die Lücke von heute früh geschlossen: `bin/einrichten.js` ist jetzt **gemessen**,
+nicht nur gelesen.
+
+## Drei Befunde aus dem Lauf — aufgeschrieben, nicht gebaut
+
+1. **Der Leertext lügt beim ersten Start.** Bei 0 Titeln und ohne gesetzten Filter zeigt
+   die Werke-Ansicht `leer.nichts`: *„Nichts gefunden. Ändere die Suche oder lockere die
+   Filter oben"*. Es gibt aber keine Filter zu lockern — das Archiv ist schlicht noch leer.
+   Der Satz schiebt es auf etwas, das der Nutzer nicht getan hat, und sagt ihm nicht, was er
+   tun soll. Im Terminal stand es richtig: *„Achtung: Katalog fehlt — erst
+   `node bin/aufbereiten.js` laufen lassen."* Das gehört in die Oberfläche, als eigener
+   Erstlauf-Text mit dem Weg zum Füllen. Dazu kommt, daß der Text in einer rund 130 px
+   schmalen Säule steht und achtmal umbricht.
+2. **„KlangTresor geht in Chrome auf."** steht fest verdrahtet in `bin/einrichten.js:2173`,
+   unabhängig davon, welcher Browser wirklich aufgeht. In der VM gibt es gar kein Chrome,
+   dort ist Firefox der Standard. Der Satz ist dort schlicht falsch.
+   (Ob überhaupt etwas aufging, konnte dieser Lauf nicht sagen: `prlctl exec` hat keine
+   Bildschirmsitzung, `xdg-open` meldet dann Erfolg, ohne daß ein Fenster erscheint. Das ist
+   mein Prüfaufbau, kein Befund — die falsche Wortwahl ist einer.)
+3. **`MORGENSCHRITTE.json kennt den Schritt nicht: Liedtexte vermessen …`** Der Schritt
+   `textanalyse` steht in `server/server.js:659` (seit 08.11.2026), die frisch angelegte
+   `MORGENSCHRITTE.json` kennt ihn nicht. Eine neue Installation startet also mit einer
+   Warnung über einen Schritt, den sie selbst mitbringt.
+
+## Nebenher: Zwischenablage der VM
+
+Nach dem Einspielen der Tools lief `prlcc` nicht — der Autostart greift beim Anmelden, und
+die Sitzung war zwölf Stunden älter als die Installation. Nachgestartet lief es zwar, meldete
+aber `X Error ... BadWindow` und übertrug nichts. **Der saubere Weg ist ein Neustart der VM**
+(oder abmelden/anmelden); währenddessen lief der Prüflauf, darum blieb es liegen.
