@@ -10325,3 +10325,39 @@ Nach dem Einspielen der Tools lief `prlcc` nicht — der Autostart greift beim A
 die Sitzung war zwölf Stunden älter als die Installation. Nachgestartet lief es zwar, meldete
 aber `X Error ... BadWindow` und übertrug nichts. **Der saubere Weg ist ein Neustart der VM**
 (oder abmelden/anmelden); währenddessen lief der Prüflauf, darum blieb es liegen.
+
+---
+
+# 18.11.2026, nachmittags — Richtigstellung: Tarjas Befund WAR ein Fehler
+
+Tarja, 18.11.2026: *„wenn ich den Listeneintrag im avatarpanel wieder
+deselektiere, soll die view auch wieder die Titel wegnehmen — vorerst muss man
+den Filter nochmal resetten, ein Handgriff zu viel."*
+
+**Im Commit `3c8ded1` steht, das sei kein Fehler.** Das ist falsch, und der
+Commit-Text läßt sich nicht mehr ändern — darum steht es hier.
+
+Ich hatte es im Sandkasten nicht nachstellen können und dann eine Erklärung
+gebaut, die zu ihren Worten paßte: bei Filter „Beides" zeigt die Werke-Ansicht
+ohnehin alles, der Haken wirkt dort nicht, und erst das Zurücksetzen auf
+„Öffentlich" nimmt die privaten Titel weg. Das stimmt als Beobachtung — es war
+nur **nicht ihre Ursache**.
+
+**Die wirkliche Ursache war die Album-Adresse.** Caspar_D, 18.11.2026: *„das
+komische verhalten wurde durch die albumsurl ausgelöst, jetzt geht bei tarja
+auch alles wie vorgesehen."* Ihr Browser hatte noch `#playlists` bzw.
+`#playlist=<id>` in der Leiste; die Seite schaltete beim Laden in die
+Alben-Ansicht, und was sie für die Werke-Ansicht hielt, war es nicht. Behoben
+mit `74548a8` (der Einstieg ist immer die Übersicht).
+
+**Was daraus zu lernen ist:** Zwei Meldungen derselben Person am selben Tag
+hatten dieselbe Wurzel, und ich habe sie als zwei Fälle behandelt. Der Befund
+„ich kann es nicht nachstellen" hätte die Frage auslösen müssen, **wodurch sich
+ihre Lage von meiner unterscheidet** — und der offene Punkt mit der Adresse lag
+zu dem Zeitpunkt schon auf dem Tisch. Statt dessen habe ich eine Erklärung
+gesucht, die zu den Worten paßt, und eine gefunden. Das ist die gefährlichere
+Sorte Antwort: sie klingt richtig und schließt die Sache zu früh.
+
+Richtig bleibt davon nur der Nebenbefund, den `3c8ded1` behebt: die
+Alben-Ansicht beachtete `zeigeListen` nicht. Das war unabhängig davon ein
+eigener Fehler und ist weiterhin behoben.
