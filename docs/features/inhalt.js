@@ -292,8 +292,8 @@ S.laden = {
  p:{en:'One file, double-click, done. The setup fetches the rest with progress bars.',de:'Eine Datei, Doppelklick, fertig. Den Rest holt die Einrichtung mit Balken.',ru:'Один файл, двойной щелчок — готово. Остальное установка загрузит с индикатором.'},
  knopf:{en:'Download',de:'Herunterladen',ru:'Скачать'},
  systeme:[
-  {name:'Windows',typ:'Setup.exe',zeile:{en:'Windows 10 / 11 · 64-bit',de:'Windows 10 / 11 · 64 Bit',ru:'Windows 10 / 11 · 64 бит'},datei:'KlangTresor-Setup.exe',mb:41},
-  {name:'macOS',typ:'DMG',zeile:{en:'macOS 11 or newer · Intel and Apple Silicon',de:'macOS 11 oder neuer · Intel und Apple Silicon',ru:'macOS 11 или новее · Intel и Apple Silicon'},datei:'KlangTresor.dmg',mb:104},
+  {name:'Windows',typ:'Setup.exe',zeile:{en:'Windows 10 / 11 · 64-bit',de:'Windows 10 / 11 · 64 Bit',ru:'Windows 10 / 11 · 64 бит'},datei:'KlangTresor-Setup.exe',mb:42},
+  {name:'macOS',typ:'DMG',zeile:{en:'macOS 11 or newer · Intel and Apple Silicon',de:'macOS 11 oder neuer · Intel und Apple Silicon',ru:'macOS 11 или новее · Intel и Apple Silicon'},datei:'KlangTresor.dmg',mb:103},
   {name:'Linux',typ:'AppImage',zeile:{en:'64-bit (x86_64) · AppImage, no sudo',de:'64 Bit (x86_64) · AppImage, ohne sudo',ru:'64 бит (x86_64) · AppImage, без sudo'},datei:'KlangTresor-x86_64.AppImage',mb:55}
  ],
  anf:{en:'<b>System requirements.</b> About 5 GB free for program, AI models and Whisper, plus room for your archive. A current browser, for the full feature set Google Chrome; any phone or tablet in your home network can listen. Tested on Windows 10 and 11, macOS 26 (Intel), Ubuntu 24.04; Apple Silicon not yet on a real device. Not signed: on first launch Windows and macOS ask for confirmation.',

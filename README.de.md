@@ -15,10 +15,10 @@ Frei und quelloffen. Kein Konto. Läuft auf deinem eigenen Rechner.
 ## Herunterladen
 
 <p align="center">
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Herunterladen für Windows 10/11 (41 MB)" src="https://img.shields.io/badge/Windows_10%2F11-Herunterladen-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Herunterladen für macOS 11 oder neuer (104 MB)" src="https://img.shields.io/badge/macOS_11+-Herunterladen-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Herunterladen für Windows 10/11 (42 MB)" src="https://img.shields.io/badge/Windows_10%2F11-Herunterladen-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Herunterladen für macOS 11 oder neuer (103 MB)" src="https://img.shields.io/badge/macOS_11+-Herunterladen-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
 <a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage"><img alt="Herunterladen für Linux x86_64 (55 MB)" src="https://img.shields.io/badge/Linux_x86__64-Herunterladen-ff8a2a?style=for-the-badge&logo=linux&logoColor=white"></a>
-<br><sub>Setup.exe 41 MB · DMG 104 MB (Intel und Apple Silicon) · AppImage 55 MB</sub>
+<br><sub>Setup.exe 42 MB · DMG 103 MB (Intel und Apple Silicon) · AppImage 55 MB</sub>
 </p>
 
 **Systemanforderungen.** Ein 64-Bit-Rechner mit Windows 10 oder 11, macOS 11 oder neuer oder Linux (x86_64). Rund

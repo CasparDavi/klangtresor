@@ -15,10 +15,10 @@ Suno создаёт песни. KlangTresor хранит их, играет, и�
 ## Скачать
 
 <p align="center">
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Скачать для Windows 10/11 (41 МБ)" src="https://img.shields.io/badge/Windows_10%2F11-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Скачать для macOS 11 или новее (104 МБ)" src="https://img.shields.io/badge/macOS_11+-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Скачать для Windows 10/11 (42 МБ)" src="https://img.shields.io/badge/Windows_10%2F11-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Скачать для macOS 11 или новее (103 МБ)" src="https://img.shields.io/badge/macOS_11+-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
 <a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage"><img alt="Скачать для Linux x86_64 (55 МБ)" src="https://img.shields.io/badge/Linux_x86__64-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=linux&logoColor=white"></a>
-<br><sub>Setup.exe 41 МБ · DMG 104 МБ (Intel и Apple Silicon) · AppImage 55 МБ</sub>
+<br><sub>Setup.exe 42 МБ · DMG 103 МБ (Intel и Apple Silicon) · AppImage 55 МБ</sub>
 </p>
 
 **Системные требования.** 64-битный компьютер с Windows 10 или 11, macOS 11 или новее либо Linux (x86_64). Около
