@@ -44,7 +44,7 @@ Foundation“, Bau müsste in GitHub Actions laufen). Casto kann nicht signieren
 
 ## macOS: `KlangTresor.dmg` (geprüft 30.10.2026, veröffentlicht mit 1.0.142)
 
-Gebaut mit `bin/dmg-bauen.js` (aus `bin/paket.js`), 103 MB. Geprüft in einer macOS-26-VM (Intel): Erster Start legt
+Gebaut mit `bin/dmg-bauen.js` (aus `bin/paket.js`), 104 MB (der Wert schwankt je Baulauf um ein halbes MB). Geprüft in einer macOS-26-VM (Intel): Erster Start legt
 das Programm nach `~/KlangTresor` und öffnet die Einrichtung; Update per Glocke 1.0.138 → 1.0.141 lief durch. Der
 Absturz beim allerersten Start (Fenster doppelt freigegeben) ist seit 1.0.142 behoben. Apple Silicon ist eingebaut,
 aber noch nicht auf einem echten Gerät geprüft.
