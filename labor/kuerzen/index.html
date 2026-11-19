@@ -83,6 +83,9 @@ input[type=range]{vertical-align:middle;width:180px;accent-color:var(--akzent)}
    der Fläche mehr Mauszeiger an außer der Klickfläche selbst, und die liegt mit
    z-index 5 über allem Gezeichneten. */
 .klick{position:absolute;left:0;height:94px;width:100%;cursor:crosshair;z-index:5}
+/* Der Streifen über der Welle setzt den Abspielkopf - eigener Zeiger, damit
+   die Geste sichtbar eine andere ist als das Fadenkreuz in der Kurve. */
+.klickoben{position:absolute;left:0;width:100%;cursor:col-resize;z-index:4}
 /* Mehrzeilig, aber gedeckelt: drei Zeilen, dann Auslassungspunkte. Der volle
    Wortlaut steht im Tooltip. */
 .regie{position:absolute;font-size:9.5px;line-height:11px;color:var(--schwach);
@@ -219,7 +222,8 @@ kbd{background:#242427;border:1px solid #44444a;border-radius:3px;padding:0 4px;
 
 <div class="huelle">
   <h1>Kürzen-Labor</h1>
-  <p class="unter">In den Song klicken setzt Schnitt und Abspielkopf. Im Streifen darüber stehen die
+  <p class="unter">In die Kurve klicken setzt den Schnitt und zeigt die Schnittstellen; in den Streifen
+    darüber klicken setzt den Abspielkopf. Im Streifen stehen auch die
     möglichen Schnittstellen; ihre <b>Höhe ist der Pegelsprung</b> an der Naht, ein unterbrochener
     Stiel heißt, der Text bricht. Ein <b>Klick</b> auf einen Pfeil kürzt bis dorthin, ein zweiter hebt
     es auf, <b>Ziehen</b> verschiebt ihn, <kbd>←</kbd> <kbd>→</kbd> um ein Zwanzigstel.
@@ -700,6 +704,11 @@ function malen(){
 
   /* ---- Klickfläche: Abschnitte, Hüllkurve, Taktstriche ---- */
   teile.push(`<div class="klick" id="klick" style="top:${OBEN_WELLE}px"></div>`);
+  /* ÜBER DER WELLE: der Abspielkopf (17.11.2026). Volle Breite vom oberen
+     Rand bis zur Welle, aber UNTER den Pfeilen der Schnittstellen (z-index 4
+     gegen deren 12) - ein Klick auf einen Pfeil kürzt weiter wie bisher, ein
+     Klick daneben setzt den Kopf. */
+  teile.push(`<div class="klickoben" id="klickoben" style="top:0;height:${OBEN_WELLE}px"></div>`);
   teile.push(huellSvg());
   /* DIE KÜRZEL ALS EIGENE ZEILE ÜBER DER TOPLINE, in der FARBE ihres Abschnitts
      (Caspar_D, 23.08.2026) - „vorher lagen sie weiß im Block und mussten sich
@@ -1051,6 +1060,7 @@ function draehte(){
     });
   });
   b.querySelectorAll('.klick').forEach(el => el.addEventListener('click', klickInSong));
+  b.querySelectorAll('.klickoben').forEach(el => el.addEventListener('click', klickOben));
 }
 
 /* Ein Pfeil wurde angeklickt, nicht gezogen. */
@@ -1077,7 +1087,14 @@ function setzen(i){
   if (da && Math.abs(da.bis - z) < 1e-6) REGIONEN = REGIONEN.filter(r => r !== da);
   else {
     REGIONEN = REGIONEN.filter(r => r !== da);
-    REGIONEN.push({ von: a, bis: e });
+    /* MIT IHRER SCHNITTSTELLE (17.11.2026). Vorher war eine Region nur
+       { von, bis } - sie wusste nicht, aus welchem Vorschlag sie entstand.
+       Ging AKTIV verloren (ein Klick woanders genuegte), fiel die Pfeiltaste
+       in den zweiten Zweig, verschob den ANFANG und leerte die Flaeche.
+       Caspar_D, 17.11.2026: „wenn ich finetuning der grenzen machen moechte,
+       wird die schraffierte flaeche invalidiert". Mit der Nummer findet die
+       Taste zurueck. */
+    REGIONEN.push({ von: a, bis: e, i });
     REGIONEN.sort((p,q) => p.von - q.von);
   }
   malen();
@@ -1136,6 +1153,21 @@ function nahtDauer(r){
   }
   return Math.max(0.02, Math.min(NAHTDAUER, r.von - vor, nach - r.bis, r.bis - r.von));
 }
+
+/* WER ZULETZT GESCHOBEN HAT, BESTIMMT DIE ANSICHT (Caspar_D, 17.11.2026:
+   „wenn ich seitwärts scrolle, darf der playhead den focus nicht immer wieder
+   ansichreißen und das fenster um sich zentrieren").
+
+   Unterschieden wird an der Zahl: schiebt die Schleife selbst, merkt sie sich
+   den gesetzten Wert; kommt beim nächsten Scroll-Ereignis ein anderer an, war
+   es die Hand. Danach schweigt die Nachführung fünf Sekunden. Und wenn sie
+   wieder darf, zentriert sie nicht mehr, sondern schiebt nur so weit, dass der
+   Kopf gerade wieder im Bild ist - ein Sprung um eine halbe Fensterbreite ist
+   genau das Reißen, das stört. */
+let NUTZER_SCROLL = 0, SCROLL_GESETZT = -1;
+$('#fenster').addEventListener('scroll', () => {
+  if (Math.abs($('#fenster').scrollLeft - SCROLL_GESETZT) > 1) NUTZER_SCROLL = performance.now();
+}, { passive: true });
 
 function mitlaufen(){
   const a = AUDIO;
@@ -1220,7 +1252,12 @@ function mitlaufen(){
     leuchten(a.currentTime);
     const f = $('#fenster'), links = f.scrollLeft, rechts = links + f.clientWidth;
     const px = x(a.currentTime);
-    if (px < links + 40 || px > rechts - 80) f.scrollLeft = px - f.clientWidth * 0.35;
+    if (performance.now() - NUTZER_SCROLL > 5000) {
+      let ziel = null;
+      if (px < links + 40) ziel = px - 40;
+      else if (px > rechts - 80) ziel = px - f.clientWidth + 80;
+      if (ziel != null) { SCROLL_GESETZT = Math.max(0, Math.round(ziel)); f.scrollLeft = SCROLL_GESETZT; }
+    }
   }
   requestAnimationFrame(mitlaufen);
 }
@@ -1268,6 +1305,17 @@ document.addEventListener('keydown', (e) => {
     const r = regionVon(SCHNITT);
     if (r) setzen(AKTIV); else malen();
     nahtLaden(AKTIV);
+  } else if (regionVon(SCHNITT) && regionVon(SCHNITT).i != null && KAND[regionVon(SCHNITT).i]){
+    /* DER ENDSTRICH, NICHT DER ANFANG (Caspar_D, 17.11.2026: „ich setze den
+       anfang, dann das ende auf den vorhergesagten taktzeiten, dann hoert man
+       aber dass es nicht richtig passt und ich will per Pfeiltaste den
+       endstrich noch leicht verschieben"). Steht eine Flaeche, gehoert die
+       Taste ihrem Ende - der Anfang ist ja gerade der, den er gesetzt hat.
+       AKTIV wird aus der Flaeche zurueckgeholt, statt die Flaeche zu opfern. */
+    AKTIV = regionVon(SCHNITT).i;
+    VERSATZ[AKTIV] = (VERSATZ[AKTIV] || 0) + d;
+    setzen(AKTIV);
+    nahtLaden(AKTIV);
   } else if (SCHNITT != null){
     SCHNITT = Math.max(0.2, Math.min(SONG.dauer - 0.5, SCHNITT + d));
     REGIONEN = []; malen(); kandidatenLaden();
@@ -1310,6 +1358,28 @@ document.addEventListener('mouseup', () => {
   else nahtLaden(z.was);
 });
 
+/* ÜBER DER WELLE GEKLICKT: nur der Abspielkopf, der Schnitt bleibt stehen
+   (Caspar_D, 17.11.2026). Läuft gerade etwas, springt die Wiedergabe mit;
+   steht sie, wandert nur der Kopf - dann kann man nachsehen, ohne zu hören. */
+function klickOben(ev){
+  if (!SONG || ZIEHT) return;
+  const r = $('#bahn').getBoundingClientRect();
+  let t = Math.max(0, Math.min(SONG.dauer, (ev.clientX - r.left) / PX));
+  /* NIE MITTEN INS WEGGESCHNITTENE (17.11.2026, gleich nach dem Einbau
+     gemeldet: „der Playhead ueberspringt jetzt die Flaeche nicht mehr").
+     Der alte Klick in die Kurve rastete in die Flaeche ein; dieser hier
+     setzte den Kopf stur dorthin, wo geklickt wurde - auch in Material, das
+     es nach dem Schnitt nicht mehr gibt. Wer in die Schraffur klickt, meint
+     die Stelle, an der die Musik weitergeht: das Ende der Flaeche. */
+  const drin = REGIONEN.find(g => t >= g.von && t < g.bis);
+  if (drin) t = drin.bis;
+  NAHT = null; VORLAUF = null;
+  if (FOLGE){ FOLGE.pause(); FOLGE.volume = 1; }
+  if (AUDIO){ try { AUDIO.currentTime = t; } catch (e) {} AUDIO.volume = lautstaerke(t); }
+  phSetzen(t);
+  leuchten(t);
+}
+
 function klickInSong(ev){
   if (!SONG || ZIEHT) return;
   const r = $('#bahn').getBoundingClientRect();
@@ -1322,11 +1392,17 @@ function klickInSong(ev){
   SCHNITT = drin ? drin.von : t;
   AKTIV = null; VERSATZ = {};
   $('#hoeren').classList.remove('an');
-  /* Der Abspielkopf springt mit: man will hören, was man anklickt. */
-  /* Ein Klick setzt den Kopf - eine laufende Blende ist damit hinfällig. */
+  /* ZWEI GESTEN STATT EINER (Caspar_D, 17.11.2026: „wenn ich in die kurve
+     clicke, werden die schnittstellen gezeigt / wenn ich darüber clicke,
+     dann wird der playhead dort gesetzt"). Vorher sprang der Abspielkopf
+     bei jedem Klick in die Welle mit - man konnte also nicht nachsehen,
+     welche Schnittstellen es an einer Stelle gibt, ohne die Wiedergabe
+     dorthin zu reißen. Der Kopf wird jetzt im Streifen DARÜBER gesetzt
+     (klickOben), hier unten geht es nur um den Schnitt.
+     Eine laufende Blende ist trotzdem hinfällig - sie gehörte zum alten
+     Schnitt. */
   NAHT = null; VORLAUF = null;
   if (FOLGE){ FOLGE.pause(); FOLGE.volume = 1; }
-  if (AUDIO){ try { AUDIO.currentTime = SCHNITT; } catch (e) {} AUDIO.volume = lautstaerke(SCHNITT); }
   malen(); kandidatenLaden();
 }
 
