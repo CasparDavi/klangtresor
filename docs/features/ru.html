@@ -404,8 +404,19 @@ function spracheWaehlen(){
      baeute das Skript die Seite sofort in einer anderen Sprache neu, und im
      HTML staende etwas anderes als auf dem Schirm. */
   const fest = document.documentElement.dataset.seite;
+  const w = new URLSearchParams(location.search).get('lang');
+  /* ?lang= GILT AUCH AUF EINER SPRACHSEITE (19.11.2026, nachgezogen nach der
+     KlangFeder). Es ist ein ausdruecklicher Wunsch und wiegt schwerer als die
+     Datei, auf der jemand zufaellig steht - sonst zeigte de.html?lang=ru
+     Deutsch. Gewechselt wird die DATEI, damit Titel und Beschreibung im HTML
+     zur Sprache auf dem Schirm passen. */
+  if (fest && w && S.kopf.h[w] && w !== fest){
+    const ziel = { en: 'index.html', de: 'de.html', ru: 'ru.html' }[w];
+    if (ziel) { try { localStorage.setItem('kt-features-sprache', w); } catch(e){}
+                location.replace(ziel + location.hash); return fest; }
+  }
   if (fest && S.kopf.h[fest]) return fest;
-  const q = new URLSearchParams(location.search).get('lang');
+  const q = w;
   if (q && S.kopf.h[q]) { try { localStorage.setItem('kt-features-sprache', q); } catch(e){} return q; }
   try { const s = localStorage.getItem('kt-features-sprache'); if (s && S.kopf.h[s]) return s; } catch(e){}
   for (const l of (navigator.languages || [navigator.language || 'en'])) { const k = (l||'').slice(0,2); if (S.kopf.h[k]) return k; }
