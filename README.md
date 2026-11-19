@@ -15,10 +15,10 @@ Free and open source. No account. Runs on your own computer.
 ## Download
 
 <p align="center">
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Download for Windows 10/11 (97 MB)" src="https://img.shields.io/badge/Windows_10%2F11-Download-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Download for macOS 11 or newer (175 MB)" src="https://img.shields.io/badge/macOS_11+-Download-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage"><img alt="Download for Linux x86_64 (125 MB)" src="https://img.shields.io/badge/Linux_x86__64-Download-ff8a2a?style=for-the-badge&logo=linux&logoColor=white"></a>
-<br><sub>Setup.exe 97 MB · DMG 175 MB (Intel and Apple Silicon) · AppImage 125 MB</sub>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Download for Windows 10/11 (41 MB)" src="https://img.shields.io/badge/Windows_10%2F11-Download-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Download for macOS 11 or newer (104 MB)" src="https://img.shields.io/badge/macOS_11+-Download-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage"><img alt="Download for Linux x86_64 (55 MB)" src="https://img.shields.io/badge/Linux_x86__64-Download-ff8a2a?style=for-the-badge&logo=linux&logoColor=white"></a>
+<br><sub>Setup.exe 41 MB · DMG 104 MB (Intel and Apple Silicon) · AppImage 55 MB</sub>
 </p>
 
 **System requirements.** A 64-bit computer with Windows 10 or 11, macOS 11 or newer, or Linux (x86_64). About 5 GB

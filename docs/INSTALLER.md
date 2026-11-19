@@ -35,7 +35,7 @@ NSIS, gebaut auf dem Mac mit `node bin/paket.js` (ruft `bin/setup-bauen.js`). Sk
 | 4. Holen | Ein Balken über alles: was gerade geladen wird, „1,2 GB von 4,3 GB · huggingface.co · noch etwa 12 Min.“. Danach geht es von allein weiter. Kommt etwas nicht an, sagt die Seite, was fehlt, und bietet „Noch einmal versuchen“ an; KlangTresor läuft auch ohne. Fehlt nichts, entfällt die Seite. |
 | 5. Fertig | Häkchen „Weiter im Browser: Suno-Name und Lieder“. Der Browser geht auf, die Einrichtung fragt nach dem Suno-Namen. Danach startet KlangTresor in seinem gewohnten Fenster. |
 
-Größe: 97 MB (ohne ffmpeg, Modelle und Whisper; 82 MB am 29.10.2026, 87 MB am 18.11.2026). Startmenü: „KlangTresor“, „KlangTresor entfernen“. Eintrag unter „Apps“.
+Größe: 41 MB (ohne ffmpeg, Modelle und Whisper). Bis 1.1.17 waren es 97 MB — seither faehrt die schwere Dokumentation nicht mehr mit (.gitattributes). Startmenü: „KlangTresor“, „KlangTresor entfernen“. Eintrag unter „Apps“.
 Stiller Lauf für Tests: `KlangTresor-Setup.exe /S /D=C:\Pfad` (`/OHNEHOLEN` lässt das Holen aus).
 
 **Warnung ohne Zertifikat:** SmartScreen „Der Computer wurde durch Windows geschützt“ → „Weitere Informationen“ →
@@ -44,7 +44,7 @@ Foundation“, Bau müsste in GitHub Actions laufen). Casto kann nicht signieren
 
 ## macOS: `KlangTresor.dmg` (geprüft 30.10.2026, veröffentlicht mit 1.0.142)
 
-Gebaut mit `bin/dmg-bauen.js` (aus `bin/paket.js`), 175 MB. Geprüft in einer macOS-26-VM (Intel): Erster Start legt
+Gebaut mit `bin/dmg-bauen.js` (aus `bin/paket.js`), 104 MB. Geprüft in einer macOS-26-VM (Intel): Erster Start legt
 das Programm nach `~/KlangTresor` und öffnet die Einrichtung; Update per Glocke 1.0.138 → 1.0.141 lief durch. Der
 Absturz beim allerersten Start (Fenster doppelt freigegeben) ist seit 1.0.142 behoben. Apple Silicon ist eingebaut,
 aber noch nicht auf einem echten Gerät geprüft.
@@ -78,8 +78,8 @@ aber noch nicht auf einem echten Gerät geprüft.
 
 **Wie es gebaut ist:** `bin/appimage-bauen.js` (aus `bin/paket.js`), auf dem Mac: squashfs (`brew install squashfs`)
 plus das statische Laufzeitprogramm von AppImage/type2-runtime (braucht kein libfuse2). Inhalt: `AppRun`
-(`bin/linux/AppRun`), Programm, Node linux-x64, `node_modules` mit onnxruntime nur linux/x64. 125 MB
-(104 MB am 29.10.2026, 109 MB am 18.11.2026).
+(`bin/linux/AppRun`), Programm, Node linux-x64, `node_modules` mit onnxruntime nur linux/x64. 55 MB
+(104 MB am 29.10.2026, 125 MB mit Dokumentation bis 1.1.17).
 Das Symbol: `bin/linux/klangtresor-symbol.py` (Python 3 + GTK + AyatanaAppIndicator3 aus dem System, nichts
 nachinstalliert). Der Knopf „KlangTresor beenden“ (`/api/system/beenden`, nur vom Rechner selbst) beendet den Server
 mit Code 0; Symbol (Linux und Windows) und `bin/starten.js` verstehen das als gewollt.
