@@ -212,8 +212,27 @@ const privatDatei = neuesteRohdatei('privat');
    vergeuden"). Der Ordner roh/verarbeitet/ entsteht nirgends mehr;
    unersetzlich ist library/katalog.json.gz, und nur den sichert man. */
 if (!feedDatei && !profilDatei && !K.lesen()) {
-  console.error(T('Keine Rohdaten in library/roh/ und noch kein Katalog.'));
-  console.error(T('Erst im Browser sammeln (siehe README).'));
+  /* SAGEN, WAS WIRKLICH FEHLT (19.11.2026). Hier stand „Erst im Browser
+     sammeln (siehe README)." Das ist bei einem frischen System fast immer
+     falsch: Es fehlt kein Sammeln im Browser, sondern der Suno-Name - ohne
+     ihn ueberspringt der Morgenlauf den Schritt, der die Titelliste holt,
+     und faellt hier herein. Eine Nutzerin hat den Lauf daraufhin mehrfach
+     wiederholt und jedes Mal dieselbe Meldung bekommen; die README half
+     ihr nicht, weil die eine noetige Handlung zwei Zentimeter weiter oben
+     im selben Fenster lag. Hausregel: keine Meldung ohne Ausweg, und der
+     Ausweg muss der richtige sein. */
+  let handle = null;
+  try { handle = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'library', 'konfig.json'), 'utf8')).handle || null; }
+  catch (e) {}
+  console.error(T('Noch kein Katalog, und in library/roh/ liegt nichts zum Verarbeiten.'));
+  if (!handle) {
+    console.error(T('Es fehlt dein Suno-Name — ohne ihn weiß KlangTresor nicht, wessen Titel es holen soll.'));
+    console.error(T('Im KlangTresor oben rechts den roten Knopf drücken, den Namen hinter suno.com/@ eintragen,'));
+    console.error(T('mit „Prüfen" bestätigen und dann „Das bin ich" drücken. Danach den roten Knopf noch einmal.'));
+  } else {
+    console.error(T('Der Suno-Name ist eingetragen ({name}) — es wurde nur noch keine Titelliste geholt.', { name: '@' + handle }));
+    console.error(T('Im KlangTresor oben rechts den roten Knopf drücken; er holt sie.'));
+  }
   process.exit(1);
 }
 

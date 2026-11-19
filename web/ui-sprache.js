@@ -664,14 +664,17 @@
     ['morgen.kreuz.analyse', 'Titel analysieren', 'Analyse titles'],
     ['morgen.kreuz.analyse.text', 'BPM, Tonart, Lautheit, Bandprofil, Histogramm, Suchindex.', 'BPM, key, loudness, band profile, histogram, search index.'],
     ['morgen.kreuz.stems', 'Instrumentspuren, Tonart und Stimmumfang', 'Instrument tracks, key and vocal range'],
-    ['morgen.kreuz.stems.text', 'Neue Titel mit WAV, neueste zuerst, höchstens eine halbe Stunde je Morgen. Etwa 4 Minuten je Titel; der Mac bleibt dabei wach.', 'New songs with a WAV, newest first, at most half an hour per morning. About 4 minutes per song; the Mac stays awake.'],
+    ['morgen.kreuz.stems.text', 'Neue Titel mit WAV, neueste zuerst, höchstens eine halbe Stunde je Morgen. Etwa 4 Minuten je Titel; der Rechner bleibt dabei wach.', 'New songs with a WAV, newest first, at most half an hour per morning. About 4 minutes per song; the Mac stays awake.'],
     ['morgen.kreuz.whisper', 'Karaoke-Zeitanker mit Whisper', 'Karaoke time anchors with Whisper'],
-    ['morgen.kreuz.whisper.text', 'Nur neue Titel mit Text, danach Lyrik-Abgleich. Etwa 3 Minuten je Titel; der Mac bleibt dabei wach.', 'New titles with lyrics only, then lyric alignment. About 3 minutes per title; the Mac stays awake.'],
+    ['morgen.kreuz.whisper.text', 'Nur neue Titel mit Text, danach Lyrik-Abgleich. Etwa 3 Minuten je Titel; der Rechner bleibt dabei wach.', 'New titles with lyrics only, then lyric alignment. About 3 minutes per title; the Mac stays awake.'],
     ['morgen.kreuz.musikstil', 'Musikstil und Musik-Karte', 'Music style and music map'],
     ['morgen.kreuz.musikstil.text', 'Klang-Embedding, Stil, Genre, Stimmung und Instrumente je neuem Titel (KI lokal, etwa 8 Sekunden je Titel); danach den Klangraum neu zeichnen.', 'Audio embedding, style, genre, mood and instruments per new title (AI locally, about 8 seconds each); then redraw the Sound Space.'],
     ['morgen.gruppe.login', 'Mit Login — über das Lesezeichen', 'With login — via the bookmark'],
     ['morgen.gruppe.public', 'Öffentlich von Suno', 'Public from Suno'],
-    ['morgen.gruppe.lokal', 'Lokal — nur dein Mac', 'Local — your machine only'],
+    /* „dein Mac" stand fest im deutschen Text - auch auf Windows und Linux las
+       das jeder so (19.11.2026). Das Englische sagte es laengst neutral, das
+       Russische auch. Hausregel: nichts darf luegen. */
+    ['morgen.gruppe.lokal', 'Lokal — nur dein Rechner', 'Local — your machine only'],
     ['morgen.ernte.keine', 'Keine Ernte vorhanden — in Suno das Lesezeichen drücken.', 'No harvest yet — press the bookmark on Suno.'],
     ['morgen.ernte.frisch', 'Ernte von vor {n} Minuten — frisch.', 'Harvest from {n} minutes ago — fresh.'],
     ['morgen.ernte.alt_h', 'Letzte Ernte vor {n} Stunden — für Neues das Lesezeichen drücken.', 'Last harvest {n} hours ago — press the bookmark for anything new.'],
@@ -4302,7 +4305,32 @@
     ['profil.alias.sammlung', 'Sammlung von {wer}', 'Collection of {wer}'],
     ['profil.alias.aendern', 'ändern', 'change'],
     ['profil.alias.frage', 'Wie heißt du bei Suno?', 'What is your name on Suno?'],
-    ['profil.alias.erkl', 'Der Alias bestimmt, wessen Daten hier gesammelt werden.', 'The alias decides whose data is collected here.'],
+    /* „Alias" war hier das einzige Wort, das die Sache nicht beim Namen nannte -
+       ueberall sonst heisst sie Suno-Name (19.11.2026, Regel: ein Begriff, ein Wort;
+       und Nutzerwoerter statt Entwicklerwoerter). Wortlaut jetzt wie in der Einrichtung. */
+    ['profil.alias.erkl', 'Der Name entscheidet, wessen Daten hier gesammelt werden.', 'The name decides whose data is collected here.'],
+    /* DER UNTERSCHIED ZWISCHEN ANZEIGENAME UND SUNO-NAME (19.11.2026).
+       Die Einrichtung warnt hier seit je (bin/texte/einrichten.json); im
+       Morgenfenster stand nichts davon - und wer die Einrichtung nicht zu
+       Ende gegangen ist, landet nur hier. Eine Nutzerin hat mehrfach ihren
+       Anzeigenamen eingegeben ("Creepy Bonbon", mit Leerzeichen), bekam
+       jedes Mal dasselbe 404 und kam nicht weiter. Wortlaut absichtlich
+       derselbe wie in der Einrichtung: eine Warnung, nicht zwei. */
+    ['profil.alias.hinweis',
+      'Nicht deine E-Mail-Adresse. Nicht der Anzeigename über deinen Liedern — der darf Leerzeichen und Großbuchstaben haben, der Suno-Name nicht.',
+      'Not your email address. Not the display name above your songs — that may contain spaces and capital letters, the Suno name may not.'],
+    /* Die Meldung mit dem Ausweg (Hausregel: keine Meldung ohne Ausweg).
+       Kommt statt „gibt es nicht", wenn die Eingabe aussieht wie ein
+       Anzeigename - Leerzeichen oder Großbuchstaben. */
+    ['profil.alias.wie_anzeigename',
+      'Das sieht nach deinem Anzeigenamen aus. Der Suno-Name steht in der Adresse deiner Profilseite: suno.com/@…',
+      'That looks like your display name. The Suno name is in the address of your profile page: suno.com/@…'],
+    /* Wenn das Schreiben von library/konfig.json fehlschlaegt. Der Grund kommt
+       vom Server (Schreibrecht, Pfad, Platte) und steht wortwoertlich dabei -
+       ohne ihn sucht der Mensch an der falschen Stelle. */
+    ['profil.alias.nicht_gemerkt',
+      'Der Name konnte nicht gespeichert werden: {grund}. KlangTresor schreibt ihn nach library/konfig.json — läuft es aus einem Ordner, in den du schreiben darfst?',
+      'The name could not be saved: {grund}. KlangTresor writes it to library/konfig.json — is it running from a folder you may write to?'],
     ['profil.alias.pruefen', 'Prüfen', 'Check'],
     ['profil.alias.abbrechen', 'Abbrechen', 'Cancel'],
     ['profil.alias.frage_suno', 'Frage Suno …', 'Asking Suno …'],

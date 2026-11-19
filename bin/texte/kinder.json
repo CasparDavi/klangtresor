@@ -939,14 +939,6 @@
   "en": "{datei} is unreadable ({fehler}) — skipped, will be renamed to .unlesbar after the run",
   "ru": "{datei} не читается ({fehler}) — пропущен, после запуска будет переименован в .unlesbar"
  },
- "Keine Rohdaten in library/roh/ und noch kein Katalog.": {
-  "en": "No raw data in library/roh/ and no catalogue yet.",
-  "ru": "В library/roh/ нет исходных данных, и каталога ещё нет."
- },
- "Erst im Browser sammeln (siehe README).": {
-  "en": "Collect in the browser first (see README).",
-  "ru": "Сначала выполните сбор в браузере (см. README)."
- },
  "Lese Rohdaten:": {
   "en": "Reading raw data:",
   "ru": "Чтение исходных данных:"
@@ -1378,5 +1370,29 @@
  "nur ein Hinweis: Russisch rechnet dann mit dem Endungsmodell": {
   "en": "just a note: Russian is then computed with the ending model only",
   "ru": "только к сведению: тогда русский текст рассчитывается только по модели окончаний"
+ },
+ "Noch kein Katalog, und in library/roh/ liegt nichts zum Verarbeiten.": {
+  "en": "No catalogue yet, and there is nothing to process in library/roh/.",
+  "ru": "Каталога ещё нет, и в library/roh/ нечего обрабатывать."
+ },
+ "Es fehlt dein Suno-Name — ohne ihn weiß KlangTresor nicht, wessen Titel es holen soll.": {
+  "en": "Your Suno name is missing — without it KlangTresor does not know whose songs to fetch.",
+  "ru": "Не указано ваше имя в Suno — без него KlangTresor не знает, чьи треки загружать."
+ },
+ "Im KlangTresor oben rechts den roten Knopf drücken, den Namen hinter suno.com/@ eintragen,": {
+  "en": "In KlangTresor press the red button at the top right, enter the name after suno.com/@,",
+  "ru": "В KlangTresor нажмите красную кнопку справа вверху, впишите имя после suno.com/@,"
+ },
+ "mit „Prüfen\" bestätigen und dann „Das bin ich\" drücken. Danach den roten Knopf noch einmal.": {
+  "en": "confirm with “Check” and then press “That’s me”. After that press the red button once more.",
+  "ru": "нажмите «Проверить», затем «Это я». После этого нажмите красную кнопку ещё раз."
+ },
+ "Der Suno-Name ist eingetragen ({name}) — es wurde nur noch keine Titelliste geholt.": {
+  "en": "The Suno name is set ({name}) — only the song list has not been fetched yet.",
+  "ru": "Имя в Suno указано ({name}) — просто список треков ещё не загружен."
+ },
+ "Im KlangTresor oben rechts den roten Knopf drücken; er holt sie.": {
+  "en": "Press the red button at the top right in KlangTresor; it fetches it.",
+  "ru": "Нажмите в KlangTresor красную кнопку справа вверху — она его загрузит."
  }
 }

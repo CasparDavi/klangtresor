@@ -43,6 +43,11 @@ main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
 .held .bild{aspect-ratio:21/9;border-radius:28px}
 .held .pdf{display:inline-block;margin:-22px 0 38px;color:var(--akzent);font-size:17px;font-weight:600;text-decoration:none}
 .held .pdf:hover{text-decoration:underline}
+/* Seit dem 19.11.2026 stehen hier ZWEI Links (Broschuere und Erststart-Heft);
+   ohne Abstand klebten sie aneinander. Der Punkt trennt sie auch dann noch,
+   wenn die Zeile auf dem Handy umbricht. */
+.held .pdf + .pdf{margin-left:0}
+.held .pdf + .pdf::before{content:'·';margin:0 10px;color:var(--leise, #a8a8ad)}
 .abschnitt{margin:120px 0 0}
 .abschnitt>.kopf,.fahrt .kopf{max-width:820px;margin:0 0 36px}
 .abschnitt>.kopf .augenbraue,.fahrt .kopf .augenbraue{font-size:17px;font-weight:600;color:var(--akzent);margin:0 0 8px}
@@ -328,7 +333,7 @@ function bauen(){
   document.documentElement.lang = L;
   document.querySelectorAll('.sprache button').forEach(b => b.classList.toggle('an', b.dataset.l === L));
   KACHELN = {};
-  let h = `<section class="held"><h1><span class="rad" aria-hidden="true"></span>${S.kopf.marke[L]}</h1><p class="spruch">${S.kopf.h[L]}</p><p>${S.kopf.p[L]}</p><a class="pdf" href="KlangTresor-Broschuere-${L}.pdf">${S.kopf.pdf[L]} <span aria-hidden="true">↓</span></a>${knoepfe()}${bild('titel', L)}</section>`;
+  let h = `<section class="held"><h1><span class="rad" aria-hidden="true"></span>${S.kopf.marke[L]}</h1><p class="spruch">${S.kopf.h[L]}</p><p>${S.kopf.p[L]}</p><a class="pdf" href="KlangTresor-Broschuere-${L}.pdf">${S.kopf.pdf[L]} <span aria-hidden="true">↓</span></a><a class="pdf" href="../erststart/KlangTresor-Erststart-${L}.pdf">${S.kopf.heft[L]} <span aria-hidden="true">↓</span></a>${knoepfe()}${bild('titel', L)}</section>`;
   for (const a of S.abschnitte){
     const kopf = `<div class="kopf"><p class="augenbraue">${a.augenbraue[L]}</p><h2>${a.h[L]}</h2><p>${a.p[L]}</p></div>`;
     h += `<section class="abschnitt${a.fahrt ? ' mit-fahrt' : ''}">${kopf}<div class="raster">`;

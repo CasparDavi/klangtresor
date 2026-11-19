@@ -58,15 +58,27 @@
 
   /* ---------------- Sprache ----------------
      Dieses Skript laeuft auf suno.com; ui-sprache.js gibt es hier nicht.
-     Die Sprache reist im Lesezeichen mit (?sprache=en, gesetzt von
+     Die Sprache reist im Lesezeichen mit (?sprache=de|en|ru, gesetzt von
      morgenLzAdresse in web/index.html). Aeltere Lesezeichen tragen sie
-     nicht - dann zaehlt die Browsersprache: de* Deutsch, alles andere
-     Englisch. document.currentScript gilt nur bis zum ersten await,
-     deshalb steht das ganz oben. L(de, en) waehlt den Text. */
+     nicht oder tragen noch 'en' fuer Russisch - dann zaehlt bei fehlendem
+     Parameter die Browsersprache: de* Deutsch, ru* Russisch, sonst
+     Englisch; ein ausdruecklicher Parameter wird NIE ueberstimmt (wer vor
+     dem 19.11.2026 kopiert hat, kopiert die Adresse einmal neu).
+     document.currentScript gilt nur bis zum ersten await, deshalb steht
+     das ganz oben. L(de, en, ru) waehlt den Text. */
+  /* DREI SPRACHEN (19.11.2026). Bis dahin kannte das Lesezeichen nur de und
+     en: web/index.html schickte fuer Russisch ausdruecklich 'en' mit, und eine
+     russische Nutzerin bekam ihre Meldungen auf Englisch - darunter die
+     falsche „The server is not running". Jetzt reist ru mit. Fehlt ein
+     russischer Satz (es sind noch nicht alle uebersetzt), faellt er auf
+     Englisch zurueck, nie auf Deutsch. */
   function spracheAus(src, browser){
-    const m = /[?&]sprache=(de|en)(?:&|$)/.exec(String(src || ''));
+    const m = /[?&]sprache=(de|en|ru)(?:&|$)/.exec(String(src || ''));
     if (m) return m[1];
-    return /^de/i.test(String(browser || '')) ? 'de' : 'en';
+    const b = String(browser || '');
+    if (/^de/i.test(b)) return 'de';
+    if (/^ru/i.test(b)) return 'ru';
+    return 'en';
   }
   /* Woher dieses Skript kam - das Lesezeichen laedt es vom laufenden KlangTresor. */
   const QUELLE = (() => {
@@ -77,8 +89,10 @@
     }
     return src;
   })();
-  const EN = spracheAus(QUELLE, navigator.language) === 'en';
-  const L = (de, en) => EN ? en : de;
+  const SPR = spracheAus(QUELLE, navigator.language);
+  const EN = SPR !== 'de';   /* bleibt fuer die Stellen, die nur zwei Faelle kennen */
+  /* L(de, en, ru): ru ist freiwillig; fehlt es, gilt en. */
+  const L = (de, en, ru) => SPR === 'de' ? de : (SPR === 'ru' && ru) ? ru : en;
 
   /* DER TRESOR IST, WOHER DAS SKRIPT KAM (28.10.2026). Bis dahin stand hier fest 'http://localhost:8788' - wer
      KlangTresor auf einem anderen Port betrieb, bekam das Skript geladen, aber jeder Rueckruf ging ins Leere
@@ -154,8 +168,10 @@
   const kasten = document.createElement('div');
   kasten.id = 'mysuno-morgens';
   kasten.innerHTML =
-    '<div class="mk"><h1>KlangTresor</h1><span class="unter">' + L('Morgenroutine', 'Morning Routine') + '</span>' +
-    '<button class="zu" title="' + L('Schließen', 'Close') + '">×</button></div>' +
+    '<div class="mk"><h1>KlangTresor</h1><span class="unter">' + L('Morgenroutine', 'Morning Routine',
+'Обновление библиотеки') + '</span>' +
+    '<button class="zu" title="' + L('Schließen', 'Close',
+'Закрыть') + '">×</button></div>' +
     '<div class="mz-liste" id="mysuno-zeilen"></div>';
   document.body.appendChild(kasten);
   kasten.querySelector('.zu').onclick = () => kasten.remove();
@@ -179,9 +195,11 @@
      ein Albumfehler. Jetzt steht es vor dem ersten Schritt, mit dem Weg. */
   if (!/(^|\.)suno\.com$/.test(location.hostname)){
     schlecht(L('Dieses Lesezeichen gehört auf eine Seite von suno.com — hier ist ' + (location.hostname || 'keine Webseite') + '.',
-               'This bookmark belongs on a suno.com page — this is ' + (location.hostname || 'no web page') + '.'));
+               'This bookmark belongs on a suno.com page — this is ' + (location.hostname || 'no web page') + '.',
+'Эта закладка работает на странице suno.com — а здесь ' + (location.hostname || 'не веб-страница') + '.'));
     sagen(L('So geht es: suno.com in diesem Browser öffnen, dort angemeldet sein und das Lesezeichen auf jener Seite noch einmal anklicken.',
-            'How to: open suno.com in this browser, be signed in there, and click the bookmark again on that page.'));
+            'How to: open suno.com in this browser, be signed in there, and click the bookmark again on that page.',
+'Как быть: откройте suno.com в этом браузере, войдите там в аккаунт и нажмите закладку ещё раз уже на той странице.'));
     return;
   }
 
@@ -261,10 +279,12 @@
       const teil = {};
       for (const id of ids.slice(i, i + JE)) teil[id] = timing[id];
       if (melde) melde(L(`Sichern … Paket ${Math.floor(i/JE)+1}/${Math.ceil(ids.length/JE)}`,
-                         `Saving … batch ${Math.floor(i/JE)+1}/${Math.ceil(ids.length/JE)}`));
+                         `Saving … batch ${Math.floor(i/JE)+1}/${Math.ceil(ids.length/JE)}`,
+`Сохраняю … порция ${Math.floor(i/JE)+1}/${Math.ceil(ids.length/JE)}`));
       try { await einPost({ erzeugtAm: kopf.erzeugtAm, quelle: kopf.quelle, songs: [],
                             profil: kopf.profil, timing: teil }); }
-      catch (e){ throw new Error(L(`Paket ${Math.floor(i/JE)+1}: ${e.message}`, `Batch ${Math.floor(i/JE)+1}: ${e.message}`)); }
+      catch (e){ throw new Error(L(`Paket ${Math.floor(i/JE)+1}: ${e.message}`, `Batch ${Math.floor(i/JE)+1}: ${e.message}`,
+`Порция ${Math.floor(i/JE)+1}: ${e.message}`)); }
     }
     return erg;
   }
@@ -285,19 +305,23 @@
       const albenZahl = d.alben, eintragZahl = d.albumEintraege;
       if (d.albenGrund){
         text += L(` — Alben: ${d.albenGrund}; der Albumstand im Katalog bleibt alt`,
-                  ` — albums: ${d.albenGrund}; the catalogue keeps its previous albums — click the bookmark again later`);
+                  ` — albums: ${d.albenGrund}; the catalogue keeps its previous albums — click the bookmark again later`,
+` — альбомы: ${d.albenGrund}; в каталоге остаются прежние альбомы — нажмите закладку ещё раз позже`);
         farbe = '#e31c79';
       } else if (eintragZahl == null){
         text += L(' — Alben: der Server nennt keine Zahlen (alter Serverstand?), keine Albumdatei entstanden',
-                  ' — albums: the server gives no figures (old server version?), no album file created — update KlangTresor and restart it');
+                  ' — albums: the server gives no figures (old server version?), no album file created — update KlangTresor and restart it',
+' — альбомы: сервер не сообщает чисел (старая версия сервера?), файл альбомов не создан — обновите KlangTresor и перезапустите его');
         farbe = '#f97b14';
       } else if (!eintragZahl){
         text += L(` — Alben: ${albenZahl || 0} Köpfe, 0 Einträge, keine Albumdatei entstanden; der Albumstand im Katalog bleibt alt`,
-                  ` — albums: ${albenZahl || 0} headers, 0 entries, no album file created; the catalogue keeps its previous albums — click the bookmark again later`);
+                  ` — albums: ${albenZahl || 0} headers, 0 entries, no album file created; the catalogue keeps its previous albums — click the bookmark again later`,
+` — альбомы: заголовков ${albenZahl || 0}, записей 0, файл альбомов не создан; в каталоге остаются прежние альбомы — нажмите закладку ещё раз позже`);
         farbe = '#f97b14';
       } else {
         text += L(` — Alben: ${albenZahl} mit ${eintragZahl} Einträgen abgelegt`,
-                  ` — albums: ${albenZahl} with ${eintragZahl} entries stored`);
+                  ` — albums: ${albenZahl} with ${eintragZahl} entries stored`,
+` — альбомы: сохранено ${albenZahl}, записей ${eintragZahl}`);
       }
     }
     return { text, farbe };
@@ -305,19 +329,67 @@
 
   /* ---------------- Server erreichbar? ---------------- */
   let handle = null, katalogAlben = new Map();
+  /* EIN LEERES ARCHIV IST KEIN TOTER SERVER (19.11.2026).
+     Hier wurde JEDER misslungene Abruf als „Server laeuft nicht" gedeutet -
+     auch der 503 mit dem Klartext „Kein Katalog", den /api/index bei einem
+     frischen Archiv gibt (server/server.js:3077). Eine Nutzerin bekam am
+     ersten Tag „The server is not running. Start it first: ./bin/server-start.sh"
+     - auf Englisch, mit einem Unix-Pfad, unter Windows, obwohl ihr Server lief
+     und das Skript gerade VON IHM geladen worden war. Dass dieses Skript
+     ueberhaupt laeuft, beweist ja, dass der Server antwortet.
+     Jetzt werden drei Faelle unterschieden:
+       - kein Netzweg zum Server  -> wirklich nicht erreichbar
+       - 503 (kein Katalog)       -> leeres Archiv, der Zweig dafuer steht unten
+       - andere Antwort           -> sagen, was kam, statt zu raten */
+  let leeresArchiv = false;
   try {
-    const a = await fetch(DAHEIM + '/api/index');
-    if (!a.ok) throw new Error(a.status);
-    const d = await a.json();
+    let a = null;
+    try { a = await fetch(DAHEIM + '/api/index'); }
+    catch (netz) {
+      schlecht(L('Dein KlangTresor antwortet nicht mehr — läuft er noch?',
+                 'Your KlangTresor is not answering — is it still running?',
+                 'Ваш KlangTresor не отвечает — он ещё запущен?'));
+      schlecht(L(`Erwartet unter ${DAHEIM}. Dort nachsehen und es noch einmal versuchen.`,
+                 `Expected at ${DAHEIM}. Open it there and try again.`,
+                 `Ожидается по адресу ${DAHEIM}. Откройте его там и попробуйте ещё раз.`));
+      return;
+    }
+    if (a.status === 503) {
+      /* Leeres Archiv: genau der Fall, fuer den der Zweig weiter unten
+         gebaut ist. Nicht abbrechen - das hier ist der erste Tag. */
+      leeresArchiv = true;
+      gut(L('Archiv noch leer — ich hole alles, was dein Konto hergibt.',
+            'Archive still empty — fetching everything your account has.',
+            'Архив пока пуст — заберу всё, что есть в вашем аккаунте.'));
+    } else if (!a.ok) {
+      schlecht(L(`Dein KlangTresor antwortet mit ${a.status}.`,
+                 `Your KlangTresor answers with ${a.status}.`,
+                 `Ваш KlangTresor отвечает кодом ${a.status}.`));
+      schlecht(L('Lade die KlangTresor-Seite einmal neu und versuche es noch einmal.',
+                 'Reload the KlangTresor page once and try again.',
+                 'Перезагрузите страницу KlangTresor и попробуйте ещё раз.'));
+      return;
+    }
+    const d = leeresArchiv ? {} : await a.json();
     handle = d.profil && d.profil.handle;
     /* Der Albumstand des Katalogs (anzahlLautSuno, eintraege) - der
        Albumblock unten misst neue Luecken daran, statt bekannte jedes
        Mal zu melden. */
     katalogAlben = new Map(((d && d.playlists) || []).map(p => [p.id, p]));
-    gut(L(`Server da — ${d.anzahl} Songs im Katalog, @${handle}`, `Server is up — ${d.anzahl} songs in the catalogue, @${handle}`));
+    if (!leeresArchiv)
+      gut(L(`Server da — ${d.anzahl} Songs im Katalog, @${handle}`,
+            `Server is up — ${d.anzahl} songs in the catalogue, @${handle}`,
+            `Сервер на связи — ${d.anzahl} треков в каталоге, @${handle}`));
   } catch (e) {
-    schlecht(L('Der Server läuft nicht. Erst starten:', 'The server is not running. Start it first:'));
-    schlecht('  ./bin/server-start.sh');
+    /* Hier landet nur noch, was beim Lesen der Antwort schiefging -
+       kein „Server tot" mehr, und vor allem kein Unix-Pfad als Rat:
+       unter Windows gibt es ./bin/server-start.sh nicht. */
+    schlecht(L(`Die Antwort deines KlangTresor war nicht lesbar: ${e.message}`,
+               `The answer from your KlangTresor could not be read: ${e.message}`,
+               `Ответ вашего KlangTresor не удалось прочитать: ${e.message}`));
+    schlecht(L('Lade die KlangTresor-Seite einmal neu und versuche es noch einmal.',
+               'Reload the KlangTresor page once and try again.',
+               'Перезагрузите страницу KlangTresor и попробуйте ещё раз.'));
     return;
   }
   /* LEERES SYSTEM: kein Katalog, kein Handle. Der erste Tag. Statt
@@ -373,7 +445,8 @@
          der Reihenfolge (Caspar_D am ersten Lauf, 22.09.2026). Wartende Zeilen enden mit dem
          Auslassungszeichen: steht so eine direkt davor, rutscht die Token-Zeile ueber sie. */
       try {
-        const z = sagen(L('Token über ' + weg + ' erhalten.', 'Token received via ' + weg + '.'), '#8fd3a7');
+        const z = sagen(L('Token über ' + weg + ' erhalten.', 'Token received via ' + weg + '.',
+'Токен получен через ' + weg + '.'), '#8fd3a7');
         const v = z.previousElementSibling;
         if (v && /\u2026\s*$/.test(v.textContent || '')) z.parentElement.insertBefore(z, v);
       } catch (e) {} }
@@ -384,17 +457,23 @@
     let r;
     try { r = await fetch(FAPI + '/v1/client' + v, { credentials:'include' }); }
     catch (e) { throw new Error(L(kurz + ' ist nicht erreichbar (' + (e && e.message || e) + ') — meist eine CORS-Sperre, dann gehört diese Adresse in die Übergabe',
-                                  kurz + ' cannot be reached (' + (e && e.message || e) + ') — usually a CORS block; reload the Suno page and click the bookmark again, and if it persists, report this address')); }
-    if (!r.ok) throw new Error(kurz + L('/v1/client antwortet ', '/v1/client answers ') + r.status
-      + (r.status === 401 ? L(' — dieser Tab ist bei Clerk nicht angemeldet', ' — this tab is not signed in with Clerk; sign in to suno.com here and click the bookmark again') : ''));
+                                  kurz + ' cannot be reached (' + (e && e.message || e) + ') — usually a CORS block; reload the Suno page and click the bookmark again, and if it persists, report this address',
+kurz + ' недоступен (' + (e && e.message || e) + ') — обычно это блокировка CORS; перезагрузите страницу Suno и нажмите закладку ещё раз, а если повторится, сообщите этот адрес')); }
+    if (!r.ok) throw new Error(kurz + L('/v1/client antwortet ', '/v1/client answers ',
+'/v1/client отвечает ') + r.status
+      + (r.status === 401 ? L(' — dieser Tab ist bei Clerk nicht angemeldet', ' — this tab is not signed in with Clerk; sign in to suno.com here and click the bookmark again',
+' — в этой вкладке нет входа через Clerk; войдите здесь на suno.com и нажмите закладку ещё раз') : ''));
     const d = await r.json(); const c = d.response || d.client || d;
     const sid = c.last_active_session_id || (Array.isArray(c.sessions) && c.sessions[0] && c.sessions[0].id);
-    if (!sid) throw new Error(kurz + L(' kennt in diesem Tab keine aktive Sitzung', ' has no active session in this tab; sign in to suno.com here and click the bookmark again'));
+    if (!sid) throw new Error(kurz + L(' kennt in diesem Tab keine aktive Sitzung', ' has no active session in this tab; sign in to suno.com here and click the bookmark again',
+' — в этой вкладке нет активного сеанса; войдите здесь на suno.com и нажмите закладку ещё раз'));
     r = await fetch(FAPI + '/v1/client/sessions/' + sid + '/tokens' + (TOKEN_VORLAGE ? '/' + TOKEN_VORLAGE : '') + v,
                     { method:'POST', credentials:'include' });
-    if (!r.ok) throw new Error(kurz + L('/v1/client/sessions/…/tokens antwortet ', '/v1/client/sessions/…/tokens answers ') + r.status);
+    if (!r.ok) throw new Error(kurz + L('/v1/client/sessions/…/tokens antwortet ', '/v1/client/sessions/…/tokens answers ',
+'/v1/client/sessions/…/tokens отвечает ') + r.status);
     const t = await r.json(); const jwt = t.jwt || t.token;
-    if (!jwt) throw new Error(kurz + L(' liefert kein jwt-Feld (Felder: ', ' returns no jwt field (fields: ') + Object.keys(t).join(', ') + ')');
+    if (!jwt) throw new Error(kurz + L(' liefert kein jwt-Feld (Felder: ', ' returns no jwt field (fields: ',
+' не возвращает поле jwt (поля: ') + Object.keys(t).join(', ') + ')');
     return jwt;
   }
   async function tokenHolen(maxMs){
@@ -413,35 +492,44 @@
     const aufSuno = /(^|\.)suno\.com$/.test(location.hostname);
     if (!aufSuno){
       tokenHolen.grund = L('Diese Seite ist nicht suno.com. Das Lesezeichen gehört auf einen Tab von suno.com — nicht auf den KlangTresor und nicht auf eine leere Seite.',
-                           'This page is not suno.com. The bookmark belongs on a suno.com tab — not on KlangTresor and not on a blank page.');
+                           'This page is not suno.com. The bookmark belongs on a suno.com tab — not on KlangTresor and not on a blank page.',
+'Это не suno.com. Закладка работает во вкладке suno.com — не в KlangTresor и не на пустой странице.');
       return null;
     }
     if (!gesehen){
-      try { return tokenMerken(await tokenUeberClerkApi(), L('Clerk-API unter ', 'Clerk API at ') + fapiHost().replace('https://', '')); }
+      try { return tokenMerken(await tokenUeberClerkApi(), L('Clerk-API unter ', 'Clerk API at ',
+'Clerk API по адресу ') + fapiHost().replace('https://', '')); }
       catch (e) {
         tokenHolen.grund = L('window.Clerk gibt es in dieser Seite nicht mehr (seit 22.09.2026), und der Ersatzweg über Clerks API scheiterte: ' + (e && e.message || e) + '. Lade die Suno-Seite neu und klicke das Lesezeichen noch einmal; hilft das nicht, bring KlangTresor auf den neuesten Stand (im KlangTresor-Ordner aktualisieren-… doppelklicken).',
-                             'window.Clerk no longer exists on this page (since 22.09.2026), and the fallback via Clerk’s API failed: ' + (e && e.message || e) + '. Reload the Suno page and click the bookmark again; if that does not help, update KlangTresor (double-click aktualisieren-… in the KlangTresor folder).');
+                             'window.Clerk no longer exists on this page (since 22.09.2026), and the fallback via Clerk’s API failed: ' + (e && e.message || e) + '. Reload the Suno page and click the bookmark again; if that does not help, update KlangTresor (double-click aktualisieren-… in the KlangTresor folder).',
+'window.Clerk больше нет на этой странице (с 22.09.2026), и запасной путь через API Clerk не сработал: ' + (e && e.message || e) + '. Перезагрузите страницу Suno и нажмите закладку ещё раз; если не поможет, обновите KlangTresor (двойной клик по aktualisieren-… в папке KlangTresor).');
         return null;
       }
     }
     tokenHolen.grund = L('Suno ist geladen, aber es ist keine Sitzung angemeldet. Melde dich in DIESEM Tab bei suno.com an, warte bis die Seite fertig ist, und klicke das Lesezeichen erneut.',
-                         'Suno has loaded, but no session is signed in. Sign in to suno.com in THIS tab, wait until the page has finished loading, and click the bookmark again.');
+                         'Suno has loaded, but no session is signed in. Sign in to suno.com in THIS tab, wait until the page has finished loading, and click the bookmark again.',
+'Suno загрузился, но вход не выполнен. Войдите на suno.com в ЭТОЙ вкладке, дождитесь полной загрузки страницы и нажмите закладку ещё раз.');
     return null;
   }
 
   let erstesMal = false;
   if (!handle){
     erstesMal = true;
-    sagen(L('Das Archiv ist noch leer — erster Lauf.', 'The archive is still empty — first run.'), '#f97b14');
+    sagen(L('Das Archiv ist noch leer — erster Lauf.', 'The archive is still empty — first run.',
+'Архив пока пуст — это первый запуск.'), '#f97b14');
     try {
       const t = await tokenHolen();
-      if (!t) throw new Error(tokenHolen.grund || L('nicht angemeldet', 'not signed in'));
+      if (!t) throw new Error(tokenHolen.grund || L('nicht angemeldet', 'not signed in',
+'вход не выполнен'));
       const me = await (await fetch(`${API}/api/user/me`, { headers:{ Authorization:'Bearer '+t } })).json();
       handle = me.handle || (me.profile && me.profile.handle) || null;
-      if (!handle) throw new Error(L('Suno nennt keinen Handle', 'Suno gives no handle; reload the Suno page and click the bookmark again'));
-      gut(L(`Angemeldet als @${handle} — das Archiv wird dafür angelegt.`, `Signed in as @${handle} — the archive is being set up for it.`));
+      if (!handle) throw new Error(L('Suno nennt keinen Handle', 'Suno gives no handle; reload the Suno page and click the bookmark again',
+'Suno не сообщает имя пользователя; перезагрузите страницу Suno и нажмите закладку ещё раз'));
+      gut(L(`Angemeldet als @${handle} — das Archiv wird dafür angelegt.`, `Signed in as @${handle} — the archive is being set up for it.`,
+`Выполнен вход как @${handle} — архив создаётся для него.`));
     } catch (e){
-      schlecht(L('Das Archiv ist leer und der Suno-Zugang fehlt. ', 'The archive is empty and Suno access is missing. ') + e.message);
+      schlecht(L('Das Archiv ist leer und der Suno-Zugang fehlt. ', 'The archive is empty and Suno access is missing. ',
+'Архив пуст, и доступа к Suno нет. ') + e.message);
       return;
     }
   }
@@ -452,15 +540,18 @@
     const rest = await ernteLesen();
     if (rest && rest.songs){
       const z = sagen(L(`Ernte vom ${(rest.erzeugtAm||'').slice(0,16).replace('T',' ')} lag noch im Browser — sichere …`,
-                        `Harvest from ${(rest.erzeugtAm||'').slice(0,16).replace('T',' ')} was still in the browser — saving …`), '#f97b14');
+                        `Harvest from ${(rest.erzeugtAm||'').slice(0,16).replace('T',' ')} was still in the browser — saving …`,
+`Сбор от ${(rest.erzeugtAm||'').slice(0,16).replace('T',' ')} ещё оставался в браузере — сохраняю …`), '#f97b14');
       try { const d = await anServer(rest, t => z.textContent = t); await ernteVergessen();
             /* Dieselbe Auskunft wie am Ende eines frischen Laufs (ablageSatz):
                ob die Alben angekommen sind, entscheidet sich auch hier. */
             const trugAlben = !!(rest.playlists && Array.isArray(rest.playlists.playlists) && rest.playlists.playlists.length);
             const a = ablageSatz(d, trugAlben);
-            z.textContent = L(`Ernte vom letzten Mal nachgereicht — ${a.text}`, `Last harvest delivered — ${a.text}`); z.style.color = a.farbe; }
+            z.textContent = L(`Ernte vom letzten Mal nachgereicht — ${a.text}`, `Last harvest delivered — ${a.text}`,
+`Прежний сбор передан — ${a.text}`); z.style.color = a.farbe; }
       catch (e){ z.textContent = L('Alte Ernte konnte nicht gesichert werden: ' + e.message,
-                                   'Could not save the old harvest: ' + e.message + ' — it stays in the browser and goes along with the next click.'); }
+                                   'Could not save the old harvest: ' + e.message + ' — it stays in the browser and goes along with the next click.',
+'Не удалось сохранить прежний сбор: ' + e.message + ' — он остаётся в браузере и уйдёт при следующем нажатии.'); }
     }
   } catch (e) {}
 
@@ -482,7 +573,8 @@
          Datensatz = profil + privat + timing mit demselben Stempel. */
       const n = u.datensaetze || u.anzahl;
       sagen(L(`Auf dem Server ${n === 1 ? 'wartet noch ein Datensatz' : `warten noch ${n} Datensätze`} auf den roten Knopf — der übernimmt sie beim nächsten Druck.`,
-              `${n === 1 ? 'One dataset is' : `${n} datasets are`} waiting on the server for the red “Update the library” button — it takes them in on the next press.`), '#8a8a90');
+              `${n === 1 ? 'One dataset is' : `${n} datasets are`} waiting on the server for the red “Update the library” button — it takes them in on the next press.`,
+`${n === 1 ? 'Один набор данных ждёт' : `Наборов данных ждёт: ${n}`} на сервере красную кнопку «Обновить библиотеку» — она примет их при следующем нажатии.`), '#8a8a90');
     }
   } catch (e) {}
 
@@ -496,27 +588,39 @@
      Die Songliste ist Pflicht: Ohne sie gibt es keinen Vergleich und
      keine IDs fuer den Rest. Alles andere ist abwaehlbar. */
   const AUSWAHL = [
-    { k:'privat',  name:L('Private Songs', 'Private songs'),
+    { k:'privat',  name:L('Private Songs', 'Private songs',
+'Приватные треки'),
       was:L('Plays und Likes der Unveroeffentlichten - die stehen nicht im oeffentlichen Profil',
-            'Plays and likes of unreleased songs - they are not in the public profile'), an:true },
+            'Plays and likes of unreleased songs - they are not in the public profile',
+'Прослушивания и лайки неопубликованных треков — в открытом профиле их нет'), an:true },
     /* WAS HIER STEHT, LIEST JOERG VOR DEM DRUECKEN. Bis zum 16.09.2026
        versprach die Zeile "~2 s je Song" - das galt fuer drei Anfragen
        hinter EINER Pause. Heute liegt die Hauspause je Anfrage, und was
        Suno erst rechnet (Schlaege, Abschnitte), wird nachgefragt. */
-    { k:'timing',  name:L('Sunos eigene Analyse', 'Suno’s own analysis'),
+    { k:'timing',  name:L('Sunos eigene Analyse', 'Suno’s own analysis',
+'Собственный анализ Suno'),
       was:L('Tempo, Struktur und Huellkurve, wie Suno sie rechnet - die Referenz fuer unseren Analyzer; nur fuer Songs, denen sie fehlt. Schlaege und Abschnitte rechnet Suno erst auf Anfrage: dafuer wird nachgefragt, hoechstens 8 Runden und hoechstens 2 Minuten lang',
-            'Tempo, structure and envelope as Suno computes them - the reference for our analyser; only for songs that lack them. Suno computes beats and sections only on request, so it asks again: at most 8 rounds and at most 2 minutes'), an:true },
-    { k:'benach',  name:L('Wer hat reagiert', 'Who reacted'),
-      was:L('Likes, Kommentare, Follows - wer wann; die letzten vier Wochen', 'Likes, comments, follows - who and when; the last four weeks'), an:true },
-    { k:'liker',   name:L('Wer hat geherzt', 'Who hearted'),
+            'Tempo, structure and envelope as Suno computes them - the reference for our analyser; only for songs that lack them. Suno computes beats and sections only on request, so it asks again: at most 8 rounds and at most 2 minutes',
+'Темп, структура и огибающая в том виде, как их считает Suno, — образец для нашего анализатора; только для треков, где их нет. Доли и части песни Suno считает лишь по запросу, поэтому запрос повторяется: не более 8 кругов и не более 2 минут'), an:true },
+    { k:'benach',  name:L('Wer hat reagiert', 'Who reacted',
+'Кто отреагировал'),
+      was:L('Likes, Kommentare, Follows - wer wann; die letzten vier Wochen', 'Likes, comments, follows - who and when; the last four weeks',
+'Лайки, комментарии, подписки — кто и когда; за последние четыре недели'), an:true },
+    { k:'liker',   name:L('Wer hat geherzt', 'Who hearted',
+'Кто поставил лайк'),
       was:L('alle Personen je eigenem Titel, vollstaendig (der Weg der iOS-App); nur Titel, deren Herzzahl sich seit dem letzten Stand geaendert hat',
-            'everyone per title of yours, complete (the iOS app’s route); only titles whose heart count has changed since the last reading'), an:true },
-    { k:'beob',    name:L('Beobachter', 'Watchers'),
+            'everyone per title of yours, complete (the iOS app’s route); only titles whose heart count has changed since the last reading',
+'все имена по каждому вашему треку, полностью (путь приложения iOS); только те треки, у которых число лайков изменилось с прошлого чтения'), an:true },
+    { k:'beob',    name:L('Beobachter', 'Watchers',
+'Подписчики'),
       was:L('wer dir folgt und wem du folgst - vollstaendig, 20 je Seite, mit "folgt zurueck"; der Strom kennt nur die letzten vier Wochen',
-            'who follows you and whom you follow - complete, 20 per page, with "follows back"; the feed only covers the last four weeks'), an:true },
-    { k:'playl',   name:L('Alben', 'Albums'),
+            'who follows you and whom you follow - complete, 20 per page, with "follows back"; the feed only covers the last four weeks',
+'кто подписан на вас и на кого подписаны вы — полностью, по 20 на страницу, с пометкой «взаимно»; лента охватывает только последние четыре недели'), an:true },
+    { k:'playl',   name:L('Alben', 'Albums',
+'Альбомы'),
       was:L('eigene Alben - Suno nennt sie Playlists - mit allen Eintraegen, auch den privaten',
-            'your own albums - Suno calls them playlists - with all entries, private ones included'), an:true },
+            'your own albums - Suno calls them playlists - with all entries, private ones included',
+'ваши собственные альбомы — Suno называет их плейлистами — со всеми записями, включая приватные'), an:true },
     /* Einmaliger Vergleich, standardmaessig AUS: Sunos Zeitmarken gibt
        es in zwei Fassungen (aligned_lyrics v2 und v3). Wir speichern
        v2; ob v3 genauer ist, steht im Backlog. Diese Probe holt BEIDE
@@ -529,12 +633,16 @@
        Auch das Nachfragen des Freischaltstands ueber /api/clip kostet
        nichts. Was NICHT passiert: ein Unlock ausloesen - das kostet, und
        das entscheidet ein Mensch. */
-    { k:'ton',     name:L('Ton holen (nur Freigeschaltetes)', 'Fetch audio (unlocked only)'),
+    { k:'ton',     name:L('Ton holen (nur Freigeschaltetes)', 'Fetch audio (unlocked only)',
+'Загрузить аудио (только разблокированное)'),
       was:L('fuer Titel, deren Audiodatei fehlt und die bei Suno schon freigeschaltet sind - kostet KEIN Guthaben, gemessen am 11.09.2026; unbekannte Titel werden vorher nachgefragt, auch das ist kostenlos',
-            'for titles whose audio file is missing and that are already unlocked at Suno - costs NO credits, measured on 11.09.2026; unknown titles are checked first, which is free too'), an:true },
-    { k:'zeitprobe', name:L('Zeitmarken nachladen (v2 + v3)', 'Fetch timestamps (v2 + v3)'),
+            'for titles whose audio file is missing and that are already unlocked at Suno - costs NO credits, measured on 11.09.2026; unknown titles are checked first, which is free too',
+'для треков, у которых нет аудиофайла и которые уже разблокированы на Suno — кредиты НЕ расходуются, измерено 11.09.2026; сначала проверяются треки с неизвестным состоянием, это тоже бесплатно'), an:true },
+    { k:'zeitprobe', name:L('Zeitmarken nachladen (v2 + v3)', 'Fetch timestamps (v2 + v3)',
+'Загрузить временные метки (v2 + v3)'),
       was:L('Wort-Zeitmarken fuer Karaoke: v2 fuer Songs, die noch keine haben, v3 fuer alle; wer "wird gerechnet" antwortet, wird EINMAL nachgefragt - so haelt es Sunos eigene App auch. Was dann noch rechnet, bleibt auf der Liste',
-            'Word timestamps for karaoke: v2 for songs that have none yet, v3 for all; anything that answers "being computed" is asked ONCE more - as Suno’s own app does. Whatever is still computing stays on the list'), an:false },
+            'Word timestamps for karaoke: v2 for songs that have none yet, v3 for all; anything that answers "being computed" is asked ONCE more - as Suno’s own app does. Whatever is still computing stays on the list',
+'Пословные временные метки для караоке: v2 для треков, у которых их ещё нет, v3 для всех; всё, что отвечает «считается», запрашивается ОДИН раз повторно — так делает и приложение Suno. То, что ещё считается, остаётся в списке'), an:false },
   ];
   const gemerkt = (() => { try { return JSON.parse(localStorage.getItem('mysuno-morgens-auswahl')||'{}'); } catch(e){ return {}; } })();
   for (const a of AUSWAHL) if (gemerkt[a.k] !== undefined) a.an = !!gemerkt[a.k];
@@ -542,10 +650,14 @@
   const wahl = await new Promise((fertig) => {
     const box = document.createElement('div');
     box.style.cssText = 'padding:2px 0 6px';
-    box.innerHTML = '<div class="z kopf">' + (erstesMal ? L('Erster Lauf — was soll das Archiv bekommen?', 'First run — what should the archive get?') : L('Was soll geholt werden?', 'What should be fetched?')) + '</div>' +
-      '<label class="wz"><input type="checkbox" checked disabled> <b>' + L('Songliste', 'Song list') + '</b>' +
+    box.innerHTML = '<div class="z kopf">' + (erstesMal ? L('Erster Lauf — was soll das Archiv bekommen?', 'First run — what should the archive get?',
+'Первый запуск — что получить в архив?') : L('Was soll geholt werden?', 'What should be fetched?',
+'Что загрузить?')) + '</div>' +
+      '<label class="wz"><input type="checkbox" checked disabled> <b>' + L('Songliste', 'Song list',
+'Список треков') + '</b>' +
       '<span class="wzw">' + L('alle oeffentlichen Songs mit Plays, Likes, Kommentarzahl - immer, sonst gibt es keinen Vergleich',
-                               'all public songs with plays, likes, comment count - always, otherwise there is nothing to compare') + '</span></label>' +
+                               'all public songs with plays, likes, comment count - always, otherwise there is nothing to compare',
+'все открытые треки с прослушиваниями, лайками и числом комментариев — всегда, иначе не с чем сравнивать') + '</span></label>' +
       AUSWAHL.map(a => `<label class="wz"><input type="checkbox" data-k="${a.k}" ${a.an?'checked':''}> <b>${a.name}</b>` +
                        `<span class="wzw">${a.was}</span></label>`).join('');
     zeilenfeld.appendChild(box);
@@ -557,8 +669,10 @@
       #mysuno-morgens .wzw{display:block;margin-left:22px;font-size:11.5px;color:#8b8b90}`;
     document.head.appendChild(st);
     const leiste = document.createElement('div'); leiste.className = 'leiste';
-    const los = document.createElement('button'); los.className = 'ja'; los.textContent = L('Los', 'Go');
-    const nein = document.createElement('button'); nein.textContent = L('Abbrechen', 'Cancel');
+    const los = document.createElement('button'); los.className = 'ja'; los.textContent = L('Los', 'Go',
+'Вперёд');
+    const nein = document.createElement('button'); nein.textContent = L('Abbrechen', 'Cancel',
+'Отменить');
     leiste.append(los, nein); kasten.appendChild(leiste);
     nein.onclick = () => { kasten.remove(); fertig(null); };
     los.onclick = () => {
@@ -582,7 +696,8 @@
      Nahtstellen (Songliste → /api/user/me, Albumblock → erster
      /api/clip) fehlte die Pause ganz. */
   const pause = () => new Promise(r => setTimeout(r, 260));
-  const zeile1 = sagen(L('Hole deine öffentliche Songliste von Suno (Titel und Zähler) …', 'Fetching your public song list from Suno (titles and counters) …'));
+  const zeile1 = sagen(L('Hole deine öffentliche Songliste von Suno (Titel und Zähler) …', 'Fetching your public song list from Suno (titles and counters) …',
+'Загружаю ваш открытый список треков с Suno (названия и счётчики) …'));
   const songs = new Map();
   let kopf = null, gesamt = null;
   const basis = `${API}/api/profiles/${encodeURIComponent(handle)}`
@@ -592,7 +707,8 @@
     try {
       const a = await fetch(basis + '&page=' + seite, { credentials:'include' });
       if (!a.ok){ if (seite === 1){ schlecht(L('Profil nicht erreichbar: ' + a.status,
-          'Profile not reachable: ' + a.status + ' — reload the Suno page and click the bookmark again')); return; } break; }
+          'Profile not reachable: ' + a.status + ' — reload the Suno page and click the bookmark again',
+'Профиль недоступен: ' + a.status + ' — перезагрузите страницу Suno и нажмите закладку ещё раз')); return; } break; }
       d = await a.json();
     } catch (e){ break; }
     if (!kopf) kopf = d;
@@ -600,11 +716,13 @@
     const teil = d.clips || [];
     if (!teil.length) break;
     for (const c of teil) songs.set(c.id, c);
-    zeile1.textContent = L(`Songliste … ${songs.size}${gesamt?'/'+gesamt:''}`, `Song list … ${songs.size}${gesamt?'/'+gesamt:''}`);
+    zeile1.textContent = L(`Songliste … ${songs.size}${gesamt?'/'+gesamt:''}`, `Song list … ${songs.size}${gesamt?'/'+gesamt:''}`,
+`Список треков … ${songs.size}${gesamt?'/'+gesamt:''}`);
     await pause();                                // Suno nicht drängen
   }
   zeile1.textContent = L(`Songliste von Suno geholt — ${songs.size} Songs mit aktuellen Zählern`,
-                         `Song list fetched from Suno — ${songs.size} songs with current counters`);
+                         `Song list fetched from Suno — ${songs.size} songs with current counters`,
+`Список треков получен с Suno — треков: ${songs.size}, со свежими счётчиками`);
   zeile1.style.color = '#16be5c';
 
   /* Das Titelbild steht nicht in der Songliste, sondern auf
@@ -660,7 +778,8 @@
      JEDER FEHLSCHLAG NENNT SEINEN STATUSCODE. 401 (Token abgelaufen),
      404 (Weg geschlossen) und "wirklich leer" sahen vorher alle gleich
      aus; genau daran ist der Ausfall vorbeigelaufen. */
-  const zeile2 = sagen(L('Hole deine Alben (Köpfe und Einträge) …', 'Fetching your albums (headers and entries) …'));
+  const zeile2 = sagen(L('Hole deine Alben (Köpfe und Einträge) …', 'Fetching your albums (headers and entries) …',
+'Загружаю ваши альбомы (заголовки и записи) …'));
   /* Wer im Suno-Tab angemeldet war - laut /api/user/me, geholt im
      Albumblock. Fährt in der Ernte mit, damit der Server eine Ernte
      aus einem fremden Konto abweisen kann (409), statt sie einzuweben. */
@@ -690,7 +809,8 @@
      auf wahr, die Zeile wurde grün - und aufbereiten.js hätte die 13
      fehlenden Alben als "in Suno gelöscht" entfernt. */
   let albenVollstaendig = false;
-  if (!wahl.playl){ zeile2.textContent = L('Alben — übersprungen', 'Albums — skipped'); zeile2.style.color = '#8a8a90'; }
+  if (!wahl.playl){ zeile2.textContent = L('Alben — übersprungen', 'Albums — skipped',
+'Альбомы — пропущено'); zeile2.style.color = '#8a8a90'; }
   else {
     try {
       let tA = await tokenHolen();
@@ -698,9 +818,11 @@
          einen fertigen Klartextsatz (etwa "Das Lesezeichen gehoert auf
          einen Tab von suno.com"); der gehoert in die Zeile, sonst steht
          da nur "kein Token" und niemand weiss, was zu tun ist. */
-      if (!tA){ throw new Error(L('kein Token — ', 'no token — ')
+      if (!tA){ throw new Error(L('kein Token — ', 'no token — ',
+'нет токена — ')
         + (tokenHolen.grund || L('Suno meldet in diesem Tab keine Anmeldung.',
-                                 'Suno reports no sign-in in this tab. Sign in to suno.com here and click the bookmark again.'))); }
+                                 'Suno reports no sign-in in this tab. Sign in to suno.com here and click the bookmark again.',
+'Suno сообщает, что в этой вкладке вход не выполнен. Войдите здесь на suno.com и нажмите закладку ещё раз.'))); }
       /* DER TOKEN LEBT RUND 60 SEKUNDEN (docs/suno/DATENEXTRAKTION.md:15-17),
          alle Sammelskripte holen ihn vor jeder Anfrage neu. Dieser Lauf
          macht bei 25 Alben gut 30 Anfragen mit je 250 ms Pause plus
@@ -746,12 +868,15 @@
           const me = await rMe.json();
           angemeldet = (me && (me.handle || (me.profile && me.profile.handle))) || null;
           if (!angemeldet) meGrund = L(`Antwort ohne handle (Felder: ${Object.keys(me||{}).join(', ') || 'keine'})`,
-                                       `answer without handle (fields: ${Object.keys(me||{}).join(', ') || 'none'})`);
+                                       `answer without handle (fields: ${Object.keys(me||{}).join(', ') || 'none'})`,
+`ответ без имени пользователя (поля: ${Object.keys(me||{}).join(', ') || 'нет'})`);
         }
-      } catch (x) { meGrund = x.message || L('Netzfehler', 'network error'); }
+      } catch (x) { meGrund = x.message || L('Netzfehler', 'network error',
+'ошибка сети'); }
       if (!angemeldet){
         const u = new Error(L(`Alben — Konto nicht bestätigt (/api/user/me: ${meGrund}), übersprungen`,
-                              `Albums — account not confirmed (/api/user/me: ${meGrund}), skipped; reload the Suno page and click the bookmark again`));
+                              `Albums — account not confirmed (/api/user/me: ${meGrund}), skipped; reload the Suno page and click the bookmark again`,
+`Альбомы — аккаунт не подтверждён (/api/user/me: ${meGrund}), пропущено; перезагрузите страницу Suno и нажмите закладку ещё раз`));
         u.uebersprungen = true;            // die Zeile bekommt den Satz unverändert, siehe catch
         throw u;
       }
@@ -760,7 +885,9 @@
         throw new Error(L(`in diesem Tab ist @${angemeldet} angemeldet, die Sammlung gehört @${handle} — `
                       + `fremde Alben werden nicht geholt`,
                         `@${angemeldet} is signed in on this tab, but the collection belongs to @${handle} — `
-                      + `other accounts’ albums are not fetched; sign in as @${handle} and click the bookmark again`));
+                      + `other accounts’ albums are not fetched; sign in as @${handle} and click the bookmark again`,
+`В этой вкладке выполнен вход как @${angemeldet}, а коллекция принадлежит @${handle} — `
+                      + `альбомы чужих аккаунтов не загружаются; войдите как @${handle} и нажмите закладку ещё раз`));
       await pause();                       // auch zwischen dieser Frage und der ersten Kopfseite
 
       /* Sunos Gesamtzahlen kommen als Zahl, koennten aber auch als
@@ -801,7 +928,8 @@
              bewiesenes Ende: die Alben kommen in die Ernte, nur
              gelöscht wird aus ihr nichts. */
           if (seite > 1 && lautSuno != null && koepfe.size >= lautSuno) break;
-          throw new Error(L(`Albumliste Seite ${seite} — HTTP ${a.status}`, `album list page ${seite} — HTTP ${a.status}`));
+          throw new Error(L(`Albumliste Seite ${seite} — HTTP ${a.status}`, `album list page ${seite} — HTTP ${a.status}`,
+`список альбомов, страница ${seite} — HTTP ${a.status}`));
         }
         const d = await a.json();
         const teil = Array.isArray(d) ? d
@@ -812,12 +940,15 @@
         if (!teil) throw new Error(L(`Albumliste Seite ${seite} — Antwort ohne Liste `
                                  + `(Felder: ${Object.keys(d||{}).join(', ') || 'keine'})`,
                                    `album list page ${seite} — answer without a list `
-                                 + `(fields: ${Object.keys(d||{}).join(', ') || 'none'})`));
+                                 + `(fields: ${Object.keys(d||{}).join(', ') || 'none'})`,
+`список альбомов, страница ${seite} — ответ без списка `
+                                  + `(поля: ${Object.keys(d||{}).join(', ') || 'нет'})`));
         { const n = zahl(d && d.num_total_results); if (n != null) lautSuno = n; }
         let neuHier = 0;
         for (const p of teil) if (p && p.id && !koepfe.has(p.id)){ koepfe.set(p.id, p); neuHier++; }
         zeile2.textContent = L(`Alben … ${koepfe.size}${lautSuno != null ? '/' + lautSuno : ''}`,
-                               `Albums … ${koepfe.size}${lautSuno != null ? '/' + lautSuno : ''}`);
+                               `Albums … ${koepfe.size}${lautSuno != null ? '/' + lautSuno : ''}`,
+`Альбомы … ${koepfe.size}${lautSuno != null ? '/' + lautSuno : ''}`);
         if (!teil.length){ kopfEndeGesehen = true; break; }   // leer: das echte Ende
         /* Gefüllt, aber nichts Neues: die Doppelseite page=0/1 oder eine
            Wiederholung. Weiterblättern bringt nichts - aber ein Ende ist
@@ -825,7 +956,8 @@
         if (!neuHier) break;
       }
       const alleKoepfe = [...koepfe.values()];
-      if (!alleKoepfe.length) throw new Error(L('Suno nennt kein einziges Album', 'Suno lists no albums at all'));
+      if (!alleKoepfe.length) throw new Error(L('Suno nennt kein einziges Album', 'Suno lists no albums at all',
+'Suno не показывает ни одного альбома'));
       const kopfLuecke = lautSuno != null && alleKoepfe.length < lautSuno;
       /* Die andere Richtung ist genauso ein Widerspruch: Suno nennt
          WENIGER Alben, als es gerade geliefert hat. Bis zum 08.09.2026
@@ -879,14 +1011,17 @@
             if (seite > 1) await pause();
             const a = await fetch(`${API}/api/playlist/${encodeURIComponent(p.id)}?page=${seite}`,
                                   { headers: await kopfMitToken() });
-            if (!a.ok) throw new Error(L(`Seite ${seite} — HTTP ${a.status}`, `page ${seite} — HTTP ${a.status}`));
+            if (!a.ok) throw new Error(L(`Seite ${seite} — HTTP ${a.status}`, `page ${seite} — HTTP ${a.status}`,
+`страница ${seite} — HTTP ${a.status}`));
             const d = await a.json();
             const teil = (d && Array.isArray(d.playlist_clips)) ? d.playlist_clips
                        : Array.isArray(d) ? d : null;
             if (!teil) throw new Error(L(`Seite ${seite} — Antwort ohne playlist_clips `
                                      + `(Felder: ${Object.keys(d||{}).join(', ') || 'keine'})`,
                                        `page ${seite} — answer without playlist_clips `
-                                     + `(fields: ${Object.keys(d||{}).join(', ') || 'none'})`));
+                                     + `(fields: ${Object.keys(d||{}).join(', ') || 'none'})`,
+`страница ${seite} — ответ без playlist_clips `
+                                      + `(поля: ${Object.keys(d||{}).join(', ') || 'нет'})`));
             { const inhaltN = zahl(d && d.num_total_results);
               if (inhaltN != null) sollLautSuno = Math.max(sollLautSuno ?? 0, inhaltN); }
             let neuRoh = 0;
@@ -906,7 +1041,8 @@
             }
             zeile2.textContent = L(`Alben … ${alleKoepfe.length}, `
               + `${bisherGeholt + eintraege.size} Einträge`,
-                                   `Albums … ${alleKoepfe.length}, ${bisherGeholt + eintraege.size} entries`);
+                                   `Albums … ${alleKoepfe.length}, ${bisherGeholt + eintraege.size} entries`,
+`Альбомы … ${alleKoepfe.length}, записей ${bisherGeholt + eintraege.size}`);
             if (!teil.length || !neuRoh) break;
             seitenMitNeuem++; letzteSeite = teil.length;
             groessteSeite = Math.max(groessteSeite, teil.length);
@@ -932,7 +1068,8 @@
              Inhaltszahl (siehe oben) - eine Inhaltszahl 0 kann den
              Riegel nicht mehr aushebeln. */
           if (sollLautSuno > 0 && !rohGesehen.size)
-            throw new Error(L(`leer geliefert, Suno nennt ${sollLautSuno} Einträge`, `delivered empty, Suno lists ${sollLautSuno} entries`));
+            throw new Error(L(`leer geliefert, Suno nennt ${sollLautSuno} Einträge`, `delivered empty, Suno lists ${sollLautSuno} entries`,
+`пришёл пустым, по данным Suno записей: ${sollLautSuno}`));
           /* NICHTS GELIEFERT UND NIRGENDS EINE ZAHL: Weder der Kopf noch
              der Inhalt nennen num_total_results, die Liste ist leer. Das
              KANN ein leeres Album sein - oder dieselbe vorübergehend
@@ -946,7 +1083,8 @@
              Album leer stehen - das ist Sunos Wort. */
           if (sollLautSuno == null && !rohGesehen.size)
             throw new Error(L('leer geliefert, und weder Kopf noch Inhalt nennen eine Gesamtzahl',
-                              'delivered empty, and neither header nor content gives a total'));
+                              'delivered empty, and neither header nor content gives a total',
+'пришёл пустым, и ни заголовок, ни содержимое не дают общего числа'));
           befunde.push({ p, eintraege: [...eintraege.values()], roh: rohGesehen.size,
                          soll: sollLautSuno, ohneClip, seitenMitNeuem, letzteSeite, groessteSeite });
           bisherGeholt += eintraege.size;
@@ -994,7 +1132,8 @@
         if (b.soll != null && b.roh < b.soll && vollBekannt && b.letzteSeite === seitenGroesse){
           ausgefallen.push(L(`${name}: Blättern brach nach einer vollen Seite (${b.letzteSeite}) `
                          + `bei ${b.roh} von ${b.soll} ab`,
-                             `${name}: paging stopped after a full page (${b.letzteSeite}) at ${b.roh} of ${b.soll}`));
+                             `${name}: paging stopped after a full page (${b.letzteSeite}) at ${b.roh} of ${b.soll}`,
+`${name}: постраничная загрузка остановилась после полной страницы (${b.letzteSeite}) на ${b.roh} из ${b.soll}`));
           continue;
         }
         albenEintraege[b.p.id] = b.eintraege;
@@ -1018,7 +1157,8 @@
           const alteLuecke = kAlt && kAlt.anzahlLautSuno != null
             ? kAlt.anzahlLautSuno - (Array.isArray(kAlt.eintraege) ? kAlt.eintraege.length : 0) : null;
           if (alteLuecke != null && luecke <= alteLuecke){ bekannteLuecken.push(name); bekannteLueckenSumme += luecke; }
-          else luecken.push(`${name} ${b.eintraege.length}/${b.soll}` + (b.ohneClip ? L(` (${b.ohneClip} ohne clip)`, ` (${b.ohneClip} without clip)`) : ''));
+          else luecken.push(`${name} ${b.eintraege.length}/${b.soll}` + (b.ohneClip ? L(` (${b.ohneClip} ohne clip)`, ` (${b.ohneClip} without clip)`,
+` (без клипа: ${b.ohneClip})`) : ''));
         }
       }
 
@@ -1044,21 +1184,31 @@
       const mb = JSON.stringify({ playlists: albenKoepfe, clips: albenEintraege }).length / 1048576;
       const groesse = mb >= 1 ? mb.toFixed(1) + ' MB' : Math.round(mb * 1024) + ' KB';
       let text = L(`Alben — ${albenKoepfe.length} mit ${eintraegeGesamt} Einträgen (${groesse})`,
-                   `Albums — ${albenKoepfe.length} with ${eintraegeGesamt} entries (${groesse})`);
+                   `Albums — ${albenKoepfe.length} with ${eintraegeGesamt} entries (${groesse})`,
+`Альбомы — ${albenKoepfe.length}, записей ${eintraegeGesamt} (${groesse})`);
       if (kopfLuecke) text += L(`; KOPFLISTE UNVOLLSTÄNDIG: ${alleKoepfe.length} von ${lautSuno} laut Suno`,
-                                `; HEADER LIST INCOMPLETE: ${alleKoepfe.length} of ${lautSuno} according to Suno`);
-      else if (lautSuno == null) text += L('; Suno nennt keine Gesamtzahl', '; Suno gives no total');
+                                `; HEADER LIST INCOMPLETE: ${alleKoepfe.length} of ${lautSuno} according to Suno`,
+`; СПИСОК ЗАГОЛОВКОВ НЕПОЛНЫЙ: ${alleKoepfe.length} из ${lautSuno} по данным Suno`);
+      else if (lautSuno == null) text += L('; Suno nennt keine Gesamtzahl', '; Suno gives no total',
+'; Suno не сообщает общего числа');
       else if (kopfWiderspruch) text += L(`; WIDERSPRUCH: Suno nennt ${lautSuno} Alben, geliefert ${alleKoepfe.length}`,
-                                          `; CONTRADICTION: Suno lists ${lautSuno} albums, delivered ${alleKoepfe.length}`);
-      if (!kopfEndeGesehen && !kopfLuecke) text += L('; Ende der Albumliste nicht bestätigt', '; end of album list not confirmed');
-      if (luecken.length)     text += L(`; unvollständig: ${luecken.join(', ')}`, `; incomplete: ${luecken.join(', ')}`);
+                                          `; CONTRADICTION: Suno lists ${lautSuno} albums, delivered ${alleKoepfe.length}`,
+`; ПРОТИВОРЕЧИЕ: Suno насчитывает альбомов ${lautSuno}, а пришло ${alleKoepfe.length}`);
+      if (!kopfEndeGesehen && !kopfLuecke) text += L('; Ende der Albumliste nicht bestätigt', '; end of album list not confirmed',
+'; конец списка альбомов не подтверждён');
+      if (luecken.length)     text += L(`; unvollständig: ${luecken.join(', ')}`, `; incomplete: ${luecken.join(', ')}`,
+`; неполно: ${luecken.join(', ')}`);
       if (bekannteLuecken.length) text += L(`; ${bekannteLueckenSumme} Einträge zählt Suno, liefert sie aber nie (bekannt, ${bekannteLuecken.length} Alben)`,
-                                            `; ${bekannteLueckenSumme} entries Suno counts but never delivers (known, ${bekannteLuecken.length} albums)`);
+                                            `; ${bekannteLueckenSumme} entries Suno counts but never delivers (known, ${bekannteLuecken.length} albums)`,
+`; записей, которые Suno считает, но не отдаёт: ${bekannteLueckenSumme} (известно, альбомов: ${bekannteLuecken.length})`);
       if (ohneClipGesamt)     text += L(`; ${ohneClipGesamt} Einträge ohne clip (gelöscht/privat bei Suno)`,
-                                        `; ${ohneClipGesamt} entries without clip (deleted/private at Suno)`);
-      if (ausgefallen.length) text += L(`; NICHT geholt: ${ausgefallen.join(' · ')}`, `; NOT fetched: ${ausgefallen.join(' · ')}`);
+                                        `; ${ohneClipGesamt} entries without clip (deleted/private at Suno)`,
+`; записей без клипа: ${ohneClipGesamt} (удалены или приватны на Suno)`);
+      if (ausgefallen.length) text += L(`; NICHT geholt: ${ausgefallen.join(' · ')}`, `; NOT fetched: ${ausgefallen.join(' · ')}`,
+`; НЕ загружено: ${ausgefallen.join(' · ')}`);
       if (!albenVollstaendig) text += L(' — aus dieser Ernte wird im Katalog nichts gelöscht',
-                                        ' — nothing is deleted from the catalogue because of this harvest; click the bookmark again later for a complete one');
+                                        ' — nothing is deleted from the catalogue because of this harvest; click the bookmark again later for a complete one',
+' — из-за этого сбора ничего из каталога не удаляется; нажмите закладку ещё раз позже, чтобы получить полный список');
       zeile2.textContent = text;
       /* NULL ALBEN BEI ANGEHAKTEM KASTEN IST EIN FEHLER, kein Zustand.
          Dasselbe gilt für Alben ohne einen einzigen Eintrag - das ist
@@ -1077,7 +1227,8 @@
          Kopfliste heißt, dass niemand weiß, wie viele Alben es gibt. */
       albenKoepfe = []; albenVollstaendig = false;
       for (const k of Object.keys(albenEintraege)) delete albenEintraege[k];
-      zeile2.textContent = x.uebersprungen ? x.message : L('Alben — nicht geholt: ', 'Albums — not fetched: ') + x.message;
+      zeile2.textContent = x.uebersprungen ? x.message : L('Alben — nicht geholt: ', 'Albums — not fetched: ',
+'Альбомы — не загружено: ') + x.message;
       zeile2.style.color = '#e31c79';
     }
   }
@@ -1122,9 +1273,11 @@
      Wiederherstellen-Skript gemacht haben.") */
   const privatSongs = new Map();
   const zeileP = sagen(L('Hole die Zähler deiner privaten Songs (stehen in keinem öffentlichen Profil) …',
-                         'Fetching the counters of your private songs (they are in no public profile) …'));
+                         'Fetching the counters of your private songs (they are in no public profile) …',
+'Загружаю счётчики ваших приватных треков (в открытом профиле их нет) …'));
   let privatGeholt = 0;
-  if (!wahl.privat){ zeileP.textContent = L('Private Songs — übersprungen', 'Private songs — skipped'); }
+  if (!wahl.privat){ zeileP.textContent = L('Private Songs — übersprungen', 'Private songs — skipped',
+'Приватные треки — пропущено'); }
   else try {
     const t0 = await tokenHolen();
     if (t0){
@@ -1144,21 +1297,27 @@
           const r = await fetch(`${API}/api/clip/${a.id}`, { headers: H0 });
           if (r.ok){ const c = await r.json(); if (c && c.id){ privatSongs.set(c.id, c); privatGeholt++; } }
         } catch (x) {}
-        zeileP.textContent = L(`Private Songs … ${privatGeholt}/${priv.length}`, `Private songs … ${privatGeholt}/${priv.length}`);
+        zeileP.textContent = L(`Private Songs … ${privatGeholt}/${priv.length}`, `Private songs … ${privatGeholt}/${priv.length}`,
+`Приватные треки … ${privatGeholt}/${priv.length}`);
         await pause();
       }
-      zeileP.textContent = L(`Private Songs — ${privatGeholt} mit frischen Zählern`, `Private songs — ${privatGeholt} with fresh counters`);
+      zeileP.textContent = L(`Private Songs — ${privatGeholt} mit frischen Zählern`, `Private songs — ${privatGeholt} with fresh counters`,
+`Приватные треки — ${privatGeholt}, со свежими счётчиками`);
       zeileP.style.color = '#16be5c';
-    } else { zeileP.textContent = L('Private Songs — kein Token', 'Private songs — no token; sign in to suno.com in this tab and click the bookmark again'); zeileP.style.color = '#8a8a90'; }
-  } catch (x) { zeileP.textContent = L('Private Songs — ', 'Private songs — ') + x.message; zeileP.style.color = '#e31c79'; }
+    } else { zeileP.textContent = L('Private Songs — kein Token', 'Private songs — no token; sign in to suno.com in this tab and click the bookmark again',
+'Приватные треки — нет токена; войдите на suno.com в этой вкладке и нажмите закладку ещё раз'); zeileP.style.color = '#8a8a90'; }
+  } catch (x) { zeileP.textContent = L('Private Songs — ', 'Private songs — ',
+'Приватные треки — ') + x.message; zeileP.style.color = '#e31c79'; }
 
   const zeileT = sagen(L('Hole Sunos eigene Analyse (Tempo, Struktur, Hüllkurve) — nur für Songs, denen sie fehlt …',
-                         'Fetching Suno’s own analysis (tempo, structure, envelope) — only for songs that lack it …'));
+                         'Fetching Suno’s own analysis (tempo, structure, envelope) — only for songs that lack it …',
+'Загружаю собственный анализ Suno (темп, структура, огибающая) — только для треков, где его нет …'));
   const timing = {};
   let tokenDa = true;
   /* Der Block laeuft auch fuer die Zeitmarken-Probe allein - der
      Token-Griff ist derselbe; was die Haken sagen, entscheidet drin. */
-  if (!wahl.timing && !wahl.zeitprobe){ zeileT.textContent = L('Sunos eigene Analyse — übersprungen', 'Suno’s own analysis — skipped'); }
+  if (!wahl.timing && !wahl.zeitprobe){ zeileT.textContent = L('Sunos eigene Analyse — übersprungen', 'Suno’s own analysis — skipped',
+'Собственный анализ Suno — пропущено'); }
   else try {
     tokenDa = false;
     const t = await tokenHolen();
@@ -1388,9 +1547,12 @@
         const k = bilanz[feld];
         if (!k || !k.gefragt) return null;
         const t = [`${name} ${k.geholt}/${k.gefragt}`];
-        if (k.rechnet) t.push(L(`${k.rechnet} rechnet Suno noch`, `${k.rechnet} still being computed by Suno`));
-        if (k.leer)    t.push(L(`${k.leer} leer beantwortet`, `${k.leer} answered empty`));
-        if (k.fehler)  t.push(L(`${k.fehler} Fehler (`, `${k.fehler} ${k.fehler === 1 ? 'error' : 'errors'} (`)
+        if (k.rechnet) t.push(L(`${k.rechnet} rechnet Suno noch`, `${k.rechnet} still being computed by Suno`,
+`${k.rechnet} ещё считает Suno`));
+        if (k.leer)    t.push(L(`${k.leer} leer beantwortet`, `${k.leer} answered empty`,
+`${k.leer} пришли пустыми`));
+        if (k.fehler)  t.push(L(`${k.fehler} Fehler (`, `${k.fehler} ${k.fehler === 1 ? 'error' : 'errors'} (`,
+`${k.fehler} ${k.fehler === 1 ? 'ошибка' : 'ошибок'} (`)
           + Object.keys(k.codes).map(c => k.codes[c] > 1 ? `${codeText(c)}×${k.codes[c]}` : codeText(c)).join(', ') + ')');
         return t.join(', ');
       };
@@ -1412,24 +1574,32 @@
       const berichten = () => {
         if (wahl.timing){
           const felder = ['schlaege','abschnitte','wellenStufen'];
-          const teile = [satz('schlaege',L('Schläge','Beats')), satz('abschnitte',L('Abschnitte','Sections')),
-                         satz('wellenStufen',L('Hüllkurve','Envelope'))].filter(Boolean);
+          const teile = [satz('schlaege',L('Schläge','Beats',
+'Доли')), satz('abschnitte',L('Abschnitte','Sections',
+'Части песни')),
+                         satz('wellenStufen',L('Hüllkurve','Envelope',
+'Огибающая'))].filter(Boolean);
           const ergaenzt = Object.keys(timing).filter(id => id !== '__zeitprobe'
             && (timing[id].schlaege || timing[id].abschnitte || timing[id].wellenStufen)).length;
           zeileT.textContent = L(`Sunos eigene Analyse — ${ergaenzt} ${ergaenzt === 1 ? 'Song' : 'Songs'} ergänzt`,
-                                 `Suno’s own analysis — ${ergaenzt} ${ergaenzt === 1 ? 'song' : 'songs'} added`)
+                                 `Suno’s own analysis — ${ergaenzt} ${ergaenzt === 1 ? 'song' : 'songs'} added`,
+`Собственный анализ Suno — добавлено треков: ${ergaenzt}`)
             + (teile.length ? ' · ' + teile.join(' · ') : '') + anhang(felder);
           zeileT.style.color = farbeAus(felder);
         }
         if (z2){
-          const teile = [satz('v2',L('Zeitmarken v2','Timestamps v2')), satz('v3','v3')].filter(Boolean);
-          z2.textContent = L('Wort-Zeitmarken — ', 'Word timestamps — ') + (teile.join(' · ') || L('nichts zu holen', 'nothing to fetch'))
+          const teile = [satz('v2',L('Zeitmarken v2','Timestamps v2',
+'Временные метки v2')), satz('v3','v3')].filter(Boolean);
+          z2.textContent = L('Wort-Zeitmarken — ', 'Word timestamps — ',
+'Пословные временные метки — ') + (teile.join(' · ') || L('nichts zu holen', 'nothing to fetch',
+'загружать нечего'))
             + anhang(['v2','v3']);
           z2.style.color = farbeAus(['v2','v3']);
         }
       };
 
-      if (!wahl.timing) zeileT.textContent = L('Sunos eigene Analyse — übersprungen', 'Suno’s own analysis — skipped');
+      if (!wahl.timing) zeileT.textContent = L('Sunos eigene Analyse — übersprungen', 'Suno’s own analysis — skipped',
+'Собственный анализ Suno — пропущено');
       else {
       /* Was schon in den ROHDATEN liegt, zaehlt als vorhanden - auch
          wenn der Katalog es noch nicht weiss. Sonst holt ein zweiter
@@ -1474,7 +1644,9 @@
         zeileT.textContent = L(`Sunos eigene Analyse … ${n}/${fehlt.length}`
           + (offeneTitel ? ` (${offeneTitel} ${offeneTitel === 1 ? 'Titel rechnet' : 'Titel rechnen'} bei Suno noch)` : ''),
                                `Suno’s own analysis … ${n}/${fehlt.length}`
-          + (offeneTitel ? ` (${offeneTitel} ${offeneTitel === 1 ? 'title' : 'titles'} still being computed by Suno)` : ''));
+          + (offeneTitel ? ` (${offeneTitel} ${offeneTitel === 1 ? 'title' : 'titles'} still being computed by Suno)` : ''),
+`Собственный анализ Suno … ${n}/${fehlt.length}`
+           + (offeneTitel ? ` (ещё считает Suno, треков: ${offeneTitel})` : ''));
       }
       berichten();
       }
@@ -1502,7 +1674,8 @@
        gezählt und abgelegt. Seit dem 16.09.2026 entscheidet nicht der
        Statuscode allein, sondern ob Worte drin sind (ernten). */
     if (wahl.zeitprobe){
-      z2 = sagen(L('Hole Wort-Zeitmarken von Suno (fürs Karaoke) …', 'Fetching word timestamps from Suno (for karaoke) …'));
+      z2 = sagen(L('Hole Wort-Zeitmarken von Suno (fürs Karaoke) …', 'Fetching word timestamps from Suno (for karaoke) …',
+'Загружаю пословные временные метки с Suno (для караоке) …'));
       /* Beide Fassungen, jeweils nur was fehlt. v2 zuerst - sie ist
          die, die das Karaoke sofort nutzt. */
       for (const fassung of ['v2','v3']){
@@ -1523,7 +1696,9 @@
             z2.textContent = L(`Wort-Zeitmarken ${fassung} … ${n}/${fehlt.length}`
               + ` (${bilanz[fassung].geholt} fertig, ${bilanz[fassung].rechnet} rechnet Suno noch)`,
                                `Word timestamps ${fassung} … ${n}/${fehlt.length}`
-              + ` (${bilanz[fassung].geholt} done, ${bilanz[fassung].rechnet} still being computed by Suno)`);
+              + ` (${bilanz[fassung].geholt} done, ${bilanz[fassung].rechnet} still being computed by Suno)`,
+`Пословные временные метки ${fassung} … ${n}/${fehlt.length}`
+               + ` (готово: ${bilanz[fassung].geholt}, ещё считает Suno: ${bilanz[fassung].rechnet})`);
           await pause();
         }
       }
@@ -1563,7 +1738,8 @@
        Schreibzugriff, und der ist Jörgs Entscheidung). */
     if (nachfragen.length){
       const zN = sagen(L(`Suno rechnet noch an ${new Set(nachfragen.map(x => x.id)).size} Titeln — frage nach …`,
-                         `Suno is still computing ${new Set(nachfragen.map(x => x.id)).size} titles — asking again …`), '#f97b14');
+                         `Suno is still computing ${new Set(nachfragen.map(x => x.id)).size} titles — asking again …`,
+`Suno ещё считает треков: ${new Set(nachfragen.map(x => x.id)).size} — спрашиваю ещё раз …`), '#f97b14');
       /* FRISCHER TOKEN FÜR DIE NACHFRAGE. Sie ist der vom Token-Griff
          am weitesten entfernte Punkt des Laufs; ein 401 hier gälte als
          Fehler und würde nicht wiederholt. tokenHolen() kostet keine
@@ -1595,7 +1771,9 @@
           zN.textContent = L(`frage nach: ${titelZahl(offen)} Titel, Runde ${runde} von ${hoechstBudget}`
             + ` — ${i + 1}/${offen.length} Adressen`,
                              `asking again: ${titelZahl(offen)} titles, round ${runde} of ${hoechstBudget}`
-            + ` — ${i + 1}/${offen.length} addresses`);
+            + ` — ${i + 1}/${offen.length} addresses`,
+`спрашиваю ещё раз: треков ${titelZahl(offen)}, круг ${runde} из ${hoechstBudget}`
+             + ` — ${i + 1}/${offen.length} адресов`);
           const inhalt = await eineAdresse(x.id, x.feld, x.stand);
           buchen(x.feld, x.stand, 'rechnet');
           if (x.stand.ergebnis === 'geholt'){ x.ziel[x.feld] = inhalt; geholtNach++; }
@@ -1617,17 +1795,26 @@
       const codes = Object.keys(abbrueche)
         .map(c => abbrueche[c] > 1 ? `${codeText(c)}×${abbrueche[c]}` : codeText(c)).join(', ');
       const rest = titelZahl([...offen, ...ausBudget]);
-      const grund = fristHin ? L(`Frist von ${NACHFRAGE_FRIST/1000} s erreicht`, `time limit of ${NACHFRAGE_FRIST/1000} s reached`)
-                  : rest ? L('Nachfassversuche aufgebraucht', 'retries used up')
-                  : codes ? L(`abgebrochen mit ${codes}`, `aborted with ${codes}`)
-                  : L('alles beantwortet', 'all answered');
-      nachSatz = L(`nachgefragt: ${runde} von ${hoechstBudget} Runden`, `asked again: ${runde} of ${hoechstBudget} rounds`)
-        + L(` (aligned_lyrics: ${budget('v2')}), Frist ${NACHFRAGE_FRIST/1000} s`, ` (aligned_lyrics: ${budget('v2')}), time limit ${NACHFRAGE_FRIST/1000} s`)
-        + L(`, ${geholtNach} nachgeliefert`, `, ${geholtNach} delivered late`)
+      const grund = fristHin ? L(`Frist von ${NACHFRAGE_FRIST/1000} s erreicht`, `time limit of ${NACHFRAGE_FRIST/1000} s reached`,
+`достигнут предел времени: ${NACHFRAGE_FRIST/1000} с`)
+                  : rest ? L('Nachfassversuche aufgebraucht', 'retries used up',
+'повторы исчерпаны')
+                  : codes ? L(`abgebrochen mit ${codes}`, `aborted with ${codes}`,
+`прервано с ${codes}`)
+                  : L('alles beantwortet', 'all answered',
+'все ответили');
+      nachSatz = L(`nachgefragt: ${runde} von ${hoechstBudget} Runden`, `asked again: ${runde} of ${hoechstBudget} rounds`,
+`повторных запросов: ${runde} из ${hoechstBudget} кругов`)
+        + L(` (aligned_lyrics: ${budget('v2')}), Frist ${NACHFRAGE_FRIST/1000} s`, ` (aligned_lyrics: ${budget('v2')}), time limit ${NACHFRAGE_FRIST/1000} s`,
+` (aligned_lyrics: ${budget('v2')}), предел времени ${NACHFRAGE_FRIST/1000} с`)
+        + L(`, ${geholtNach} nachgeliefert`, `, ${geholtNach} delivered late`,
+`, пришло с опозданием: ${geholtNach}`)
         + (codes && grund.indexOf(codes) < 0 ? `, ${codes}` : '')   // nicht zweimal dasselbe
         + (rest ? L(`, ${rest} ${rest === 1 ? 'Titel rechnet' : 'Titel rechnen'} weiter (${grund})`,
-                    `, ${rest} ${rest === 1 ? 'title is' : 'titles are'} still being computed (${grund})`) : ` (${grund})`);
-      zN.textContent = L('Nachfrage — ', 'Follow-up — ') + nachSatz;
+                    `, ${rest} ${rest === 1 ? 'title is' : 'titles are'} still being computed (${grund})`,
+`, ещё считается треков: ${rest} (${grund})`) : ` (${grund})`);
+      zN.textContent = L('Nachfrage — ', 'Follow-up — ',
+'Повторный запрос — ') + nachSatz;
       zN.style.color = (rest || codes) ? '#f97b14' : '#16be5c';
       berichten();
     }
@@ -1639,16 +1826,20 @@
        die Zeile stand weiter auf dem Satz von vorher. Eine eigene
        Zeile sagt es jetzt - nur nicht, wenn schon der Token fehlte,
        denn den Satz schreibt die Zeile darunter. */
-    if (tokenDa) schlecht(L('Sunos eigene Analyse — abgebrochen: ', 'Suno’s own analysis — aborted: ')
+    if (tokenDa) schlecht(L('Sunos eigene Analyse — abgebrochen: ', 'Suno’s own analysis — aborted: ',
+'Собственный анализ Suno — прервано: ')
       + ((x && x.name ? x.name + ': ' : '') + ((x && x.message) || String(x)))
-      + L('', ' — click the bookmark again; what was fetched is still saved.'));
+      + L('', ' — click the bookmark again; what was fetched is still saved.',
+' — нажмите закладку ещё раз; уже загруженное сохранено.'));
   }
   /* Sagen, was zu tun ist - "kein Token" allein hat Tarja nur ratlos gemacht
      (23.08.2026), zumal sie angemeldet WAR: die Anmeldebibliothek war nur
      noch nicht geladen. */
-  if (!tokenDa){ zeileT.textContent = L('Sunos eigene Analyse — übersprungen: ', 'Suno’s own analysis — skipped: ') + (tokenHolen.grund
+  if (!tokenDa){ zeileT.textContent = L('Sunos eigene Analyse — übersprungen: ', 'Suno’s own analysis — skipped: ',
+'Собственный анализ Suno — пропущено: ') + (tokenHolen.grund
                    || L('die Suno-Anmeldung war nicht erreichbar. Seite neu laden, kurz warten, Lesezeichen noch einmal klicken.',
-                        'the Suno sign-in could not be reached. Reload the page, wait a moment, click the bookmark again.'));
+                        'the Suno sign-in could not be reached. Reload the page, wait a moment, click the bookmark again.',
+'не удалось обратиться к сеансу входа Suno. Перезагрузите страницу, подождите немного и нажмите закладку ещё раз.'));
                  zeileT.style.color = '#8a8a90'; }
 
   /* ---------------- 2d · Der Benachrichtigungsstrom ----------------
@@ -1672,9 +1863,11 @@
      NUR LESEN. /read und /clear-badge werden nie aufgerufen; das
      Lesen selbst markiert nichts (badge-count ist ein eigener Weg). */
   const zeileN = sagen(L('Lese Sunos Benachrichtigungen: wer geliked, kommentiert, gefolgt ist (die letzten 4 Wochen) …',
-                         'Reading Suno’s notifications: who liked, commented, followed (the last 4 weeks) …'));
+                         'Reading Suno’s notifications: who liked, commented, followed (the last 4 weeks) …',
+'Читаю уведомления Suno: кто поставил лайк, написал комментарий, подписался (за последние 4 недели) …'));
   const benachrichtigungen = [];
-  if (!wahl.benach){ zeileN.textContent = L('Wer hat reagiert — übersprungen', 'Who reacted — skipped'); }
+  if (!wahl.benach){ zeileN.textContent = L('Wer hat reagiert — übersprungen', 'Who reacted — skipped',
+'Кто отреагировал — пропущено'); }
   else try {
     const tn = await tokenHolen();
     if (tn){
@@ -1689,15 +1882,19 @@
         const n = (d.notifications || []).filter(x => x && x.id && !gesehen.has(x.id));
         if (!n.length) break;
         for (const x of n){ gesehen.add(x.id); benachrichtigungen.push(x); }
-        zeileN.textContent = L(`Wer hat reagiert … ${benachrichtigungen.length}`, `Who reacted … ${benachrichtigungen.length}`);
+        zeileN.textContent = L(`Wer hat reagiert … ${benachrichtigungen.length}`, `Who reacted … ${benachrichtigungen.length}`,
+`Кто отреагировал … ${benachrichtigungen.length}`);
         if (!d.next_before_datetime_utc) break;
         vor = d.next_before_datetime_utc;
         await pause();
       }
-      zeileN.textContent = L(`Wer hat reagiert — ${benachrichtigungen.length}`, `Who reacted — ${benachrichtigungen.length}`);
+      zeileN.textContent = L(`Wer hat reagiert — ${benachrichtigungen.length}`, `Who reacted — ${benachrichtigungen.length}`,
+`Кто отреагировал — ${benachrichtigungen.length}`);
       zeileN.style.color = '#16be5c';
-    } else { zeileN.textContent = L('Wer hat reagiert — kein Token', 'Who reacted — no token; sign in to suno.com in this tab and click the bookmark again'); zeileN.style.color = '#8a8a90'; }
-  } catch (x){ zeileN.textContent = L('Wer hat reagiert — ', 'Who reacted — ') + x.message; zeileN.style.color = '#e31c79'; }
+    } else { zeileN.textContent = L('Wer hat reagiert — kein Token', 'Who reacted — no token; sign in to suno.com in this tab and click the bookmark again',
+'Кто отреагировал — нет токена; войдите на suno.com в этой вкладке и нажмите закладку ещё раз'); zeileN.style.color = '#8a8a90'; }
+  } catch (x){ zeileN.textContent = L('Wer hat reagiert — ', 'Who reacted — ',
+'Кто отреагировал — ') + x.message; zeileN.style.color = '#e31c79'; }
 
   /* ---------------- 2e · Wer hat geherzt ----------------
      GET /api/gen/<id>/likers/ - der Weg der iOS-App (docs/suno/WEGE.md,
@@ -1713,11 +1910,14 @@
      Suno die ersten drei Titel ab, wird abgebrochen, nicht weitergeklopft. */
   const liker = {};
   const zeileL = sagen(L('Wer hat geherzt — alle Namen je Titel, wo sich die Herzzahl geändert hat …',
-                         'Who hearted — all names per title whose heart count has changed …'));
-  if (!wahl.liker){ zeileL.textContent = L('Wer hat geherzt — übersprungen', 'Who hearted — skipped'); zeileL.style.color = '#8a8a90'; }
+                         'Who hearted — all names per title whose heart count has changed …',
+'Кто поставил лайк — все имена по тем трекам, где число лайков изменилось …'));
+  if (!wahl.liker){ zeileL.textContent = L('Wer hat geherzt — übersprungen', 'Who hearted — skipped',
+'Кто поставил лайк — пропущено'); zeileL.style.color = '#8a8a90'; }
   else try {
     const tl = await tokenHolen();
-    if (!tl){ zeileL.textContent = L('Wer hat geherzt — kein Token', 'Who hearted — no token; sign in to suno.com in this tab and click the bookmark again'); zeileL.style.color = '#8a8a90'; }
+    if (!tl){ zeileL.textContent = L('Wer hat geherzt — kein Token', 'Who hearted — no token; sign in to suno.com in this tab and click the bookmark again',
+'Кто поставил лайк — нет токена; войдите на suno.com в этой вкладке и нажмите закладку ещё раз'); zeileL.style.color = '#8a8a90'; }
     else {
       const Hl = { Authorization: 'Bearer ' + tl };
       let stand = {};
@@ -1740,18 +1940,22 @@
         }
         if (ok){ liker[s.id] = { anzahl: s.upvote_count || 0, seiten: seitenListe }; n++; } else ausgefallen++;
         zeileL.textContent = L(`Wer hat geherzt … ${n} von ${kandidaten.length} Titeln, ${seiten} Seiten`,
-                               `Who hearted … ${n} of ${kandidaten.length} titles, ${seiten} pages`);
+                               `Who hearted … ${n} of ${kandidaten.length} titles, ${seiten} pages`,
+`Кто поставил лайк … ${n} из ${kandidaten.length} треков, страниц: ${seiten}`);
         if (!n && ausgefallen >= 3){ zeileL.textContent = L(`Wer hat geherzt — Suno lehnt ab (HTTP ${letzterStatus}), abgebrochen`,
-            `Who hearted — Suno refuses (HTTP ${letzterStatus}), aborted; click the bookmark again later`); zeileL.style.color = '#e31c79'; break; }
+            `Who hearted — Suno refuses (HTTP ${letzterStatus}), aborted; click the bookmark again later`,
+`Кто поставил лайк — Suno отказывает (HTTP ${letzterStatus}), прервано; нажмите закладку ещё раз позже`); zeileL.style.color = '#e31c79'; break; }
         await pause();
       }
       if (n || !ausgefallen){
         zeileL.textContent = L(`Wer hat geherzt — ${n} Titel, ${seiten} Seiten` + (ausgefallen ? `, ${ausgefallen} nicht geholt` : '') + (kandidaten.length ? '' : ' (keine Herzzahl geändert)'),
-                               `Who hearted — ${n} ${n === 1 ? 'title' : 'titles'}, ${seiten} pages` + (ausgefallen ? `, ${ausgefallen} not fetched (the next run tries again)` : '') + (kandidaten.length ? '' : ' (no heart count changed)'));
+                               `Who hearted — ${n} ${n === 1 ? 'title' : 'titles'}, ${seiten} pages` + (ausgefallen ? `, ${ausgefallen} not fetched (the next run tries again)` : '') + (kandidaten.length ? '' : ' (no heart count changed)'),
+`Кто поставил лайк — треков: ${n}, страниц: ${seiten}` + (ausgefallen ? `, не загружено: ${ausgefallen} (следующий запуск попробует снова)` : '') + (kandidaten.length ? '' : ' (число лайков не менялось)'));
         zeileL.style.color = ausgefallen ? '#f97b14' : '#16be5c';
       }
     }
-  } catch (x){ zeileL.textContent = L('Wer hat geherzt — ', 'Who hearted — ') + x.message; zeileL.style.color = '#e31c79'; }
+  } catch (x){ zeileL.textContent = L('Wer hat geherzt — ', 'Who hearted — ',
+'Кто поставил лайк — ') + x.message; zeileL.style.color = '#e31c79'; }
 
   /* ---------------- 2f · Beobachter ----------------
      GET /api/profiles/<handle>/followers?page=N und /following?page=N
@@ -1768,11 +1972,14 @@
      Grenze, Ende erst bei leerer Seite oder wenn die Liste so lang ist
      wie Sunos num_total_profiles. */
   const beobachter = { follower: [], following: [] };
-  const zeileB = sagen(L('Beobachter — wer dir folgt, wem du folgst …', 'Watchers — who follows you, whom you follow …'));
-  if (!wahl.beob){ zeileB.textContent = L('Beobachter — übersprungen', 'Watchers — skipped'); zeileB.style.color = '#8a8a90'; }
+  const zeileB = sagen(L('Beobachter — wer dir folgt, wem du folgst …', 'Watchers — who follows you, whom you follow …',
+'Подписчики — кто подписан на вас, на кого подписаны вы …'));
+  if (!wahl.beob){ zeileB.textContent = L('Beobachter — übersprungen', 'Watchers — skipped',
+'Подписчики — пропущено'); zeileB.style.color = '#8a8a90'; }
   else try {
     const tb = await tokenHolen();
-    if (!tb){ zeileB.textContent = L('Beobachter — kein Token', 'Watchers — no token; sign in to suno.com in this tab and click the bookmark again'); zeileB.style.color = '#8a8a90'; }
+    if (!tb){ zeileB.textContent = L('Beobachter — kein Token', 'Watchers — no token; sign in to suno.com in this tab and click the bookmark again',
+'Подписчики — нет токена; войдите на suno.com в этой вкладке и нажмите закладку ещё раз'); zeileB.style.color = '#8a8a90'; }
     else {
       const Hb = { Authorization: 'Bearer ' + tb };
       let gesamt = { follower: null, following: null }, seiten = 0, ausfall = null, luecke = null;
@@ -1784,7 +1991,8 @@
         for (let seite = 1; seite <= BEOB_MAX_SEITEN; seite++){
           if (seite > 1) await pause();
           const r = await fetch(`${API}/api/profiles/${encodeURIComponent(handle)}/${richtung}?page=${seite}`, { headers: Hb });
-          if (!r.ok){ ausfall = L(`${richtung} Seite ${seite}: HTTP ${r.status}`, `${richtung} page ${seite}: HTTP ${r.status}`); break; }
+          if (!r.ok){ ausfall = L(`${richtung} Seite ${seite}: HTTP ${r.status}`, `${richtung} page ${seite}: HTTP ${r.status}`,
+`${richtung}, страница ${seite}: HTTP ${r.status}`); break; }
           const d = await r.json(); seiten++;
           const liste = Array.isArray(d.profiles) ? d.profiles : [];
           if (Number.isFinite(d.num_total_profiles)) gesamt[feld] = d.num_total_profiles;
@@ -1794,12 +2002,15 @@
           zeileB.textContent = L(`Beobachter … ${beobachter.follower.length}${gesamt.follower != null ? '/' + gesamt.follower : ''} folgen dir, `
             + `${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''} folgst du (${seiten} Seiten)`,
                                  `Watchers … ${beobachter.follower.length}${gesamt.follower != null ? '/' + gesamt.follower : ''} follow you, `
-            + `you follow ${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''} (${seiten} pages)`);
+            + `you follow ${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''} (${seiten} pages)`,
+`Подписчики … на вас подписаны ${beobachter.follower.length}${gesamt.follower != null ? '/' + gesamt.follower : ''}, `
+            + `вы подписаны на ${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''} (страниц: ${seiten})`);
           if (!liste.length) break;
           if (!neuHier) break;
           if (soll != null && ziel.length >= soll) break;
           if (seite === BEOB_MAX_SEITEN) luecke = L(`${richtung}: ${ziel.length}${soll != null ? '/' + soll : ''} nach ${BEOB_MAX_SEITEN} Seiten`,
-                                                    `${richtung}: ${ziel.length}${soll != null ? '/' + soll : ''} after ${BEOB_MAX_SEITEN} pages`);
+                                                    `${richtung}: ${ziel.length}${soll != null ? '/' + soll : ''} after ${BEOB_MAX_SEITEN} pages`,
+`${richtung}: ${ziel.length}${soll != null ? '/' + soll : ''} после ${BEOB_MAX_SEITEN} страниц`);
         }
         if (ausfall) break;
         /* Kuerzer als Sunos eigene Zahl ist eine Luecke - auch wenn die
@@ -1820,10 +2031,15 @@
                              `Watchers — ${beobachter.follower.length}${gesamt.follower != null ? '/' + gesamt.follower : ''} follow you, `
         + `you follow ${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''}`
         + (ausfall ? ` — aborted (${ausfall}); nobody is counted as "gone" from this harvest, the next run tries again`
-           : luecke ? ` — incomplete (${luecke}); nobody is counted as "gone" from this harvest, the next run tries again` : ''));
+           : luecke ? ` — incomplete (${luecke}); nobody is counted as "gone" from this harvest, the next run tries again` : ''),
+`Подписчики — на вас подписаны ${beobachter.follower.length}${gesamt.follower != null ? '/' + gesamt.follower : ''}, `
+        + `вы подписаны на ${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''}`
+        + (ausfall ? ` — прервано (${ausfall}); никто по этому сбору не считается «ушедшим», следующий запуск попробует снова`
+           : luecke ? ` — неполно (${luecke}); никто по этому сбору не считается «ушедшим», следующий запуск попробует снова` : ''));
       zeileB.style.color = warn ? '#f97b14' : '#16be5c';
     }
-  } catch (x){ zeileB.textContent = L('Beobachter — ', 'Watchers — ') + x.message; zeileB.style.color = '#e31c79'; }
+  } catch (x){ zeileB.textContent = L('Beobachter — ', 'Watchers — ',
+'Подписчики — ') + x.message; zeileB.style.color = '#e31c79'; }
 
   /* ---------------- 2c · SOFORT ablegen ----------------
      Die Ernte ist zehn Minuten Arbeit und lag bisher nur im Speicher
@@ -1871,7 +2087,9 @@
       sagen(L(`Download-Kontingent: ${kontingent.verbraucht} von ${kontingent.grenze} verbraucht`
         + (kontingent.lebenslang ? `, dazu ${kontingent.lebenslang} lebenslange` : '') + '.',
               `Download allowance: ${kontingent.verbraucht} of ${kontingent.grenze} used`
-        + (kontingent.lebenslang ? `, plus ${kontingent.lebenslang} lifetime` : '') + '.'));
+        + (kontingent.lebenslang ? `, plus ${kontingent.lebenslang} lifetime` : '') + '.',
+`Лимит загрузок: израсходовано ${kontingent.verbraucht} из ${kontingent.grenze}`
+         + (kontingent.lebenslang ? `, плюс пожизненно: ${kontingent.lebenslang}` : '') + '.'));
     }
   } catch (e) { /* Kontingent ist Beiwerk - die Ernte scheitert daran nicht */ }
 
@@ -1928,12 +2146,15 @@
      Browser mit CORS-Freigabe, das Laden geht also von hier. */
   const DECKEL_TON = 25;          /* je Lauf, damit ein Morgen nicht zur Stunde wird */
   const zeileTon = sagen(L('Ton holen — für Titel, deren Datei fehlt und die bei Suno schon freigeschaltet sind …',
-                           'Fetching audio — for titles whose file is missing and that are already unlocked at Suno …'));
-  if (!wahl.ton){ zeileTon.textContent = L('Ton holen — übersprungen', 'Fetching audio — skipped'); zeileTon.style.color = '#8a8a90'; }
+                           'Fetching audio — for titles whose file is missing and that are already unlocked at Suno …',
+'Загружаю аудио — для треков, у которых нет файла и которые уже разблокированы на Suno …'));
+  if (!wahl.ton){ zeileTon.textContent = L('Ton holen — übersprungen', 'Fetching audio — skipped',
+'Загрузка аудио — пропущено'); zeileTon.style.color = '#8a8a90'; }
   else {
     const tTon = await tokenHolen();
     if (!tTon){ zeileTon.textContent = L('Ton holen — kein Token, übersprungen',
-                  'Fetching audio — no token, skipped; sign in to suno.com in this tab and click the bookmark again'); zeileTon.style.color = '#d29922'; }
+                  'Fetching audio — no token, skipped; sign in to suno.com in this tab and click the bookmark again',
+'Загрузка аудио — нет токена, пропущено; войдите на suno.com в этой вкладке и нажмите закладку ещё раз'); zeileTon.style.color = '#d29922'; }
     else {
       const kopf = async () => ({ Authorization: 'Bearer ' + (await tokenHolen()) });
       let liste = { fehlt: [], unklar: [] };
@@ -1955,7 +2176,8 @@
       let i = 0;
       for (const a of fragen){
         i++;
-        zeileTon.textContent = L(`Ton holen — frage Freischaltstand … ${i}/${fragen.length}`, `Fetching audio — checking unlock status … ${i}/${fragen.length}`);
+        zeileTon.textContent = L(`Ton holen — frage Freischaltstand … ${i}/${fragen.length}`, `Fetching audio — checking unlock status … ${i}/${fragen.length}`,
+`Загрузка аудио — проверяю состояние разблокировки … ${i}/${fragen.length}`);
         try {
           const r = await fetch(`${API}/api/clip/${a.id}`, { headers: await kopf() });
           if (r.ok){
@@ -2016,7 +2238,8 @@
 
       for (let n = 0; n < dran.length; n++){
         const auf = dran[n];
-        zeileTon.textContent = L(`Ton holen … ${n+1}/${dran.length} — ${auf.titel} (${auf.format})`, `Fetching audio … ${n+1}/${dran.length} — ${auf.titel} (${auf.format})`);
+        zeileTon.textContent = L(`Ton holen … ${n+1}/${dran.length} — ${auf.titel} (${auf.format})`, `Fetching audio … ${n+1}/${dran.length} — ${auf.titel} (${auf.format})`,
+`Загружаю аудио … ${n+1}/${dran.length} — ${auf.titel} (${auf.format})`);
         try {
           /* Adresse anfordern. WAV steht die ersten Sekunden auf
              „processing" - Suno rechnet sie erst (2–5 s). Remixe fremder
@@ -2034,7 +2257,9 @@
               break;
             }
             if (r.status === 401 || r.status === 429){
-              halt = r.status === 401 ? L('Token abgelaufen', 'token expired') : L('Suno drosselt', 'Suno is throttling');
+              halt = r.status === 401 ? L('Token abgelaufen', 'token expired',
+'срок токена истёк') : L('Suno drosselt', 'Suno is throttling',
+'Suno ограничивает частоту запросов');
               merken = false; break;
             }
             if (!r.ok){ grund = 'HTTP ' + r.status; break; }
@@ -2076,25 +2301,37 @@
         + (gesperrt ? `, ${gesperrt} Titel bei Suno gesperrt` : ''),
                         (wartet ? `, ${wartet} ${wartet===1?'file is':'files are'} waiting for a new attempt`
           + (wartetAb ? ` (from ${wartetAb.toLocaleDateString('en-GB')})` : '') : '')
-        + (gesperrt ? `, ${gesperrt} ${gesperrt===1?'title':'titles'} blocked at Suno` : ''));
+        + (gesperrt ? `, ${gesperrt} ${gesperrt===1?'title':'titles'} blocked at Suno` : ''),
+(wartet ? `, ждут новой попытки файлов: ${wartet}`
+          + (wartetAb ? ` (с ${wartetAb.toLocaleDateString('ru-RU')})` : '') : '')
+        + (gesperrt ? `, заблокировано на Suno треков: ${gesperrt}` : ''));
       if (!aufgaben.length && !Object.keys(gelernt).length)
-        zeileTon.textContent = (wartet || gesperrt) ? L('Ton holen — nichts Neues zu holen', 'Fetching audio — nothing new to fetch') + zurueck
-          : L('Ton holen — nichts zu holen, alle Dateien sind da', 'Fetching audio — nothing to fetch, all files are there');
+        zeileTon.textContent = (wartet || gesperrt) ? L('Ton holen — nichts Neues zu holen', 'Fetching audio — nothing new to fetch',
+'Загрузка аудио — нового загружать нечего') + zurueck
+          : L('Ton holen — nichts zu holen, alle Dateien sind da', 'Fetching audio — nothing to fetch, all files are there',
+'Загрузка аудио — загружать нечего, все файлы на месте');
       else
-        zeileTon.textContent = L(`Ton holen — ${geholt} Datei${geholt===1?'':'en'} (${mb} MB)`, `Fetching audio — ${geholt} ${geholt===1?'file':'files'} (${mb} MB)`)
-          + (daneben ? L(`, ${daneben} nicht bekommen`, `, ${daneben} not received`) : '')
-          + (halt ? L(` — abgebrochen (${halt}), der Rest kommt beim nächsten Lauf`, ` — aborted (${halt}), the rest comes with the next run`) : '')
-          + (zuViel ? L(`, ${zuViel} bleiben für morgen (${DECKEL_TON} je Lauf)`, `, ${zuViel} left for tomorrow (${DECKEL_TON} per run)`) : '')
+        zeileTon.textContent = L(`Ton holen — ${geholt} Datei${geholt===1?'':'en'} (${mb} MB)`, `Fetching audio — ${geholt} ${geholt===1?'file':'files'} (${mb} MB)`,
+`Загрузка аудио — файлов: ${geholt} (${mb} MB)`)
+          + (daneben ? L(`, ${daneben} nicht bekommen`, `, ${daneben} not received`,
+`, не получено: ${daneben}`) : '')
+          + (halt ? L(` — abgebrochen (${halt}), der Rest kommt beim nächsten Lauf`, ` — aborted (${halt}), the rest comes with the next run`,
+` — прервано (${halt}), остальное придёт при следующем запуске`) : '')
+          + (zuViel ? L(`, ${zuViel} bleiben für morgen (${DECKEL_TON} je Lauf)`, `, ${zuViel} left for tomorrow (${DECKEL_TON} per run)`,
+`, осталось на завтра: ${zuViel} (за один запуск: ${DECKEL_TON})`) : '')
           + (Object.keys(gelernt).length ? L(` · Freischaltstand für ${Object.keys(gelernt).length} Titel gemerkt`,
-                                             ` · unlock status noted for ${Object.keys(gelernt).length} titles`) : '')
-          + (restFragen ? L(`, ${restFragen} Titel morgen`, `, ${restFragen} titles tomorrow`) : '')
+                                             ` · unlock status noted for ${Object.keys(gelernt).length} titles`,
+` · состояние разблокировки записано для треков: ${Object.keys(gelernt).length}`) : '')
+          + (restFragen ? L(`, ${restFragen} Titel morgen`, `, ${restFragen} titles tomorrow`,
+`, завтра треков: ${restFragen}`) : '')
           + zurueck;
       zeileTon.style.color = halt ? '#f97b14' : daneben ? '#d29922' : '#16be5c';
     }
   }
 
   const zeileA = sagen(L('Übertrage die Ernte ans Archiv (erst in den Browser-Speicher, dann in Paketen an den Server) …',
-                         'Sending the harvest to the archive (first to browser storage, then in batches to the server) …'));
+                         'Sending the harvest to the archive (first to browser storage, then in batches to the server) …',
+'Передаю собранное в архив (сначала в память браузера, затем порциями на сервер) …'));
   /* Zuerst in den Browser - das kann nicht fehlschlagen, weil kein
      Server dafuer noetig ist. Dann hinueber. */
   try { await ernteMerken(ernte); } catch (e) {}
@@ -2105,12 +2342,14 @@
     /* Was der Server an Alben angenommen hat, sagt ablageSatz (oben,
        bei anServer) - dieselbe Zeile wie beim Nachreichen. */
     const a = ablageSatz(abgelegt, !!wahl.playl);
-    zeileA.textContent = L(`Gesichert — ${a.text}`, `Saved — ${a.text}`);
+    zeileA.textContent = L(`Gesichert — ${a.text}`, `Saved — ${a.text}`,
+`Сохранено — ${a.text}`);
     zeileA.style.color = a.farbe;
   } catch (e){
     zeileA.textContent = L('Server nicht erreichbar — die Ernte liegt im Browser und wird '
       + 'beim nächsten Klick nachgereicht. (',
-                           'Server not reachable — the harvest stays in the browser; start KlangTresor and click the bookmark again to send it. (')
+                           'Server not reachable — the harvest stays in the browser; start KlangTresor and click the bookmark again to send it. (',
+'Сервер недоступен — собранное остаётся в браузере; запустите KlangTresor и нажмите закладку ещё раз, чтобы передать его. (')
       + e.message + ')';
     zeileA.style.color = '#f97b14';
     return;
@@ -2139,15 +2378,20 @@
        eine neue Zahl. Wer beides in einen Topf wirft, sieht jeden
        Morgen "321 Songs geändert". */
     const inhalt = [], kaputtHier = [];
-    if ((c.title||'') !== (a.titel||'')) (nurErsatz(c.title, a.titel) ? kaputtHier : inhalt).push(L('Titel', 'Title'));
+    if ((c.title||'') !== (a.titel||'')) (nurErsatz(c.title, a.titel) ? kaputtHier : inhalt).push(L('Titel', 'Title',
+'Название'));
     if ((c.image_large_url||c.image_url||'') !== (a.bildUrl||'')) inhalt.push('Cover');
     /* Dieselbe Regel wie im Katalog: tags ODER display_tags. Sonst
        melden Studio-Exporte jeden Morgen einen Stilverlust, den es
        nicht gibt. */
-    if ((c.metadata?.tags || c.display_tags || '') !== (a.stilPrompt||'')) (nurErsatz(c.metadata?.tags || c.display_tags, a.stilPrompt) ? kaputtHier : inhalt).push(L('Stil', 'Style'));
+    if ((c.metadata?.tags || c.display_tags || '') !== (a.stilPrompt||'')) (nurErsatz(c.metadata?.tags || c.display_tags, a.stilPrompt) ? kaputtHier : inhalt).push(L('Stil', 'Style',
+'Стиль'));
     if (kaputtHier.length) kaputt.push({ c, a, was: kaputtHier });
-    if ((c.video_cover_url||null) !== (a.videoCoverUrl||null)) inhalt.push(L('Video-Artwork', 'Video artwork'));
-    if (!!c.is_public !== !!a.oeffentlich) inhalt.push(c.is_public ? L('jetzt öffentlich', 'now public') : L('jetzt privat', 'now private'));
+    if ((c.video_cover_url||null) !== (a.videoCoverUrl||null)) inhalt.push(L('Video-Artwork', 'Video artwork',
+'Видеообложка'));
+    if (!!c.is_public !== !!a.oeffentlich) inhalt.push(c.is_public ? L('jetzt öffentlich', 'now public',
+'теперь открытый') : L('jetzt privat', 'now private',
+'теперь приватный'));
     if (inhalt.length){ geaendert.push({ c, a, was: inhalt }); continue; }
 
     const dp = (c.play_count||0) - (a.plays||0);
@@ -2172,13 +2416,15 @@
   const zahl = (n) => (n>0?'+':'') + n;
 
   if (!neu.length && !geaendert.length && !zaehler.length && !weg.length){
-    gut(L('Nichts geändert seit dem letzten Mal.', 'Nothing has changed since last time.'));
+    gut(L('Nichts geändert seit dem letzten Mal.', 'Nothing has changed since last time.',
+'С прошлого раза ничего не изменилось.'));
   }
   /* Dieselbe Liste wie im roten Knopf: Kachel aus dem Archiv, Titel,
      Befund darunter. Hoechstens zwoelf je Abschnitt. Neue Songs als
      Zahl - ihre Kachel gibt es erst nach dem Laden. */
   const HOECHSTENS = 12;
-  const rest = (n) => { if (n > 0) sagen(L(`… und ${n} weitere`, `… and ${n} more`)); };
+  const rest = (n) => { if (n > 0) sagen(L(`… und ${n} weitere`, `… and ${n} more`,
+`… и ещё ${n}`)); };
   const eintrag = (id, titel, was, zahlen) => {
     const e = document.createElement('div'); e.className = 'eintrag';
     const bild = document.createElement('img');
@@ -2195,29 +2441,38 @@
   };
 
   if (neu.length){
-    kopfzeile(L('Neu', 'New'));
+    kopfzeile(L('Neu', 'New',
+'Новое'));
     const z = document.createElement('div'); z.className = 'neu';
-    z.innerHTML = `<b>${neu.length}</b>${neu.length === 1 ? L('neuer Song', 'new song') : L('neue Songs', 'new songs')}` +
-      ` <span style="color:#8b8b90">— ${L('Artwork gibt es erst nach dem Laden', 'artwork appears only after loading')}</span>`;
+    z.innerHTML = `<b>${neu.length}</b>${neu.length === 1 ? L('neuer Song', 'new song',
+'новый трек') : L('neue Songs', 'new songs',
+'новых треков')}` +
+      ` <span style="color:#8b8b90">— ${L('Artwork gibt es erst nach dem Laden', 'artwork appears only after loading',
+'обложка появится только после загрузки')}</span>`;
     zeilenfeld.appendChild(z);
   }
   if (geaendert.length){
-    kopfzeile(L('Inhaltlich geändert — wird nachgeladen', 'Content changed — will be reloaded'));
+    kopfzeile(L('Inhaltlich geändert — wird nachgeladen', 'Content changed — will be reloaded',
+'Содержимое изменилось — будет загружено заново'));
     for (const g of geaendert.slice(0, HOECHSTENS)) eintrag(g.a.id, g.a.titel, g.was.join(' · '), null);
     rest(geaendert.length - HOECHSTENS);
   }
   if (kaputt.length){
     kopfzeile(L('Suno lieferte ein Zeichen kaputt — keine Änderung, wird beim Einbau geheilt',
-                'Suno delivered a broken character — not a change, repaired when woven in'));
+                'Suno delivered a broken character — not a change, repaired when woven in',
+'Suno прислал испорченный символ — это не изменение, он исправляется при сборке каталога'));
     for (const g of kaputt.slice(0, HOECHSTENS)) eintrag(g.a.id, g.a.titel, g.was.join(' · '), null);
     rest(kaputt.length - HOECHSTENS);
   }
   if (zaehler.length){
-    kopfzeile(L('Neue Zahlen', 'New figures'));
+    kopfzeile(L('Neue Zahlen', 'New figures',
+'Новые числа'));
     zaehler.sort((x,y) => (Math.abs(y.dp)+Math.abs(y.dl)*3+Math.abs(y.dk)*20) - (Math.abs(x.dp)+Math.abs(x.dl)*3+Math.abs(x.dk)*20));
     for (const z of zaehler.slice(0, HOECHSTENS)){
       const teile = [];
-      if (z.dk) teile.push([`${zahl(z.dk)} ${Math.abs(z.dk)===1?L('Kommentar','comment'):L('Kommentare','comments')}`, 'komm']);
+      if (z.dk) teile.push([`${zahl(z.dk)} ${Math.abs(z.dk)===1?L('Kommentar','comment',
+'комментарий'):L('Kommentare','comments',
+'комментариев')}`, 'komm']);
       if (z.dl) teile.push([`${zahl(z.dl)} Likes`, z.dl>0?'plus':'minus']);
       if (z.dp) teile.push([`${zahl(z.dp)} Plays`, z.dp>0?'plus':'minus']);
       eintrag(z.a.id, z.a.titel, null, teile);
@@ -2225,8 +2480,10 @@
     rest(zaehler.length - HOECHSTENS);
   }
   if (weg.length){
-    kopfzeile(L('Nicht mehr im öffentlichen Profil', 'No longer in the public profile'));
-    for (const a of weg.slice(0, HOECHSTENS)) eintrag(a.id, a.titel, L('war öffentlich — bleibt im Archiv', 'was public — stays in the archive'), null);
+    kopfzeile(L('Nicht mehr im öffentlichen Profil', 'No longer in the public profile',
+'Больше нет в открытом профиле'));
+    for (const a of weg.slice(0, HOECHSTENS)) eintrag(a.id, a.titel, L('war öffentlich — bleibt im Archiv', 'was public — stays in the archive',
+'был открытым — остаётся в архиве'), null);
     rest(weg.length - HOECHSTENS);
   }
 
@@ -2243,7 +2500,8 @@
      Aufgabe. Der Doppelweg hier hat am 20.08.2026 einen Lauf
      gestartet, den Caspar_D nie angestossen hatte ("ich habe den roten
      Knopf noch nicht gedrueckt"). */
-  const neinKnopf = knopf(L('Schließen', 'Close'));
+  const neinKnopf = knopf(L('Schließen', 'Close',
+'Закрыть'));
 
   /* Der Ende-Indikator (Caspar_D, 20.08.2026): unuebersehbar sagen, dass
      dieses Fenster FERTIG ist und wo es weitergeht. Eigener Kasten
@@ -2256,7 +2514,9 @@
     + 'erforderlich ist, wurden jetzt erfasst.<br>Drücke den <b>roten Update-Knopf</b> in '
     + 'KlangTresor (oben rechts neben dem Avatar), um sie in deine Datensammlung zu integrieren.',
                      '<b style="color:#16be5c">✓ Done.</b> Data that needs a Suno login has now been collected.<br>'
-    + 'Press the red <b>“Update the library”</b> button in KlangTresor (top right, next to the avatar) to add it to your collection.');
+    + 'Press the red <b>“Update the library”</b> button in KlangTresor (top right, next to the avatar) to add it to your collection.',
+'<b style="color:#16be5c">✓ Готово.</b> Данные, для которых нужен вход в Suno, собраны.<br>'
+    + 'Нажмите в KlangTresor красную кнопку <b>«Обновить библиотеку»</b> (справа вверху, рядом с аватаром), чтобы добавить их в коллекцию.');
   kasten.appendChild(ende);
   kasten.appendChild(leiste);                 // Schliessen unter dem Kasten
 

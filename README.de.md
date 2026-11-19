@@ -10,6 +10,8 @@ Frei und quelloffen. Kein Konto. Läuft auf deinem eigenen Rechner.
 
 **[Alles, was es kann → Feature-Seite](https://caspardavi.github.io/klangtresor/features/?lang=de)** · Broschüre (PDF): [für den Bildschirm, 8 MB](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-de.pdf) · [zum Drucken, 70 MB](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-de-druck.pdf)
 
+**[Erststart-Heft (PDF)](https://caspardavi.github.io/klangtresor/erststart/KlangTresor-Erststart-de.pdf)** — Schritt für Schritt mit Bildern, von der Datei bis zum gefüllten Archiv.
+
 ## Herunterladen
 
 <p align="center">

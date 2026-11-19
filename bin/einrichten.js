@@ -1354,6 +1354,14 @@ function firewallFragtGleich() {
   }
   gut(T('Schreibrecht im Projektordner: ja.'));
   zeile('schreiben', T('Schreibrecht'), T('ja'));
+  /* DAS ARCHIVVERZEICHNIS GLEICH ANLEGEN (19.11.2026). Bis hierher entstand
+     library/ erst, wenn zum ersten Mal etwas hineingeschrieben wurde - also
+     fruehestens beim Sammeln. Wer die Einrichtung vorher verliess, hatte ein
+     installiertes KlangTresor OHNE library/: der Server fand keinen Katalog,
+     und der Versuch, den Suno-Namen zu speichern, scheiterte mit
+     „ENOENT ... library\konfig.json". Genau das ist einer Nutzerin passiert.
+     Der Ordner kostet nichts und gehoert ab dem ersten Schritt dorthin. */
+  try { fs.mkdirSync(path.join(WURZEL, 'library'), { recursive: true }); } catch (e) {}
 
   if (imSystemordner(WURZEL)) {
     wink(T('Dieser Ordner liegt in einem Systembereich.'));

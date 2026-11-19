@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>KlangTresor — Erststart</title>
+<script src="texte.js"></script>
+<style>
+/* ============================================================
+   KlangTresor — Erststart-Heft, Layout.
+
+   Nach docs/features/LEITFADEN.md, Teil B:
+   - feste Seitenkaesten 210x297 mm, overflow:hidden, Umbruch danach
+   - @page{margin:0}: Chrome malt @page-Raender IMMER weiss, auch auf
+     dunklem Grund. Der Rand entsteht als padding IM Kasten.
+   - ein Seitenplan, kein Fliesstext: der Mensch entscheidet die Seiten
+   - die Seite prueft sich selbst (window.BERICHT) und verweigert das PDF
+   Abstaende als Regeln: Bild->Text 3 mm, Text->Bild 9 mm, Text->Text 6 mm.
+   ============================================================ */
+@page { size: A4; margin: 0; }
+
+:root{
+  --grund:#000; --flaeche:#141416; --flaeche2:#1c1c1f; --rand:#2a2a2e;
+  --text:#e9e9ec; --leise:#a0a0a6; --akzent:#f97b14; --akzent2:#ff4f9a;
+  --gut:#16be5c;
+  --s-bild-text:3mm; --s-text-bild:9mm; --s-text-text:6mm;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--grund);color:var(--text);
+  font:10.5pt/1.5 -apple-system,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+
+.seite{position:relative;width:210mm;height:297mm;overflow:hidden;
+  background:var(--grund);padding:14mm 15mm 12mm;page-break-after:always;display:flex;flex-direction:column}
+.seite:last-child{page-break-after:auto}
+
+/* --- Kopf jeder Seite: die Landkarte. „Wo bin ich" war die erste Frage. --- */
+.leiste{display:flex;align-items:center;gap:2mm;border-bottom:.3pt solid var(--rand);
+  padding-bottom:3mm;margin-bottom:var(--s-text-text);flex:0 0 auto}
+.leiste .marke{font-weight:700;font-size:9pt;letter-spacing:.02em;
+  background:linear-gradient(90deg,var(--akzent),var(--akzent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;margin-right:1mm}
+.leiste .pfad{display:flex;gap:1mm;flex-wrap:nowrap;margin-left:auto}
+.leiste .p{font-size:5.9pt;letter-spacing:.03em;text-transform:uppercase;
+  color:#55555c;border:.3pt solid #2a2a2e;border-radius:999px;padding:.6mm 1.5mm;white-space:nowrap}
+.leiste .p.an{color:#111;background:var(--akzent);border-color:var(--akzent);font-weight:700}
+.leiste .p.weg{opacity:.5}
+
+h1{font-size:28pt;line-height:1.12;font-weight:700;letter-spacing:-.01em}
+h2{font-size:17pt;line-height:1.2;font-weight:700;margin-bottom:3mm}
+h3{font-size:11pt;font-weight:700;color:var(--text);margin-bottom:1.5mm}
+p{color:var(--leise);margin-bottom:var(--s-text-text)}
+p:last-child{margin-bottom:0}
+b,strong{color:var(--text);font-weight:600}
+code{font:9.3pt/1.4 ui-monospace,"SF Mono",Menlo,monospace;color:#ffb067;
+  background:#1a1a1d;border-radius:3px;padding:.3mm 1mm}
+i,em{font-style:italic;color:#c8c8ce}
+
+.nr{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:var(--akzent);
+  font-weight:700;margin-bottom:2mm}
+
+/* --- Bilder: immer in einem Rahmen mit dem Namen, nie nackt --- */
+/* flex:none ist hier KEINE Kosmetik (19.11.2026): .seite ist ein
+   Flex-Kasten, und ein Bild als Flex-Kind schrumpft stillschweigend unter
+   seine eigene Hoehe - im russischen Heft war der Knopf, um den es geht,
+   genau so halb abgeschnitten, und der Pruefbericht sah nichts davon.
+   Mit flex:none laeuft die Seite stattdessen sichtbar ueber, und der
+   Bericht verweigert das PDF. Abgeschnitten wird nie stillschweigend. */
+.bild{border:.3pt solid var(--rand);border-radius:2.5mm;overflow:hidden;background:var(--flaeche);
+  margin-bottom:var(--s-bild-text);flex:none}
+.fenster,.chrome,.karten,.merk,.ruhig,ol.weg,.zwei{flex:none}
+.bild .titelzeile{display:flex;align-items:center;gap:1.4mm;padding:1.3mm 2.5mm;
+  background:var(--flaeche2);border-bottom:.3pt solid var(--rand)}
+.bild .punkte{display:flex;gap:1mm}
+.bild .punkte i{width:1.6mm;height:1.6mm;border-radius:50%;background:#3a3a40;display:block}
+.bild .name{font-size:6.6pt;letter-spacing:.06em;text-transform:uppercase;color:#7a7a82}
+.bild .haut{display:block;width:100%;overflow:hidden;background:#000}
+.bild img{display:block;width:100%}
+.bild .haut.oben img{margin-top:0}
+.unterschrift{font-size:8pt;color:#74747c;margin-bottom:var(--s-text-bild)}
+.unterschrift:last-child{margin-bottom:0}
+
+/* Ausschnitt: der Kasten begrenzt die Hoehe, das Bild wird verschoben.
+   So bleibt das Bild echt - es wird nur gezeigt, was zur Sache gehoert. */
+.haut.h30{max-height:30mm}.haut.h32{max-height:32mm}.haut.h38{max-height:38mm}.haut.h44{max-height:44mm}
+.haut.h50{max-height:50mm}.haut.h56{max-height:56mm}.haut.h62{max-height:62mm}
+.haut.h74{max-height:74mm}.haut.h86{max-height:86mm}.haut.h96{max-height:96mm}
+.haut.h110{max-height:110mm}.haut.h120{max-height:120mm}
+
+/* --- Kasten-Bausteine --- */
+.karten{display:grid;gap:3mm;margin-bottom:var(--s-text-text)}
+.karten.d3{grid-template-columns:repeat(3,1fr)}
+.karten.d2{grid-template-columns:repeat(2,1fr)}
+/* Die Skizze „zwei Reiter in EINEM Chrome" (19.11.2026). Kein Bildschirmfoto:
+   das Lesezeichen laeuft auf suno.com, und dort ohne Anmeldung etwas
+   aufzunehmen hiesse, etwas vorzutaeuschen. Eine Zeichnung sagt die
+   Bedingung ohnehin klarer als ein Foto zweier Reiter. */
+/* Browserrahmen fuers Titelbild: headless Chrome hat keine Adresszeile,
+   also zeichnet das Heft sie - die Adresse steht als TEXT und ist dadurch
+   lesbar statt verwaschen (Caspar_D, 19.11.2026: „mit lesbarer URL oben"). */
+.fenster{border:.3pt solid var(--rand);border-radius:3mm;overflow:hidden;background:var(--flaeche);margin-bottom:var(--s-bild-text);max-width:100%;flex:none}
+.fenster .leiste2{display:flex;align-items:center;gap:2.5mm;padding:2.2mm 3mm;background:var(--flaeche2);border-bottom:.3pt solid var(--rand)}
+.fenster .ampel{display:flex;gap:1.2mm}
+.fenster .ampel i{width:2mm;height:2mm;border-radius:50%;background:#3a3a40;display:block}
+.fenster .adresse{flex:1;background:#0c0c0d;border:.3pt solid var(--rand);border-radius:999px;
+  padding:1.3mm 3mm;font:9pt ui-monospace,"SF Mono",Menlo,monospace;color:#cfcfd4;white-space:nowrap;overflow:hidden}
+.fenster img{display:block;width:100%}
+.chrome{border:.3pt solid var(--rand);border-radius:3mm;background:var(--flaeche);
+  padding:3mm;margin-bottom:var(--s-text-bild)}
+.chrome .reiter{display:flex;gap:1.5mm;margin-bottom:2.5mm}
+.chrome .r{flex:1;background:var(--flaeche2);border:.3pt solid var(--rand);
+  border-radius:2mm 2mm 0 0;padding:1.8mm 2.5mm;font-size:8.5pt;color:var(--leise)}
+.chrome .r.an{background:#241404;border-color:var(--akzent);color:var(--text);font-weight:600}
+.chrome .lzleiste{display:flex;align-items:center;gap:2mm;border-top:.3pt solid var(--rand);
+  padding-top:2.2mm}
+.chrome .lzleiste .lz{font-size:8pt;background:#241404;border:.4pt solid var(--akzent);
+  color:var(--text);border-radius:999px;padding:.8mm 2.5mm;font-weight:600}
+.chrome .lzleiste .hinw{font-size:8pt;color:#74747c}
+.chrome .fenstername{font-size:6.6pt;letter-spacing:.06em;text-transform:uppercase;
+  color:#7a7a82;margin-bottom:2mm}
+.zwei{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:var(--s-text-text)}
+.zwei .bild{width:100%!important}
+.karte{background:var(--flaeche);border:.3pt solid var(--rand);border-radius:2.5mm;padding:3.5mm}
+.karte h3{margin-bottom:1mm}
+.karte p{font-size:9pt;margin:0}
+.karte .datei{font:8.6pt ui-monospace,"SF Mono",Menlo,monospace;color:var(--akzent);
+  display:block;margin:1mm 0 1.5mm;word-break:break-all}
+
+ol.weg{list-style:none;counter-reset:w;margin-bottom:var(--s-text-text)}
+ol.weg li{counter-increment:w;position:relative;padding-left:7.5mm;margin-bottom:2.6mm;color:var(--leise)}
+ol.weg li:last-child{margin-bottom:0}
+ol.weg li::before{content:counter(w);position:absolute;left:0;top:-.2mm;width:5.2mm;height:5.2mm;
+  border-radius:50%;background:var(--akzent);color:#111;font-size:8pt;font-weight:700;
+  display:flex;align-items:center;justify-content:center}
+
+.merk{border-left:1.1mm solid var(--akzent);background:#1a1206;border-radius:0 2mm 2mm 0;
+  padding:3mm 3.5mm;margin-bottom:var(--s-text-text)}
+.merk p{margin:0;font-size:9.3pt;color:#d8cfc4}
+.merk h3{color:#ffc187;font-size:10pt}
+
+.ruhig{background:var(--flaeche);border:.3pt solid var(--rand);border-radius:2.5mm;
+  padding:3.5mm;margin-bottom:var(--s-text-text)}
+.ruhig p{margin:0;font-size:9.3pt}
+.ruhig h3{margin-bottom:1.2mm}
+
+.fuss{margin-top:auto;padding-top:3mm;border-top:.3pt solid var(--rand);
+  display:flex;justify-content:space-between;font-size:7.4pt;color:#55555c;flex:0 0 auto}
+
+/* --- Titelseite --- */
+.titelseite{justify-content:flex-start;padding-top:16mm}
+.titelseite .zeichen{font-size:9pt;letter-spacing:.22em;text-transform:uppercase;color:var(--akzent);
+  margin-bottom:4mm;font-weight:700}
+.titelseite h1{margin-bottom:3mm}
+.titelseite .unter{font-size:12.5pt;color:var(--leise);margin-bottom:6mm}
+.karte-kopf{font-size:7.5pt;letter-spacing:.14em;text-transform:uppercase;color:#6e6e76;
+  margin-bottom:4mm;font-weight:700}
+/* Zweispaltig (Caspar_D, 19.11.2026), damit das Titelbild groesser werden
+   kann. Sieben Eintraege, vier Zeilen; die letzte Zelle bleibt leer. Die
+   Linien sitzen an jedem Eintrag oben, der Kasten traegt die untere. */
+/* Auf der Titelseite stehen Bild und Inhalt NEBENEINANDER (Caspar_D,
+   19.11.2026) - untereinander passte das grosse Band der Projektseite
+   nicht mehr aufs Blatt. Die Landkarte ist dort deshalb einspaltig. */
+.titelzwei{display:grid;grid-template-columns:106mm 1fr;column-gap:8mm;align-items:start;
+  margin-bottom:6mm;flex:none}
+.titelzwei .fenster{width:100%;margin-bottom:2.5mm}
+.titelzwei .unterschrift{margin-bottom:0}
+.landkarte{display:grid;grid-template-columns:1fr;column-gap:7mm;
+  border-bottom:.3pt solid var(--rand);margin-bottom:7mm;flex:none}
+.lk{display:flex;align-items:flex-start;gap:2.6mm;padding:1.7mm 0;border-top:.3pt solid var(--rand)}
+.lk .z{width:5.4mm;height:5.4mm;border-radius:50%;border:.4pt solid var(--akzent);color:var(--akzent);
+  font-size:9pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.lk .w{flex:1}
+.lk .w b{display:block;font-size:9.5pt;color:var(--text);line-height:1.2}
+.lk .w span{font-size:7.6pt;color:#74747c;line-height:1.3}
+/* Der Schlußsatz steht am Fuß der Titelseite, nicht dicht unter dem
+   Inhalt - sonst bleibt darunter ein Drittel leer. */
+.titelseite .schluss{font-size:9pt;color:#74747c;margin-top:auto;padding-top:6mm;
+  border-top:.3pt solid var(--rand)}
+</style>
+</head>
+<body>
+<div id="heft"></div>
+
+<script>
+/* ============================================================
+   DER SEITENPLAN. Jede Seite wird hier gebaut - kein Fliesstext,
+   der sich selbst umbricht (LEITFADEN B3).
+   ============================================================ */
+const SPR = new URLSearchParams(location.search).get('spr') || 'de';
+const H = window.HEFT;
+/* T('schluessel') holt den Satz in der Sprache des Laufs; fehlt er, faellt
+   es auf Deutsch zurueck - nie auf einen Schluessel. */
+const T = (k) => { const o = H.T[k]; return o ? (o[SPR] || o.de) : ('?' + k); };
+/* Bilder mit Oberflaechentext gibt es je Sprache (LEITFADEN D3): nie
+   nachtraeglich uebersetzen, sondern in der Sprache aufnehmen. Fehlt eine
+   Fassung, gilt die deutsche - und das faellt im Bild sofort auf. */
+const B = (basis) => SPR === 'de' ? basis + '.png' : basis + '-' + SPR + '.png';
+
+function leiste(aktiv){
+  const p = H.schritte.map(x =>
+    `<span class="p ${x.nr===String(aktiv)?'an':(Number(x.nr)<Number(aktiv)?'weg':'')}">${x.nr} ${T(x.kurz)}</span>`).join('');
+  return `<div class="leiste"><span class="marke">${H.marke}</span>
+    <span class="pfad">${p}</span></div>`;
+}
+function bild(datei, name, breite){
+  return `<div class="bild" style="width:${breite}mm;max-width:100%">
+    <div class="titelzeile"><span class="punkte"><i></i><i></i><i></i></span>
+    <span class="name">${name}</span></div>
+    <span class="haut"><img src="bilder/${datei}"></span></div>`;
+}
+function fuss(n, k){ return `<div class="fuss"><span>${T(k)}</span><span>${n}</span></div>`; }
+
+const seiten = [];
+
+/* ---------- 1 Titel ---------- */
+seiten.push(`<section class="seite titelseite">
+  <div class="zeichen">${T('eyebrow')}</div>
+  <h1>${T('titel')}</h1>
+  <div class="unter">${T('untertitel')}</div>
+  <div class="titelzwei">
+    <div>
+      <div class="fenster">
+        <div class="leiste2"><span class="ampel"><i></i><i></i><i></i></span>
+          <span class="adresse">github.com/CasparDavi/klangtresor</span></div>
+        <img src="bilder/readme.png">
+      </div>
+      <div class="unterschrift">${T('bu_readme')}</div>
+    </div>
+    <div>
+      <div class="karte-kopf">${T('karte_kopf')}</div>
+      <div class="landkarte">
+        ${H.schritte.map(x=>`<div class="lk"><span class="z">${x.nr}</span>
+          <span class="w"><b>${T(x.lang)}</b><span>${T(x.satz)}</span></span></div>`).join('')}
+      </div>
+      <div class="ruhig" style="margin-top:5mm;margin-bottom:0">
+        <h3>${T('titel_notiz_kopf')}</h3><p>${T('titel_notiz')}</p></div>
+    </div>
+  </div>
+  <div class="schluss">${T('karte_fuss')}</div>
+</section>`);
+
+/* ---------- 2 Schritt 0, die Datei ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(0)}
+  <div class="nr">${T('kurz0')} · 0</div>
+  <h2>${T('s0_kopf')}</h2>
+  <p>${T('s0_vor')}</p>
+  <div class="karten d3">
+    ${H.systeme.map(x=>`<div class="karte"><h3>${T(x.name)}</h3>
+      <span class="datei">${x.datei}</span><p>${T(x.text)}</p></div>`).join('')}
+  </div>
+  <h3>${T('wo_kopf')}</h3>
+  <p>${T('wo')}</p>
+  <div class="merk"><h3>${T('admin_kopf')}</h3><p>${T('admin')}</p></div>
+  <div class="karten d2">
+    <div class="karte"><h3>${T('platz_kopf')}</h3><p>${T('platz')}</p></div>
+    <div class="karte"><h3>${T('braucht_kopf')}</h3><p>${T('braucht')}</p></div>
+  </div>
+  <div class="ruhig"><h3>${T('ohne_kopf')}</h3><p>${T('ohne')}</p></div>
+  ${fuss(2,'f_install')}
+</section>`);
+
+/* ---------- 3 Schritt 0, die Warnungen ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(0)}
+  <div class="nr">${T('kurz0')} · 0</div>
+  <h2>${T('s0_warn_kopf')}</h2>
+  <p>${T('s0_warn')}</p>
+  <ol class="weg">${H.warnschritte.map(k=>`<li>${T(k)}</li>`).join('')}</ol>
+  <div class="zwei">
+    <div>${bild('3-weitere-informationen.png',T('l_win3'),80)}
+      <div class="unterschrift">${T('bu_weitere')}</div></div>
+    <div>${bild('4-trotzdem-ausfuehren.png',T('l_win4'),80)}
+      <div class="unterschrift">${T('bu_trotzdem')}</div></div>
+  </div>
+  <div class="merk"><p>${T('s0_ende')}</p></div>
+  ${fuss(3,'f_install')}
+</section>`);
+
+/* ---------- 4 Schritt 1, erste Frage ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(1)}
+  <div class="nr">${T('kurz1')} · 1</div>
+  <h2>${T('s1_kopf')}</h2>
+  <p>${T('s1_vor')}</p>
+  <h3>${T('s1_f1_kopf')}</h3>
+  ${bild(B('einr-name'),T('l_name'),180)}
+  <div class="unterschrift">${T('bu_name')}</div>
+  <p>${T('s1_f1')}</p>
+  <div class="ruhig"><h3>${T('geholt_kopf')}</h3><p>${T('geholt')}</p></div>
+  ${fuss(4,'f_einr')}
+</section>`);
+
+/* ---------- 5 Schritt 1, zweite Frage ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(1)}
+  <div class="nr">${T('kurz1')} · 1</div>
+  <h2>${T('s1_f2_kopf')}</h2>
+  ${bild(B('einr-ordner'),T('l_ordner'),180)}
+  <div class="unterschrift">${T('bu_ordner')}</div>
+  <p>${T('s1_f2')}</p>
+  <div class="merk"><h3>${T('inhalt_kopf')}</h3><p>${T('s1_f2_merk')}</p></div>
+  <h3>${T('warten_kopf')}</h3>
+  <p>${T('s1_dauer')}</p>
+  ${fuss(5,'f_einr')}
+</section>`);
+
+/* ---------- 6 Schritt 1, wenn uebersprungen ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(1)}
+  <div class="nr">${T('kurz1')} · 1</div>
+  <h2>${T('s1_spaeter_kopf')}</h2>
+  <p>${T('s1_spaeter')}</p>
+  ${bild(B('namensfeld'),T('l_feld'),172)}
+  <div class="unterschrift">${T('bu_namensfeld')}</div>
+  <div class="merk"><p>${T('s1_spaeter_warn')}</p></div>
+  <h3>${T('firewall_kopf')}</h3>
+  <p>${T('firewall')}</p>
+  ${fuss(6,'f_einr')}
+</section>`);
+
+/* ---------- 7 Schritt 2 ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(2)}
+  <div class="nr">${T('kurz2')} · 2</div>
+  <h2>${T('s2_kopf')}</h2>
+  <p>${T('s2_vor')}</p>
+  ${bild(B('einr-schluss-teil'),T('l_schluss'),180)}
+  <div class="unterschrift">${T('bu_schluss')}</div>
+  <h3>${T('s2_adresse_kopf')}</h3>
+  <p>${T('s2_adresse')}</p>
+  <h3>${T('s2_ton_kopf')}</h3>
+  <p>${T('s2_ton')}</p>
+  <div class="merk"><p>${T('s2_weiter')}</p></div>
+  ${fuss(7,'f_blick')}
+</section>`);
+
+/* ---------- 8 Schritt 3, warum und woher ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(3)}
+  <div class="nr">${T('kurz3')} · 3</div>
+  <h2>${T('s3_kopf')}</h2>
+  <h3>${T('s3_warum_kopf')}</h3>
+  <p>${T('s3_warum')}</p>
+  <h3>${T('s3_hol_kopf')}</h3>
+  <p>${T('s3_hol')}</p>
+  ${bild(B('lesezeichen'),T('l_lz'),96)}
+  <div class="unterschrift">${T('bu_lesezeichen')}</div>
+  ${fuss(8,'f_anlegen')}
+</section>`);
+
+/* ---------- 9 Schritt 3, anlegen ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(3)}
+  <div class="nr">${T('kurz3')} · 3</div>
+  <h2>${T('s3_leg_kopf')}</h2>
+  <p>${T('s3_leg')}</p>
+  <ol class="weg">${H.legschritte.map(k=>`<li>${T(k)}</li>`).join('')}</ol>
+  ${bild('chrome-lz.png',T('l_chrome'),160)}
+  <div class="unterschrift">${T('bu_chrome')}</div>
+  <div class="merk"><h3>${T('schief_kopf')}</h3><p>${T('schief')}</p></div>
+  <div class="ruhig"><h3>${T('wsl_kopf')}</h3><p>${T('s3_wsl')}</p></div>
+  ${fuss(9,'f_anlegen')}
+</section>`);
+
+/* ---------- 10 Schritt 4 ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(4)}
+  <div class="nr">${T('kurz4')} · 4</div>
+  <h2>${T('s4_kopf')}</h2>
+  <p>${T('s4_vor')}</p>
+  <div class="karten d2">
+    <div class="karte"><h3>${T('s4_t1_kopf')}</h3><p>${T('s4_t1')}</p></div>
+    <div class="karte"><h3>${T('s4_t2_kopf')}</h3><p>${T('s4_t2')}</p></div>
+  </div>
+  <h3>${T('s4_t3_kopf')}</h3>
+  <p>${T('s4_t3')}</p>
+  <div class="merk"><h3>${T('s4_ein_kopf')}</h3><p>${T('s4_ein')}</p></div>
+  <div class="chrome">
+    <div class="fenstername">${T('skizze_kopf')}</div>
+    <div class="reiter">
+      <div class="r">KlangTresor &nbsp;·&nbsp; localhost:8788</div>
+      <div class="r an">${T('skizze_r2')}</div>
+    </div>
+    <div class="lzleiste"><span class="lz">KlangTresor morgens</span>
+      <span class="hinw">${T('skizze_hinw')}</span></div>
+  </div>
+  <div class="ruhig"><h3>${T('meckert_kopf')}</h3><p>${T('meckert')}</p></div>
+  ${fuss(10,'f_benutzen')}
+</section>`);
+
+/* ---------- 11 Schritt 5 ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(5)}
+  <div class="nr">${T('kurz5')} · 5</div>
+  <h2>${T('s5_kopf')}</h2>
+  <p>${T('s5_vor')}</p>
+  ${bild(B('morgen'),T('l_morgen'),142)}
+  <div class="unterschrift">${T('bu_morgen')}</div>
+  ${fuss(11,'f_uebern')}
+</section>`);
+
+/* ---------- 12 Schritt 5, Einzelheiten ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(5)}
+  <div class="nr">${T('kurz5')} · 5</div>
+  <h2>${T('einzeln_kopf')}</h2>
+  <div class="karten d3">
+    ${H.gruppen.map(g=>`<div class="karte"><h3>${T(g[0])}</h3><p>${T(g[1])}</p></div>`).join('')}
+  </div>
+  <div class="merk"><h3>${T('s5_rechnen_kopf')}</h3><p>${T('s5_rechnen')}</p></div>
+  <h3>${T('s5_grau_kopf')}</h3>
+  <p>${T('s5_grau')}</p>
+  <div class="ruhig"><h3>${T('fenster_kopf')}</h3><p>${T('s5_zu')}</p></div>
+  <h3>${T('nichtkann_kopf')}</h3>
+  <p>${T('nichtkann')}</p>
+  ${fuss(12,'f_uebern')}
+</section>`);
+
+/* ---------- 13 Schritt 6 ---------- */
+seiten.push(`<section class="seite">
+  ${leiste(6)}
+  <div class="nr">${T('kurz6')} · 6</div>
+  <h2>${T('s6_kopf')}</h2>
+  <p>${T('s6_vor')}</p>
+  <ol class="weg"><li>${T('s6_h1')}</li><li>${T('s6_h2')}</li></ol>
+  <p>${T('s6_h3')}</p>
+  ${bild('roterknopf.png',T('l_kopf'),180)}
+  <div class="unterschrift">${T('bu_roterknopf')}</div>
+  <div class="karten d2">
+    <div class="karte"><h3>${T('s6_ohne_kopf')}</h3><p>${T('s6_ohne')}</p></div>
+    <div class="karte"><h3>${T('s6_update_kopf')}</h3><p>${T('s6_update')}</p></div>
+  </div>
+  <div class="ruhig"><h3>${T('s6_hilfe_kopf')}</h3><p>${T('s6_hilfe')}</p></div>
+  <h3>${T('sichern_kopf')}</h3>
+  <p>${T('sichern')}</p>
+  ${fuss(13,'f_morgen')}
+</section>`);
+
+document.getElementById('heft').innerHTML = seiten.join('');
+
+/* ============================================================
+   DER PRUEFBERICHT (LEITFADEN B5). Die Seite meldet selbst:
+   Ueberlauf je Seite, fehlende Bilder, Fuellgrad unter 70 %.
+   Das Druckskript liest window.BERICHT und verweigert bei Fehlern.
+   ============================================================ */
+window.addEventListener('load', () => {
+  const b = { fehler: [], warnung: [], seiten: [] };
+  document.querySelectorAll('img').forEach(i => {
+    if (!i.complete || i.naturalWidth === 0) b.fehler.push('Bild fehlt: ' + i.getAttribute('src'));
+  });
+  document.querySelectorAll('.seite').forEach((s, i) => {
+    const n = i + 1;
+    /* scrollHeight verraet den Ueberlauf NICHT, solange der Kasten
+       overflow:hidden traegt - er bleibt gleich clientHeight. Der
+       Fuellgrad unten misst dagegen die echte Unterkante des Inhalts;
+       ueber 100 % ist er abgeschnitten. Das ist der Fehler, nicht eine
+       Warnung: abgeschnitten wird nie stillschweigend. */
+    /* Fuellgrad: Unterkante des untersten Teils gegen die Nutzhoehe. */
+    const r = s.getBoundingClientRect();
+    let u = r.top;
+    s.querySelectorAll('*').forEach(e => {
+      /* Was in einem beschneidenden Kasten steckt, zaehlt mit DESSEN
+         Unterkante: ein Bild in .haut ist in Wahrheit viel hoeher als das,
+         was man sieht. Ohne diese Ausnahme meldete der Bericht Ueberlauf,
+         wo keiner war (19.11.2026). */
+      if (e.closest('.haut') && !e.classList.contains('haut')) return;
+      const q = e.getBoundingClientRect();
+      if (q.height > 0 && q.bottom > u) u = q.bottom; });
+    const grad = Math.round(((u - r.top) / r.height) * 100);
+    /* DIE ECHTE LEERE steht ZWISCHEN dem letzten Inhalt und der Fußzeile -
+       die klebt unten fest (margin-top:auto), darum sagt der Füllgrad
+       allein nichts (19.11.2026). Caspar_Ds Regel: höchstens ein Viertel
+       leer, ab einem Drittel ist zu handeln. */
+    const f = s.querySelector('.fuss');
+    let letzte = r.top;
+    s.querySelectorAll('*').forEach(e => {
+      if (e.closest('.fuss') || e.classList.contains('fuss')) return;
+      if (e.closest('.haut') && !e.classList.contains('haut')) return;
+      const q = e.getBoundingClientRect();
+      if (q.height > 0 && q.bottom > letzte) letzte = q.bottom; });
+    const luecke = f ? Math.round(((f.getBoundingClientRect().top - letzte) / r.height) * 100) : 0;
+    b.seiten.push({ nr: n, fuellgrad: grad, leer: luecke });
+    if (grad > 100) b.fehler.push(`Seite ${n}: läuft über (${grad} %) — Inhalt wird abgeschnitten`);
+    else if (luecke >= 33) b.fehler.push(`Seite ${n}: ${luecke} % leer — zu viel Luft unten`);
+    else if (luecke > 25) b.warnung.push(`Seite ${n}: ${luecke} % leer`);
+  });
+  b.ok = b.fehler.length === 0;
+  window.BERICHT = b;
+});
+</script>
+</body>
+</html>

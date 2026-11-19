@@ -11,6 +11,10 @@ const S = {
      ru:'Suno создаёт песни. KlangTresor хранит их, играет, измеряет и показывает — на любом экране в твоём доме.'},
   mehr:{en:'More',de:'Mehr',ru:'Подробнее'}, zu:{en:'Close',de:'Schließen',ru:'Закрыть'}, abspielen:{en:'Play',de:'Abspielen',ru:'Воспроизвести'},
   pdf:{en:'The brochure as PDF',de:'Die Broschüre als PDF',ru:'Брошюра в PDF'},
+  /* Das Erststart-Heft (19.11.2026): der Weg von der heruntergeladenen Datei
+     bis zum gefuellten Archiv, dreizehn Seiten mit Bildern. Liegt in docs/erststart/,
+     also eine Ebene ueber der Feature-Seite. */
+  heft:{en:'First-start guide as PDF',de:'Das Erststart-Heft als PDF',ru:'Инструкция по первому запуску в PDF'},
   platz:{en:'Picture follows',de:'Bild folgt',ru:'Изображение будет'}
  },
  abschnitte:[

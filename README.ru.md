@@ -10,6 +10,8 @@ Suno создаёт песни. KlangTresor хранит их, играет, и�
 
 **[Всё, что он умеет → страница возможностей](https://caspardavi.github.io/klangtresor/features/?lang=ru)** · Брошюра (PDF): [для экрана, 8 МБ](https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-ru.pdf) · [для печати, 70 МБ](https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-ru-druck.pdf)
 
+**[Инструкция по первому запуску (PDF)](https://caspardavi.github.io/klangtresor/erststart/KlangTresor-Erststart-ru.pdf)** — шаг за шагом с картинками, от файла до полного архива.
+
 ## Скачать
 
 <p align="center">

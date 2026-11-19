@@ -1810,6 +1810,17 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
   }
   const KONFIG = path.join(WURZEL, 'library', 'konfig.json');
   const konfigLesen = () => { try { return JSON.parse(fs.readFileSync(KONFIG, 'utf8')); } catch (e) { return {}; } };
+  /* SCHREIBEN GEHT UEBER EINEN WEG (19.11.2026). Vier Stellen schrieben die
+     Datei mit fs.writeFileSync direkt. Fehlte library/, schlugen sie mit
+     ENOENT fehl - und wer KlangTresor gerade erst installiert hat, hat
+     genau dann noch nichts in library/. Eine Nutzerin konnte deshalb ihren
+     Suno-Namen nicht speichern: „Это я" drueckte sie, und /api/konfig gab
+     weiter handle:null zurueck. Der Ordner wird jetzt angelegt, wenn er
+     fehlt; alles andere (Schreibrecht, volle Platte) meldet der Aufrufer. */
+  const konfigSchreiben = (obj) => {
+    fs.mkdirSync(path.dirname(KONFIG), { recursive: true });
+    fs.writeFileSync(KONFIG, JSON.stringify(obj, null, 1));
+  };
   if (p === '/api/konfig' && req.method === 'GET') {
     const k = konfigLesen();
     const kat = katalogHolen();
@@ -1818,7 +1829,7 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
        nicht gefragt, sondern still uebernommen (Caspar_D, 21.08.2026:
        „nur beim ersten Mal, wenn noch kein Nutzer angemeldet ist"). */
     if (!k.handle && vorschlag && !EINGEFROREN) {
-      fs.writeFileSync(KONFIG, JSON.stringify({ ...k, handle: vorschlag, seit: new Date().toISOString(), herkunft: 'katalog' }, null, 1));
+      konfigSchreiben({ ...k, handle: vorschlag, seit: new Date().toISOString(), herkunft: 'katalog' });
       return jsonAntwort(res, { handle: vorschlag, vorschlag, seit: null });
     }
     return jsonAntwort(res, { handle: k.handle || null, vorschlag, seit: k.seit || null, exportZiel: k.exportZiel || null });
@@ -1837,7 +1848,7 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
         if (ziel && !path.isAbsolute(ziel)) return jsonAntwort(res, { fehler: 'exportZiel muss ein absoluter Pfad sein' }, 400);
         const alt = konfigLesen();
         if (ziel) alt.exportZiel = ziel; else delete alt.exportZiel;
-        fs.writeFileSync(KONFIG, JSON.stringify(alt, null, 1));
+        konfigSchreiben(alt);
         jsonAntwort(res, { ok: true, exportZiel: ziel || null });
       } catch (e) { jsonAntwort(res, { fehler: e.message }, 400); }
     });
@@ -1861,7 +1872,7 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
         const listen = [...new Set(roheListe.map(String))].filter(x => bekannt.has(x)).slice(0, 500);
         const alt = konfigLesen();
         if (listen.length) alt.zeigeListen = listen; else delete alt.zeigeListen;
-        fs.writeFileSync(KONFIG, JSON.stringify(alt, null, 1));
+        konfigSchreiben(alt);
         jsonAntwort(res, { ok: true, listen, verworfen: roheListe.length - listen.length });
       } catch (e) { jsonAntwort(res, { fehler: e.message }, 400); }
     });
@@ -1875,7 +1886,7 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
         const handle = String(d.handle || '').trim().replace(/^@/, '');
         if (!/^[A-Za-z0-9_.-]{2,40}$/.test(handle)) return jsonAntwort(res, { fehler: 'kein gueltiger Suno-Alias' }, 400);
         const alt = konfigLesen();
-        fs.writeFileSync(KONFIG, JSON.stringify({ ...alt, handle, seit: alt.handle === handle ? (alt.seit || new Date().toISOString()) : new Date().toISOString() }, null, 1));
+        konfigSchreiben({ ...alt, handle, seit: alt.handle === handle ? (alt.seit || new Date().toISOString()) : new Date().toISOString() });
         jsonAntwort(res, { ok: true, handle });
       } catch (e) { jsonAntwort(res, { fehler: e.message }, 400); }
     });
