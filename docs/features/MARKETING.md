@@ -56,6 +56,16 @@ Neue Songs dort eintragen; die Broschüre zeigt den Abschnitt nicht (im Druck au
 node werkzeug/broschuere-pdf.mjs de,en,ru
 ```
 
+> **Achtung, 19.11.2026: diese Werkzeuge liegen nicht im Repo.** `werkzeug/` ist in
+> `.gitignore` ausgeschlossen (dort legt die Einrichtung ihr mitgebrachtes Node und ffmpeg ab),
+> und in einem Klon steht dort nur `werkzeug/whisper/`. Alle hier genannten Skripte —
+> `broschuere-pdf.mjs`, `cdp.mjs`, `aufnahme`, `einsetzen`, `ecken`, `druck`, `realesrgan` —
+> fehlen damit. Wer die Broschüre neu bauen will, hat sie nicht; sie müssen neu geschrieben
+> oder aus einer alten Arbeitskopie zurückgeholt werden.
+> Die Regel dahinter ist berichtigt ([LEITFADEN.md](LEITFADEN.md), A12): Werkzeuge gehören in
+> ein `quelle/` **neben** ihr Erzeugnis und damit in git — so beim Erststart-Heft gemacht
+> (`docs/erststart/quelle/`). Für die Broschüre wäre das `docs/features/quelle/`.
+
 - `--druck` – Druckereifassung mit den hochgerechneten Szenen aus `img/druck/` (nur lokal).
 - `--tarja` – Sonderausgabe.
 - `--nur-pruefen` – nur Entwurf und Prüfbericht (Füllgrad je Seite, Überlauf), `--abstaende` – Abstandsbericht.

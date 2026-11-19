@@ -590,7 +590,7 @@ kurz + ' недоступен (' + (e && e.message || e) + ') — обычно �
   const AUSWAHL = [
     { k:'privat',  name:L('Private Songs', 'Private songs',
 'Приватные треки'),
-      was:L('Plays und Likes der Unveroeffentlichten - die stehen nicht im oeffentlichen Profil',
+      was:L('Plays und Likes der Unveröffentlichten — die stehen nicht im öffentlichen Profil',
             'Plays and likes of unreleased songs - they are not in the public profile',
 'Прослушивания и лайки неопубликованных треков — в открытом профиле их нет'), an:true },
     /* WAS HIER STEHT, LIEST JOERG VOR DEM DRUECKEN. Bis zum 16.09.2026
@@ -599,7 +599,7 @@ kurz + ' недоступен (' + (e && e.message || e) + ') — обычно �
        Suno erst rechnet (Schlaege, Abschnitte), wird nachgefragt. */
     { k:'timing',  name:L('Sunos eigene Analyse', 'Suno’s own analysis',
 'Собственный анализ Suno'),
-      was:L('Tempo, Struktur und Huellkurve, wie Suno sie rechnet - die Referenz fuer unseren Analyzer; nur fuer Songs, denen sie fehlt. Schlaege und Abschnitte rechnet Suno erst auf Anfrage: dafuer wird nachgefragt, hoechstens 8 Runden und hoechstens 2 Minuten lang',
+      was:L('Tempo, Struktur und Hüllkurve, wie Suno sie rechnet — die Referenz für unseren Analyzer; nur für Songs, denen sie fehlt. Schläge und Abschnitte rechnet Suno erst auf Anfrage: dafür wird nachgefragt, höchstens 8 Runden und höchstens 2 Minuten lang',
             'Tempo, structure and envelope as Suno computes them - the reference for our analyser; only for songs that lack them. Suno computes beats and sections only on request, so it asks again: at most 8 rounds and at most 2 minutes',
 'Темп, структура и огибающая в том виде, как их считает Suno, — образец для нашего анализатора; только для треков, где их нет. Доли и части песни Suno считает лишь по запросу, поэтому запрос повторяется: не более 8 кругов и не более 2 минут'), an:true },
     { k:'benach',  name:L('Wer hat reagiert', 'Who reacted',
@@ -608,17 +608,17 @@ kurz + ' недоступен (' + (e && e.message || e) + ') — обычно �
 'Лайки, комментарии, подписки — кто и когда; за последние четыре недели'), an:true },
     { k:'liker',   name:L('Wer hat geherzt', 'Who hearted',
 'Кто поставил лайк'),
-      was:L('alle Personen je eigenem Titel, vollstaendig (der Weg der iOS-App); nur Titel, deren Herzzahl sich seit dem letzten Stand geaendert hat',
+      was:L('alle Personen je eigenem Titel, vollständig (der Weg der iOS-App); nur Titel, deren Herzzahl sich seit dem letzten Stand geändert hat',
             'everyone per title of yours, complete (the iOS app’s route); only titles whose heart count has changed since the last reading',
 'все имена по каждому вашему треку, полностью (путь приложения iOS); только те треки, у которых число лайков изменилось с прошлого чтения'), an:true },
     { k:'beob',    name:L('Beobachter', 'Watchers',
 'Подписчики'),
-      was:L('wer dir folgt und wem du folgst - vollstaendig, 20 je Seite, mit "folgt zurueck"; der Strom kennt nur die letzten vier Wochen',
+      was:L('wer dir folgt und wem du folgst — vollständig, 20 je Seite, mit „folgt zurück"; der Strom kennt nur die letzten vier Wochen',
             'who follows you and whom you follow - complete, 20 per page, with "follows back"; the feed only covers the last four weeks',
 'кто подписан на вас и на кого подписаны вы — полностью, по 20 на страницу, с пометкой «взаимно»; лента охватывает только последние четыре недели'), an:true },
     { k:'playl',   name:L('Alben', 'Albums',
 'Альбомы'),
-      was:L('eigene Alben - Suno nennt sie Playlists - mit allen Eintraegen, auch den privaten',
+      was:L('eigene Alben — Suno nennt sie Playlists — mit allen Einträgen, auch den privaten',
             'your own albums - Suno calls them playlists - with all entries, private ones included',
 'ваши собственные альбомы — Suno называет их плейлистами — со всеми записями, включая приватные'), an:true },
     /* Einmaliger Vergleich, standardmaessig AUS: Sunos Zeitmarken gibt
@@ -635,12 +635,12 @@ kurz + ' недоступен (' + (e && e.message || e) + ') — обычно �
        das entscheidet ein Mensch. */
     { k:'ton',     name:L('Ton holen (nur Freigeschaltetes)', 'Fetch audio (unlocked only)',
 'Загрузить аудио (только разблокированное)'),
-      was:L('fuer Titel, deren Audiodatei fehlt und die bei Suno schon freigeschaltet sind - kostet KEIN Guthaben, gemessen am 11.09.2026; unbekannte Titel werden vorher nachgefragt, auch das ist kostenlos',
+      was:L('für Titel, deren Audiodatei fehlt und die bei Suno schon freigeschaltet sind — kostet KEIN Guthaben, gemessen am 11.09.2026; unbekannte Titel werden vorher nachgefragt, auch das ist kostenlos',
             'for titles whose audio file is missing and that are already unlocked at Suno - costs NO credits, measured on 11.09.2026; unknown titles are checked first, which is free too',
 'для треков, у которых нет аудиофайла и которые уже разблокированы на Suno — кредиты НЕ расходуются, измерено 11.09.2026; сначала проверяются треки с неизвестным состоянием, это тоже бесплатно'), an:true },
     { k:'zeitprobe', name:L('Zeitmarken nachladen (v2 + v3)', 'Fetch timestamps (v2 + v3)',
 'Загрузить временные метки (v2 + v3)'),
-      was:L('Wort-Zeitmarken fuer Karaoke: v2 fuer Songs, die noch keine haben, v3 fuer alle; wer "wird gerechnet" antwortet, wird EINMAL nachgefragt - so haelt es Sunos eigene App auch. Was dann noch rechnet, bleibt auf der Liste',
+      was:L('Wort-Zeitmarken für Karaoke: v2 für Songs, die noch keine haben, v3 für alle; wer „wird gerechnet" antwortet, wird EINMAL nachgefragt — so hält es Sunos eigene App auch. Was dann noch rechnet, bleibt auf der Liste',
             'Word timestamps for karaoke: v2 for songs that have none yet, v3 for all; anything that answers "being computed" is asked ONCE more - as Suno’s own app does. Whatever is still computing stays on the list',
 'Пословные временные метки для караоке: v2 для треков, у которых их ещё нет, v3 для всех; всё, что отвечает «считается», запрашивается ОДИН раз повторно — так делает и приложение Suno. То, что ещё считается, остаётся в списке'), an:false },
   ];
@@ -655,7 +655,7 @@ kurz + ' недоступен (' + (e && e.message || e) + ') — обычно �
 'Что загрузить?')) + '</div>' +
       '<label class="wz"><input type="checkbox" checked disabled> <b>' + L('Songliste', 'Song list',
 'Список треков') + '</b>' +
-      '<span class="wzw">' + L('alle oeffentlichen Songs mit Plays, Likes, Kommentarzahl - immer, sonst gibt es keinen Vergleich',
+      '<span class="wzw">' + L('alle öffentlichen Songs mit Plays, Likes, Kommentarzahl — immer, sonst gibt es keinen Vergleich',
                                'all public songs with plays, likes, comment count - always, otherwise there is nothing to compare',
 'все открытые треки с прослушиваниями, лайками и числом комментариев — всегда, иначе не с чем сравнивать') + '</span></label>' +
       AUSWAHL.map(a => `<label class="wz"><input type="checkbox" data-k="${a.k}" ${a.an?'checked':''}> <b>${a.name}</b>` +

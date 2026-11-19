@@ -49,7 +49,9 @@ im Heimnetz.
    - **macOS:** Ist es blockiert: Systemeinstellungen → Datenschutz & Sicherheit → *Dennoch öffnen*.
    - **Linux:** Rechtsklick → Eigenschaften → *Als Programm ausführen* erlauben, dann Doppelklick. Kein sudo.
 
-   [START-HIER.md](START-HIER.md) zeigt jeden Klick mit Bildern.
+   Das **[Erststart-Heft](https://caspardavi.github.io/klangtresor/erststart/KlangTresor-Erststart-de.pdf)**
+   zeigt jeden Klick mit Bildern, von hier bis zum gefüllten Archiv. Für die anderen Wege — Zip, Docker,
+   Git, WSL — siehe [START-HIER.md](START-HIER.md).
 2. **Die Einrichtung läuft im Browser.** Sie holt ffmpeg und die KI-Modelle mit Balken, fragt nach deinem
    Suno-Namen und sammelt deine öffentlichen Titel.
 3. **KlangTresor läuft als Symbol** in Taskleiste, Dock oder Panel. Die Seite liegt auf **http://localhost:8788**.

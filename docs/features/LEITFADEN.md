@@ -34,8 +34,15 @@ Einstellen aufeinander hat gedauert. Die Regeln hier sollen diese Zeit beim näc
 11. **Persönliches bleibt lokal.** Sonderausgaben mit echten Personen (hier: Tarja-Edition) per `.gitignore` aus dem Repo,
     veröffentlicht nur mit Zustimmung der Person. Nie eine Zweig-Historie pushen, die solches Material enthält –
     stattdessen einzelne Dateien in **einen** Commit auf main.
-12. **Werkzeuge aufheben.** Jedes Aufnahme-, Einsetz- und Hochrechenskript gehört in `werkzeug/`, nicht ins Scratchpad.
-    Beim nächsten Bildwechsel braucht man es wieder.
+12. **Werkzeuge aufheben — neben ihrem Erzeugnis, in git.** Jedes Aufnahme-, Einsetz- und Hochrechenskript
+    gehört in einen Ordner `quelle/` **neben** das, was es erzeugt (so beim Erststart-Heft:
+    `docs/erststart/quelle/`). Beim nächsten Bildwechsel braucht man es wieder.
+    **Berichtigt am 19.11.2026:** Bis dahin stand hier `werkzeug/` — und genau der Ordner ist in
+    `.gitignore` ausgeschlossen (dort liegt das mitgebrachte Node und ffmpeg der Einrichtung).
+    Die Regel legte Werkzeuge also dorthin, wo git sie nie behält; die sieben Skripte der Broschüre
+    sind auf diesem Weg verlorengegangen (siehe MARKETING.md). Ein Werkzeug, das ein ausgeliefertes
+    Erzeugnis baut, gehört versioniert — sonst ist das Erzeugnis beim nächsten Mal nicht
+    reproduzierbar.
 
 ## B. Vom White Paper zum PDF
 

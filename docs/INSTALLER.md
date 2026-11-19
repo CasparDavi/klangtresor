@@ -35,7 +35,7 @@ NSIS, gebaut auf dem Mac mit `node bin/paket.js` (ruft `bin/setup-bauen.js`). Sk
 | 4. Holen | Ein Balken über alles: was gerade geladen wird, „1,2 GB von 4,3 GB · huggingface.co · noch etwa 12 Min.“. Danach geht es von allein weiter. Kommt etwas nicht an, sagt die Seite, was fehlt, und bietet „Noch einmal versuchen“ an; KlangTresor läuft auch ohne. Fehlt nichts, entfällt die Seite. |
 | 5. Fertig | Häkchen „Weiter im Browser: Suno-Name und Lieder“. Der Browser geht auf, die Einrichtung fragt nach dem Suno-Namen. Danach startet KlangTresor in seinem gewohnten Fenster. |
 
-Größe: 82 MB (ohne ffmpeg, Modelle und Whisper). Startmenü: „KlangTresor“, „KlangTresor entfernen“. Eintrag unter „Apps“.
+Größe: 87 MB (ohne ffmpeg, Modelle und Whisper; 82 MB waren es am 29.10.2026). Startmenü: „KlangTresor“, „KlangTresor entfernen“. Eintrag unter „Apps“.
 Stiller Lauf für Tests: `KlangTresor-Setup.exe /S /D=C:\Pfad` (`/OHNEHOLEN` lässt das Holen aus).
 
 **Warnung ohne Zertifikat:** SmartScreen „Der Computer wurde durch Windows geschützt“ → „Weitere Informationen“ →
@@ -78,7 +78,8 @@ aber noch nicht auf einem echten Gerät geprüft.
 
 **Wie es gebaut ist:** `bin/appimage-bauen.js` (aus `bin/paket.js`), auf dem Mac: squashfs (`brew install squashfs`)
 plus das statische Laufzeitprogramm von AppImage/type2-runtime (braucht kein libfuse2). Inhalt: `AppRun`
-(`bin/linux/AppRun`), Programm, Node linux-x64, `node_modules` mit onnxruntime nur linux/x64. 104 MB.
+(`bin/linux/AppRun`), Programm, Node linux-x64, `node_modules` mit onnxruntime nur linux/x64. 109 MB
+(104 MB am 29.10.2026).
 Das Symbol: `bin/linux/klangtresor-symbol.py` (Python 3 + GTK + AyatanaAppIndicator3 aus dem System, nichts
 nachinstalliert). Der Knopf „KlangTresor beenden“ (`/api/system/beenden`, nur vom Rechner selbst) beendet den Server
 mit Code 0; Symbol (Linux und Windows) und `bin/starten.js` verstehen das als gewollt.
@@ -123,7 +124,9 @@ Unterwegs gefunden und behoben:
 Nicht geprüft:
 - Englische und russische Oberfläche (die Texte sind da, aber ungesehen).
 - Windows 11 mit angemeldetem Nutzer (die VM steht am Sperrbildschirm).
-- Die Einrichtung im Browser nach dem Suno-Namen bis zum Start von KlangTresor (ich habe keinen Suno-Namen eingegeben).
+- ~~Die Einrichtung im Browser nach dem Suno-Namen bis zum Start von KlangTresor.~~ Nachgeholt:
+  unter Linux am 29.10.2026 mit caspar_d und 268 Titeln durchgelaufen, auf dem Mac am 19.11.2026
+  in einem Sandkasten mit leerem Archiv über alle elf Schritte bis „Fertig".
 - SmartScreen beim Download aus dem Netz (die Datei kam über die Parallels-Freigabe).
 - Zwei Installationen auf demselben Rechner teilen sich einen Eintrag unter „Apps“; wer eine entfernt, nimmt den Eintrag der anderen mit. Bei einer Installation je Nutzer, dem Normalfall, spielt das keine Rolle.
 

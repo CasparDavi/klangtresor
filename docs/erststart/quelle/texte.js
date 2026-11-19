@@ -28,6 +28,36 @@ window.HEFT = {
   "en": "Then what the app says applies — it knows its own version. KlangTresor keeps growing; the steps stay the same, the labels may move.",
   "ru": "Тогда действует то, что говорит приложение, — оно знает свою версию. KlangTresor развивается: шаги остаются прежними, подписи могут смещаться."
  },
+ "bu_lzkasten": {
+  "de": "So sieht der Kasten aus, den das Lesezeichen über die Suno-Seite legt. Er sagt, was er holen will, und wartet auf <b>Los</b>. Die Werte hier sind Beispiele — das Bild ist mit dem echten Lesezeichen entstanden, nur ohne Suno-Konto.",
+  "en": "This is the box the bookmark lays over the Suno page. It says what it wants to fetch and waits for <b>Go</b>. The values here are examples — the picture was made with the real bookmark, only without a Suno account.",
+  "ru": "Так выглядит блок, который закладка накладывает на страницу Suno. Он говорит, что собирается загрузить, и ждёт нажатия «Вперёд». Значения здесь — примеры: снимок сделан настоящей закладкой, только без аккаунта Suno."
+ },
+ "l_lzkasten": {
+  "de": "suno.com · das Lesezeichen",
+  "en": "suno.com · the bookmark",
+  "ru": "suno.com · закладка"
+ },
+ "kasten_kopf": {
+  "de": "Was dann erscheint",
+  "en": "What appears then",
+  "ru": "Что появится дальше"
+ },
+ "kasten_vor": {
+  "de": "Das Lesezeichen legt einen Kasten über die Suno-Seite. Er sagt zuerst, was er vorgefunden hat, und fragt dann, was ins Archiv soll. Normal ist alles angekreuzt. <b>Los</b> startet, <b>Abbrechen</b> schließt den Kasten und ändert nichts.",
+  "en": "The bookmark lays a box over the Suno page. It first says what it found, then asks what should go into the archive. Normally everything is ticked. <b>Go</b> starts it, <b>Cancel</b> closes the box and changes nothing.",
+  "ru": "Закладка накладывает блок поверх страницы Suno. Сначала он сообщает, что нашёл, затем спрашивает, что отправить в архив. Обычно отмечено всё. «Вперёд» запускает, «Отменить» закрывает блок и ничего не меняет."
+ },
+ "danach_kopf": {
+  "de": "Und danach",
+  "en": "And afterwards",
+  "ru": "А затем"
+ },
+ "danach": {
+  "de": "Der Kasten bleibt stehen und schreibt mit, was er holt — Zeile für Zeile. Am Ende sagt er, was er an dein KlangTresor übergeben hat. Dann kannst du ihn schließen und zurück in den Tresor wechseln; dort wartet Schritt 5.",
+  "en": "The box stays and writes along what it fetches — line by line. At the end it says what it handed over to your KlangTresor. Then you can close it and switch back to the archive; step 5 is waiting there.",
+  "ru": "Блок остаётся на экране и записывает, что загружает, — строка за строкой. В конце он сообщает, что передал вашему KlangTresor. После этого его можно закрыть и вернуться в архив: там ждёт шаг 5."
+ },
  "eyebrow": {
   "de": "KlangTresor — Erster Kontakt",
   "en": "KlangTresor — First contact",

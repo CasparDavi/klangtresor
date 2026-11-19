@@ -1,4 +1,7 @@
-# Für den nächsten Chat — Stand 23.09.2026
+# Für den nächsten Chat — Stand 19.11.2026
+
+*(Das Datum im Kopf blieb lange auf dem 23.09.2026 stehen, obwohl das
+Dokument weiterwuchs. Es nennt jetzt den letzten Eintrag.)*
 
 ## In drei Sätzen
 
@@ -14,7 +17,10 @@ Die alte git-Historie ist **nicht** mitgegangen: Sie liegt hier als
 
 **Das Neueste steht ganz unten.** Dieses Dokument wächst nach hinten;
 wer eilig ist, liest diesen Kopf, den letzten Abschnitt und
-docs/OFFEN.md.
+[docs/BACKLOG.md](BACKLOG.md) — die eine Liste des Offenen.
+(Hier stand bis zum 19.11.2026 „docs/OFFEN.md"; die liegt seit dem
+11.09.2026 unter docs/archiv/, und zwei Absätze weiter unten steht das
+auch so. Der Kopf widersprach sich selbst.)
 
 ZUERST LESEN: den **letzten Abschnitt** dieses Dokuments (dort steht die
 **Wiedervorlage** — was Caspar_Ds Auge oder Entscheidung braucht — und die
@@ -3242,7 +3248,8 @@ Docker-Bauanleitungen liegen in `docker/` (Kontext bleibt der Projektordner, `na
 Jörg: *„räume bitte alle installationsdateien auf, dass es keine verwechslungen geben kann"*.
 
 **Drei Stufen, jede fängt die nächste auf** — *„fallbacks, wenn es nicht mit js geht und dann natürlich
-das schicke js"*: Skript des Systems (holt Node) → `bin/einrichten.js` (zehn Schritte) → Seite im
+das schicke js"*: Skript des Systems (holt Node) → `bin/einrichten.js` (elf Schritte, seit
+Whisper mit 1.0.125 einen eigenen bekam) → Seite im
 Browser auf 127.0.0.1:8790+ (`web/einrichtung/index.html`, pollt `/stand`, antwortet per
 `POST /antwort`). Geht kein Browser auf, läuft dasselbe als Text; `--text` erzwingt das, `--ohne-browser`
 ist für Probeläufe. Fragen tragen Metadaten (`art: 'wahl'|'text'`, `optionen`, `hinweis`) — die Seite

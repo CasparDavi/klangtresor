@@ -1,4 +1,8 @@
-# Audio-Bezug von Suno — Stand 28.08.2026
+# Audio-Bezug von Suno — Stand 03.09.2026
+
+*(Die Kopfzeile stand bis zum 19.11.2026 auf dem 28.08.2026 — älter als der
+Vorgang, den das Dokument beschreibt: Sunos Limits traten am 03.09. in Kraft,
+siehe unten. Wer nur den Kopf las, hielt es für überholt.)*
 
 Betriebsnotiz zur Herkunft der Audiodaten. Fasst einen technischen
 Hinweis aus dem Partnerprojekt zusammen; nachgeprüft an einem eigenen

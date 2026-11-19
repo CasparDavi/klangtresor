@@ -48,7 +48,9 @@ network will do.
    - **macOS:** if it is blocked, System Settings → Privacy & Security → *Open Anyway*.
    - **Linux:** right-click → Properties → allow *Executable as Program*, then double-click. No sudo.
 
-   [START-HERE.md](START-HERE.md) shows every click with pictures.
+   The **[first-start guide](https://caspardavi.github.io/klangtresor/erststart/KlangTresor-Erststart-en.pdf)**
+   shows every click with pictures, from here to a full archive. For the other ways — zip, Docker, Git,
+   WSL — see [START-HERE.md](START-HERE.md).
 2. **Setup runs in your browser.** It fetches ffmpeg and the AI models with progress bars, then asks for your Suno
    name and collects your public songs.
 3. **KlangTresor runs as an icon** in the taskbar, Dock or panel. The page is at **http://localhost:8788**. For

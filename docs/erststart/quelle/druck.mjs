@@ -70,6 +70,7 @@ if (!bericht) { console.error('Die Seite hat keinen Bericht abgelegt (window.BER
 
 console.log('Seiten:', bericht.seiten.length);
 for (const s of bericht.seiten) console.log(`  ${String(s.nr).padStart(2)}  leer unten: ${String(s.leer).padStart(3)} %`);
+if (bericht.karte) console.log('Landkarte, Zeilen je Eintrag: ' + bericht.karte.map(k=>k.zeilen).join(' '));
 if (bericht.warnung.length) console.log('Warnungen:\n  ' + bericht.warnung.join('\n  '));
 if (bericht.fehler.length) {
   console.error('FEHLER:\n  ' + bericht.fehler.join('\n  '));

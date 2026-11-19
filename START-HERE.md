@@ -279,32 +279,34 @@ just keep reading — they do exactly what is written below.
 
 ## What you need
 
-- [**Node.js**](https://nodejs.org) — the LTS version is enough (20 or later)
-- [**ffmpeg**](https://ffmpeg.org) — Mac: `brew install ffmpeg`,
-  Linux: `sudo apt install ffmpeg` (or your package manager),
-  Windows: `winget install ffmpeg` (or from ffmpeg.org, then add the
-  `bin` folder to the PATH) — afterwards reopen the terminal
-- Disk space: about 15 MB per song, with WAV about 70 MB
+**Nothing to prepare.** The setup brings Node.js and ffmpeg itself — on all
+three systems, since it fetches ffmpeg on Mac and Linux too instead of pointing
+at `brew` and `apt`. What remains:
 
-Once, in the unzipped folder — this fetches the only package the
-program needs (the AI runtime for the Sound Space), and the models:
+- Disk space: about 5 GB for the program and the AI models, plus about
+  15 MB per song, with WAV about 70 MB
+- a browser — the setup runs as a page in it; later, for the full feature
+  set, Google Chrome
+
+If fetching the models reports "fetch failed", your computer cannot reach
+the sources (proxy, certificate, DNS). The script then tries `curl` itself
+and otherwise tells you exactly which files to open in the browser and under
+which name to save them — then start it once more; anything already there is
+skipped.
+
+### By hand, for those who prefer it
+
+The setup does exactly this, only with progress bars and explanations. Whoever
+wants to walk the path themselves needs [Node.js](https://nodejs.org) 20 or
+later and [ffmpeg](https://ffmpeg.org) in the PATH, and runs once in the
+unzipped folder:
 
 ```bash
 npm install
 node bin/modelle-holen.js
 ```
 
-Nothing else: no database, no Python, no Docker. Runs the same on Mac,
-Linux and Windows (PowerShell).
-
-If fetching the models reports "fetch failed", your computer cannot reach
-the sources (proxy, certificate, DNS). The script then tries `curl` itself
-and otherwise tells you exactly which files to open in the browser and
-under which name to save them in `library/modelle/` —
-then run `node bin/modelle-holen.js` once more; anything already there is
-skipped.
-
-You do **not** need a browser for the start any more.
+Nothing else: no database, no Python, no Docker.
 
 ---
 

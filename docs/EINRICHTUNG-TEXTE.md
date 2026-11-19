@@ -4,6 +4,12 @@ Caspar_D, 13.09.2026: *„Es war Sinn der Sache, alles in JS auszugeben und nich
 Textausgaben umzubiegen. Ich wollte echte Fortschrittsbalken pro Schritt."* Und: *„Links nur
 abhaken, keine Fortschrittsbalken. Die Balken nur, solange etwas läuft."*
 
+> **Zur Zählung (19.11.2026):** Die Einrichtung hat **elf** Schritte, nicht zehn. Whisper kam
+> mit 1.0.125 als eigener sechster Schritt dazu; der Suno-Name ist seither Schritt **7**, die
+> Songliste 8, die Suno-Dateien 9, die Bilder 10, der Schluss 11. `bin/einrichten.js` zählt
+> aus `SCHRITTE` und hat das am 28.10.2026 nachgezogen — dieses Dokument erst heute. Wer hier
+> eine Nummer liest, prüft sie gegen `KURZ` in `bin/einrichten.js`.
+
 Dieses Dokument entsteht Schritt für Schritt im Gespräch: je Schritt die beschlossene
 Überschrift, was der Code tatsächlich tut, welche Texte erscheinen, und was beim Bau zu
 korrigieren ist. Es ist die Vorlage für `web/einrichtung/index.html` und für die
@@ -98,12 +104,14 @@ es sich handelt.
 - Pakete: Programmbausteine des Servers — fehlen, werden geholt (19 Pakete, rund 240 MB)
   *(kein eigenes Werkzeug wie ffmpeg, sondern Teile von KlangTresor selbst: Bildverkleinerung,
   Klangraum-Rechenkern, Datenbankfreie Suche u. a.)*
-- KI-Modelle zur Klanganalyse und Stemextraktion — 11 von 11 im Zwischenlager dieses Rechners,
-  werden kopiert (550 MB). *Whisper (Text-Zeitmarken) hat seit 1.0.125 einen eigenen Schritt danach (bin/whisper-holen.js).*
+- KI-Modelle zur Klanganalyse und Stemextraktion — **16 Dateien, rund 1,2 GB**
+  (Stand 19.11.2026; am 13.09.2026 waren es 11 mit 562 MB). *Whisper (Text-Zeitmarken) hat
+  seit 1.0.125 einen eigenen Schritt danach — siehe Schritt 6.*
 - Port 8788 für den Server, der lokal den KlangTresor im Browser darstellt — frei
 
-**Summe:** Zu holen: rund 340 MB. Dauer: ein paar Minuten bis ca. 30 min für alles bei
-Standard-Netz-Anbindung.
+**Summe:** Zu holen beim ersten Mal **rund 4,5 GB** (ffmpeg, Pakete, 16 KI-Modelle, Whisper
+mit 3,1 GB). Dauer je nach Leitung von wenigen Minuten bis zu gut einer Stunde; die
+Einrichtung sagt es selbst, bevor sie anfängt.
 
 **Was der Code tut / Korrekturen beim Bau:**
 - Sanity (package.json, bin/, server/, web/) bleibt, Abbruch mit Hinweis.
@@ -254,7 +262,27 @@ Hand, den `modelle-holen.js` heute schon druckt. Schaltflächen: Noch einmal ver
 
 ---
 
-## Schritt 6 — Wie heißt du bei Suno? Der Name entscheidet, wessen Daten geholt werden
+## Schritt 6 — Whisper: Programm und Modell für den mitlaufenden Liedtext
+
+**Dazugekommen mit 1.0.125** (`bin/whisper-holen.js`). Bis dahin zählte die Seite zehn
+Schritte, und dieses Dokument tut es an einigen Stellen immer noch — darum steht oben die
+Anmerkung zur Zählung. Links kurz: „Whisper".
+
+**Was der Code tut:** Er holt das Programm (whisper-cli, MIT, auf dem Mac beim Bau des
+Pakets übersetzt und mitgeliefert) und das Modell `ggml-large-v3.bin`, rund 3,1 GB. Beides
+liegt im Modellordner neben den übrigen KI-Modellen (`bin/modellordner.js`), nicht im
+Archiv. Ist es schon da, hakt der Schritt ab und holt nichts.
+
+**Wofür:** Für Titel, denen Suno keine Wort-Zeitmarken gibt, hört Whisper den Text nach —
+daraus entsteht das Karaoke. Ohne Whisper läuft KlangTresor vollständig, nur bleibt der
+Karaoke-Knopf bei diesen Titeln grau, mit Grund.
+
+**Abbrechen ist erlaubt.** Ein halb geholtes Modell bleibt als `.teil` liegen, und der
+nächste Lauf setzt dort auf.
+
+---
+
+## Schritt 7 — Wie heißt du bei Suno? Der Name entscheidet, wessen Daten geholt werden
 
 **Beschlossen 13.09.2026** („das ist gut gemacht"). Links kurz: „Dein Suno-Name". Die einzige
 Eingabe der ganzen Einrichtung.
@@ -288,7 +316,7 @@ lesen." Schaltflächen: Anderen Namen eingeben (Vorgabe) · Trotzdem weiter mit 
 
 ---
 
-## Schritt 7 — Deine Songliste von @…: Titel, Texte, Stile, Alben
+## Schritt 8 — Deine Songliste von @…: Titel, Texte, Stile, Alben
 
 **Beschlossen 13.09.2026: „hier alles so lassen."** Die Skizze gilt wie gezeigt; meine beiden
 Zusatzvorschläge (den Morgenlauf-Satz nach Schritt 10 verschieben, eine eigene Hakenzeile für
@@ -322,7 +350,7 @@ Tondatei zu (Fehler vom 11.09.2026).
 
 ---
 
-## Schritt 8 — Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet
+## Schritt 9 — Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet
 
 **Überschrift (Caspar_D, 13.09.2026, wörtlich — nur die Beugung gerade gezogen:
 „heruntergeladene").** Links kurz: „Deine Suno-Dateien".
@@ -358,7 +386,7 @@ Gesehene. Der gewählte Ordner landet in `konfig.sunoOrdner`.
 
 ---
 
-## Schritt 9 — Titelbilder und Bewegtbilder werden geladen und aufbereitet
+## Schritt 10 — Titelbilder und Bewegtbilder werden geladen und aufbereitet
 
 **Beschlossen 13.09.2026 („das ist gut so, prima").** Links kurz: „Bilder". Der längste Schritt;
 oben rechts läuft die Restzeit mit.
@@ -390,7 +418,7 @@ weiterhin dasselbe (`laeuftAbbrechbar`), aber niemand muss eine Taste erraten.
 
 ---
 
-## Schritt 10 — Fertig: und was nur du selbst holen kannst
+## Schritt 11 — Fertig: und was nur du selbst holen kannst
 
 **Beschlossen 13.09.2026 („genau so") — und zugleich das Muster für die HAUSFORM aller
 Schritte.** Links kurz: „Zum Schluss". Oben rechts im Kopf steht „eingerichtet · in 11 Minuten".

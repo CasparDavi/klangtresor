@@ -281,32 +281,33 @@ liest einfach weiter — sie machen genau das, was unten steht.
 
 ## Was du brauchst
 
-- [**Node.js**](https://nodejs.org) — die LTS-Fassung reicht (ab 20)
-- [**ffmpeg**](https://ffmpeg.org) — Mac: `brew install ffmpeg`,
-  Linux: `sudo apt install ffmpeg` (oder dein Paketmanager),
-  Windows: `winget install ffmpeg` (oder von ffmpeg.org, dann den
-  `bin`-Ordner in den PATH) — danach das Terminal neu öffnen
-- Platz auf der Platte: rund 15 MB je Song, mit WAV rund 70 MB
+**Nichts vorbereiten.** Node.js und ffmpeg bringt die Einrichtung selbst mit —
+auf allen drei Systemen, seit sie ffmpeg auch auf Mac und Linux holt statt auf
+`brew` und `apt` zu verweisen. Es bleibt:
 
-Einmalig im entpackten Ordner — das holt das einzige Paket, das das
-Programm braucht (die KI-Laufzeit für den Klangraum), und die Modelle:
+- Platz auf der Platte: rund 5 GB für Programm und KI-Modelle, dazu etwa
+  15 MB je Song, mit WAV rund 70 MB
+- einen Browser — die Einrichtung läuft als Seite darin; für den vollen
+  Funktionsumfang später Google Chrome
+
+Meldet das Modelle-Holen „fetch failed", kommt dein Rechner nicht an die
+Quellen (Proxy, Zertifikat, DNS). Das Skript versucht es dann selbst mit
+`curl` und sagt dir sonst genau, welche Dateien du im Browser öffnen und
+unter welchem Namen du sie speichern sollst — danach noch einmal starten,
+Vorhandenes wird übersprungen.
+
+### Von Hand, wer es so will
+
+Die Einrichtung macht genau das hier, nur mit Balken und Erklärungen. Wer den
+Weg selbst gehen will, braucht [Node.js](https://nodejs.org) ab 20 und
+[ffmpeg](https://ffmpeg.org) im PATH und tut im entpackten Ordner einmal:
 
 ```bash
 npm install
 node bin/modelle-holen.js
 ```
 
-Sonst nichts: keine Datenbank, kein Python, kein Docker. Läuft auf Mac,
-Linux und Windows (PowerShell) gleich.
-
-Meldet das Modelle-Holen „fetch failed", kommt dein Rechner nicht an die
-Quellen (Proxy, Zertifikat, DNS). Das Skript versucht es dann selbst mit
-`curl` und sagt dir sonst genau, welche Dateien du im Browser öffnen und
-unter welchem Namen du sie nach `library/modelle/` speichern sollst —
-danach `node bin/modelle-holen.js` noch einmal, Vorhandenes wird
-übersprungen.
-
-Einen Browser brauchst du für den Anfang **nicht** mehr.
+Sonst nichts: keine Datenbank, kein Python, kein Docker.
 
 ---
 
