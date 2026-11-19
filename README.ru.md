@@ -15,10 +15,10 @@ Suno создаёт песни. KlangTresor хранит их, играет, и�
 ## Скачать
 
 <p align="center">
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Скачать для Windows 10/11 (87 МБ)" src="https://img.shields.io/badge/Windows_10%2F11-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Скачать для macOS 11 или новее (164 МБ)" src="https://img.shields.io/badge/macOS_11+-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
-<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage"><img alt="Скачать для Linux x86_64 (109 МБ)" src="https://img.shields.io/badge/Linux_x86__64-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=linux&logoColor=white"></a>
-<br><sub>Setup.exe 87 МБ · DMG 164 МБ (Intel и Apple Silicon) · AppImage 109 МБ</sub>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe"><img alt="Скачать для Windows 10/11 (97 МБ)" src="https://img.shields.io/badge/Windows_10%2F11-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=windows&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg"><img alt="Скачать для macOS 11 или новее (175 МБ)" src="https://img.shields.io/badge/macOS_11+-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=apple&logoColor=white"></a>
+<a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage"><img alt="Скачать для Linux x86_64 (125 МБ)" src="https://img.shields.io/badge/Linux_x86__64-%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-ff8a2a?style=for-the-badge&logo=linux&logoColor=white"></a>
+<br><sub>Setup.exe 97 МБ · DMG 175 МБ (Intel и Apple Silicon) · AppImage 125 МБ</sub>
 </p>
 
 **Системные требования.** 64-битный компьютер с Windows 10 или 11, macOS 11 или новее либо Linux (x86_64). Около
