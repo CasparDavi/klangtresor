@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="de" data-seite="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!--kopf-->
+<title>KlangTresor – dein eigenes Suno-Archiv: Karaoke, Klanganalyse, Tonstudio, Sternenkarte</title>
+<meta name="description" content="Frei und quelloffen: holt deine Suno-Titel, Liedtexte, Titelbilder und Alben auf den eigenen Rechner. Karaoke mit mitlaufendem Text, Klanganalyse, Equalizer und Klangraum. Kein Konto, keine Cloud.">
+<link rel="canonical" href="https://caspardavi.github.io/klangtresor/features/de.html">
+<link rel="alternate" hreflang="en" href="https://caspardavi.github.io/klangtresor/features/">
+<link rel="alternate" hreflang="de" href="https://caspardavi.github.io/klangtresor/features/de.html">
+<link rel="alternate" hreflang="ru" href="https://caspardavi.github.io/klangtresor/features/ru.html">
+<link rel="alternate" hreflang="x-default" href="https://caspardavi.github.io/klangtresor/features/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="KlangTresor">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="KlangTresor – Deine Suno-Musik. Bei dir.">
+<meta property="og:description" content="Frei und quelloffen: holt deine Suno-Titel, Liedtexte, Titelbilder und Alben auf den eigenen Rechner. Karaoke mit mitlaufendem Text, Klanganalyse, Equalizer und Klangraum. Kein Konto, keine Cloud.">
+<meta property="og:url" content="https://caspardavi.github.io/klangtresor/features/de.html">
+<meta property="og:image" content="https://caspardavi.github.io/klangtresor/features/img/og-de.jpg?v=20261119">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="KlangTresor – Deine Suno-Musik. Bei dir.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"KlangTresor","url":"https://caspardavi.github.io/klangtresor/features/de.html","description":"Frei und quelloffen: holt deine Suno-Titel, Liedtexte, Titelbilder und Alben auf den eigenen Rechner. Karaoke mit mitlaufendem Text, Klanganalyse, Equalizer und Klangraum. Kein Konto, keine Cloud.","inLanguage":"de","applicationCategory":"MultimediaApplication","operatingSystem":"Windows 10, Windows 11, macOS 11+, Linux","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"downloadUrl":"https://github.com/CasparDavi/klangtresor/releases/latest","image":"https://caspardavi.github.io/klangtresor/features/img/og-de.jpg?v=20261119","license":"https://opensource.org/licenses/MIT","author":{"@type":"Person","name":"Caspar_D"}}</script>
+<!--/kopf-->
+<style>
+/* Anmutung: Apples Feature-Zusammenfassungen nach Keynotes. Schwarzer Grund, große Schlagzeilen,
+   Kacheln unterschiedlicher Breite, Einzelheiten hinter „+“ in einem Overlay. Text ≥ 7:1. */
+:root{
+  --bg:#000; --kachel:#141416; --kachel2:#1c1c1f; --linie:#2a2a2e;
+  --text:#f5f5f7; --leise:#a8a8ad; --akzent:#ff8a2a; --akzent2:#d9531e;   /* Marsianer-Orange wie in der App */
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.47 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+main{max-width:1180px;margin:0 auto;padding:0 22px 80px}
+.sprache{position:sticky;top:0;z-index:5;display:flex;justify-content:flex-end;gap:4px;padding:10px 22px;background:rgba(0,0,0,.82);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px)}
+.sprache button{background:none;border:0;color:var(--leise);font:inherit;font-size:13px;padding:4px 10px;border-radius:980px;cursor:pointer}
+.sprache button.an{color:#000;background:var(--text)}
+.held{text-align:center;padding:72px 0 40px}
+.held h1{display:inline-flex;align-items:center;gap:.14em;font-size:calc(clamp(48px,9vw,112px) * var(--fit,1));line-height:1.04;letter-spacing:-.02em;font-weight:700;margin:0 0 10px;
+  background:linear-gradient(90deg,var(--akzent),var(--akzent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+/* Das Tresorrad der App, als Maske auf demselben Verlauf wie der Name */
+.held h1 .rad{width:.9em;height:.9em;flex:0 0 auto;background:linear-gradient(90deg,var(--akzent),var(--akzent2));background-size:800% 100%;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cg%20transform='translate(32%2032)'%20stroke='%23fff'%20stroke-width='4'%20stroke-linecap='round'%20fill='none'%3E%3Ccircle%20r='22'/%3E%3Cg%20transform='rotate(15)'%3E%3Cpath%20d='M-22%200H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle%20cx='32'%20cy='32'%20r='5'%20fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cg%20transform='translate(32%2032)'%20stroke='%23fff'%20stroke-width='4'%20stroke-linecap='round'%20fill='none'%3E%3Ccircle%20r='22'/%3E%3Cg%20transform='rotate(15)'%3E%3Cpath%20d='M-22%200H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle%20cx='32'%20cy='32'%20r='5'%20fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat}
+.held .spruch{font-size:clamp(28px,4vw,48px);line-height:1.1;font-weight:700;letter-spacing:-.01em;color:var(--text);margin:0 0 14px}
+.held p{font-size:clamp(18px,2vw,22px);line-height:1.35;color:var(--leise);max-width:34em;margin:0 auto 40px;font-weight:500}
+.held .bild{aspect-ratio:21/9;border-radius:28px}
+.held .pdf{display:inline-block;margin:-22px 0 38px;color:var(--akzent);font-size:17px;font-weight:600;text-decoration:none}
+.held .pdf:hover{text-decoration:underline}
+/* Seit dem 19.11.2026 stehen hier ZWEI Links (Broschuere und Erststart-Heft);
+   ohne Abstand klebten sie aneinander. Der Punkt trennt sie auch dann noch,
+   wenn die Zeile auf dem Handy umbricht. */
+.held .pdf + .pdf{margin-left:0}
+.held .pdf + .pdf::before{content:'·';margin:0 10px;color:var(--leise, #a8a8ad)}
+.abschnitt{margin:120px 0 0}
+.abschnitt>.kopf,.fahrt .kopf{max-width:820px;margin:0 0 36px}
+.abschnitt>.kopf .augenbraue,.fahrt .kopf .augenbraue{font-size:17px;font-weight:600;color:var(--akzent);margin:0 0 8px}
+.abschnitt>.kopf h2,.fahrt .kopf h2{font-size:clamp(34px,5vw,56px);line-height:1.07;letter-spacing:-.01em;font-weight:700;margin:0 0 14px}
+.abschnitt>.kopf p,.fahrt .kopf p{font-size:clamp(18px,2vw,21px);color:var(--leise);margin:0;font-weight:500}
+.raster{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.k{position:relative;grid-column:span 6;background:var(--kachel);border-radius:28px;overflow:hidden;display:flex;flex-direction:column}
+.k.w12{grid-column:span 12}.k.w8{grid-column:span 8}.k.w4{grid-column:span 4}.k.w6{grid-column:span 6}.k.w5{grid-column:span 5}.k.w7{grid-column:span 7}
+/* EINE REIHE, EIN RASTER (Caspar_D, 27.10.2026: „die Bildunterkanten immer alignieren und die Überschriften der Unterschriften
+   ebenfalls auf der gleichen Baseline“). Jede Kachel belegt zwei Zeilen des Seitenrasters und erbt sie (subgrid): Textzeile
+   und Bildzeile sind fuer alle Kacheln einer Reihe gleich hoch. Bilder sitzen unten (align-self:end), Texte oben. */
+.raster{grid-auto-rows:auto}
+.k:not(.quer){display:grid;grid-row:span 2;grid-template-rows:subgrid;row-gap:0}
+.k:not(.quer) > *{min-width:0}
+.k:not(.quer) > .text{align-self:start}
+.k:not(.quer) > .bild{align-self:end;margin-top:0}
+.k:not(.quer) > .bild.konsole{align-self:stretch}
+.k:not(.quer) > .filterliste,.k:not(.quer) > .schaubild{align-self:end}
+/* Grafik oben, Text darunter (Caspar_D, 27.10.2026: „immer nur den Grafikteil nehmen und einen Text drunterzusetzen“) */
+/* Oben ein schwarzes Feld mit duennem Rahmen im Grau des Schriftfelds; die Grafik reicht von Rand zu Rand und steht unten
+   auf der Teilungslinie, was darueber frei bleibt, bleibt schwarz (Caspar_D, 27.10.2026). Alle Felder einer Reihe gleich hoch. */
+.k.oben > .bild{grid-row:2;align-self:stretch;aspect-ratio:auto!important;margin:0 3px 3px;border-radius:0 0 25px 25px;background:#000;
+  display:flex;align-items:flex-end}
+.k.oben > .bild img{width:100%;height:auto;object-fit:initial}
+/* sichtbare Kante des schwarzen Feldes: zeigt, dass alle Felder einer Reihe gleich gross sind (Caspar_D, 27.10.2026) */
+.k.oben > .bild{position:relative}
+.k.oben > .bild::after{content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1.5px var(--kachel);pointer-events:none}
+/* Hell nur beim Nachbarschafts-Diagramm (Caspar_D: „der sollte nur einmal beim Diagramm hell sein, ansonsten Hintergrundfarbe des Textpanels darüber“) */
+.k[data-id=nachbar] > .bild::after{box-shadow:inset 0 0 0 1.5px #4a4a52}
+.k.oben > .text{grid-row:1}
+.k.oben .text{padding-bottom:22px}
+/* das „+“ ins Schriftfeld, sonst verdeckt es die Achsenbeschriftung der Grafik */
+.k.oben .plus{top:18px;bottom:auto}
+.k .text{padding:30px 32px 26px}
+.k .klein{font-size:15px;font-weight:600;color:var(--akzent);margin:0 0 6px}
+.k h3{font-size:clamp(24px,2.6vw,32px);line-height:1.12;letter-spacing:-.005em;font-weight:700;margin:0 0 10px}
+.k p{margin:0;color:var(--leise);font-size:17px;font-weight:500}
+.k p b{color:var(--text);font-weight:600}
+.k .zahl{display:block;margin:16px 0 0;font-size:40px;line-height:1;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.k .zahl small{display:block;font-size:14px;font-weight:600;color:var(--leise);margin-top:6px;letter-spacing:0}
+.k .bild{margin-top:auto}
+.bild{position:relative;aspect-ratio:16/10;background:var(--kachel2);overflow:hidden}
+.k.w4 .bild{aspect-ratio:4/3}
+.k.w12 .bild{aspect-ratio:21/9}
+.bild img,.bild video{width:100%;height:100%;object-fit:cover;display:block}
+.bild.geraete{aspect-ratio:16/11;background:radial-gradient(ellipse at 50% 110%,#3a200c 0%,var(--kachel2) 65%)}
+/* Geraetegruppe (Apple-Trio): Laptop hinten Mitte, Tablet vorn links, Handy vorn rechts; schlichte Rahmen ohne Marke */
+.geraete .lap{position:absolute;left:14%;top:7%;width:72%}
+.geraete .schirm{background:#0b0b0c;border:solid #2a2a2d;border-width:8px 8px 11px;border-radius:12px 12px 0 0;aspect-ratio:16/10;overflow:hidden}
+.geraete .fuss{height:9px;margin:0 -6%;background:linear-gradient(#3a3a3e,#1e1e20);border-radius:0 0 10px 10px}
+.geraete .tab{position:absolute;left:5%;bottom:5%;height:66%;aspect-ratio:1640/2360;background:#0b0b0c;border:7px solid #2a2a2d;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.geraete .hand{position:absolute;right:7%;bottom:5%;height:52%;aspect-ratio:780/1688;background:#0b0b0c;border:5px solid #2a2a2d;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.geraete img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+@media screen and (max-width:820px){.geraete .schirm{border-width:5px 5px 7px;border-radius:8px 8px 0 0}.geraete .tab{border-width:4px;border-radius:10px}.geraete .hand{border-width:3px;border-radius:11px}}
+.k .bild.konsole,.bild.konsole{aspect-ratio:auto;flex:1;min-height:220px;margin:0 22px 0;border-radius:12px 12px 0 0;background:#0a0a0b;border:1px solid #2c2c30;border-bottom:0}
+.konsole .leiste{display:flex;align-items:center;gap:7px;padding:10px 12px;background:#18181b;border-bottom:1px solid #2c2c30}
+.konsole .leiste i{width:11px;height:11px;border-radius:50%;background:#3a3a3e}
+.konsole .leiste span{margin-left:auto;margin-right:auto;font-size:12px;color:#b0b0b5;transform:translateX(-27px)}
+.konsole pre{margin:0;padding:14px 16px;font:calc(13px * var(--fit,1))/1.55 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:#b9b9be;white-space:pre;overflow:hidden}
+.konsole pre b{color:var(--akzent);font-weight:600}
+.konsole pre u{text-decoration:none;color:#e6e6ea}
+.schaubild{display:grid;grid-template-columns:1fr auto 1fr;align-items:baseline;column-gap:22px;padding:6px 32px 34px}
+/* Ueberschriften in EINER Zeile des Rasters: gleiche Grundlinie (Caspar_D, 27.10.2026) */
+.schaubild .sk{margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--akzent)}
+.schaubild .l{text-align:right}
+.schaubild .sl{font-size:17px;line-height:1.75;color:var(--text);align-self:center}
+.schaubild .sl i{font-style:normal;color:var(--leise)}
+.schaubild .sm{display:grid;grid-template-columns:56px auto 56px;align-items:center;align-self:center;row-gap:8px}
+.schaubild .sm i{height:1px;background:linear-gradient(90deg,transparent,#e31c79)}
+.schaubild .sm i:last-of-type{background:linear-gradient(90deg,#e31c79,transparent)}
+.schaubild .knopf{width:80px;height:80px;border-radius:50%;border:1.5px solid #e31c79aa;background:#e31c7922;display:grid;place-items:center}
+.schaubild .knopf svg{width:38px;height:38px;fill:#e31c79}
+.schaubild .sm b{grid-column:2;text-align:center;color:#ff7fb3;font-size:13px;font-weight:600}
+@media screen and (max-width:820px){.schaubild{padding:4px 16px 26px;column-gap:10px}.schaubild .sl{font-size:14px;line-height:1.6}.schaubild .sm{grid-template-columns:18px auto 18px}.schaubild .knopf{width:56px;height:56px}.schaubild .knopf svg{width:26px;height:26px}}
+/* Querkachel: Text links, Bild rechts */
+.k.quer{flex-direction:row;align-items:stretch}
+.k.quer .text{flex:0 0 34%;align-self:center}
+.k.quer .bild{flex:1;margin-top:0}
+@media screen and (max-width:820px){.k.quer{flex-direction:column}.k.quer .text{flex:none}}
+.filterliste{padding:4px 32px 30px;margin-top:auto}
+.filterliste .fk{margin:16px 0 4px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--akzent)}
+.filterliste .fw{margin:0;font-size:16px;line-height:1.55;color:var(--text)}
+.bild.trip{display:flex;justify-content:center;align-items:center;gap:4%;padding:5% 6% 0;aspect-ratio:21/11;background:radial-gradient(ellipse at 50% 120%,#3a2410 0%,var(--kachel2) 70%)}
+.bild.trip img{width:auto;height:100%;max-width:28%;object-fit:contain;border-radius:22px 22px 0 0;border:6px solid #2b2b2e;border-bottom:0;box-shadow:0 0 0 1px #3a3a3e}
+@media screen and (max-width:820px){.bild.trip{aspect-ratio:4/3;gap:3%;padding:6% 3% 0}.bild.trip img{border-radius:14px 14px 0 0;border-width:4px}}
+.bild .platz{position:absolute;inset:12px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--leise);font-size:14px;border:1px dashed #3a3a40;border-radius:16px}
+.plus{position:absolute;right:18px;bottom:18px;z-index:2;width:36px;height:36px;border-radius:50%;border:0;background:rgba(66,66,69,.78);backdrop-filter:blur(10px);color:var(--text);cursor:pointer;display:grid;place-items:center}
+.plus svg{width:14px;height:14px}
+.plus:hover{background:rgba(90,90,94,.9)}
+.k .druck{display:none}
+/* Leicht gedimmt; das Fenster geht am Plus auf, sein Kreuz liegt dort, wo das Plus war (Lage setzt lage()). */
+.overlay{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;overflow:auto}
+.overlay.auf{display:block}
+.abspielen{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;z-index:3;border:0;border-radius:50%;background:rgba(20,20,22,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--text);cursor:pointer;display:grid;place-items:center}
+.abspielen svg{width:28px;height:28px;margin-left:3px}
+.fahrt .fbild > .abspielen{inset:auto;left:50%;top:50%;width:64px;height:64px;display:grid}
+/* Fahrt (Scrollytelling): Die Kachel bleibt stehen, das Scrollen führt dasselbe Bild durch seine Stufen
+   (Cover → Tiefenkarte → Clip), danach scrollt die Seite weiter. Ohne Bewegungswunsch und im Druck: die Einzelkacheln. */
+.fahrt{display:none;grid-column:span 12;height:calc(var(--n) * 100svh)}
+@media screen and (prefers-reduced-motion:no-preference){.fahrt{display:block}.k.in-fahrt{display:none}.mit-fahrt>.kopf{display:none}
+  /* Steht eine Nachbarkachel nach der Fahrt allein, nimmt sie die volle Breite, ihre Liste läuft in Spalten. */
+  .k.fahrt-w12{grid-column:span 12}.k.fahrt-w8{grid-column:span 8}
+  /* Zimmer neben dem Skizzenbuch: etwas höher als sein Bild – seitlich anschneiden statt Streifen (Lampe links bleibt) */
+  .k.fahrt-w8 > .bild img{height:100%;object-fit:cover;object-position:30% 50%}.k.fahrt-w12 > .filterliste{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));column-gap:28px}}
+.fahrt .halt{position:sticky;top:64px}   /* top setzt fahren(): Kachel mittig unter der Sprachleiste; unten schließt sie bündig ab */
+.fahrt .buehne{position:relative;width:100%;display:flex;background:var(--kachel);border-radius:28px;overflow:hidden}
+.fahrt .ftext{flex:1;padding:30px 32px 26px;display:flex;flex-direction:column}
+.fahrt .schritte{font-size:15px;font-weight:600;color:var(--leise);margin:0 0 6px;padding-right:44px}
+.fahrt .schritte span{transition:color .3s;white-space:nowrap}
+.fahrt .schritte span.an{color:var(--akzent)}
+.fahrt .schritte i{font-style:normal;color:#55555a}
+.fahrt .stufen{display:grid}
+.fahrt .stufe{grid-area:1/1;opacity:0;transition:opacity .35s}
+.fahrt .stufe.an{opacity:1}
+.fahrt .stufe h3{font-size:clamp(24px,2.6vw,32px);line-height:1.12;letter-spacing:-.005em;font-weight:700;margin:0 0 10px}
+.fahrt .stufe p{margin:0;color:var(--leise);font-size:17px;font-weight:500}
+.fahrt .plus{top:18px;right:18px;bottom:auto}
+.fahrt .fbild{position:relative;flex:0 0 auto;width:min(64%,calc(var(--bildhoehe,600px) * var(--seite)));aspect-ratio:var(--seite);margin:3px;border-radius:25px;overflow:hidden;background:#000}
+.fahrt .fbild > *{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.fahrt .fbild .welt{overflow:hidden}
+.fahrt .welt img{position:absolute;display:block;max-width:none}
+.fahrt .welt .nah{opacity:0}
+.fahrt .fbild .linie{inset:auto;left:0;width:100%;height:2px;background:var(--akzent);box-shadow:0 0 12px var(--akzent);opacity:0}
+/* Gestapelt nur im Hochformat; ein Handy quer bekommt Text neben dem Bild, sonst steht das Bild allein unter dem Text */
+@media screen and (max-width:820px) and (orientation:portrait){
+  .fahrt .buehne{flex-direction:column}
+  .fahrt .ftext{padding:22px 22px 18px}
+  .fahrt .fbild{width:min(100% - 6px,calc(var(--bildhoehe,600px) * var(--seite)));align-self:center}
+}
+.fenster{position:absolute;max-width:640px;width:calc(100% - 32px);box-shadow:0 18px 60px rgba(0,0,0,.6),0 0 0 1px var(--linie);background:var(--kachel2);border-radius:28px;padding:48px 48px 40px}
+.fenster .klein{font-size:15px;font-weight:600;color:var(--akzent);margin:0 0 6px}
+.fenster h4{font-size:clamp(26px,3vw,36px);line-height:1.12;font-weight:700;margin:0 0 22px}
+.fenster ul{margin:0;padding:0;list-style:none}
+.fenster li{padding:14px 0;border-top:1px solid var(--linie);color:#b4b4b9;font-size:17px}
+.fenster li b{color:var(--text);font-weight:600}
+.fenster .zu{position:absolute;right:18px;top:18px;width:36px;height:36px;border-radius:50%;border:0;background:#333336;color:var(--text);cursor:pointer;display:grid;place-items:center}
+.fenster .zu svg{width:12px;height:12px}
+.grenzen{margin:120px 0 0;border-top:1px solid var(--linie);padding-top:28px}
+.grenzen h2{font-size:24px;font-weight:700;margin:0 0 12px}
+.grenzen ul{margin:0;padding-left:20px;color:var(--leise);font-size:15px}
+.grenzen li{margin:0 0 6px}
+h1,h2,h3,h4{text-wrap:balance}
+.k p,.held p,.kopf p,.fenster li,.grenzen li{text-wrap:pretty}
+/* Soundtrack: vier Songs, je Kachel das erste Bild des Bewegtbild-Covers, verlinkt zu Suno */
+.lieder .liste{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.lieder .lied{display:block;background:var(--kachel);border-radius:28px;padding:16px 16px 22px;color:var(--text);text-decoration:none}
+.lieder .lied img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px;display:block;margin-bottom:16px}
+.lieder .stil{display:block;font-size:14px;font-weight:600;color:var(--akzent);margin:0 4px 4px}
+.lieder b{display:block;font-size:19px;line-height:1.2;font-weight:700;margin:0 4px}
+.lieder .hoeren{display:block;margin:8px 4px 0;font-size:14px;color:var(--leise)}
+.lieder .lied:hover .hoeren{color:var(--text)}
+@media screen and (max-width:1100px){.lieder .liste{grid-template-columns:1fr 1fr}}
+@media screen and (max-width:480px){.lieder .liste{gap:12px}.lieder .lied{padding:10px 10px 16px;border-radius:20px}.lieder b{font-size:16px}}
+footer{margin:40px 0 0;color:var(--leise);font-size:13px;line-height:1.9}
+footer a{color:var(--text);text-decoration:none;border-bottom:1px solid var(--leise);white-space:nowrap}
+footer a:hover{color:var(--akzent);border-color:var(--akzent)}
+@media screen and (max-width:820px){
+  .raster{gap:14px}
+  .k,.k.w4,.k.w5,.k.w6,.k.w7,.k.w8{grid-column:span 12}
+  .k .text{padding:26px 24px 22px}
+  .held{padding:48px 0 28px}
+  .held h1{font-size:calc((100vw - 48px) / 6.5 * var(--fit,1))}
+  .held .bild{aspect-ratio:4/3;border-radius:22px}
+  .abschnitt{margin-top:84px}
+  .k.w12 .bild{aspect-ratio:4/3}
+  .fenster{padding:44px 24px 28px}
+  .k h3{padding-right:40px}
+  .grenzen{margin-top:84px}
+  .filterliste{padding-bottom:64px}
+}
+@media screen and (max-width:480px){
+  .schaubild{grid-template-columns:1fr;row-gap:14px;padding-bottom:64px}
+  .schaubild .l,.schaubild .r{text-align:left}
+  .schaubild .sm{justify-self:center}
+}
+/* Zwei Paare mit Liste daneben: unter 1100 px wird die Liste so hoch, dass ueber dem Bild ein schwarzes Band entsteht */
+@media screen and (max-width:1100px) and (min-width:821px){
+  .k[data-id=messdaten],.k[data-id=messliste],.k[data-id=effektclip],.k[data-id=rezept],.k[data-id=uebersicht],.k[data-id=filtern]{grid-column:span 12}
+}
+@media (pointer:coarse){.sprache button{min-height:44px;min-width:44px}}
+@media print{
+  /* Druck (Caspar_D, 28.10.2026): A4, ein Satzspiegel mit Rand zum Atmen; Schrift auf zwei Dritteln der Breite,
+     Bilder ueber die ganze Satzbreite. Dieselbe Seite, nur anders gesetzt. Der Rand liegt als Innenabstand auf main
+     und wiederholt sich je Seite (clone), damit er schwarz bleibt statt weiss wie ein @page-Rand. */
+  @page{size:A4;margin:0}
+  html,body{background:#000}
+  body{font-size:10.5pt;line-height:1.45}
+  main{max-width:none;padding:18mm 20mm 16mm;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  .sprache,.plus,.overlay,.held .pdf,.lieder{display:none!important}
+  /* Kopf */
+  .held{padding:0 0 6mm;text-align:left}
+  .held h1{font-size:30pt;background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--akzent)}
+  .held .spruch{font-size:20pt}
+  .held p{font-size:12pt;max-width:66.6%;margin:0 0 6mm}
+  .held .bild{aspect-ratio:21/9;border-radius:3mm}
+  /* Abschnitte: Ueberschrift beginnt eine neue Seite nur, wenn sie sonst allein unten stuende */
+  .abschnitt{margin:12mm 0 0;break-before:auto}
+  .abschnitt>.kopf{max-width:66.6%;margin:0 0 6mm;break-inside:avoid;break-after:avoid}
+  .abschnitt>.kopf .augenbraue{font-size:10pt}
+  .abschnitt>.kopf h2{font-size:24pt}
+  .abschnitt>.kopf p{font-size:12pt}
+  /* Kacheln untereinander, ohne Kachelflaeche: Text, darunter das Bild */
+  .raster{display:block}
+  .k,.k.quer,.k:not(.quer){display:block;background:none;border-radius:0;overflow:visible;margin:0 0 9mm;break-inside:avoid}
+  .k .text,.k.oben .text,.k.quer .text{max-width:66.6%;padding:0 0 3.5mm}
+  .k .klein{font-size:9.5pt;margin:0 0 1mm}
+  .k h3{font-size:15pt;margin:0 0 1.5mm}
+  .k p{font-size:10.5pt}
+  .k .zahl{font-size:22pt;margin:3mm 0 0}
+  .k .druck{display:block;margin:2.5mm 0 0;padding:0 0 0 4mm;color:var(--leise);font-size:9.5pt}
+  .k .druck li{margin:0 0 1mm}
+  .k .druck b{color:var(--text)}
+  /* Bilder: volle Satzbreite in ihrem eigenen Format; hohe Bilder hoechstens 110 mm hoch, damit Text und Bild meist zu zweit auf eine Seite passen */
+  .k .bild,.k.oben > .bild,.k.w4 .bild,.k.w12 .bild{aspect-ratio:auto!important;margin:0;border-radius:3mm;background:none;display:block}
+  .k.oben > .bild::after{display:none}
+  .k .bild img,.k .bild video{width:100%;height:auto;max-height:110mm;width:auto;max-width:100%;object-fit:contain;object-position:left top;border-radius:3mm}
+  .k .bild.trip,.k .bild.geraete{aspect-ratio:21/11!important}
+  .k .bild.konsole{min-height:0;margin:0;max-width:66.6%;border-radius:2mm;border:1px solid #2c2c30}
+  .konsole pre{font-family:Menlo,Consolas,monospace;font-size:8.5pt}
+  .filterliste,.schaubild{padding:0;max-width:100%}
+  .grenzen{margin:12mm 0 0;break-inside:avoid}
+  footer{break-before:avoid}
+}
+.held .knoepfe{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:-26px 0 38px}
+.held .knoepfe a,.laden a.knopf{display:inline-block;padding:9px 20px;border-radius:980px;background:var(--akzent);color:#000;font-weight:600;font-size:16px;text-decoration:none}
+.held .knoepfe a:hover,.laden a.knopf:hover{background:#ffa255}
+.held .knoepfe a small{font-weight:500;opacity:.75;margin-left:6px}
+.laden .k{display:flex;flex-direction:column}
+.laden .k .text{display:flex;flex-direction:column;flex:1;padding:30px 32px 30px}
+.laden a.knopf{align-self:flex-start;margin-top:auto;padding:10px 22px;font-size:17px}
+.laden .k p{margin-bottom:20px}
+.laden .anf{max-width:900px;margin:28px 0 0;color:var(--leise);font-size:15px;text-wrap:pretty}
+.laden .anf b{color:var(--text)}
+</style>
+<link rel="icon" href="data:,">
+</head>
+<body>
+<!-- erzeugt von werkzeug/sprachseiten.mjs aus index.html – nicht von Hand ändern -->
+<nav class="sprache" aria-label="Language">
+  <button data-l="en">EN</button><button data-l="de">DE</button><button data-l="ru">RU*</button>
+</nav>
+<main id="seite"><!--seite--><section class="held"><h1 style="--fit: 1;"><span class="rad" aria-hidden="true"></span>KlangTresor</h1><p class="spruch">Deine Suno-Musik. Bei dir.</p><p>Suno macht die Titel. KlangTresor bewahrt sie, spielt sie ab, misst sie aus und zeigt sie. Auf jedem Bildschirm in deinem Zuhause.</p><a class="pdf" href="KlangTresor-Broschuere-de.pdf">Die Broschüre als PDF <span aria-hidden="true">↓</span></a><a class="pdf" href="../erststart/KlangTresor-Erststart-de.pdf">Das Erststart-Heft als PDF <span aria-hidden="true">↓</span></a><div class="knoepfe"><a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe">Windows ↓<small>42 MB</small></a><a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg">macOS ↓<small>104 MB</small></a><a href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage">Linux ↓<small>55 MB</small></a></div><div class="bild"><img src="img/titel.webp?v=67" alt="" loading="lazy"></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Aufbau</p><h2>Läuft zu Hause.<br>Spielt überall im WLAN.</h2><p>Der Tresor liegt auf einem Rechner. Jedes Gerät mit einem Bildschirm (und Webbrowser) in deinem Heimnetz öffnet ihn.</p></div><div class="raster"><article class="k w4" data-id="server"><div class="text"><p class="klein">Wo es läuft</p><h3>Ein Rechner zu Hause.</h3><p><b>macOS, Windows, Linux, auch in Docker.</b> Eingerichtet per Doppelklick (unter Linux ein Befehl). Dein Archiv ist ein Ordner auf der Platte dieses Rechners.</p><ul class="druck"><li><b>Braucht Node.js und ffmpeg.</b> Die Einrichtung bringt Node.js mit und holt ffmpeg unter Windows selbst; auf Mac und Linux genügt ein Befehl.</li><li><b>Platz:</b> rund 1,6 GB für Programm und Modelle, dazu 3,1 GB für Whisper; dann rund 160 MB je Titel mit allem, was dazugehört: WAV, Instrumentspuren, Analyse, Titelbild (gemessen an den 343 Titeln des Autors).</li><li><b>Der Rechner ist der Server.</b> Solange sein Fenster offen ist, ist dein Tresor erreichbar; schließt du es, ist der Tresor aus.</li></ul></div>
+        <div class="bild konsole"><div class="leiste"><i></i><i></i><i></i><span>KlangTresor</span></div><pre style="--fit: 1.00;">$ ./starten-macos.command
+
+  <b>KlangTresor läuft</b>
+
+  KlangTresor auf <u>http://localhost:8788</u>
+  Auf diesem Mac:  <u>http://localhost:8788</u>
+  Im Heimnetz (en0):  <u>http://192.168.178.21:8788</u>
+  Katalog geladen: 268 Songs
+
+  268 Songs im Katalog.
+
+  Beenden mit Strg+C</pre></div>
+        <button class="plus" data-k="server" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w8" data-id="leser"><div class="text"><p class="klein">Womit du hörst</p><h3>Jeder Bildschirm mit Browser.</h3><p><b>Laptop, iPhone, Android, iPad, Tablet.</b> Alles, was im Heimnetz einen Webbrowser hat. Nichts zu installieren.</p><ul class="druck"><li><b>QR-Code am Rechner scannen</b>, und das Handy öffnet deinen Tresor.</li><li><b>Auf dem Startbildschirm</b> wie eine App, auf dem iPhone ohne Adresszeile.</li><li><b>Nur im Heimnetz.</b> Es gibt kein Passwort: Wer in deinem Netz ist und die Adresse kennt, kann mithören. Gib den Tresor darum nicht am Router nach außen frei.</li></ul></div>
+        <div class="bild" style="aspect-ratio:3/2"><img src="img/geraete-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="leser" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Sammeln</p><h2>Suno füllt den Tresor.<br>Du behältst ihn.</h2><p>Ein Klick aufs Lesezeichen bei Suno, einer auf den roten Knopf, und der Tresor holt, was neu ist. Ändert sich Suno oder endet dein Abo, ist alles schon bei dir.</p></div><div class="raster"><article class="k w12 quer" data-id="morgenlauf"><div class="text"><p class="klein">Morgenlauf</p><h3>Alles, was du gemacht hast. Vollständig.</h3><p>Titelbilder, Bewegtbilder, Liedtexte, Playlists, Kommentare und Herzen. Den Ton (MP3 und verlustfreies WAV) übernimmt der Tresor direkt aus deinen Downloads. Titel, die du bisher noch nicht von Suno auf deinen Computer übertragen hast, müssen bei Suno ab September 2026 für den Download freigegeben werden.</p><ul class="druck"><li><b>Auch private Titel</b>, solange sie in einer deiner eigenen Playlists liegen.</li><li><b>Deine Suno-Anmeldung bleibt in deinem Browser.</b> Ein Lesezeichen holt die Daten; KlangTresor sieht nie ein Passwort.</li><li><b>Nur Neues wird geholt.</b> Was schon zu Hause ist, kommt nicht noch einmal.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1607/979"><img src="img/morgenlauf-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="morgenlauf" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w12" data-id="schaubild"><div class="text"><p class="klein">Was wohin geht</p><h3>Von Suno in deinen Tresor.</h3><p>Suno liefert die Titel. Alles, was sich messen lässt, wird zu Hause berechnet.</p><ul class="druck"><li><b>Der rote Knopf</b> oben im KlangTresor startet den Morgenlauf von Hand.</li></ul></div>
+        <div class="schaubild"><p class="sk l">Von Suno</p><span></span><p class="sk r">Bei dir gerechnet</p><div class="sl l">MP3 und WAV<br>Cover und Bewegtbild<br>Liedtext und Stil<br>Playlists und Alben<br>Abrufe, Herzen, Kommentare<br><i>private Titel übers Lesezeichen</i></div><div class="sm"><i></i><div class="knopf"><svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"></path></svg></div><i></i><b>Morgenlauf</b></div><div class="sl r">Lautheit nach EBU R128<br>Tonart und Stimmumfang<br>Sechs Instrumentspuren<br>Wortzeiten mit Whisper<br>Tiefenkarten der Cover<br><i>Klangraum und Klangschaum</i></div></div>
+        <button class="plus" data-k="schaubild" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Übersicht</p><h2>Alles auf einen Blick.</h2><p>Dein ganzes Werk als Wand aus Titelbildern. Filtern, sortieren, ein Klick, und der Titel läuft.</p></div><div class="raster"><article class="k w8" data-id="uebersicht"><div class="text"><p class="klein">Filtern, sortieren, anhören</p><h3>Jeden Titel in Sekunden finden.</h3><p>Marken im Suchfeld, Auswahl darunter, die Abspiel-Leiste immer zur Hand.</p><ul class="druck"><li><b>Kachelgröße</b> von wenigen großen Titelbildern bis zehn in einer Reihe.</li><li><b>Ein Klick aufs Titelbild</b> spielt den Titel; die Bühne ist einen Klick weiter.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1920/1400"><img src="img/uebersicht-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="uebersicht" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w4" data-id="filtern"><div class="text"><p class="klein">Wonach du filterst</p><h3>Eingrenzen.</h3><p>Alles, was der Tresor über einen Titel weiß, kann ein Filter werden.</p><ul class="druck"><li><b>Marken lassen sich kombinieren:</b> Jede grenzt die Auswahl weiter ein.</li><li><b>Ein Klick aufs ×</b> nimmt eine Marke wieder weg.</li></ul></div>
+        <div class="filterliste"><div><p class="fk">Im Suchfeld</p><p class="fw">Titel · Stil · Liedtext</p></div><div><p class="fk">Als Marke</p><p class="fw">Jahr · Monat · Seit · Bis · Modell · Entstehung · Kommentiert von · Fehlt: WAV, Zeitmarken, Analyse, Kommentare, Lyrik</p></div><div><p class="fk">Auswahl</p><p class="fw">Mit / ohne Bewegtbild · Öffentlich / privat / beides · Modell</p></div><div><p class="fk">Sortieren</p><p class="fw">Neueste · Älteste · Meiste Abrufe · Meiste Herzen · Meiste Kommentare · Titel A–Z · Längste · Schnellste · Lauteste · Dynamischste · Größte Schwankung · Breitestes Stereo</p></div></div>
+        <button class="plus" data-k="filtern" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Hören</p><h2>Eine Bühne für jeden Titel.</h2><p>Vollbild, Titelbild oder Bewegtbild, und der Text folgt der Stimme Wort für Wort.</p></div><div class="raster"><article class="k w6" data-id="buehne"><div class="text"><p class="klein">Karaoke</p><h3>Mitsingen. Wort für Wort.</h3><p>Wann welches Wort fällt, berechnet dein eigener Rechner, für deutsche, englische und russische Titel.</p><ul class="druck"><li><b>Whisper läuft lokal.</b> Nichts aus dem KlangTresor geht an einen fremden Dienst.</li><li><b>Vom Sofa lesbar:</b> die aktuelle Zeile groß, die nächste angekündigt, die Knöpfe werden ausgeblendet.</li><li><b>Titelbild oder Bewegtbild</b> hinter dem Text, dazu deine eigenen Effektclips.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1/1"><img src="img/buehne-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="buehne" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w6" data-id="visualisierung"><div class="text"><p class="klein">Visualisierer</p><h3>Licht, das zuhört.</h3><p>Sieben eigene, dazu Butterchurn.</p><span class="zahl">333<small>MilkDrop-Presets</small></span><ul class="druck"><li><b>Sieben Visualisierer</b>, eigens für KlangTresor gebaut.</li><li><b>Butterchurn</b> bringt den klassischen MilkDrop-Look mit 333 Presets.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1/1"><img src="img/visualisierung-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="visualisierung" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Tonstudio</p><h2>Ein echtes Studio.<br>Im Browser.</h2><p>Equalizer mit Glockenstuhl, Kompressor, Ghettoblaster. Eine Kette in der Reihenfolge, in der ein Toningenieur sie baut. Dazu das Einmessen am Hörplatz.</p></div><div class="raster"><article class="k w5 oben" data-id="eq"><div class="text"><p class="klein">8-Band-Equalizer</p><h3>Acht Bänder. Dein Klang.</h3><p>Neutral beginnen oder einen Titel angleichen: an die Sammlung, an seine Stilgruppe, an sein Album oder an ein Klangvorbild.</p><ul class="druck"><li><b>Jedes Band zeigt seinen Spielraum.</b> Wie weit es sich anheben lässt, bestimmt der Titel selbst.</li><li><b>Der Angleich</b> an Sammlung, Stilgruppe, Album oder Klangvorbild wird aus den gemessenen Frequenzprofilen berechnet.</li><li><b>Auf dem Handy</b> als acht Regler mit Startwerten.</li></ul></div>
+        <div class="bild" style="aspect-ratio:980/656"><img src="img/eq-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="eq" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w7 oben" data-id="glockenstuhl"><div class="text"><p class="klein">Glockenstuhl</p><h3>Glocken zum Anfassen.</h3><p>Sechs Glockenfilter, frei in Frequenz, Höhe und Güte, dazu zwei Randfilter.</p><ul class="druck"><li><b>Eine Glocke ziehen</b>, um sie zu verschieben; die Griffe an ihren Schultern stellen die Güte.</li><li><b>Einzeln oder gestapelt:</b> jede Glocke für sich oder ihre Summe.</li><li><b>Ein Kerbfilter</b> nimmt eine einzelne störende Frequenz heraus.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1380/648"><img src="img/glockenstuhl-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="glockenstuhl" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w6 oben" data-id="kompressor"><div class="text"><p class="klein">Kompressor</p><h3>Kompressor. Oder Gradationskurve.</h3><p>Die klassische Knickkurve mit Schwelle, Verhältnis und Limiter oder eine Kurve wie im Bildprogramm: Leisepunkt, Lautpunkt, Gamma.</p><ul class="druck"><li><b>Zwei Arten, eine Stufe:</b> Kompressor oder Gradationskompressor, nie beides zugleich.</li><li><b>Die Kennlinie wird live gezeichnet</b>, mit der Absenkung in Echtzeit.</li><li><b>Gamma oder S-Kurve</b> mit einem einzigen Regler, für alle, die in Bildern denken.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1180/335"><img src="img/kompressor-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="kompressor" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w6 oben" data-id="boombox"><div class="text"><p class="klein">Ghettoblaster</p><h3>Ein Schalter für alles.</h3><p>Loudness, mehr Bass, mehr Höhen, Stimme frei, Nacht. Dazu MEGA BASS, Hall, Echo und Stereo-Breite.</p><ul class="druck"><li><b>Nacht</b> nimmt Bass und Höhen zurück, vor allem die Tiefen, die durch Wände dringen.</li><li><b>Tempo</b> schneller oder langsamer, wahlweise bei gleicher Tonhöhe.</li><li><b>Die Lampe KAPPUNG</b> warnt, wenn alles zusammen zu laut wird.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1180/335"><img src="img/boombox-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="boombox" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w12" data-id="einmessen"><div class="text"><p class="klein">Einmessen</p><h3>Nachgemessen in deinem Raum.</h3><p>Das Mikrofon deines Rechners vermisst die Lautsprecher dort, wo du sitzt. Das Spektrum zeigt die ganze Kette: was Suno geliefert hat und was deine Einstellung daraus macht.</p><ul class="druck"><li><b>Gemessen am Hörplatz</b>, nicht im Labor.</li><li><b>Vorher und nachher</b> nebeneinander in einem Spektrum.</li></ul></div>
+        
+        <button class="plus" data-k="einmessen" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Verstehen</p><h2>Schau dir die Analyse deiner Titel an.</h2><p>Jeder Titel vermessen. Der ganze Bestand als Sternenhimmel.</p></div><div class="raster"><article class="k w12" data-id="klangraum"><div class="text"><p class="klein">Klangraum</p><h3>Deine Titel als Sternenhimmel, sortiert nach Klanggruppen.</h3><p>Was ähnlich klingt, wird Nachbar. Größe, Helligkeit und Korona zeigen Abrufe, Herzen und Kommentare.</p><ul class="druck"><li><b>Nähe heißt ähnlicher Klang</b>, auf deinem Rechner aus dem Ton gemessen, in drei Dimensionen.</li><li><b>Von Titel zu Titel fliegen</b>, im Schiff, im Kubus, als Rabe oder in der Untertasse des Marsianers.</li></ul></div>
+        <div class="bild" style="aspect-ratio:2360/1109"><img src="img/himmel-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="klangraum" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w8 oben" data-id="messdaten"><div class="text"><p class="klein">Analyse</p><h3>Jeder Titel vermessen.</h3><p>Die Struktur aus Sunos Abschnitten, das Taktraster und wo die Spitzen an den Vollpegel stoßen oder sich in Mono etwas auslöscht.</p><ul class="druck"><li><b>Der Spielkopf</b> läuft durch alle Bahnen. So hat jeder Befund seine Stelle im Titel.</li><li><b>Lautheitsziele je Plattform:</b> Spotify, Apple Music, YouTube, Club, Rundfunk.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1560/1024"><img src="img/mess-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="messdaten" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w4" data-id="messliste"><div class="text"><p class="klein">Was gemessen wird</p><h3>Zu Hause gemessen.</h3><p>Auf deinem Rechner, für jeden Titel.</p><ul class="druck"><li><b>Kein Hochladen:</b> Der Ton verlässt das Haus nicht.</li></ul></div>
+        <div class="filterliste"><div><p class="fk">Pegel und Lautheit</p><p class="fw">Lautheit nach EBU R128 · Wahrer Spitzenpegel (aus dem WAV) · Lautheitsumfang · Abstand zu den Zielen der Plattformen</p></div><div><p class="fk">Form</p><p class="fw">Struktur aus Sunos Abschnitten · Taktraster und BPM · Hüllkurve</p></div><div><p class="fk">Stereo</p><p class="fw">Phase · Teilweise Auslöschung · Breite</p></div><div><p class="fk">Klang</p><p class="fw">Tonart · Stimmumfang · Obere Frequenzgrenze · Störfrequenzen</p></div><div><p class="fk">Spuren</p><p class="fw">Sechs Instrumentspuren · Wortzeiten mit Whisper</p></div></div>
+        <button class="plus" data-k="messliste" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Hörer</p><h2>Deine Musik und deine Zuhörer.</h2><p>Welche Titel Woche für Woche bei den Hörern ankommen.</p></div><div class="raster"><article class="k w12 oben" data-id="profil"><div class="text"><p class="klein">Hitstrom</p><h3>Woche für Woche.</h3><p>Die zwölf Titel mit dem meisten Aufwind und ihr Anteil an der Resonanz in jeder Woche.</p><ul class="druck"><li><b>Wöchentliche Hitparaden</b> deiner Titel darunter, nach Aufwind, Herzen und Abrufen.</li></ul></div>
+        <div class="bild" style="aspect-ratio:2360/677"><img src="img/hitstrom-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="profil" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w6 oben" data-id="groupie"><div class="text"><p class="klein">Groupieschaum</p><h3>Jeder Hörer eine Zelle.</h3><p>Alle, die dir Herzen geschenkt oder Kommentare geschrieben haben, mit ihrem Avatar. Hier ist die Größe die Treue: die Zeit von der ersten bis zur letzten Reaktion.</p><ul class="druck"><li><b>Weitere Maße:</b> Herzen, Kommentare, Länge der Kommentare, jüngste Aktivität, Zahl der Titel.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1180/826"><img src="img/groupie-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="groupie" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w6 oben" data-id="nachbar"><div class="text"><p class="klein">Nachbarschaft</p><h3>Wo du stehst.</h3><p>Alle um dich herum, die selbst Musik machen: wie viele sie im Blick haben und wie viele Beobachter sie haben. Du in Orange.</p><ul class="druck"><li><b>Beide Achsen sind logarithmisch.</b> Auf der Linie halten sich „im Blick“ und Beobachter die Waage.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1180/826"><img src="img/nachbar-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="nachbar" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w12 oben" data-id="gemein"><div class="text"><p class="klein">Gemeinschaft</p><h3>Wer für dich da ist.</h3><p>Wer am meisten kommentiert, wer die meisten Herzen gibt, und beides zusammen. Diesen Monat, dieses Jahr oder seit Beginn.</p><ul class="druck"><li><b>Ein Klick auf einen Namen</b> zeigt alles, was diese Person dir geschrieben hat.</li></ul></div>
+        <div class="bild" style="aspect-ratio:2360/775"><img src="img/gemein-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="gemein" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt mit-fahrt"><div class="kopf"><p class="augenbraue">Werk als Bild</p><h2>Dein ganzes Werk. Ein Bild.</h2><p>Als Bilderschau mit Zeitleiste oder als Schaum mit Werkverzeichnis. Als PDF für die Druckerei.</p></div><div class="raster"><article class="k w12 oben" data-id="klangschaum"><div class="text"><p class="klein">Klangschaum, Bilderschau</p><h3>Jeder Titel eine Zelle.</h3><p>Die Größe folgt Abrufen, Herzen oder Länge. Oder die Titelbilder als Salonhängung.</p><ul class="druck"><li><b>Gegliedert nach Album, Genre oder Klanggruppe</b>, gefärbt nach Gruppe.</li><li><b>Jeder Titel behält seine wahre Fläche.</b> Heranzoomen, bis auch die kleinste Zelle antippbar ist.</li><li><b>Ein Tipp spielt den Titel.</b></li></ul></div>
+        <div class="bild" style="aspect-ratio:2360/1327"><img src="img/klangschaum.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="klangschaum" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w7 oben fahrt-w8" data-id="zimmer"><div class="text"><p class="klein">Plakat-Studio</p><h3>Drucken. Aufhängen.</h3><p>Ein PDF-Export, fertig für die Druckerei, von A3 bis 100 × 140 cm, freie Formate bis 3 m. Hier die Bilderschau auf Papier, 100 × 60 cm, mit ihrer Zeitleiste.</p><ul class="druck"><li><b>Schrift als Vektor</b>, Bilder in Druckauflösung, Beschnitt inklusive.</li><li><b>Auflage und Platz für die Unterschrift</b> für einen nummerierten Druck.</li></ul></div>
+        <div class="bild" style="aspect-ratio:2360/1588"><img src="img/zimmer-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="zimmer" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w5 oben in-fahrt" data-id="papierdetail"><div class="text"><p class="klein">Ausschnitt</p><h3>Lesbar bis zur letzten Zeile.</h3><p>Nummern in den Zellen, dieselben Nummern in der Liste.</p><ul class="druck"><li><b>Zeitleiste</b>: ein Strich je Titel am Tag seiner Entstehung.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1180/1129"><img src="img/papier-detail-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="papierdetail" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w8 oben in-fahrt" data-id="papier"><div class="text"><p class="klein">Werkverzeichnis</p><h3>Jeder Titel mit Nummer.</h3><p>Der Klangschaum auf Papier, nummeriert, darunter das ganze Verzeichnis.</p><ul class="druck"><li><b>Nach Klang gegliedert</b>, nach Gruppe gefärbt, Areal für Areal nummeriert.</li></ul></div>
+        <div class="bild" style="aspect-ratio:4000/2862"><img src="img/papier-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="papier" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w4 oben" data-id="skizze"><div class="text"><p class="klein">Skizzenbuch</p><h3>Im Stil Leonardos.</h3><p>Der Schaum als Federzeichnungen auf Pergament, mit Siegel, Studien und Randnotizen.</p><ul class="druck"><li><b>Eine Seite aus einem Skizzenbuch</b>: Titel, Tabula, Instrumentenstudien, Refrains.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1180/1756"><img src="img/skizze-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="skizze" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><div class="fahrt" data-art="zoom" data-ids="papier papierdetail" style="--n: 2.4; --seite: 1.397624039133473; --bildhoehe: 736px;"><div class="halt" style="top: 65px;"><div class="kopf"><p class="augenbraue">Werk als Bild</p><h2>Dein ganzes Werk. Ein Bild.</h2><p>Als Bilderschau mit Zeitleiste oder als Schaum mit Werkverzeichnis. Als PDF für die Druckerei.</p></div><div class="buehne">
+    <div class="ftext"><p class="schritte"><span data-i="0" class="an">Werkverzeichnis</span> <i>·</i> <span data-i="1">Ausschnitt</span></p>
+      <div class="stufen"><div class="stufe an" data-i="0"><h3>Jeder Titel mit Nummer.</h3><p>Der Klangschaum auf Papier, nummeriert, darunter das ganze Verzeichnis.</p></div><div class="stufe" data-i="1"><h3>Lesbar bis zur letzten Zeile.</h3><p>Nummern in den Zellen, dieselben Nummern in der Liste.</p></div></div></div>
+    <div class="fbild"><div class="welt"><img class="ganz" src="img/papier-de.webp?v=67" alt="" style="left: 0%; top: 0%; width: 100%; height: 100%;"><img class="nah" src="img/papier-detail-de.webp?v=67" alt="" style="left: 0%; top: 51.223%; width: 34.65%; height: 46.331%; opacity: 0;"></div></div>
+    <button class="plus" data-k="papier" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></div></div></div><article class="k w12 oben" data-id="vorlagen"><div class="text"><p class="klein">Vier Anmutungen</p><h3>Galerie, Papier, Bleiglas, Mosaik.</h3><p>Jede Feinheit lässt sich nachträglich einstellen: Grund, Fugen, Glasbänder, Schatten.</p><ul class="druck"><li><b>Bilder für soziale Medien</b> in 4:5, 1:1 und im Story-Format.</li></ul></div>
+        <div class="bild" style="aspect-ratio:4/1"><img src="img/vorlagen-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="vorlagen" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt mit-fahrt"><div class="kopf"><p class="augenbraue">Gestalten</p><h2>Vom Titelbild zum Clip.</h2><p>Mit dem Effektclip-Studio wird aus einem Standbild ein bewegter Clip für Suno.</p></div><div class="raster"><div class="fahrt" data-art="wandel" data-ids="okkultbild okkulttiefe effektclip" style="--n: 3.4; --seite: 1.2016293279022403; --bildhoehe: 736px;"><div class="halt" style="top: 16px;"><div class="kopf"><p class="augenbraue">Gestalten</p><h2>Vom Titelbild zum Clip.</h2><p>Mit dem Effektclip-Studio wird aus einem Standbild ein bewegter Clip für Suno.</p></div><div class="buehne">
+    <div class="ftext"><p class="schritte"><span data-i="0" class="an">Das Bild</span> <i>·</i> <span data-i="1">Tiefenkarte</span> <i>·</i> <span data-i="2">Effektclip-Studio</span></p>
+      <div class="stufen"><div class="stufe an" data-i="0"><h3>Ein unbewegtes Titelbild.</h3><p>Der Ausgangspunkt: das Titelbild von „Okkultation“.</p></div><div class="stufe" data-i="1"><h3>Tiefe aus einem flachen Bild.</h3><p>Die Software schätzt, was nah und was fern ist. Hell ist nah.</p></div><div class="stufe" data-i="2"><h3>Ein Titelbild zum Leben erwecken.</h3><p>Fünf Effekte, einer davon eine Kamerafahrt, im Takt der Musik. Als Schleife für Suno.</p></div></div></div>
+    <div class="fbild"><img src="img/okkult-bild.webp?v=67" alt=""><img src="img/okkult-tiefe.webp?v=67" alt="" style="clip-path: inset(0px 0px 100%);"><video preload="none" src="img/okkult-clip.mp4?v=67" poster="img/okkult-bild.webp?v=67" muted="" loop="" playsinline="" preload="auto" style="opacity: 0;"></video><span class="linie" style="opacity: 0;"></span></div>
+    <button class="plus" data-k="okkultbild" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></div></div></div><article class="k w6 oben in-fahrt" data-id="okkultbild"><div class="text"><p class="klein">Das Bild</p><h3>Ein unbewegtes Titelbild.</h3><p>Der Ausgangspunkt: das Titelbild von „Okkultation“.</p><ul class="druck"><li><b>Jedes Bild eignet sich:</b> ein Titelbild oder eigenes Bild.</li></ul></div>
+        <div class="bild"><img src="img/okkult-bild.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="okkultbild" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w6 oben in-fahrt" data-id="okkulttiefe"><div class="text"><p class="klein">Tiefenkarte</p><h3>Tiefe aus einem flachen Bild.</h3><p>Die Software schätzt, was nah und was fern ist. Hell ist nah.</p><ul class="druck"><li><b>Licht, Nebel und Schärfe</b> liegen in der Szene statt obendrauf.</li></ul></div>
+        <div class="bild"><img src="img/okkult-tiefe.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="okkulttiefe" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w8 oben in-fahrt" data-id="effektclip"><div class="text"><p class="klein">Effektclip-Studio</p><h3>Ein Titelbild zum Leben erwecken.</h3><p>Fünf Effekte, einer davon eine Kamerafahrt, im Takt der Musik. Als Schleife für Suno.</p><ul class="druck"><li><b>Ein Lichtmischpult</b> steuert Scheinwerfer, Laser und Pulse im Takt der Musik.</li><li><b>Eine langsame Fahrt übers Bild</b> (Ken-Burns-Effekt), im Vorder- und Hintergrund verschieden schnell.</li><li><b>Als 10-Sekunden-Schleife sichern</b> und bei Suno als Bewegtbild hochladen.</li></ul></div>
+        <div class="bild"><video preload="none" src="img/okkult-clip.mp4?v=67" poster="img/okkult-bild.webp?v=67" muted="" loop="" playsinline="" data-tempo="1" onloadedmetadata="this.defaultPlaybackRate=this.playbackRate=+this.dataset.tempo"></video></div>
+        <button class="plus" data-k="effektclip" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w4 oben fahrt-w12" data-id="rezept"><div class="text"><p class="klein">Die Effektkette</p><h3>Fünf Effekte.</h3><p>Fünf aus 35 Studioeffekten mit zusammen 309 Einstellungen.</p><ul class="druck"><li><b>Für diesen Titel gesichert</b> und jederzeit neu gemalt.</li></ul></div>
+        <div class="filterliste"><div><p class="fk">Schwarm</p><p class="fw">Sechzig dunkle Vögel, jeder weicht seinen Nachbarn aus, alle folgen einer wandernden Mitte und beachten die Tiefenkarte</p></div><div><p class="fk">Staub</p><p class="fw">240 helle Teilchen steigen auf, als Licht über das Bild gelegt</p></div><div><p class="fk">Farbschleier</p><p class="fw">Palette „Asche“, farbig abgewedelt mit zehn Prozent</p></div><div><p class="fk">Farbkanal-Puls</p><p class="fw">Rot, Grün und Blau werden im Beat leicht gegeneinander verschoben</p></div><div><p class="fk">Ken Burns Fahrt</p><p class="fw">Zur Sonne, zur Raffinerie und über den Hafen, mit Tiefenschärfe aus der Tiefenkarte</p></div></div>
+        <button class="plus" data-k="rezept" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Auf dem Sofa</p><h2>Entspannen mit KlangTresor.</h2><p>Auf dem Handy wird es zur Musik-App. Auf dem Fernseher zur Bühne.</p></div><div class="raster"><article class="k w12 oben" data-id="abend"><div class="text"><p class="klein">Im Wohnzimmer</p><h3>Zurücklehnen und hören.</h3><p>Der Tresor läuft zu Hause. Gehört wird, wo es gemütlich ist.</p><ul class="druck"><li><b>Jedes Handy im Heimnetz</b> öffnet ihn im Browser, ohne App-Installation.</li></ul></div>
+        <div class="bild" style="aspect-ratio:3/2"><img src="img/abend.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="abend" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w12 oben" data-id="handys"><div class="text"><p class="klein">Handy</p><h3>Gemacht für eine Hand.</h3><p>Übersicht, Bühne, Liedtexte, Klangraum, Schaum, Details und Profil, hochkant oder quer.</p><ul class="druck"><li><b>Alles Weitere wartet hinter „⋯“:</b> Zufall, Wiederholen, Lautstärke, Equalizer, Details.</li><li><b>Ton-, Effektclip- und Plakat-Studio</b> brauchen einen großen Bildschirm und eine Maus. Dafür taugt jeder Laptop im Heimnetz.</li></ul></div>
+        <div class="bild" style="aspect-ratio:2438/852"><img src="img/handys-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="handys" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w12 oben" data-id="fernseher"><div class="text"><p class="klein">Fernseher</p><h3>Die Bühne, groß.</h3><p>Handy, Tablet oder Laptop auf den Fernseher spiegeln, und der Liedtext läuft mit.</p><ul class="druck"><li><b>Der Fernseher braucht AirPlay oder Google Cast:</b> etwa ein Apple TV, einen Chromecast oder einen Fernseher, der eins davon kann.</li><li><b>Im Querformat füllt die Bühne den Schirm</b>, die Knöpfe werden ausgeblendet.</li><li><b>Karaoke lesbar quer durchs Zimmer.</b></li></ul></div>
+        <div class="bild" style="aspect-ratio:3/2"><img src="img/tanz-de.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="fernseher" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt"><div class="kopf"><p class="augenbraue">Bleibt deins</p><h2>Ein Ordner. Deiner.</h2><p>Sichern, umziehen, Programm aktualisieren. Das Archiv bleibt.</p></div><div class="raster"><article class="k w8 oben" data-id="sichern"><div class="text"><p class="klein">Exportieren</p><h3>Auf einen Stick. Auch fürs Auto.</h3><p>Dein Tresor zum Mitnehmen: ein eingefrorenes Archiv zum Abspielen, ohne die WAV-Originale. Doppelklick auf sein Startskript, und es läuft auf einem anderen Mac oder Windows-PC. Dazu ein Musikordner: MP3s nach Titel benannt, mit Titelbild in der Datei, für Autoradio, Fernseher und VLC.</p><ul class="druck"><li><b>In Stufen:</b> erst das Programm und deine neuesten Titel, die Instrumentspuren zuletzt.</li><li><b>Früh abbrechen</b>, und du hast trotzdem etwas Vorzeigbares.</li></ul></div>
+        <div class="bild" style="aspect-ratio:1672/941"><img src="img/auto.webp?v=67" alt="" loading="lazy"></div>
+        <button class="plus" data-k="sichern" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article><article class="k w4" data-id="offen"><div class="text"><p class="klein">Quelloffen</p><h3>Frei. MIT-Lizenz.</h3><p>Auf GitHub. Ein Hinweis meldet, wenn eine neue Fassung da ist.</p><ul class="druck"><li><b>Aktualisieren ersetzt das Programm</b>, nie dein Archiv.</li><li><b>Deutsch, Englisch, Russisch.</b></li><li><b>Fremde Bausteine behalten ihre eigenen Lizenzen.</b> Die KI-Modelle zur Musikstil-Erkennung sind nur für nicht kommerzielle Nutzung frei; Einzelheiten in web/fremd/LIZENZEN.md.</li></ul></div>
+        
+        <button class="plus" data-k="offen" aria-label="Mehr"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"></path></svg></button></article></div></section><section class="abschnitt lieder"><div class="kopf"><p class="augenbraue">Soundtrack</p><h2>Vier Lieder über KlangTresor.</h2><p>Von Caspar_D, gemacht mit Suno.</p></div><div class="liste"><a class="lied" href="https://suno.com/song/47dfffbc-4c16-41f5-ae0e-a07278afcf39" target="_blank" rel="noopener"><img src="img/lied-1.webp?v=67" alt=""><span class="stil">Neue Deutsche Härte · 4:14</span><b>KlangTresor</b><span class="hoeren">Bei Suno anhören ↗</span></a><a class="lied" href="https://suno.com/song/e55a2590-18bf-461a-9bde-fddb1434ad44" target="_blank" rel="noopener"><img src="img/lied-2.webp?v=67" alt=""><span class="stil">Melodic Hard Trance · 5:11</span><b>KlangTresor – ClubMix</b><span class="hoeren">Bei Suno anhören ↗</span></a><a class="lied" href="https://suno.com/song/b6ca4dc6-7c79-4f27-b3e4-ed722f2281bd" target="_blank" rel="noopener"><img src="img/lied-3.webp?v=67" alt=""><span class="stil">Synthpop · 4:08</span><b>KlangTresor – SchneeMix</b><span class="hoeren">Bei Suno anhören ↗</span></a><a class="lied" href="https://suno.com/song/f3f3f9b8-4116-4025-8643-faff6b860fdd" target="_blank" rel="noopener"><img src="img/lied-4.webp?v=67" alt=""><span class="stil">Synthpop, auf Russisch · 4:06</span><b>KlangTresor – Снег по кнопке</b><span class="hoeren">Bei Suno anhören ↗</span></a></div></section><section class="abschnitt laden" id="laden"><div class="kopf"><p class="augenbraue">Herunterladen</p><h2>Für deinen Rechner.</h2><p>Eine Datei, Doppelklick, fertig. Den Rest holt die Einrichtung mit Balken.</p></div><div class="raster"><article class="k w4"><div class="text"><p class="klein">Windows</p><h3>Setup.exe</h3><p>Windows 10 / 11 · 64 Bit<br>42 MB</p><a class="knopf" href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Setup.exe">Herunterladen ↓</a></div></article><article class="k w4"><div class="text"><p class="klein">macOS</p><h3>DMG</h3><p>macOS 11 oder neuer · Intel und Apple Silicon<br>104 MB</p><a class="knopf" href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.dmg">Herunterladen ↓</a></div></article><article class="k w4"><div class="text"><p class="klein">Linux</p><h3>AppImage</h3><p>64 Bit (x86_64) · AppImage, ohne sudo<br>55 MB</p><a class="knopf" href="https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-x86_64.AppImage">Herunterladen ↓</a></div></article></div><p class="anf"><b>Systemanforderungen.</b> Rund 5 GB frei für Programm, KI-Modelle und Whisper, dazu Platz für dein Archiv. Ein aktueller Browser, für den vollen Funktionsumfang Google Chrome; hören kann jedes Handy oder Tablet im Heimnetz. Getestet unter Windows 10 und 11, macOS 26 (Intel), Ubuntu 24.04; Apple Silicon noch nicht auf einem echten Gerät. Nicht signiert: Beim ersten Start fragen Windows und macOS nach.</p></section><section class="grenzen"><h2>Gut zu wissen</h2><ul><li>KlangTresor macht keine Musik. Titel entstehen bei Suno; KlangTresor bewahrt und zeigt sie.</li><li>Es holt nur deine eigenen Titel, mit deiner eigenen Suno-Anmeldung.</li><li>Ändert Suno seine Seite, braucht der Morgenlauf womöglich eine neue Fassung. Alles, was schon zu Hause ist, bleibt spielbar.</li></ul></section><footer>KlangTresor ist freie Software von Caspar_D mit Tarja, Casto und Henry · <a class="gh" href="https://github.com/CasparDavi/klangtresor">github.com/CasparDavi/klangtresor</a><br>Die Broschüre als PDF: <a href="KlangTresor-Broschuere-de.pdf">für den Bildschirm</a> (8 MB) · <a href="https://github.com/CasparDavi/klangtresor/releases/download/broschuere-2026-10-28/KlangTresor-Broschuere-de-druck.pdf">zum Drucken</a> (70 MB)</footer><!--/seite--></main>
+<div class="overlay" id="overlay" role="dialog" aria-modal="true"><div class="fenster" id="fenster"></div></div>
+<script src="inhalt.js"></script>
+<script>
+const PLUS = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>';
+const KREUZ = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l10 10M11 1L1 11"/></svg>';
+
+/* ?lang= SCHLAEGT DAS GEMERKTE (Caspar_D, 16.11.2026: „die sprache muss steuern, welche page ich sehe").
+   Wer aus dem KlangTresor hierherkommt, bringt die Sprache seiner Oberflaeche in der Adresse mit - die ist
+   ein ausdruecklicher Wunsch und wiegt schwerer als die Sprache, in der jemand diese Seite zuletzt gelesen
+   hat. Sie wird auch gemerkt, damit der naechste Besuch OHNE Parameter dieselbe Sprache zeigt. */
+function spracheWaehlen(){
+  /* FESTE SPRACHSEITEN (19.11.2026, Auffindbarkeit). de.html und ru.html tragen
+     ihren Text schon im HTML, damit Suchmaschinen ihn ohne JavaScript lesen -
+     Google rendert meist nach, Bing, DuckDuckGo und Yandex kaum. Wer auf einer
+     solchen Seite steht, soll dort bleiben: data-seite schlaegt alles. Sonst
+     baeute das Skript die Seite sofort in einer anderen Sprache neu, und im
+     HTML staende etwas anderes als auf dem Schirm. */
+  const fest = document.documentElement.dataset.seite;
+  if (fest && S.kopf.h[fest]) return fest;
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q && S.kopf.h[q]) { try { localStorage.setItem('kt-features-sprache', q); } catch(e){} return q; }
+  try { const s = localStorage.getItem('kt-features-sprache'); if (s && S.kopf.h[s]) return s; } catch(e){}
+  for (const l of (navigator.languages || [navigator.language || 'en'])) { const k = (l||'').slice(0,2); if (S.kopf.h[k]) return k; }
+  return 'en';
+}
+function bild(id, L){
+  let q = BILDER[id];
+  if (q && q.sprachen) q = q.sprachen[L] || q.sprachen.en;   /* Bild je Sprache, sonst Englisch */
+  if (q && q.schaubild){ const g = q.schaubild;
+    return `<div class="schaubild"><p class="sk l">${g.links[L]}</p><span></span><p class="sk r">${g.rechts[L]}</p>`
+      + `<div class="sl l">${g.von[L].join('<br>')}</div>`
+      + `<div class="sm"><i></i><div class="knopf"><svg viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></div><i></i><b>${g.knopf[L]}</b></div>`
+      + `<div class="sl r">${g.bei[L].join('<br>')}</div></div>`; }
+  if (q && q.liste) return `<div class="filterliste">${q.liste.map(g => `<div><p class="fk">${g.k[L]}</p><p class="fw">${g.w[L].join(' · ')}</p></div>`).join('')}</div>`;
+  if (q && q.konsole) return `<div class="bild konsole"><div class="leiste"><i></i><i></i><i></i><span>KlangTresor</span></div><pre>${konsole(L).map(z => z.replace(/^  (KlangTresor (läuft|is running|работает))$/, '  <b>$1</b>').replace(/http:\/\/[^ ]+/g, '<u>$&</u>')).join('\n')}</pre></div>`;
+  if (q && q.geraete){ const g = q.geraete;
+    return `<div class="bild geraete"><div class="lap"><div class="schirm"><img src="${g.laptop}" alt=""></div><div class="fuss"></div></div>`
+      + `<div class="tab"><img src="${g.tablet}" alt=""></div><div class="hand"><img src="${g.handy}" alt=""></div></div>`; }
+  if (Array.isArray(q)) return `<div class="bild trip">${q.map(u => `<img src="${u}" alt="" loading="lazy">`).join('')}</div>`;
+  if (!q) return `<div class="bild"><div class="platz">${S.kopf.platz[L]} · ${id}</div></div>`;
+  if (/\.mp4(\?|$)/.test(q)) return `<div class="bild"><video src="${q}"${POSTER[id] ? ` poster="${POSTER[id]}"` : ''} autoplay muted loop playsinline data-tempo="${TEMPO[id] || 1}" onloadedmetadata="this.defaultPlaybackRate=this.playbackRate=+this.dataset.tempo"></video></div>`;
+  return `<div class="bild"${FORMAT[id] ? ` style="aspect-ratio:${FORMAT[id]}"` : ''}><img src="${q}" alt="" loading="lazy"></div>`;
+}
+const LADEN = 'https://github.com/CasparDavi/klangtresor/releases/latest/download/';
+const mbL = (n) => (L === 'ru' ? n + ' МБ' : n + ' MB');
+/* Die drei Knöpfe im Kopf: direkt die Datei; die Einzelheiten stehen unten im Abschnitt „Herunterladen“. */
+function knoepfe(){ return `<div class="knoepfe">${S.laden.systeme.map(x => `<a href="${LADEN}${x.datei}">${x.name} ↓<small>${mbL(x.mb)}</small></a>`).join('')}</div>`; }
+let L, KACHELN = {};
+function bauen(){
+  document.documentElement.lang = L;
+  document.querySelectorAll('.sprache button').forEach(b => b.classList.toggle('an', b.dataset.l === L));
+  KACHELN = {};
+  let h = `<section class="held"><h1><span class="rad" aria-hidden="true"></span>${S.kopf.marke[L]}</h1><p class="spruch">${S.kopf.h[L]}</p><p>${S.kopf.p[L]}</p><a class="pdf" href="KlangTresor-Broschuere-${L}.pdf">${S.kopf.pdf[L]} <span aria-hidden="true">↓</span></a><a class="pdf" href="../erststart/KlangTresor-Erststart-${L}.pdf">${S.kopf.heft[L]} <span aria-hidden="true">↓</span></a>${knoepfe()}${bild('titel', L)}</section>`;
+  for (const a of S.abschnitte){
+    const kopf = `<div class="kopf"><p class="augenbraue">${a.augenbraue[L]}</p><h2>${a.h[L]}</h2><p>${a.p[L]}</p></div>`;
+    h += `<section class="abschnitt${a.fahrt ? ' mit-fahrt' : ''}">${kopf}<div class="raster">`;
+    if (a.fahrt && !a.fahrtNach) h += fahrt(a, kopf);
+    for (const k of a.kacheln){
+      KACHELN[k.id] = k;
+      const zahl = k.zahl ? `<span class="zahl">${k.zahl.n}<small>${k.zahl.t[L]}</small></span>` : '';
+      h += `<article class="k w${k.w}${k.quer ? ' quer' : ''}${k.oben ? ' oben' : ''}${a.fahrt && a.fahrt.includes(k.id) ? ' in-fahrt' : ''}${k.wFahrt ? ' fahrt-w' + k.wFahrt : ''}" data-id="${k.id}"><div class="text"><p class="klein">${k.klein[L]}</p><h3>${k.h[L]}</h3><p>${k.p[L]}</p>${zahl}<ul class="druck">${k.d[L].map(x => `<li>${x}</li>`).join('')}</ul></div>
+        ${NUR_TEXT.has(k.id) ? '' : bild(k.id, L)}
+        <button class="plus" data-k="${k.id}" aria-label="${S.kopf.mehr[L]}">${PLUS}</button></article>`;
+      if (a.fahrtNach === k.id) h += fahrt(a, kopf);
+    }
+    h += `</div></section>`;
+  }
+  { const g = S.lieder;
+    h += `<section class="abschnitt lieder"><div class="kopf"><p class="augenbraue">${g.augenbraue[L]}</p><h2>${g.h[L]}</h2><p>${g.p[L]}</p></div><div class="liste">${
+      g.liste.map(x => `<a class="lied" href="${x.url}" target="_blank" rel="noopener"><img src="${x.bild}?v=${BV}" alt=""><span class="stil">${x.stil[L]} · ${x.dauer}</span><b>${x.t}</b><span class="hoeren">${g.hoeren[L]} ↗</span></a>`).join('')}</div></section>`; }
+  { const g = S.laden;
+    h += `<section class="abschnitt laden" id="laden"><div class="kopf"><p class="augenbraue">${g.augenbraue[L]}</p><h2>${g.h[L]}</h2><p>${g.p[L]}</p></div><div class="raster">${
+      g.systeme.map(x => `<article class="k w4"><div class="text"><p class="klein">${x.name}</p><h3>${x.typ}</h3><p>${x.zeile[L]}<br>${mbL(x.mb)}</p><a class="knopf" href="${LADEN}${x.datei}">${g.knopf[L]} ↓</a></div></article>`).join('')}</div><p class="anf">${g.anf[L]}</p></section>`; }
+  h += `<section class="grenzen"><h2>${S.grenzen.h[L]}</h2><ul>${S.grenzen.l[L].map(x => `<li>${x}</li>`).join('')}</ul></section>`;
+  const pt = PDF.text[L], mb = (n) => (L === 'ru' ? n + ' МБ' : n + ' MB');
+  h += `<footer>${ghLink(S.fuss[L])}<br>${pt[0]}: <a href="${PDF.bildschirm(L)}">${pt[1]}</a> (${mb(PDF.mb.bildschirm)}) · <a href="${PDF.druck(L)}">${pt[2]}</a> (${mb(PDF.mb.druck)})${S.stern[L] ? `<br>${S.stern[L]}` : ''}</footer>`;
+  document.getElementById('seite').innerHTML = h;
+  einpassen(); fahrtMasse(); fahren();
+  document.querySelectorAll('#seite video[autoplay]').forEach(anstossen);
+}
+function fahrt(a, kopf){
+  const ks = a.fahrt.map(id => a.kacheln.find(k => k.id === id)), art = a.fahrtArt || 'wandel';
+  const q = id => bild(id, L).match(/src="([^"]+)"/)[1];   // Bildpfad wie in der Kachel, je Sprache
+  const medien = art === 'zoom'
+    ? `<div class="welt"><img class="ganz" src="${q(ks[0].id)}" alt=""><img class="nah" src="${q(ks[1].id)}" alt=""></div>`
+    : `<img src="${q(ks[0].id)}" alt=""><img src="${q(ks[1].id)}" alt=""><video src="${BILDER[ks[2].id]}" poster="${q(ks[0].id)}" muted loop playsinline preload="auto"></video><span class="linie"></span>`;
+  return `<div class="fahrt" data-art="${art}" data-ids="${a.fahrt.join(' ')}" style="--n:${ks.length + 0.4};--seite:${art === 'zoom' ? ZOOM.seite : 1180 / 982}"><div class="halt">${kopf}<div class="buehne">
+    <div class="ftext"><p class="schritte">${ks.map((k, i) => `<span data-i="${i}">${k.klein[L]}</span>`).join(' <i>·</i> ')}</p>
+      <div class="stufen">${ks.map((k, i) => `<div class="stufe" data-i="${i}"><h3>${k.h[L]}</h3><p>${k.p[L]}</p></div>`).join('')}</div></div>
+    <div class="fbild">${medien}</div>
+    <button class="plus" data-k="${ks[0].id}" aria-label="${S.kopf.mehr[L]}">${PLUS}</button></div></div></div>`;
+}
+// Wandel (Gestalten): Bild → Tiefenkarte wird von oben nach unten gewischt (beide Stufen Kante an Kante, man sieht, dass
+// sie aufeinanderliegen); Tiefenkarte → Clip wird überblendet, das Bild „erwacht“, der Clip läuft erst nach der Blende los.
+const WISCH = [[0.24, 0.40], [0.58, 0.74]];
+const UEBERGANG = ['wisch', 'blende'];
+// Zoom (Plakat): Lage des Ausschnitts im Plakat, als Anteil von Breite und Höhe. Gemessen per Kreuzkorrelation
+// (0,998, in DE/EN/RU gleich): x 0, y 1466, 1386 × 1326 von 4000 × 2862 Plakatpixeln.
+const ZOOM = { seite: 4000 / 2862, nah: { x: 0, y: 1466 / 2862, w: 1386 / 4000, h: 1326 / 2862 }, fahrt: [0.18, 0.78], blende: [0.62, 0.84] };
+const glatt = t => t * t * (3 - 2 * t);
+function fahren(){ document.querySelectorAll('.fahrt').forEach(fahre); }
+function fahre(f){
+  if (!f.offsetParent) return;
+  const r = f.getBoundingClientRect(), halt = f.querySelector('.halt');
+  const leiste = document.querySelector('.sprache').offsetHeight;
+  const rest = innerHeight - leiste - halt.offsetHeight;   // passt alles: mittig; sonst unten bündig, Überschrift ragt oben hinaus
+  const oben = Math.round(rest >= 24 ? leiste + rest / 2 : innerHeight - halt.offsetHeight - 12);   // ab hier steht die Kachel
+  halt.style.top = oben + 'px';
+  const p = Math.min(1, Math.max(0, (oben - r.top) / (r.height - halt.offsetHeight)));
+  const stufe = f.dataset.art === 'zoom' ? zoomen(f, p) : wandeln(f, p);
+  f.querySelectorAll('.schritte span, .stufe').forEach(e => e.classList.toggle('an', +e.dataset.i === stufe));
+  f.querySelector('.plus').dataset.k = f.dataset.ids.split(' ')[stufe];
+}
+function wandeln(f, p){
+  const ebenen = f.querySelectorAll('.fbild > img, .fbild > video'), linie = f.querySelector('.linie');
+  let stufe = 0, linieX = null;
+  WISCH.forEach(([a, b], i) => {
+    const w = Math.min(1, Math.max(0, (p - a) / (b - a)));
+    if (UEBERGANG[i] === 'blende') ebenen[i + 1].style.opacity = w.toFixed(3);
+    else ebenen[i + 1].style.clipPath = `inset(0 0 ${(100 - w * 100).toFixed(2)}% 0)`;
+    if (w > 0 && w < 1 && UEBERGANG[i] === 'wisch') linieX = w;
+    if (w >= 0.5) stufe = i + 1;
+  });
+  linie.style.opacity = linieX === null ? 0 : 1;
+  if (linieX !== null) linie.style.top = `calc(${(linieX * 100).toFixed(2)}% - 1px)`;
+  const v = ebenen[2];
+  if (p >= WISCH[1][1]) { if (v.paused && !v.dataset.steht) { v.currentTime = 0; anstossen(v); } }
+  else { if (!v.paused || v.currentTime) { v.pause(); v.currentTime = 0; } knopfWeg(v); }
+  return stufe;
+}
+// Kamera als Ausschnitt des Plakats (Anteile; der Rahmen hat das Seitenverhältnis des Plakats). Gezoomt wird geometrisch
+// um den Fixpunkt beider Ausschnitte, so wirkt die Fahrt gleichmäßig. Ziel: so breit wie der Ausschnitt, unten bündig mit ihm
+// (dort steht das Werkverzeichnis). Kurz vor dem Ziel blendet der hochaufgelöste Ausschnitt über.
+function zoomen(f, p){
+  const n = ZOOM.nah, [a, b] = ZOOM.fahrt, t = glatt(Math.min(1, Math.max(0, (p - a) / (b - a))));
+  const w1 = n.w, y1 = n.y + n.h - w1, fy = y1 / (1 - w1);   // Ziel (x 0, y1, w1) und Fixpunkt (0, fy)
+  const k = Math.pow(w1, t), y = fy * (1 - k);
+  const setze = (el, x0, y0, bw, bh) => { const s = el.style;
+    s.left = ((x0 - 0) / k * 100).toFixed(3) + '%'; s.top = ((y0 - y) / k * 100).toFixed(3) + '%';
+    s.width = (bw / k * 100).toFixed(3) + '%'; s.height = (bh / k * 100).toFixed(3) + '%'; };
+  setze(f.querySelector('.ganz'), 0, 0, 1, 1);
+  const nah = f.querySelector('.nah'); setze(nah, n.x, n.y, n.w, n.h);
+  nah.style.opacity = glatt(Math.min(1, Math.max(0, (p - ZOOM.blende[0]) / (ZOOM.blende[1] - ZOOM.blende[0])))).toFixed(3);
+  return t >= 0.5 ? 1 : 0;
+}
+// iPhones im Stromsparmodus spielen Videos nicht von selbst ab. Dann steht das Standbild da, mit einem Knopf; ein Tipp startet.
+function anstossen(v){
+  const p = v.play();
+  if (p) p.then(() => knopfWeg(v)).catch(() => {
+    v.dataset.steht = 1;
+    if (!v.parentElement.querySelector('.abspielen'))
+      v.insertAdjacentHTML('afterend', `<button class="abspielen" aria-label="${S.kopf.abspielen[L]}"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button>`);
+  });
+}
+function knopfWeg(v){ delete v.dataset.steht; v.parentElement.querySelector('.abspielen')?.remove(); }
+// Überschrift und Kachel stehen gemeinsam (der Abstand bleibt konstant). Das Bild richtet sich nach der Kachel allein;
+// ist der Schirm für beides zu niedrig, scrollt die Überschrift hinaus und die Kachel bleibt ganz sichtbar.
+function fahrtMasse(){ document.querySelectorAll('.fahrt').forEach(f => {
+  if (!f.offsetParent) return;
+  const leiste = document.querySelector('.sprache').offsetHeight;
+  const schmal = matchMedia('(max-width:820px) and (orientation:portrait)').matches;
+  const frei = innerHeight - leiste - 24 - 6 - (schmal ? f.querySelector('.ftext').offsetHeight : 0);
+  f.style.setProperty('--bildhoehe', Math.max(160, frei) + 'px');
+}); }
+let fahrtRuht = true;
+addEventListener('scroll', () => { if (fahrtRuht) { fahrtRuht = false; requestAnimationFrame(() => { fahrtRuht = true; fahren(); }); } }, { passive: true });
+addEventListener('resize', () => { fahrtMasse(); fahren(); });
+// Titel füllt die Spalte; die Servermeldung zeigt überall denselben Ausschnitt.
+function einpassen(){
+  // Titel: füllt die Breite, wird aber nie breiter als die Spalte (Schriftbreite schwankt je Gerät).
+  const h1 = document.querySelector('.held h1');
+  if (h1){ h1.style.setProperty('--fit', 1); const f = h1.parentElement.clientWidth / h1.getBoundingClientRect().width;
+    if (f < 1) h1.style.setProperty('--fit', (Math.floor(f * 100) / 100).toFixed(2)); }
+  // Servermeldung: auf schmaleren Kacheln derselbe Ausschnitt wie auf dem großen Schirm (dort 22 em Text breit), nur kleiner.
+  for (const pre of document.querySelectorAll('.konsole pre')){
+    const f = Math.min(1, (pre.clientWidth - 32) / (22 * 13));
+    pre.style.setProperty('--fit', (Math.floor(f * 100) / 100).toFixed(2));
+  }
+}
+addEventListener('resize', einpassen);
+let knopf = null;
+function auf(id, plus){
+  knopf = plus;
+  const k = KACHELN[id]; if (!k) return;
+  document.getElementById('fenster').innerHTML = `<button class="zu" aria-label="${S.kopf.zu[L]}">${KREUZ}</button>
+    <p class="klein">${k.klein[L]}</p><h4>${k.h[L]}</h4><ul>${k.d[L].map(x => `<li>${x}</li>`).join('')}</ul>`;
+  document.getElementById('overlay').classList.add('auf');
+  document.body.style.overflow = 'hidden';
+  lage();
+  try { document.querySelector('#fenster .zu').focus({ preventScroll: true }); } catch (e) {}
+}
+function lage(){
+  const o = document.getElementById('overlay'), f = document.getElementById('fenster');
+  if (!knopf || !o.classList.contains('auf')) return;
+  const r = knopf.getBoundingClientRect(), z = f.querySelector('.zu'), W = o.clientWidth, H = o.clientHeight, m = 16;
+  f.style.left = f.style.top = '0px';
+  const w = f.offsetWidth, h = f.offsetHeight, zr = f.offsetWidth - z.offsetLeft - z.offsetWidth, zt = z.offsetTop;
+  const x = Math.max(m, Math.min(r.right + zr - w, W - m - w));
+  const y = Math.max(m, Math.min(r.top - zt, H - m - h));
+  f.style.left = x + 'px'; f.style.top = y + 'px';
+}
+addEventListener('resize', lage);
+function zu(){ document.getElementById('overlay').classList.remove('auf'); document.body.style.overflow = ''; }
+document.addEventListener('click', e => {
+  const p = e.target.closest('.plus'); if (p) return auf(p.dataset.k, p);
+  const ab = e.target.closest('.abspielen');
+  if (ab){ const v = ab.parentElement.querySelector('video'); knopfWeg(v); v.play().catch(() => {}); return; }
+  if (e.target.closest('.zu') || e.target.id === 'overlay') zu();
+  const b = e.target.closest('.sprache button');
+  if (b){ L = b.dataset.l; try { localStorage.setItem('kt-features-sprache', L); } catch(e){}
+    /* Auf einer festen Sprachseite wird die DATEI gewechselt - sonst zeigte die
+       deutsche Seite russischen Text, waehrend Titel und Beschreibung im HTML
+       deutsch blieben. Auf der Startseite (ohne data-seite) wird wie bisher
+       nur neu gebaut. */
+    if (document.documentElement.dataset.seite){
+      const ziel = { en: 'index.html', de: 'de.html', ru: 'ru.html' }[L];
+      if (ziel) { location.href = ziel + location.hash; return; }
+    }
+    bauen(); }
+});
+addEventListener('keydown', e => { if (e.key === 'Escape') zu(); });
+L = spracheWaehlen(); bauen();
+</script>
+</body>
+</html>

@@ -48,7 +48,22 @@ Neue Songs dort eintragen; die Broschüre zeigt den Abschnitt nicht (im Druck au
 
 **Text ändern**
 1. In `inhalt.js` ändern (alle drei Sprachen).
-2. Seite: fertig. Broschüre: PDFs neu erzeugen (unten).
+2. **Sprachseiten neu erzeugen** — sonst steht im HTML der alte Satz, während der
+   Browser den neuen zeigt:
+
+   ```bash
+   node docs/features/quelle/sprachseiten.mjs
+   ```
+
+3. Broschüre: PDFs neu erzeugen (unten).
+
+> **Seit dem 19.11.2026 tragen `de.html` und `ru.html` den Seitentext fest im HTML**
+> (Auffindbarkeit: Google rendert meist nach, Bing, DuckDuckGo und Yandex kaum).
+> Quelle bleibt `index.html` + `inhalt.js`; **`de.html` und `ru.html` nie von Hand
+> ändern** — das Werkzeug überschreibt sie. Es schreibt auch `docs/sitemap.xml`.
+> Ändert sich das Titelbild oder der Spruch, vorher
+> `node docs/features/quelle/vorschaubild.mjs` laufen lassen (braucht ImageMagick)
+> und die Bildversion `?v=` in `sprachseiten.mjs` hochzählen.
 
 **PDFs erzeugen** (aus `docs/features/`):
 
