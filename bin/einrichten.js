@@ -2025,6 +2025,24 @@ function firewallFragtGleich() {
       warum: T('Dafür braucht KlangTresor dich — und das hat einen guten Grund. Der Ausweis, den Suno verlangt, lebt etwa eine Minute und gilt nur im Browser. KlangTresor bekommt ihn nicht und soll ihn nicht bekommen: So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto. Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin angemeldet bist — ein Klick, einmal am Tag.'),
       zitat: T('Auf der KlangTresor-Seite findest du oben rechts den roten Knopf für den täglichen Abgleich — und darunter die Frage „Willst Du auch die nur Dir zugänglichen Daten im KlangTresor sehen?". Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung. Chrome wird dafür gebraucht.'),
       nachsatz: T('Was du bei Suno schon freigeschaltet hast, kostet dabei nichts — ein Guthaben zahlst du nur beim Freischalten selbst, und das machst du bei Suno, nicht hier. Das alles geht auch später jederzeit: KlangTresor läuft auch ohne.'),
+      /* DIE WEGE NACH DRAUSSEN (19.11.2026). Seit 1.1.18 faehrt die schwere
+         Dokumentation nicht mehr im Paket mit - drei Viertel des Downloads waren
+         Hefte und Bilder, die online stehen. Damit sie niemand sucht, stehen die
+         Adressen hier, am Ende der Einrichtung: der Augenblick, in dem jemand zum
+         ersten Mal wissen will, was das Programm alles kann. Dieselben vier Wege
+         wie in der Lasche „Doku" im Profil und im Fenster „KlangTresor".
+         Die Sprache steckt in der Adresse: die Uebersicht nimmt sie als ?lang,
+         Heft und Broschuere haben je Sprache ihre eigene Datei. */
+      wege: (() => { const sp = sprache(); const S = 'https://caspardavi.github.io/klangtresor/'; return [
+        [T('Das Projekt auf GitHub'), 'https://github.com/CasparDavi/klangtresor',
+         T('Quelltext, alle Fassungen zum Herunterladen, die Liste der Änderungen.')],
+        [T('Erster Kontakt (PDF)'), `${S}erststart/KlangTresor-Erststart-${sp}.pdf`,
+         T('Vierzehn Seiten mit Bildern: von der heruntergeladenen Datei bis zum gefüllten Archiv.')],
+        [T('Was KlangTresor kann'), `${S}features/?lang=${sp}`,
+         T('Die Übersicht: was der KlangTresor alles kann, mit Bildern.')],
+        [T('Broschüre (PDF)'), `${S}features/KlangTresor-Broschuere-${sp}.pdf`,
+         T('Dasselbe zum Lesen am Stück, als Heft zum Blättern oder Drucken.')],
+      ]; })(),
     };
   }
   matt(T('Bis hierher war alles öffentlich. Was nur dir gehört, fehlt noch:'));
@@ -2059,6 +2077,13 @@ function firewallFragtGleich() {
   matt(T('du bei Suno, nicht hier.'));
   leer();
   matt(T('Das geht auch später jederzeit. KlangTresor läuft auch ohne.'));
+  leer();
+  { const sp = sprache(); const S = 'https://caspardavi.github.io/klangtresor/';
+    matt(T('Zum Nachlesen — die Hefte stehen im Netz, nicht im Programm:'));
+    satz(MATT('  ' + T('Erster Kontakt (PDF)') + '  ') + MARKE(`${S}erststart/KlangTresor-Erststart-${sp}.pdf`));
+    satz(MATT('  ' + T('Was KlangTresor kann') + '  ') + MARKE(`${S}features/?lang=${sp}`));
+    satz(MATT('  ' + T('Broschüre (PDF)') + '  ') + MARKE(`${S}features/KlangTresor-Broschuere-${sp}.pdf`));
+    satz(MATT('  ' + T('Das Projekt auf GitHub') + '  ') + MARKE('https://github.com/CasparDavi/klangtresor')); }
 
   /* ================================================================ */
   leer();

@@ -3767,6 +3767,18 @@ h3 .infoknopf .ico{width:14px;height:14px}
   cursor:pointer;font:600 12.5px system-ui;border:1px solid}
 #morgenja{border-color:#16be5c;background:#16be5c22;color:#16be5c}
 #morgennein{border-color:#5a5a60;background:transparent;color:#9a9aa0}
+/* DIE WEGE NACH DRAUSSEN (19.11.2026), in der Lasche „Doku" und im Fenster
+   „KlangTresor". Keine nackte Linkliste: jede Zeile sagt, was dahintersteckt -
+   „Broschüre" allein verrät nicht, ob das ein Heft über die Bedienung ist oder
+   eine Werbeschrift. Hausform: Fläche, Rand, Druckfeedback wie bei den Pillen. */
+.dokuwege{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.dokuwege a{display:block;text-decoration:none;background:var(--flaeche2);
+  border:1px solid var(--rand);border-radius:10px;padding:10px 13px}
+.dokuwege a:hover{border-color:var(--akzent)}
+.dokuwege a:active{transform:scale(0.99)}
+.dokuwege a b{display:block;color:var(--text);font-size:13.5px;font-weight:600}
+.dokuwege a span{display:block;color:var(--schwach);font-size:11.5px;line-height:1.45;margin-top:2px}
+.dokuvor{color:var(--schwach);font-size:12px;line-height:1.5;margin:0}
 /* DIE BESTAETIGUNG DES SUNO-NAMENS (Caspar_D, 19.11.2026: „die bestätigung
    das bin ich muß dominanter erscheinen"). Sie hing als kleine Pille am Ende
    der Befundzeile und wurde uebersehen: „Prüfen" meldete Erfolg, und der
@@ -4843,6 +4855,19 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="werprojekt">
         <a href="https://github.com/CasparDavi/klangtresor"
            target="_blank" rel="noopener">github.com/CasparDavi/klangtresor</a>
+      </div>
+      <!-- Heft und Broschuere (19.11.2026): seit die schwere Dokumentation nicht mehr
+           im Paket mitfaehrt, sind diese Adressen der Weg dorthin. Dieselben Worte wie
+           in der Lasche „Doku" (aussen.*); die Sprache reist in der Adresse mit. -->
+      <div class="werprojekt">
+        <a data-href-sprache="https://caspardavi.github.io/klangtresor/erststart/KlangTresor-Erststart-{s}.pdf"
+           href="https://caspardavi.github.io/klangtresor/erststart/KlangTresor-Erststart-de.pdf"
+           target="_blank" rel="noopener" data-i18n="aussen.erststart">Erster Kontakt (PDF)</a>
+      </div>
+      <div class="werprojekt">
+        <a data-href-sprache="https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-{s}.pdf"
+           href="https://caspardavi.github.io/klangtresor/features/KlangTresor-Broschuere-de.pdf"
+           target="_blank" rel="noopener" data-i18n="aussen.broschuere">Broschüre (PDF)</a>
       </div>
       <div class="werblock">
         <div class="werrolle" data-i18n="wer.rolle.gebaut">Gebaut von</div>
@@ -18335,6 +18360,37 @@ function rangBild(sortiert, wertVon, untenBei){
 /* Zwischen den Registern der Autorenseite umschalten. Die Wahl bleibt
    erhalten - wer die Community ansieht und einen Song anspielt, will
    beim Zurueckkommen wieder dort stehen. */
+/* DIE WEGE NACH DRAUSSEN - AN EINER STELLE (19.11.2026).
+   Seit dieser Fassung faehrt die schwere Dokumentation nicht mehr im Paket mit
+   (.gitattributes: docs/features/, docs/erststart/ sind vom Weitergabe-Archiv
+   ausgenommen). Drei Viertel des Downloads waren Dokumentation, die online steht.
+   Damit sie niemand sucht, stehen die Adressen jetzt IM Programm - an drei
+   Stellen, aber aus EINER Liste: am Ende der Einrichtung, im Fenster
+   „KlangTresor" und in der Lasche „Doku" im Profil.
+   Die Sprache der Oberflaeche steckt in der Adresse: die Feature-Seite nimmt
+   sie als ?lang, Heft und Broschuere haben je Sprache ihre eigene Datei. */
+const AUSSEN_SEITE = 'https://caspardavi.github.io/klangtresor/';
+function aussenWege(){
+  const sp = (typeof window.sprache === 'function' ? window.sprache() : 'de');
+  return [
+    { k: 'aussen.projekt',    w: 'aussen.projekt.was',    u: 'https://github.com/CasparDavi/klangtresor' },
+    { k: 'aussen.erststart',  w: 'aussen.erststart.was',  u: `${AUSSEN_SEITE}erststart/KlangTresor-Erststart-${sp}.pdf` },
+    { k: 'aussen.features',   w: 'aussen.features.was',   u: `${AUSSEN_SEITE}features/?lang=${sp}` },
+    { k: 'aussen.broschuere', w: 'aussen.broschuere.was', u: `${AUSSEN_SEITE}features/KlangTresor-Broschuere-${sp}.pdf` },
+  ];
+}
+/* Als Liste mit Erklaerung - wer das Fenster aufmacht, soll nicht raten muessen,
+   was sich hinter einem Wort verbirgt (Hausregel: vom Nutzer her denken). */
+function aussenWegeFeld(){
+  return `<div class="dokuwege">` + aussenWege().map(x =>
+    `<a href="${x.u}" target="_blank" rel="noopener"><b>${esc(t(x.k))}</b><span>${esc(t(x.w))}</span></a>`).join('') + `</div>`;
+}
+function profilDokuFuellen(){
+  const el = $('profildoku'); if (!el) return;
+  el.innerHTML = `<div class="block"><h3>${esc(t('profil.doku.kopf'))}</h3>`
+    + `<p class="dokuvor">${esc(t('profil.doku.vor'))}</p>` + aussenWegeFeld() + `</div>`;
+}
+
 function profilRegister(welches){
   try { localStorage.setItem('profilRegister', welches); } catch (e) {}
   document.querySelectorAll('.profilreg .reg').forEach(b =>
@@ -18347,6 +18403,7 @@ function profilRegister(welches){
   if (welches === 'community' && typeof profilNachbarnFuellen === 'function') profilNachbarnFuellen();
   if (welches === 'handy') profilHandyFuellen();
   if (welches === 'system') profilSystemFuellen();
+  if (welches === 'doku') profilDokuFuellen();
 }
 
 /* ---- SYSTEM IM PROFIL (28.10.2026) ---------------------------------------------
@@ -18514,17 +18571,10 @@ async function profilSystemFuellen(){
   h += zeile('ok', p.archiv == null ? esc(t('system.wird_gemessen'))
               : esc(t('system.platz_text', { archiv: sysGroesse(p.archiv), programm: sysGroesse(p.programm) })),
          p.frei == null ? '' : esc(t('system.frei', { g: sysGroesse(p.frei) })));
-  /* DIE WEGE NACH DRAUSSEN (16.11.2026). Die Lasche ist der Ort, an dem man mit dem Programm selbst zu tun hat -
-     hier sucht man auch „was kann das eigentlich alles" und „wo kommt das her". Dieselben Woerter wie im Fenster
-     „Wer" (aussen.*), die Sprache der Oberflaeche steckt in der Adresse: die Feature-Seite nimmt sie als ?lang,
-     die Broschuere hat je Sprache ihre eigene Datei. */
-  const sp = (typeof window.sprache === 'function' ? window.sprache() : 'de');
-  const FS = 'https://caspardavi.github.io/klangtresor/features/';
-  h += `</div><div class="sysaussen">`
-    + `<a href="${FS}?lang=${sp}" target="_blank" rel="noopener">${esc(t('aussen.features'))}</a>`
-    + `<a href="https://github.com/CasparDavi/klangtresor" target="_blank" rel="noopener">${esc(t('aussen.quelltext'))}</a>`
-    + `<a href="${FS}KlangTresor-Broschuere-${sp}.pdf" target="_blank" rel="noopener">${esc(t('aussen.broschuere'))}</a>`
-    + `</div>`;
+  /* DIE WEGE NACH DRAUSSEN standen bis zum 19.11.2026 hier (seit dem 16.11.). Sie sind in die eigene Lasche
+     „Doku" umgezogen: seit die schwere Dokumentation nicht mehr im Paket mitfaehrt (.gitattributes), sind diese
+     Adressen der einzige Weg dorthin, und dann gehoeren sie an EINEN sichtbaren Ort und nicht in eine Lasche,
+     die „System" heisst. Gezeichnet werden sie aus aussenWege() - dieselbe Liste wie dort. */
   el.innerHTML = h + `</div>`;
   /* Liegt eine neuere Version bereit, steht vor der Programmzeile ein oranger Pfeil - und am Rechner selbst
      (nicht im Container, dort wird das Image neu gebaut) der Knopf, der das Update einspielt */
@@ -19881,6 +19931,10 @@ function profilAuf(){
         <!-- SYSTEM (Caspar_D, 28.10.2026: „ein Tab Systemgesundheit wäre gut"): was da ist und was fehlt.
              Der Punkt erscheint, solange der Einrichtung etwas fehlt - derselbe wie am Avatar. -->
         <button class="reg" data-preg="system" onclick="profilRegister('system')">${t('profil.reg.system')}<span class="sysdot" hidden></span></button>
+        <!-- DOKU (Caspar_D, 19.11.2026): seit die Hefte und die Broschuere nicht mehr im Paket
+             mitfahren, sind diese vier Adressen der Weg dorthin - und sie sollen nicht zu
+             uebersehen sein. Dieselbe Liste wie am Ende der Einrichtung und im Fenster „KlangTresor". -->
+        <button class="reg" data-preg="doku" onclick="profilRegister('doku')">${t('profil.reg.doku')}</button>
       </div>
 
       <div class="pregfeld" data-preg="daten">
@@ -19965,6 +20019,7 @@ ${t('profil.urheber.suno')}</pre>
       <div class="pregfeld" data-preg="handy" id="profilhandy" hidden></div>
       <div class="pregfeld" data-preg="system" id="profilsystem" hidden></div><!-- fuellt profilSystemFuellen() --><!-- fuellt profilHandyFuellen() -->
       <div class="pregfeld" data-preg="export" id="profilexport" hidden></div><!-- fuellt profilExportFuellen() -->
+      <div class="pregfeld" data-preg="doku" id="profildoku" hidden></div><!-- fuellt profilDokuFuellen() -->
     </div>`;
 
   $('detail').classList.add('auf');

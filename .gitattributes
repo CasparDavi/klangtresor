@@ -19,6 +19,18 @@ docs/BACKLOG.md        export-ignore
 docs/EINRICHTUNG-TEXTE.md export-ignore
 docs/suno-*.txt        export-ignore
 
+# DIE SCHWERE DOKUMENTATION (19.11.2026). Das ausgepackte Paket wog 94,6 MB, davon
+# 52,7 MB docs/features (Broschueren-PDFs und ihre Bilder) und 20,4 MB docs/erststart
+# (das Erststart-Heft) - drei Viertel des Downloads waren Dokumentation, die online
+# steht und die man ohnehin VOR der Installation liest. PDFs komprimieren nicht, also
+# schlug das eins zu eins auf Setup.exe, DMG und AppImage durch.
+# Die Adressen stehen dafuer jetzt im Programm: am Ende der Einrichtung, im Fenster
+# „KlangTresor" und als eigene Lasche im Profil.
+# Geprueft: zur Laufzeit liest nichts aus diesen beiden Ordnern (server/, bin/, web/).
+# docs/handbuch/ BLEIBT - MORGENSCHRITTE.json liest der Server bei jedem Morgenlauf.
+docs/features/         export-ignore
+docs/erststart/        export-ignore
+
 # Windows-Starter brauchen CRLF - cmd.exe stolpert sonst ueber
 # mehrzeilige if-Bloecke, und PowerShell meldet bei LF gern kryptische
 # Parserfehler. Ohne diese Regel entscheidet die lokale

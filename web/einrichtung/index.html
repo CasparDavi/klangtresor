@@ -41,6 +41,17 @@
 <title data-t="titel_seite">KlangTresor wird eingerichtet</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Cg transform='translate(32 32)' stroke='%23e8e8ec' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23e8e8ec'/%3E%3C/svg%3E">
 <style>
+/* DIE WEGE NACH DRAUSSEN am Ende der Einrichtung (19.11.2026). Die Hefte und die
+   Uebersicht fahren nicht mehr im Paket mit; damit sie niemand sucht, stehen die
+   Adressen hier - im Augenblick, in dem jemand zum ersten Mal wissen will, was
+   das Programm alles kann. Hausform: Flaeche, Rand, ein Satz je Zeile. */
+.wege{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.wege a{display:block;text-decoration:none;background:var(--flaeche2);
+  border:1px solid var(--rand);border-radius:10px;padding:10px 13px}
+.wege a:hover{border-color:var(--akzent)}
+.wege a b{display:block;color:var(--text);font-size:13.5px;font-weight:600}
+.wege a span{display:block;color:var(--schwach);font-size:11.5px;line-height:1.45;margin-top:2px}
+
   :root{
     --bg:#0c0c0d; --flaeche:#161618; --flaeche2:#242427; --rand:#333336;
     --text:#ececed; --schwach:#8b8b90; --akzent:#f97b14; --akzent2:#e31c79;
@@ -238,6 +249,12 @@
         <div class="warum" id="warum"></div>
         <div class="zitat" id="zitat"></div>
         <div class="was" id="nachsatz"></div>
+        <!-- DIE WEGE NACH DRAUSSEN (19.11.2026). Die Hefte und die Uebersicht
+             fahren seit 1.1.18 nicht mehr im Paket mit - drei Viertel des
+             Downloads waren Dokumentation. Damit sie niemand sucht, stehen die
+             Adressen hier, am Ende der Einrichtung: der Augenblick, in dem
+             jemand zum ersten Mal wissen will, was das Programm alles kann. -->
+        <div class="wege" id="wege"></div>
         <div class="karte warte" id="windows" hidden>
           <span class="ueber" data-t="nur_windows">gleich, nur unter Windows</span>
           <p id="windowstext" style="white-space:pre-line"></p>
@@ -461,6 +478,11 @@ function malenSchritt(s) {
     $('nachsatz').textContent = AB.nachsatz || '';
     $('windows').hidden = !AB.windows;
     if (AB.windows) $('windowstext').textContent = AB.windows;
+    const wg = (AB.wege || []).map(function (w) {
+      return '<a href="' + esc(w[1]) + '" target="_blank" rel="noopener"><b>' + esc(w[0]) + '</b>'
+           + (w[2] ? '<span>' + esc(w[2]) + '</span>' : '') + '</a>';
+    }).join('');
+    if ($('wege').dataset.stand !== wg) { $('wege').innerHTML = wg; $('wege').dataset.stand = wg; }
   }
 
   const kk = (akt && akt.kacheln) || [];

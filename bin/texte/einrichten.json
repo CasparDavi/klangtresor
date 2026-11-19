@@ -1702,5 +1702,41 @@
  "Verstanden – KlangTresor starten": {
   "en": "Got it – start KlangTresor",
   "ru": "Понятно – запустить KlangTresor"
+ },
+ "Das Projekt auf GitHub": {
+  "en": "The project on GitHub",
+  "ru": "Проект на GitHub"
+ },
+ "Quelltext, alle Fassungen zum Herunterladen, die Liste der Änderungen.": {
+  "en": "Source code, every version to download, the list of changes.",
+  "ru": "Исходный код, все версии для загрузки, список изменений."
+ },
+ "Erster Kontakt (PDF)": {
+  "en": "First contact (PDF)",
+  "ru": "Первый контакт (PDF)"
+ },
+ "Vierzehn Seiten mit Bildern: von der heruntergeladenen Datei bis zum gefüllten Archiv.": {
+  "en": "Fourteen pages with pictures: from the downloaded file to a full archive.",
+  "ru": "Четырнадцать страниц с картинками: от скачанного файла до полного архива."
+ },
+ "Was KlangTresor kann": {
+  "en": "Everything KlangTresor can do",
+  "ru": "Что умеет KlangTresor"
+ },
+ "Die Übersicht: was der KlangTresor alles kann, mit Bildern.": {
+  "en": "The overview: everything KlangTresor can do, with pictures.",
+  "ru": "Обзор: что умеет KlangTresor, с картинками."
+ },
+ "Broschüre (PDF)": {
+  "en": "Brochure (PDF)",
+  "ru": "Брошюра (PDF)"
+ },
+ "Dasselbe zum Lesen am Stück, als Heft zum Blättern oder Drucken.": {
+  "en": "The same to read in one go, as a booklet to leaf through or print.",
+  "ru": "То же самое, чтобы прочитать целиком, — брошюра для чтения или печати."
+ },
+ "Zum Nachlesen — die Hefte stehen im Netz, nicht im Programm:": {
+  "en": "To read up on — the booklets live on the web, not in the program:",
+  "ru": "Почитать — брошюры лежат в сети, а не в программе:"
  }
 }

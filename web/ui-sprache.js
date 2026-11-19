@@ -547,6 +547,24 @@
     /* Die Wege nach draussen. Einmal benannt, zweimal benutzt: als Zeile im Fenster „Wer" und als Fusszeile
        der Lasche „System" (index.html, data-href-sprache). Die Feature-Seite und die Broschuere gibt es in
        allen drei Sprachen - die Adresse bekommt die Sprache der Oberflaeche mitgegeben. */
+    /* DIE VIER WEGE NACH DRAUSSEN (19.11.2026). Seit die Hefte und die Broschuere nicht
+       mehr im Paket mitfahren, sind das die Adressen dorthin - und jede traegt einen Satz,
+       der sagt, was dahintersteckt. Das Wort allein verraet es nicht. */
+    ['aussen.projekt', 'Das Projekt auf GitHub', 'The project on GitHub'],
+    ['aussen.projekt.was', 'Quelltext, alle Fassungen zum Herunterladen, die Liste der Änderungen.',
+                           'Source code, every version to download, the list of changes.'],
+    ['aussen.erststart', 'Erster Kontakt (PDF)', 'First contact (PDF)'],
+    ['aussen.erststart.was', 'Vierzehn Seiten mit Bildern: von der heruntergeladenen Datei bis zum gefüllten Archiv.',
+                             'Fourteen pages with pictures: from the downloaded file to a full archive.'],
+    ['aussen.features.was', 'Die Übersicht: was der KlangTresor alles kann, mit Bildern.',
+                            'The overview: everything KlangTresor can do, with pictures.'],
+    ['aussen.broschuere.was', 'Dasselbe zum Lesen am Stück, als Heft zum Blättern oder Drucken.',
+                              'The same to read in one go, as a booklet to leaf through or print.'],
+    /* Die Lasche fuer diese Wege im Profil. */
+    ['profil.reg.doku', 'Doku', 'Docs'],
+    ['profil.doku.kopf', 'Zum Nachlesen', 'To read up on'],
+    ['profil.doku.vor', 'Die Hefte und die Übersicht stehen im Netz, nicht im Programm — so bleibt der Download klein. Jeder Weg öffnet sich in einem neuen Reiter, in der Sprache dieser Oberfläche.',
+      'The booklets and the overview live on the web, not in the program — that keeps the download small. Each link opens in a new tab, in the language of this interface.'],
     ['aussen.features', 'Was KlangTresor kann', 'Everything it can do'],
     ['aussen.quelltext', 'Quelltext', 'Source code'],
     ['aussen.broschuere', 'Broschüre (PDF)', 'Brochure (PDF)'],
