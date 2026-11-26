@@ -191,6 +191,121 @@ const TYPEN = {
  * Status 206, kann man im Song nicht springen - teilweise startet
  * die Wiedergabe gar nicht erst.
  */
+/* ---- BILDSTUFEN ------------------------------------------------------
+   DIE EINE LEITER DES HAUSES (Caspar_D, 26.11.2026: "doppelte
+   infrastruktur will ich nirgends haben"). Eine Anfrage auf cover@128.jpg
+   oder /avatar/<kennung>@128.jpg gibt es als DATEI nicht: der Server
+   rechnet sie mit ffmpeg aus dem Original und behaelt sie im Speicher.
+   Das @ trennt die Stufe vom Namen: eigen-2.jpg ist ein echtes, nummeriertes
+   eigenes Bild - mit einem Bindestrich waere eigen-64.jpg zweideutig.
+   Jede Ansicht - Raster, Playlist, Hitparade, Stern, Buehne, Klangschaum,
+   Bilderschau, Plakat-Vorschau - fragt diese Adressen; im Browser wird
+   nichts mehr verkleinert.
+
+   WARUM AUF DEM SERVER: Er rechnet einmal fuer alle Geraete. Im Browser
+   muesste jedes Geraet zuerst das Original holen (cover.jpg im Mittel
+   1,1 MB, alle 350 zusammen 374 MB) und selbst verkleinern - auf dem
+   Handy im WLAN (der Server lauscht auf 0.0.0.0) waere das der volle
+   Download. So bekommt jedes Geraet nur, was es zeigt. Bis zum 26.11.2026
+   verkleinerte der Klangschaum im Browser und merkte es in IndexedDB
+   ('bilder', hoechstens 3000); das ist mit dieser Leiter geloescht.
+
+   WARUM NICHT ALS DATEI: Ein Block ist auf der Arbeitsplatte 1 MB (das
+   sagt statfs, bin/kacheln.js warnt am Ende selbst davor). Die volle
+   Leiter waeren Tausende Dateien - wenige MB echte Daten, aber Gigabytes
+   belegter Platz. Im Speicher sind alle 350 Cover auf Stufe 128
+   zusammen etwa 2 MB. Nach einem Neustart rechnet der Server neu; die
+   Geraete haben ihre Stufen dann noch im eigenen Cache (immutable).
+
+   WARUM UEBERHAUPT: Der Browser haelt zu jedem Bild das VOLLE Bitmap,
+   gleich wie klein es gezeigt wird - vier Byte je Bildpunkt. Gemessen am
+   26.11.2026 in Joergs Tab: der Klangraum hielt 350 Cover = 1 728 MB.
+
+   DIE STUFE IST DIE KUERZERE SEITE: cover@128.jpg hat an der kuerzeren
+   Seite 128 Bildpunkte. Ein Bild, das ein Feld randvoll deckt, braucht an
+   der kuerzeren Seite hoechstens die laengere Feldseite - so passt eine
+   Regel fuer jedes Feld, ob quadratisch, 3:4 oder frei.
+
+   NIE HOCHRECHNEN: min(<stufe>, Quelle) laesst kleine Quellen in Ruhe -
+   eine Stufe groesser als das Original waere nur weicher. Fehlt ffmpeg
+   oder misslingt der Lauf, antwortet der Server 404; die Oberflaeche
+   faellt dann auf das Original zurueck, und das Bild erscheint trotzdem.
+
+   DIE CACHE-REGEL ERBT DIE STUFE VOM ORIGINAL: ist das Original wandelbar
+   (kachel.jpg, eigen.jpg - siehe liefere()), fragt der Browser nach
+   (no-cache, Last-Modified = Zeit des Originals); sonst gilt dieselbe
+   Frist wie fuer das Original. Im Speicher steht die Zeit des Originals
+   im Schluessel - ein ersetztes Bild wird neu gerechnet.
+
+   SCHONEN: hoechstens drei ffmpeg-Laeufe zugleich; der Rest wartet. Ein
+   frischer Klangraum bestellt 350 Stufen auf einmal. */
+const STUFEN = [64, 128, 256, 512];
+const STUFEN_DECKEL = 64 * 1024 * 1024;
+const STUFEN_ZUGLEICH = 3;
+const stufenVorrat = new Map();        /* Schluessel -> Buffer, Reihenfolge = Alter */
+const stufenLaufend = new Map();       /* Schluessel -> Promise, damit zwei Anfragen nur einmal rechnen */
+const stufenWarten = [];               /* wartende Laeufe, wenn drei schon rechnen */
+let stufenBytes = 0, stufenAktiv = 0;
+
+/* Aus einem Pfad wie .../cover@128.jpg die Quelle und die Stufe lesen. */
+function stufeAus(pfad) {
+  const m = /^(.*)@(\d+)\.jpg$/i.exec(pfad);
+  if (!m || !STUFEN.includes(+m[2])) return null;
+  const basis = m[1] + '.jpg';
+  return fs.existsSync(basis) ? { basis, stufe: +m[2] } : null;
+}
+
+function stufeRechnen(basis, stufe, zeit) {
+  const schluessel = basis + '|' + stufe + '|' + zeit;
+  if (stufenLaufend.has(schluessel)) return stufenLaufend.get(schluessel);
+  const lauf = new Promise((fertig) => {
+    const los = () => {
+      stufenAktiv++;
+      /* die kuerzere Seite auf die Stufe, die laengere folgt dem Seitenverhaeltnis */
+      const k = `min(${stufe},min(iw,ih))`;
+      require('node:child_process').execFile('ffmpeg', ['-v', 'error', '-i', basis,
+        '-vf', `scale='if(lte(iw,ih),${k},-1)':'if(lte(iw,ih),-1,${k})'`, '-frames:v', '1', '-q:v', '4', '-f', 'mjpeg', '-'],
+        { encoding: 'buffer', maxBuffer: 16 * 1024 * 1024, timeout: 20000 },
+        (fehler, aus) => {
+          stufenAktiv--; const naechster = stufenWarten.shift(); if (naechster) naechster();
+          fertig(fehler || !aus || !aus.length ? null : aus);
+        });
+    };
+    if (stufenAktiv < STUFEN_ZUGLEICH) los(); else stufenWarten.push(los);
+  }).then((b) => { stufenLaufend.delete(schluessel); return b; });
+  stufenLaufend.set(schluessel, lauf);
+  return lauf;
+}
+
+/* frist: 'jahr' (wie cover.jpg), 'woche' (wie die Avatare) oder 'wandelbar' (wie kachel.jpg, eigen.jpg) */
+function stufeLiefern(req, res, basis, stufe, frist) {
+  let zeit; try { zeit = fs.statSync(basis).mtime; } catch (e) { res.writeHead(404); return res.end(); }
+  const schluessel = basis + '|' + stufe + '|' + zeit.getTime(), stempel = zeit.toUTCString();
+  if (frist === 'wandelbar' && req.headers['if-modified-since'] === stempel) {
+    res.writeHead(304, { 'Cache-Control': 'no-cache', 'Last-Modified': stempel }); return res.end();
+  }
+  const senden = (b) => {
+    if (!b) { res.writeHead(404); return res.end('nichts hier'); }
+    res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Content-Length': b.length,
+      ...(frist === 'wandelbar' ? { 'Cache-Control': 'no-cache', 'Last-Modified': stempel }
+        : { 'Cache-Control': frist === 'woche' ? 'max-age=604800' : 'public, max-age=31536000' }) });
+    res.end(req.method === 'HEAD' ? undefined : b);
+  };
+  const da = stufenVorrat.get(schluessel);
+  if (da) { stufenVorrat.delete(schluessel); stufenVorrat.set(schluessel, da); return senden(da); }
+  stufeRechnen(basis, stufe, zeit.getTime()).then((b) => {
+    if (b && !stufenVorrat.has(schluessel)) {
+      stufenVorrat.set(schluessel, b); stufenBytes += b.length;
+      /* Deckel: das am laengsten unbenutzte fliegt. */
+      while (stufenBytes > STUFEN_DECKEL && stufenVorrat.size > 1) {
+        const [alt, altB] = stufenVorrat.entries().next().value;
+        stufenVorrat.delete(alt); stufenBytes -= altB.length;
+      }
+    }
+    senden(b);
+  });
+}
+
 function liefere(req, res, datei) {
   let stat, imBehaelter = null;   /* imBehaelter: { b, rel }, wenn die Datei nur dort liegt */
   try { stat = fs.statSync(datei); } catch (e) {
@@ -4042,6 +4157,13 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     return res.end(req.method === 'HEAD' ? undefined : daten);
   }
   /* Die geholten Avatare (bin/avatare.js) - Dateiname ist die SHA-1 der Adresse, nichts sonst wird ausgeliefert. */
+  /* auch in Bildstufen (Kennung@128.jpg, siehe BILDSTUFEN) - die Avatare sind alle jpg */
+  const avatarStufe = p.match(/^\/avatar\/([0-9a-f]{40})@(\d+)\.jpg$/);
+  if (avatarStufe && STUFEN.includes(+avatarStufe[2])) {
+    const basis = path.join(WURZEL, 'library', 'avatare', avatarStufe[1] + '.jpg');
+    if (!fs.existsSync(basis)) { res.writeHead(404); return res.end(); }
+    return stufeLiefern(req, res, basis, +avatarStufe[2], 'woche');
+  }
   const avatarWeg = p.match(/^\/avatar\/([0-9a-f]{40}\.(jpg|png|webp|gif))$/);
   if (avatarWeg) {
     const datei = path.join(WURZEL, 'library', 'avatare', avatarWeg[1]);
@@ -4851,6 +4973,8 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
   if (p.startsWith('/media/')) {
     const ziel = sicherer(SONGS, p.slice('/media/'.length));
     if (!ziel) { res.writeHead(403); return res.end(); }
+    /* Bildstufen (cover-128.jpg): gibt es nicht als Datei, der Server rechnet sie. */
+    if (!fs.existsSync(ziel)) { const st = stufeAus(ziel); if (st) return stufeLiefern(req, res, st.basis, st.stufe, /(^|[\\/])(kachel|eigen(-\d+)?)\.jpg$/.test(st.basis) ? 'wandelbar' : 'jahr'); }
     return liefere(req, res, ziel);
   }
 

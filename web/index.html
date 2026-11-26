@@ -8738,8 +8738,8 @@ function zeichnen(){
   r.innerHTML = liste.map(s=>`
     <div class="karte" data-id="${s.id}" onclick="kachelKlick('${s.id}')">
       <div class="bild">
-        <img loading="lazy" src="${artworkKachel(s.id)}" alt=""
-             onerror="this.src='${artworkBild(s.id)}'">
+        <img loading="lazy" src="${artworkKachel(s.id, inPixel(kachelBreite))}" alt=""
+             onerror="this.onerror=null;this.src='${artworkBild(s.id)}'">
         ${s.modell ? `<span class="marke">${s.modell}</span>` : ''}
         ${hatBewegtbild(s) ? `<span class="videomarke" title="${istEigenesBewegtbild(s) ? t('kachel.video_eigen') : t('kachel.video')}">${SYM('eigenvideo')}</span>` : ''}
         ${s.oeffentlich ? '' : `<span class="privatmarke" title="${t('kachel.privat.titel')}">${t('kachel.privat')}</span>`}
@@ -8762,6 +8762,12 @@ function zeichnen(){
 ============================================================= */
 
 function registerSetzen(name){
+  /* Den Klangraum verlassen gibt seine Cover frei. karteCover haelt je Stern ein
+     VOLLSTAENDIGES Image - 768 x 768 dekodiert sind 2,25 MiB, und bis zum Neuladen
+     des Tabs blieb jedes liegen: gemessen am 26.11.2026 an einem Tab mit 1,5 GB,
+     davon 357 MB in 167 Kacheln und weitere Hunderte in 276 SVG-Bildern. Beim
+     Wiederkommen kommen die Cover aus dem Browser-Vorrat, also ohne neuen Netzweg. */
+  if (register === 'karte' && name !== 'karte') karteCover.clear();
   register = name;
   document.documentElement.dataset.reg = name;
   if (name === 'tracks') offenePlaylist = null;
@@ -8986,6 +8992,16 @@ function sichtbareSterne(z){
 }
 const coverAn = () => sichtbareSterne(karteZoom) <= COVER_STERNE;
 const karteXY = (L, i) => [karteZoom.tx + karteZoom.k * L.xy[i][0], karteZoom.ty + karteZoom.k * L.xy[i][1]];
+/* Die Cover im Stern: 128 Punkte (Caspar_D, 26.11.2026). Der Stern zeigt
+   sie hoechstens doppelt so gross wie seinen Kern, und die Zielgroesse
+   kostet nichts - sie ist eine Frage des Augenscheins, nicht der Uhr. */
+/* GERAETEPIXEL, nicht Punkte. Gemessen am 26.11.2026 ueber drawImage: das
+   Cover im Stern wird bei 8-fachem Zoom 5 bis 18 Pixel breit gemalt, bei
+   16-fachem 12 bis 42, bei 40-fachem 36 bis 86. 128 traegt also jeden Zoom,
+   64 waere am oberen Ende knapp (Caspar_D, 26.11.2026: 128 im Stern).
+   Mit der Pixeldichte verrechnet waeren 128 Punkte auf einem 2,2er Schirm
+   282 Pixel und damit Stufe 512 - das war der erste Anlauf und falsch. */
+const STERN_STUFE = 128;
 const karteCover = new Map();          // id -> Image (laedt nach, zeichnet dann neu)
 let karteNeuzeichnung = 0;
 function coverBild(s){
@@ -8994,7 +9010,7 @@ function coverBild(s){
   if (!im){
     im = new Image(); im.fertig = false;
     im.onload = () => { im.fertig = true; if (!karteNeuzeichnung) karteNeuzeichnung = requestAnimationFrame(() => { karteNeuzeichnung = 0; if (raumK() && register === 'karte') karteHimmel(raumK()); }); };
-    im.src = s.fremd ? (s.bildUrl || '') : (s.bild || artworkBild(s.id));
+    im.src = s.fremd ? (s.bildUrl || '') : (s.bild || artworkBild(s.id, STERN_STUFE));
     karteCover.set(s.id, im);
   }
   return im.fertig ? im : null;
@@ -9909,7 +9925,7 @@ async function bilderFormateHolen(urls, melde){
   await Promise.all(fehlt.map(u => new Promise(ok => { const im = new Image();
     const fertig = () => { melde(++n, fehlt.length); ok(); };
     im.onload = () => { if (im.naturalWidth && im.naturalHeight) bilderFormate.set(u, +(im.naturalWidth / im.naturalHeight).toFixed(4)); fertig(); };
-    im.onerror = fertig; im.src = u; })));
+    im.onerror = fertig; im.src = stufenAdresse(u, 256); })));   /* das Verhaeltnis aus Stufe 256 statt aus dem Original: Rundung hoechstens 0,2 % (eine halbe Zeile auf 256), gemerkt wird unter der Adresse des Originals */
   try { localStorage.setItem('mysuno-bildformate', JSON.stringify(Object.fromEntries(bilderFormate))); } catch (e) {}
 }
 async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, auswahl }){
@@ -10007,9 +10023,9 @@ function bilderEinsetzen(r, farbe, m, zeilen){
   for (const a of r.schilder || [])
     html += `<div class="bwkopf" style="left:${a.x.toFixed(1)}px;top:${a.y.toFixed(1)}px;width:${a.w.toFixed(1)}px;color:${farbe(a.name)}">${esc(gruppenAnzeige(a.name))} <small>${window.t('zahl.titel', { n: r.bilder.filter(b => b.gruppe === a.name).length })}</small></div>`;
   for (const b of r.bilder){
-    const url = artworkBild(b.id), stufe = schaumStufe(Math.max(b.w, b.h) * dpr), z = roh.get(b.id);
+    const url = artworkBild(b.id), z = roh.get(b.id);   /* eigenes Format: die kuerzere Seite */
     html += `<div class="bw${b.id === aktuellId ? ' laeuft' : ''}" data-id="${b.id}" style="left:${b.x.toFixed(1)}px;top:${b.y.toFixed(1)}px;width:${b.w.toFixed(1)}px;height:${b.h.toFixed(1)}px;--bwf:${farbe(b.gruppe)};--bwr:${(b.rahmen || 0).toFixed(1)}px"`
-      + ` title="${esc((z && z.titel) || '')} · ${esc(m.text(b.roh))}"><img data-quelle="${esc(url)}" data-stufe="${stufe}" src="${esc(schaumBildHref(url, stufe))}" alt="" decoding="async">`
+      + ` title="${esc((z && z.titel) || '')} · ${esc(m.text(b.roh))}"><img data-quelle="${esc(url)}" src="${esc(stufenAdresse(url, Math.min(b.w, b.h) * dpr))}" alt="" decoding="async" onerror="this.onerror=null;this.src=this.dataset.quelle">`
       + (b.schild ? `<div class="bwschild" style="top:${(b.h + (b.rahmen || 0) + 2).toFixed(1)}px;width:${b.w.toFixed(1)}px">${esc((z && z.titel) || '')}</div>` : '') + '</div>';
   }
   bild.innerHTML = html + '</div>';
@@ -10245,7 +10261,6 @@ async function schaumZeichnen(){
   karteHoehe();
   schaumAnsichtBauen();
   schaumLadenEinrichten();
-  await schaumVorratLaden();                  /* die verkleinerten Bilder aus der letzten Sitzung, einmal */
   const groupies = raumJetzt === 'groupies';
   /* Klangschaum oder Bilderschau waehlt seit dem 15.10.2026 die Ansichtswahl oben (zwei eigene Pillen); bis dahin ein
      Dropdown in der Ueberschrift (Caspar_D, 11.10.2026: „Träume sind Schäume … als Dropdown bei den Schäumen") */
@@ -10418,11 +10433,12 @@ const schaumLagen = new Map();      /* Layout-Schluessel -> gelegter Baum (ohne 
    ('klangtresor-schaum'; Schluessel = Hash des Layout-Schluessels, der volle Schluessel liegt zur
    Probe daneben; hoechstens 40, die aeltesten fliegen). Aendern sich Abrufe oder Reaktionen, ist es
    ein neuer Schluessel. Fehlt IndexedDB, bleibt es beim Merken in der Sitzung.
-   Fassung 2 (Bildvorrat, siehe unten) bringt den Speicher 'bilder' dazu. Haelt ein anderer Tab noch
+   Fassung 2 brachte den Speicher 'bilder' (Bildvorrat), Fassung 3 nimmt ihn wieder weg (BILDER IM SCHAUM). Haelt ein anderer Tab noch
    Fassung 1 offen, wartet der Wechsel auf ihn - dann diese Sitzung ohne Speicher statt haengen. */
 const schaumDB = (() => { let p = null; return () => p || (p = new Promise(ok => {
-  try { const r = indexedDB.open('klangtresor-schaum', 2);
-    r.onupgradeneeded = () => { const d = r.result; for (const n of ['lagen', 'zeiten', 'bilder']) if (!d.objectStoreNames.contains(n)) d.createObjectStore(n); };
+  try { const r = indexedDB.open('klangtresor-schaum', 3);
+    r.onupgradeneeded = () => { const d = r.result; for (const n of ['lagen', 'zeiten']) if (!d.objectStoreNames.contains(n)) d.createObjectStore(n);
+      if (d.objectStoreNames.contains('bilder')) d.deleteObjectStore('bilder'); };   /* der Bildvorrat bis 26.11.2026, siehe BILDER IM SCHAUM */
     r.onsuccess = () => { const d = r.result; d.onversionchange = () => d.close(); ok(d); };
     r.onerror = () => ok(null); r.onblocked = () => ok(null); } catch (e) { ok(null); } })); })();
 const schaumHash = (s) => { let a = 0x811c9dc5, b = 0x9e3779b9 ^ s.length;
@@ -10447,102 +10463,23 @@ async function lageMerken(lage, res){
         for (const [kk] of alle.slice(0, alle.length - 40)){ tx.objectStore('lagen').delete(kk); tx.objectStore('zeiten').delete(kk); } } };
   } catch (e) {}
 }
-/* DER BILDVORRAT (Caspar_D, 06.10.2026: „die Images kommen mit dem Laden nicht hinterher, kannst
-   du sie speichern in einer Art Cache"). Gemessen: ein Avatar von Suno hat 533 x 533 Bildpunkte
-   (79 KB), eine Kachel 600 x 800 (53 KB) - der Browser entpackte 300 bis 440 solcher Bilder fuer
-   Zellen, die meist 70 Punkte breit sind. Jetzt bekommt jede Zelle ihr Bild in der Groesse, die sie
-   auf dem Schirm braucht (Stufen 64/128/256/512 Bildpunkte an der laengeren Seite, mit der
-   Pixeldichte des Schirms gerechnet), einmal verkleinert und in IndexedDB gemerkt (Speicher
-   'bilder', hoechstens 3000, die aeltesten fliegen). Beim Betreten des Raums wird der Vorrat
-   geladen; was fehlt, kommt diesmal im Original und wird im Hintergrund verkleinert - fertig,
-   tauscht es sich ins Bild. Avatare sind Suno-Adressen mit Kennung und aendern sich nie; Kacheln
-   tragen ihren Stand in der Adresse (kachelZusatz). Fuer einen Druck (Mural) taugt der Vorrat nicht -
-   der braucht die Originale.
+/* BILDER IM SCHAUM. Jede Zelle bekommt ihr Bild in der Stufe, die sie auf dem Schirm braucht -
+   ueber die eine Leiter des Hauses (BILD_STUFEN, mitStufe; der Server rechnet). Anlass war Caspar_D,
+   06.10.2026: „die Images kommen mit dem Laden nicht hinterher". Gemessen damals: ein Avatar von Suno
+   hat 533 x 533 Bildpunkte, eine Kachel 600 x 800 - der Browser entpackte 300 bis 440 solcher Bilder
+   fuer Zellen, die meist 70 Punkte breit sind.
+   BIS ZUM 26.11.2026 verkleinerte der Browser selbst: Original holen, mit createImageBitmap
+   verkleinern, als WebP in IndexedDB ('bilder', hoechstens 3000) merken und nachtauschen. Das ist
+   geloescht, weil es eine zweite Leiter neben der des Servers war (Caspar_D: „wenn es eine Leiter
+   gibt, dann nur diese eine") und weil jedes Geraet dafuer zuerst die Originale laden musste - auf
+   dem Handy der volle Download. Der Speicher 'bilder' wird beim naechsten Oeffnen entfernt (schaumDB).
    AUSWEICHWEG (Caspar_D: „wenn kein Bild geladen werden kann, brauchen wir einen Fallback bzw. nach
-   bestimmter Zeit nochmal einen Versuch"): laedt ein Bild nicht, zeigt die Zelle ihre Farbe voll
-   deckend statt eines schwarzen Lochs, und nach 30 s, 2 min und 10 min wird es neu versucht. */
-const SCHAUM_STUFEN = [64, 128, 256, 512];
-const schaumVorrat = new Map();                 /* Stufe + ' ' + Adresse -> blob:-Adresse */
-const schaumVorratWartend = new Set(), schaumVorratSchlange = [];
-let schaumVorratGeladen = null, schaumVorratLaeuft = 0;
-const schaumStufe = (px) => SCHAUM_STUFEN.find(s => s >= px) || SCHAUM_STUFEN[SCHAUM_STUFEN.length - 1];
-function schaumVorratLaden(){
-  return schaumVorratGeladen || (schaumVorratGeladen = (async () => {
-    const db = await schaumDB(); if (!db) return;
-    await new Promise(ok => { try {
-      const q = db.transaction('bilder').objectStore('bilder').openCursor();
-      q.onsuccess = () => { const c = q.result; if (!c) return ok();
-        if (c.value && c.value.blob && !schaumVorrat.has(c.key)) schaumVorrat.set(c.key, URL.createObjectURL(c.value.blob));
-        c.continue(); };
-      q.onerror = () => ok();
-    } catch (e) { ok(); } });
-  })());
-}
-/* Die beste vorhandene Fassung: die passende Stufe, sonst die naechstgroessere, sonst das Original
-   (und die passende Stufe wird bestellt). */
-function schaumBildHref(url, stufe){
-  if (!url) return '';
-  const genau = schaumVorrat.get(stufe + ' ' + url);
-  if (genau) return genau;
-  const key = stufe + ' ' + url;
-  if (!schaumVorratWartend.has(key)){ schaumVorratWartend.add(key); schaumVorratSchlange.push(key); schaumVorratTreiben(); }
-  for (const s of SCHAUM_STUFEN) if (s > stufe && schaumVorrat.has(s + ' ' + url)) return schaumVorrat.get(s + ' ' + url);
-  return url;
-}
-function schaumVorratTreiben(){
-  while (schaumVorratLaeuft < 4 && schaumVorratSchlange.length){
-    const key = schaumVorratSchlange.shift(); schaumVorratLaeuft++;
-    schaumVerkleinern(key).then(href => {
-      schaumVorratLaeuft--; schaumVorratWartend.delete(key);
-      if (href) schaumVorratTauschen(key, href);
-      schaumVorratTreiben();
-    });
-  }
-}
-async function schaumVerkleinern(key){
-  const i = key.indexOf(' '), stufe = +key.slice(0, i), url = key.slice(i + 1);
-  try {
-    const antwort = await fetch(url, { mode: 'cors', credentials: 'omit' });
-    if (!antwort.ok) return null;
-    const bild = await createImageBitmap(await antwort.blob());
-    const f = Math.min(1, stufe / Math.max(bild.width, bild.height)), w = Math.max(1, Math.round(bild.width * f)), h = Math.max(1, Math.round(bild.height * f));
-    const c = document.createElement('canvas'); c.width = w; c.height = h;
-    const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(bild, 0, 0, w, h);
-    if (bild.close) bild.close();
-    let blob = await new Promise(ok => c.toBlob(ok, 'image/webp', 0.82));
-    if (!blob || blob.type !== 'image/webp') blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.85));
-    if (!blob) return null;
-    const href = URL.createObjectURL(blob);
-    schaumVorrat.set(key, href);
-    schaumVorratMerken(key, blob);
-    return href;
-  } catch (e) { return null; }
-}
-async function schaumVorratMerken(key, blob){
-  const db = await schaumDB(); if (!db) return;
-  try {
-    const tx = db.transaction('bilder', 'readwrite'), st = tx.objectStore('bilder');
-    st.put({ blob, zeit: Date.now() }, key);
-    const z = st.count();
-    z.onsuccess = () => { if (z.result <= 3000) return;
-      const alle = [], q = st.openCursor();
-      q.onsuccess = () => { const c = q.result; if (c){ alle.push([c.key, (c.value && c.value.zeit) || 0]); c.continue(); return; }
-        alle.sort((a, b) => a[1] - b[1]); for (const [k] of alle.slice(0, alle.length - 2700)) st.delete(k); }; };
-  } catch (e) {}
-}
-/* Ein fertig verkleinertes Bild ins laufende Bild tauschen. */
-function schaumVorratTauschen(key, href){
-  const i = key.indexOf(' '), stufe = key.slice(0, i), url = key.slice(i + 1), bild = $('schaumbild'); if (!bild) return;
-  for (const im of bild.querySelectorAll('image[data-quelle]'))
-    if (im.dataset.quelle === url && im.dataset.stufe === stufe && im.getAttribute('href') !== href) im.setAttribute('href', href);
-  for (const im of bild.querySelectorAll('img[data-quelle]'))          /* die Bilderschau */
-    if (im.dataset.quelle === url && im.dataset.stufe === stufe && im.getAttribute('src') !== href) im.setAttribute('src', href);
-}
-/* Beim Einsetzen: jede Zelle bekommt die beste vorhandene Fassung; laedt ein Bild nicht, deckt die
-   Zellfarbe voll, und es wird spaeter neu versucht. */
+   bestimmter Zeit nochmal einen Versuch"): versagt eine Stufe, kommt sofort das Original; laedt auch
+   das nicht, zeigt die Zelle ihre Farbe voll deckend statt eines schwarzen Lochs, und nach 30 s,
+   2 min und 10 min wird es neu versucht. */
 function schaumBilderSetzen(bild){
   for (const im of bild.querySelectorAll('image[data-quelle]')){
-    im.setAttribute('href', schaumBildHref(im.dataset.quelle, +im.dataset.stufe));
+    im.setAttribute('href', mitStufe(im.dataset.quelle, +im.dataset.stufe));
     if (im.dataset.glas) continue;                                  /* die Glas-Kopie im Kopf folgt dem Bild */
     im.addEventListener('error', () => schaumBildFehlt(im));
     im.addEventListener('load', () => { const z = schaumZelleVon(im); if (z) z.classList.remove('ohnebild'); });
@@ -10551,15 +10488,18 @@ function schaumBilderSetzen(bild){
 const schaumZelleVon = (im) => im.ownerSVGElement && im.ownerSVGElement.querySelector(`path[data-i="${im.dataset.i}"]`);
 const schaumFehlVersuche = new Map();             /* Adresse -> Zahl der Versuche */
 function schaumBildFehlt(im){
+  const url = im.dataset.quelle;
+  /* zuerst die Stufe aufgeben, nicht das Bild (kein ffmpeg, Rechenlauf misslungen) */
+  if (im.getAttribute('href') !== url && !im.dataset.versuch){ im.setAttribute('href', url); return; }
   const z = schaumZelleVon(im); if (z) z.classList.add('ohnebild');
-  const url = im.dataset.quelle, n = schaumFehlVersuche.get(url) || 0;
+  const n = schaumFehlVersuche.get(url) || 0;
   if (n >= 3 || im.dataset.wartet) return;
   schaumFehlVersuche.set(url, n + 1); im.dataset.wartet = '1';
   setTimeout(() => {
     delete im.dataset.wartet;
     if (!im.isConnected) return;
-    const href = schaumBildHref(url, +im.dataset.stufe);
-    im.setAttribute('href', href === url ? url + (url.includes('?') ? '&' : '?') + 'versuch=' + (n + 1) : href);
+    im.dataset.versuch = String(n + 1);
+    im.setAttribute('href', url + (url.includes('?') ? '&' : '?') + 'versuch=' + (n + 1));
   }, [30000, 120000, 600000][n]);
 }
 /* Erst wenn die Bilder entpackt sind, blendet ein neues Bild ein (hoechstens 0,9 s warten) - sonst
@@ -11407,9 +11347,12 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
   /* Die Vorschau des Plakats zeigt die Kachelbilder aus dem Vorrat - die vollen Cover (499 x ~2,5 MB) braucht
      nur das PDF, und das holt sie ueber data-voll. Sonst laedt das erste Oeffnen ueber ein Gigabyte. */
   const vorschauBilder = druck ? res.leaves.map(k => k.row != null && zeilen[k.row] && zeilen[k.row].id !== SCHILD_ID ? (schaumAvatarAdresse(zeilen[k.row].bild) || (personen ? null : artworkKachel(zeilen[k.row].id))) : null) : bilder;
-  /* Bildstufe je Zelle (Bildvorrat): Breite des Feldes in Bildschirmpunkten je Schaum-Einheit mal
-     Pixeldichte; ein Cover (3 : 4, „slice") braucht an der langen Seite ein Drittel mehr. */
-  const massstab = druck ? druck.massstab : (($('schaumfeld').getBoundingClientRect().width || 1600) / res.width) * (window.devicePixelRatio || 1), faktor = personen ? 1 : 1.34;
+  /* Bildstufe je Zelle (BILD_STUFEN, die kuerzere Bildseite): Breite des Feldes in Geraetepixeln je
+     Schaum-Einheit. Ein Bild deckt die Zelle randvoll („slice"): ein quadratischer Avatar braucht an seiner
+     Seite die laengere Zellseite; eine Kachel (3 : 4, kuerzere Seite = Breite) die Zellbreite oder drei
+     Viertel der Zellhoehe, je nachdem, was mehr ist. Bis zum 26.11.2026 meinte die Stufe die laengere
+     Seite, darum stand hier ein Aufschlag von einem Drittel. */
+  const massstab = druck ? druck.massstab : (($('schaumfeld').getBoundingClientRect().width || 1600) / res.width) * (window.devicePixelRatio || 1);
   svg = svg.replace(/font-family="[^"]*"/, 'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"')
            .replace(/ width="\d+" height="\d+"/, ' preserveAspectRatio="xMidYMid meet"')
            /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
@@ -11423,7 +11366,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              { const af = farbeVon((zeilen[res.leaves[+i].row] || {}).gruppe); if (af) alles = alles.replace('<path ', `<path data-farbe="${af}" `); }
              const { x, y, w, h } = zellLage(dd);
              const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
-             const quelle = bilder[+i], stufe = schaumStufe(Math.max(w, h) * faktor * massstab);
+             const quelle = bilder[+i], stufe = bildStufe((personen ? Math.max(w, h) : Math.max(w, h * 0.75)) * massstab) || '';
              /* Platz des Bildes: mit Gesichtern gerueckt (schaumFokus); gezeigt wird am Schirm und in der
                 Vorschau meist die Kachel, im PDF das Original (data-p). Ohne Eintrag wie bisher mittig. */
              const fd = quelle ? (personen ? schaumFokusAvatar((zeilen[res.leaves[+i].row] || {}).bild) : schaumFokus(id)) : null;
@@ -11442,7 +11385,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              const lage = `x="${pBild.x.toFixed(1)}" y="${pBild.y.toFixed(1)}" width="${pBild.w.toFixed(1)}" height="${pBild.h.toFixed(1)}"`
                + (druck && pOrig ? ` data-p="${[pOrig.x, pOrig.y, pOrig.w, pOrig.h].map(v => v.toFixed(1)).join(',')}"` : '');
              /* Druck: in der Vorschau die Fassung aus dem Vorrat, fuers PDF die volle (data-voll) */
-             const bildAn = !quelle ? '' : druck ? `href="${esc(schaumBildHref(vorschauBilder[+i] || quelle, stufe))}" data-voll="${esc(quelle)}" data-i="${i}"`
+             const bildAn = !quelle ? '' : druck ? `href="${esc(mitStufe(vorschauBilder[+i] || quelle, stufe))}" data-voll="${esc(quelle)}" data-i="${i}"`
                : `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"`;
              let kopf = '';
              if (plan){
@@ -11594,7 +11537,7 @@ function schaumLageHolen(j, melde, ueberholbar){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.88').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.89').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   const auftrag = schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
@@ -14771,8 +14714,8 @@ function zeichnePlaylistInhalt(){
   r.innerHTML = lieder.map((s,i) => `
     <div class="karte" data-id="${s.id}" onclick="kachelKlick('${s.id}')">
       <div class="bild">
-        <img loading="lazy" src="${s.fremd ? esc(s.bildUrl||'') : artworkKachel(s.id)}" alt=""
-             ${s.fremd ? '' : `onerror="this.src='${artworkBild(s.id)}'"`}>
+        <img loading="lazy" src="${s.fremd ? esc(s.bildUrl||'') : artworkKachel(s.id, inPixel(kachelBreite))}" alt=""
+             ${s.fremd ? '' : `onerror="this.onerror=null;this.src='${artworkBild(s.id)}'"`}>
         <span class="posmarke">${eintraege[i]?.position ?? i+1}</span>
         ${s.fremd
           ? `<span class="remotemarke" title="${esc(t('album.netz.titel', { wer: s.anzeigename||s.handle||'' }))}">${t('album.netz')}</span>`
@@ -14906,12 +14849,52 @@ function artworkVideo(id){
    das - mit demselben Zuschnitt wie die Kachel. Die Liste kommt im
    Katalogkopf (titelbild); der Kachelstempel haengt auch hier an. */
 let _titelbildMenge = null, _titelbildQuelle = null;
-function artworkBild(id){
-  if (_eigenArt && _eigenArt[id] && _eigenArt[id].bild) return '/media/' + id + '/eigen.jpg';
+/* ---- BILDSTUFEN ------------------------------------------------------
+   DIE EINE LEITER (Caspar_D, 26.11.2026: "64 · 128 · 256 · 512 · Original";
+   "doppelte infrastruktur will ich nirgends haben"). Jede Stelle holt das
+   Bild in der Aufloesung, die sie WIRKLICH zeigt. Der Browser haelt zu
+   jedem Bild das volle Bitmap, gleich wie klein es erscheint - vier Byte
+   je Bildpunkt. Gemessen am 26.11.2026 im Tab: der Klangraum hielt beim
+   Hineinzoomen 350 Cover = 1 728 MB.
+
+   Die Stufe kommt in den Dateinamen (cover@128.jpg, /avatar/<kennung>@128.jpg)
+   und meint die KUERZERE Seite. Der Server rechnet sie und behaelt sie
+   (server/server.js, "BILDSTUFEN") - einmal fuer alle Geraete, auch das
+   Handy im WLAN. Im Browser wird nichts verkleinert. Fremde Adressen
+   (https://...) bleiben, wie sie sind; Avatare holt bin/avatare.js ohnehin
+   auf die Platte.
+
+   Gewaehlt wird die KLEINSTE Stufe, die mindestens so viele Geraetepixel
+   hat, wie die Stelle braucht. Wer ein Feld randvoll deckt, braucht an der
+   kuerzeren Bildseite hoechstens die laengere Feldseite; wer das Bild in
+   seinem eigenen Format zeigt, die kuerzere. Ueber 512 gilt das Original.
+   Zweierstufen, damit ein Zoomschritt nicht bei jeder Mausradrastung neu
+   holt; zwischen zwei Stufen skaliert der Browser weich. */
+const BILD_STUFEN = [64, 128, 256, 512];
+/* Punkte des Seitenlayouts in Geraetepixel. Leinwaende, die ihre Dichte
+   selbst mitbringen (der Stern), geben Geraetepixel direkt an. */
+const inPixel = (punkte) => punkte * (window.devicePixelRatio || 1);
+/* Geraetepixel -> Stufe; null = Original */
+function bildStufe(px){
+  if (!(px > 0)) return null;
+  return BILD_STUFEN.find(s => s >= px) || null;
+}
+/* Die Stufe vor das .jpg, der Kachelstempel bleibt dahinter stehen. Nur eigene Dateien. */
+function mitStufe(adresse, stufe){
+  if (!adresse || !stufe || !/^\/(media|avatar)\//.test(adresse)) return adresse || '';
+  return String(adresse).replace(/\.jpg(\?|$)/, '@' + stufe + '.jpg$1');
+}
+const stufenAdresse = (adresse, px) => mitStufe(adresse, bildStufe(px));
+/* Die echte Kachelbreite in Punkten - spaltenAnwenden() rechnet sie aus
+   dem Regler und der Fensterbreite und fuehrt sie bei jedem Drehen nach. */
+let kachelBreite = 0;
+
+function artworkBild(id, px){
+  if (_eigenArt && _eigenArt[id] && _eigenArt[id].bild) return stufenAdresse('/media/' + id + '/eigen.jpg', px);
   const liste = katalogInfo && katalogInfo.titelbild;
   if (liste !== _titelbildQuelle){ _titelbildQuelle = liste; _titelbildMenge = new Set(liste || []); }
   /* vor dem Katalog gibt es noch keine Menge - ein Sprachwechsel beim Laden zeichnet schon */
-  return (_titelbildMenge && _titelbildMenge.has(id)) ? '/media/' + id + '/titelbild.jpg' + kachelZusatz() : '/media/' + id + '/cover.jpg';
+  return stufenAdresse((_titelbildMenge && _titelbildMenge.has(id)) ? '/media/' + id + '/titelbild.jpg' + kachelZusatz() : '/media/' + id + '/cover.jpg', px);
 }
 /* Fuer die Kacheln gibt es eine kleingerechnete Fassung (kachel.jpg).
    Ein selbst abgelegtes Titelbild hat die nicht - dann gilt es
@@ -14927,9 +14910,9 @@ function artworkBild(id){
 let kachelStand = 0;
 const kachelZusatz = () => kachelStand ? '?k=' + kachelStand : '';
 
-function artworkKachel(id){
-  return (_eigenArt && _eigenArt[id] && _eigenArt[id].bild)
-    ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/kachel.jpg' + kachelZusatz();
+function artworkKachel(id, px){
+  return stufenAdresse((_eigenArt && _eigenArt[id] && _eigenArt[id].bild)
+    ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/kachel.jpg' + kachelZusatz(), px);
 }
 
 /* Bildfenster (Picture-in-Picture). Der Ton bleibt in #audio.
@@ -16683,7 +16666,7 @@ function kuriosSeiten(eigene){
         const box = document.createElement('div'); box.appendChild(satz(t('profil.kurios.jahr.satz', { n: heute.getFullYear() - +treffer[0].erstellt.slice(0,4) })));
         const r = document.createElement('div'); r.className = 'topreihe'; r.style.maxWidth = treffer.length * 90 + 'px';
         for (const s of treffer){ const z = document.createElement('div'); z.className = 'topk'; z.title = s.titel;
-          z.innerHTML = `<img src="${artworkKachel(s.id)}" alt="" onerror="this.src='${artworkBild(s.id)}'"><span>${s.erstellt.slice(0,4)}</span>`;
+          z.innerHTML = `<img src="${artworkKachel(s.id, inPixel(90))}" alt="" onerror="this.onerror=null;this.src='${artworkBild(s.id)}'"><span>${s.erstellt.slice(0,4)}</span>`;
           z.onclick = () => { detailZu(); spielenNachId(s.id); }; r.appendChild(z); }
         box.appendChild(r); return box;
       } },
@@ -23458,7 +23441,7 @@ function promptsFuellen(){
   // Das Artwork steht hier, nicht links: Im Analysemodus gibt es keine
   // Bildfläche, und mehr als Paßfotogröße wäre verschenkter Platz.
   const teile = ['<img class="passfoto" alt="" src="/media/' + bSong.id + '/kachel.jpg"'
-                 + ' onerror="this.src=\'/media/' + bSong.id + '/cover.jpg\'">'];
+                 + ' onerror="this.onerror=null;this.src=\'/media/' + bSong.id + '/cover.jpg\'">'];
   if (bSong.stilPrompt || bSong.stilAusschluss){
     /* KOPIEREN (Caspar_D, 26.08.2026: "wir brauchen wenigstens im
        analyzer eine kleine copy schaltfläche für lyrics und style
@@ -24830,7 +24813,9 @@ async function buehneAuf(id){
     buehnenGrundMessen(null, bSong && bSong.id);
   }
 
-  $('bhintergrund').style.backgroundImage = `url('/media/${bSong.id}/cover.jpg')`;
+  /* Stufe 64: der Grund liegt unter blur(60px) - mehr Bildpunkte sind dort
+     nicht zu sehen, kosteten aber dasselbe wie die scharfe Flaeche daneben. */
+  $('bhintergrund').style.backgroundImage = `url('/media/${bSong.id}/cover@64.jpg')`;
   $('btitel').textContent = bSong.titel;
   /* #bmeta wurde hier bei jedem Bühnenaufbau mit Modell, Datum, Plays
      und Likes gefüllt — und war nie zu sehen: Die Regel
@@ -31904,6 +31889,7 @@ function spaltenAnwenden(){
   const wirklich = (window.istHandy && istHandy()) ? (innerWidth > innerHeight ? 6 : 3) : Math.min(spaltenWunsch, hoechstens);
   document.documentElement.style.setProperty('--spalten', wirklich);
   const breite = Math.round((platz - 36 - (wirklich-1)*14) / wirklich);
+  kachelBreite = breite;   /* die Bildstufen haengen daran (BILD_STUFEN) */
   $('groesseText').textContent = wirklich + '×';
   $('groesse').title = t('register.spalten', { n: wirklich, px: breite });
 

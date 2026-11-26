@@ -1365,7 +1365,7 @@ async function bilderEbene(g, kv, lauf){
     out += kissenVerlauf(`ps-fake${i}`, fakeTon, i, b.t)
       + `<rect class="ps-fake" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" fill="url(#ps-fake${i})" stroke="${ECK_FAKE_RAHMEN}" stroke-width="${f2(Math.max(0.3, 0.15 / k))}" pointer-events="none"/>`; });
   for (const [i, b] of res.bilder.entries()){
-    const r = b.rahmen || 0, u = artworkBild(b.id), href = esc2(schaumBildHref(u, schaumStufe(Math.max(b.w, b.h) * k * pxJeMm)));
+    const r = b.rahmen || 0, u = artworkBild(b.id), href = esc2(stufenAdresse(u, Math.min(b.w, b.h) * k * pxJeMm));   /* eigenes Format: die kuerzere Seite (BILD_STUFEN im Haus) */
     if (r > 0) out += `<rect x="${f2(b.x - r)}" y="${f2(b.y - r)}" width="${f2(b.w + 2 * r)}" height="${f2(b.h + 2 * r)}" fill="${misch(farbe(b.gruppe))}"/>`;
     out += `<image href="${href}" data-voll="${esc2(u)}" data-id="${esc2(b.id)}" x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" preserveAspectRatio="none"/>`;
     if (!nummer.has(b.id)) continue;

@@ -135,6 +135,28 @@ dieselbe Platte hängt.
 
 ## Klein und konkret
 
+### Coverbilder in Auflösungsstufen statt in voller Größe (eingesetzt, 26.11.2026)
+Jörg sah den KlangTresor-Tab mit **1,5 GB** und fragte, ob Speicher liegenbleibt. Gemessen in seinem Tab:
+71 Kacheln im Baum = 357 MB, dazu 276 SVG-Bilder; und `karteCover` des Klangraums hielt beim Hineinzoomen
+**350 Cover = 1 728 MB** dekodiert — die Cover sind 1024 × 1024 bis 1403 × 1772, im Mittel 4,94 MiB je Bild.
+Dazu vier `onerror`-Schleifen, die ein fehlendes Bild endlos neu anforderten (200 Versuche in 2,5 s, jetzt einer),
+und `karteCover` wurde nie geleert (jetzt beim Verlassen des Klangraums).
+
+**Eine Leiter, auf dem Server.** Jörg, 26.11.2026: „64 · 128 · 256 · 512 · Original", im Stern 128; und
+„doppelte infrastruktur will ich nirgends haben". Der Server rechnet `cover@128.jpg`, `kachel@256.jpg`,
+`/avatar/<kennung>@64.jpg` mit ffmpeg und behält sie im Speicher (server/server.js, „BILDSTUFEN"). Die Stufe
+meint die kürzere Seite; nie über die Quelle hinaus; höchstens drei ffmpeg-Läufe zugleich; die Cache-Regel
+erbt die Stufe vom Original. Die frühere zweite Leiter im Browser (Klangschaum: Original holen, im Browser
+verkleinern, IndexedDB-Vorrat) ist gelöscht — Server statt Browser, weil er einmal für alle Geräte rechnet
+und das Handy im WLAN sonst jedes Original laden müsste (cover.jpg im Mittel 1,1 MB, alle 374 MB).
+
+Gemessen im Sandkasten (Pixeldichte 2): Klangraum hineingezoomt **28,5 MB statt 1 728**, Klangschaum 53,5 MB,
+Bilderschau 18 MB, Plakat-Vorschau 552 Bilder als Stufe (das PDF nimmt die Originale). Server: 40 neue Stufen
+1,2 s, aus dem Speicher 0,1 s; 511 × 682 bleibt bei @512 511 × 682.
+
+Kein Grundlinienvergleich des Klangraum-Malwegs: geändert ist dort nur die Bildadresse in `coverBild`, kein
+Zeichenaufruf. Offen: das Raster bei 10 und 14 Spalten ist mit der neuen Rechnung nicht nachgemessen.
+
 ### Die drei Wörter nach draußen sind noch nicht von Henry (Entscheidung, 16.11.2026)
 Mit 1.1.13 stehen im Fenster „Wer" und am Fuß der Lasche „System" die Wege nach draußen (`aussen.features`,
 `aussen.quelltext`, `aussen.broschuere`). Die **russischen** Sätze — „Что умеет KlangTresor", „Исходный код",
