@@ -366,8 +366,12 @@ function liefere(req, res, datei) {
      einmal. */
   const analyse  = datei.startsWith(ANALYSE);
   /* WANDELBARE DATEIEN muessen revalidiert werden, unwandelbare nicht.
-     audio.mp3, cover.jpg und artwork.mp4 kommen von Suno und aendern
-     sich nie - die duerfen ein Jahr im Browser liegen. kachel.jpg wird
+     audio.mp3 und cover.jpg kommen von Suno und aendern sich nie - die
+     duerfen ein Jahr im Browser liegen. artwork.mp4 seit dem 26.11.2026
+     NICHT mehr: bin/laden.js folgt jetzt Suno und tauscht es aus, wenn
+     Suno ein anderes Video zeigt (SUNO IST DER STAND, dort); mit einem
+     Jahr im Vorrat saehe der Browser das neue nicht. Die abgeloesten
+     artwork.<Datum>.mp4 aendern sich nie. kachel.jpg wird
      dagegen von bin/kacheln.js ERZEUGT und kann neu gerechnet werden.
 
      Caspar_D, 07.09.2026, nachdem 123 Kacheln neu gerechnet waren und er
@@ -392,7 +396,7 @@ function liefere(req, res, datei) {
      eigene Tonfassung spielte bei Casto ein Jahr lang aus dem Browservorrat weiter (Gegenlesen 1.0.45, 07.10.2026). */
   /* feder.png (08.10.2026, bin/feder.js): die Federzeichnung fuers Plakat „Skizzenbuch" ist abgeleitet wie die
      Tiefenkarte - neu, sobald das Quellbild ersetzt wird oder die Nachbearbeitung eine neue Fassung bekommt. */
-  const abgeleitet = /(^|[\\/])(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3|wav)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|feder\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
+  const abgeleitet = /(^|[\\/])(kachel\.jpg|artwork\.mp4|eigen(-\d+)?\.(mp4|jpg|mp3|wav)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|feder\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
   /* text/css gehoert seit dem 27.09.2026 zu "programm": das Effektclip-Studio ist jetzt web/tbs.css und
      web/tbs-modul.js; mit dem Jahres-Cache hielte der Browser nach jeder Aenderung ein altes Stylesheet,
      waehrend das Skript schon neu waere - dieselbe Regel wie fuer .js, mit 304 statt max-age. */
@@ -2358,8 +2362,9 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
     const was = String(u.searchParams.get('was') || '');
     const nr = Math.max(1, Math.min(99, parseInt(u.searchParams.get('nr'), 10) || 1));
     if (!/^[0-9a-f-]{8,64}$/i.test(id)) { jsonAntwort(res, { fehler: 'id fehlt oder ist keine' }, 400); return; }
-    if (was !== 'bewegtbild' && was !== 'video') { jsonAntwort(res, { fehler: 'was muss bewegtbild oder video sein' }, 400); return; }
-    const basis = was === 'bewegtbild' ? 'artwork' : ('eigen' + (nr > 1 ? '-' + nr : ''));
+    const stempel = String(u.searchParams.get('stempel') || '');
+    if (was !== 'bewegtbild' && was !== 'video' && !(was === 'frueher' && /^\d{4}-\d{2}-\d{2}(-\d+)?$/.test(stempel))) { jsonAntwort(res, { fehler: 'was muss bewegtbild, video oder frueher (mit stempel) sein' }, 400); return; }
+    const basis = was === 'bewegtbild' ? 'artwork' : was === 'frueher' ? 'artwork.' + stempel : ('eigen' + (nr > 1 ? '-' + nr : ''));
     const quelle = path.join(SONGS, id, basis + '.mp4');
     const ziel = path.join(SONGS, id, basis + '.sprung.mp4');
     const url = '/media/' + id + '/' + basis + '.sprung.mp4';
@@ -4732,8 +4737,17 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     aus.mp4.sort((a, b) => a - b); aus.jpg.sort((a, b) => a - b);
     return aus;
   };
+  /* FRUEHERE SUNO-FASSUNGEN UND DIE VORGABE (Caspar_D, 26.11.2026). bin/laden.js loest ein Video, das Suno
+     getauscht hat, nach artwork.<Datum>.mp4 ab, statt es zu loeschen. Welches Bewegtbild ein Titel zeigt,
+     ist eine Regel (eigenes vor Suno, das juengste eigene zuerst); wer sich bewusst darueber hinwegsetzt,
+     waehlt im Mediendialog eine Vorgabe: 'suno' (Sunos aktuelles), 'eigen<n>' oder 'frueher:<Datum>'.
+     Gemerkt in library/bewegtbild-vorgabe.json - eine Datei fuer alle Titel, nicht eine je Titel (auf der
+     Arbeitsplatte belegt jede Datei einen 1-MB-Block). */
+  const VORGABE_DATEI = path.join(WURZEL, 'library', 'bewegtbild-vorgabe.json');
+  const vorgabenLesen = () => { try { return JSON.parse(fs.readFileSync(VORGABE_DATEI, 'utf8')) || {}; } catch (e) { return {}; } };
+  const FRUEHER = /^artwork\.(\d{4}-\d{2}-\d{2}(?:-\d+)?)\.mp4$/;
   if (p === '/api/eigen-artwork') {
-    const raus = {};
+    const raus = {}, vorgaben = vorgabenLesen();
     try {
       for (const d of fs.readdirSync(SONGS)) {
         const o = path.join(SONGS, d);
@@ -4759,6 +4773,11 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
         const nn = eigenNummern(o);
         if (nn.mp4.length) { hat.video = true; hat.videos = nn.mp4; }
         if (nn.jpg.length) { hat.bild = true; hat.bilder = nn.jpg; }
+        /* fruehere Suno-Fassungen, aelteste zuerst - ihre Stelle in der Liste aendert sich nie, es kommen nur neuere dazu */
+        let namen = []; try { namen = fs.readdirSync(o); } catch (e) {}
+        const frueher = namen.map(n => (FRUEHER.exec(n) || [])[1]).filter(Boolean).sort();
+        if (frueher.length) hat.frueher = frueher;
+        if (vorgaben[d]) hat.vorgabe = vorgaben[d];
         if (Object.keys(hat).length) raus[d] = hat;
       }
     } catch (e) {}
@@ -4792,6 +4811,20 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      zieht, soll nicht die Platte fuellen. Studio-WAV darf bis 2 GB
      (Tarja, 07.10.2026: 1,7 GB ließen sich sonst nicht ablegen). Der
      Rumpf geht auf die Platte, nicht in den Speicher. */
+  if (p.startsWith('/api/bewegtbild-vorgabe/') && (req.method === 'PUT' || req.method === 'DELETE')) {
+    const id = p.slice('/api/bewegtbild-vorgabe/'.length);
+    if (!/^[A-Za-z0-9._-]+$/.test(id) || !sicherer(SONGS, id)) return jsonAntwort(res, { ok: false, grund: 'Ungültige Kennung.' }, 400);
+    const sichern = (v) => { const z = VORGABE_DATEI + '.neu'; fs.writeFileSync(z, JSON.stringify(v, null, 1)); fs.renameSync(z, VORGABE_DATEI); };
+    if (req.method === 'DELETE') { const v = vorgabenLesen(); delete v[id]; sichern(v); return jsonAntwort(res, { ok: true }); }
+    let rumpf = ''; req.on('data', (c) => { rumpf += c; if (rumpf.length > 1000) req.destroy(); });
+    req.on('end', () => {
+      let k = ''; try { k = String(JSON.parse(rumpf).k || ''); } catch (e) {}
+      if (!/^(suno|eigen\d{1,3}|frueher:\d{4}-\d{2}-\d{2}(-\d+)?)$/.test(k)) return jsonAntwort(res, { ok: false, grund: 'Unbekannte Vorgabe.' }, 400);
+      const v = vorgabenLesen(); v[id] = k; sichern(v);
+      jsonAntwort(res, { ok: true, vorgabe: k });
+    });
+    return;
+  }
   if (p.startsWith('/api/eigen-artwork/')) {
     /* p ist schon entschluesselt - ein zweites decodeURIComponent wirft
        bei einem '%' im Rest (etwa /api/eigen-artwork/%25zz). */

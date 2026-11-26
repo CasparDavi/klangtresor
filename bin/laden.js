@@ -115,6 +115,67 @@ function imBuch(songId){
   return Array.isArray(e) && e.length > 0 && rezeptDa(songId);
 }
 
+
+/* SUNO IST DER STAND (Caspar_D, 26.11.2026: „Suno ist der Stand, den ich im Tresor aktuell sehen will, es sei
+   denn, ich setze mich bewusst darueber hinweg. Ein anderes Video als das aktuelle ist meine Entscheidung. Keine
+   Entscheidung - Sunosynchronizitaet."). Bis zu diesem Tag holte der Lauf artwork.mp4 nur, solange es fehlte:
+   tauschte Suno das Video, blieb im Tresor das alte - sammeln.js meldete „Video-Artwork" als geaendert, und
+   nichts geschah.
+   Jetzt merkt sich der Lauf, von welcher Suno-Adresse artwork.mp4 stammt (library/artwork-quellen.json, eine
+   Datei fuer alle Titel - auf der Arbeitsplatte belegt jede Datei einen ganzen 1-MB-Block). Weicht die Adresse ab
+   oder hat Suno gar kein Video mehr, wird das alte NICHT geloescht, sondern abgeloest: es heisst dann
+   artwork.<Datum>.mp4 (der Tag der Abloesung) und bleibt als fruehere Fassung waehlbar - im Mediendialog und als
+   Quelle im Effektclip-Studio. Was daraus abgeleitet war (Sprungkopie, Tiefenspur, das Urteil aus dem
+   Ausgabebuch, eigen.json wie fremd.json), wandert mit, damit es nicht neben dem neuen Video liegt.
+   ALTBESTAND: Fuer Videos von vor diesem Tag steht keine Adresse im Buch. Dann wird bei Suno nur die Groesse
+   erfragt (HEAD, kein Download): gleich gross heisst dieselbe Datei, und die Adresse wird nachgetragen; anders
+   gross heisst abgeloest. Antwortet Suno nicht, bleibt alles, wie es ist, und der naechste Lauf fragt wieder. */
+const QUELLEN_DATEI = path.join(WURZEL, 'library', 'artwork-quellen.json');
+let quellenBuch = null, quellenGeaendert = false;
+function artworkQuellen() {
+  if (quellenBuch) return quellenBuch;
+  try { quellenBuch = JSON.parse(fs.readFileSync(QUELLEN_DATEI, 'utf8')) || {}; } catch (e) { quellenBuch = {}; }
+  return quellenBuch;
+}
+function artworkQuellenSichern() {
+  if (!quellenGeaendert) return;
+  const zwischen = QUELLEN_DATEI + '.neu';
+  fs.writeFileSync(zwischen, JSON.stringify(quellenBuch, null, 1));
+  fs.renameSync(zwischen, QUELLEN_DATEI);
+  quellenGeaendert = false;
+}
+const tagHeute = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+/* artwork.mp4 samt Abgeleitetem nach artwork.<Datum>[-n].* - gibt den Stempel zurueck */
+function artworkAbloesen(ordner) {
+  let n = 1; const tag = tagHeute();
+  const stempelVon = (k) => tag + (k > 1 ? '-' + k : '');
+  while (fs.existsSync(path.join(ordner, 'artwork.' + stempelVon(n) + '.mp4'))) n++;
+  const st = stempelVon(n);
+  for (const [alt, neu] of [['artwork.mp4', `artwork.${st}.mp4`], ['artwork.sprung.mp4', `artwork.${st}.sprung.mp4`],
+                            ['artwork.tiefe.mp4', `artwork.${st}.tiefe.mp4`], ['artwork.mp4.eigen.json', `artwork.${st}.mp4.eigen.json`], ['artwork.mp4.fremd.json', `artwork.${st}.mp4.fremd.json`]]) {
+    const a = path.join(ordner, alt);
+    if (fs.existsSync(a)) fs.renameSync(a, path.join(ordner, neu));
+  }
+  return st;
+}
+/* Vor dem Laden: passt artwork.mp4 noch zu Sunos Adresse? Gibt den Stempel zurueck, wenn abgeloest wurde. */
+async function artworkAbgleichen(s, ordner) {
+  const datei = path.join(ordner, 'artwork.mp4');
+  if (!fs.existsSync(datei)) return null;
+  const Q = artworkQuellen(), url = s.videoCoverUrl || null, bekannt = Q[s.id];
+  if (bekannt !== undefined) {
+    if (bekannt === url) return null;
+  } else if (url) {
+    let fern = 0;
+    try { const r = await fetch(url, { method: 'HEAD' }); if (r.ok) fern = Number(r.headers.get('content-length')) || 0; } catch (e) {}
+    if (!fern) return null;                                   /* Suno sagt nichts: nichts entscheiden */
+    if (fern === fs.statSync(datei).size) { Q[s.id] = url; quellenGeaendert = true; return null; }
+  }
+  const st = artworkAbloesen(ordner);
+  delete Q[s.id]; quellenGeaendert = true;
+  return st;
+}
+
 /**
  * Lädt eine URL nach `ziel`. Bricht der Download ab, bleibt eine
  * .teil-Datei liegen; beim nächsten Lauf wird ab dort fortgesetzt.
@@ -239,8 +300,8 @@ async function ladeDatei(url, ziel) {
   if (MIT_LYRICVIDEO) console.log(T('(mit Sunos Lyric-Videos)'));
   console.log('');
 
-  const zaehler = { geladen: 0, vorhanden: 0, fehlt: 0, fehler: 0, eigen: 0, verdacht: 0 };
-  const verdaechtige = [];
+  const zaehler = { geladen: 0, vorhanden: 0, fehlt: 0, fehler: 0, eigen: 0, verdacht: 0, abgeloest: 0 };
+  const verdaechtige = [], abgeloest = [];
   let bytes = 0;
   const start = Date.now();
 
@@ -248,6 +309,10 @@ async function ladeDatei(url, ziel) {
     const s = liste[i];
     const ordner = path.join(SONGS, s.id);
     fs.mkdirSync(ordner, { recursive: true });
+
+    /* Zuerst: ist artwork.mp4 noch Sunos aktuelles Video? (SUNO IST DER STAND, oben) */
+    const abgeloestAm = await artworkAbgleichen(s, ordner);
+    if (abgeloestAm) { zaehler.abgeloest++; abgeloest.push(s.titel + '  →  artwork.' + abgeloestAm + '.mp4'); }
 
     const aufgaben = [
       ['cover.jpg',  s.bildUrl],
@@ -284,12 +349,14 @@ async function ladeDatei(url, ziel) {
         zaehler.verdacht++; verdaechtige.push(s.titel);
         ergebnisse[ergebnisse.length - 1] = '?';
       }
+      if (e === 'geladen' && name === 'artwork.mp4') { artworkQuellen()[s.id] = url; quellenGeaendert = true; }
       if (e === 'geladen' && fs.existsSync(ziel)) bytes += fs.statSync(ziel).size;
       if (e === 'geladen') await schlaf(PAUSE_MS);
     }
 
     const nr = String(i + 1).padStart(String(liste.length).length);
     console.log(`[${nr}/${liste.length}] ${ergebnisse.join('')} ${s.titel.slice(0, 55)}`);
+    if (i % 25 === 24) artworkQuellenSichern();             /* ein abgebrochener Lauf verliert hoechstens 25 Eintraege */
     melden.lauf({ was: T('Titelbilder und Videos werden geladen'), n: nr, von: liste.length,
       nEinheit: T('Titel'), jetzt: s.titel.slice(0, 55) });
   }
@@ -358,6 +425,7 @@ async function ladeDatei(url, ziel) {
     console.log('  ' + T('{n} Cover vorhanden', { n: echte.length }));
   }
 
+  artworkQuellenSichern();
   const dauer = Math.round((Date.now() - start) / 1000);
   console.log('\n--- ' + T('fertig') + ' ---');
   console.log(T('neu geladen:').padEnd(15) + `${zaehler.geladen}  (${mb(bytes)})`);
@@ -370,6 +438,11 @@ async function ladeDatei(url, ziel) {
     for (const t of verdaechtige.slice(0, 12)) console.log('                 · ' + t.slice(0, 60));
     if (verdaechtige.length > 12) console.log('                 ' + T('… und {n} weitere', { n: verdaechtige.length - 12 }));
     console.log('\n               ' + T('Ansehen und entscheiden:  node bin/effektclip-buch.js pruefen'));
+  }
+  if (zaehler.abgeloest) {
+    console.log(T('abgeloest:').padEnd(15) + `${zaehler.abgeloest} — ` + T('Suno zeigt ein anderes Video; das bisherige bleibt als fruehere Fassung:'));
+    for (const t of abgeloest.slice(0, 12)) console.log('                 · ' + t.slice(0, 80));
+    if (abgeloest.length > 12) console.log('                 ' + T('… und {n} weitere', { n: abgeloest.length - 12 }));
   }
   console.log(T('nicht vorhanden:').padEnd(15) + `${zaehler.fehlt}   ` + T('(z.B. Songs ohne Video)'));
   console.log(T('Fehler:').padEnd(15) + zaehler.fehler);

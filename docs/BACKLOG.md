@@ -135,6 +135,40 @@ dieselbe Platte hängt.
 
 ## Klein und konkret
 
+### Video-Artwork folgt Suno, frühere Fassungen bleiben wählbar (gebaut, 26.11.2026)
+Jörg, 26.11.2026: „Suno ist der Stand, den ich im Tresor aktuell sehen will, es sei denn, ich setze mich bewusst
+darüber hinweg. Ein anderes Video als das aktuelle ist meine Entscheidung. Keine Entscheidung -
+Sunosynchronizität." Bis dahin holte `bin/laden.js` `artwork.mp4` nur, solange es fehlte; ein von Suno
+getauschtes Video kam nie an. Jetzt merkt sich der Lauf die Suno-Adresse (`library/artwork-quellen.json`) und
+löst ein getauschtes Video nach `artwork.<Datum>.mp4` ab, statt es zu löschen. Für den Altbestand ohne Adresse
+fragt er bei Suno nur die Größe ab (HEAD). Die früheren Fassungen stehen im Mediendialog (Sunos Kachel blättert
+durch sie) und als Quellen im Effektclip-Studio; jede Videokachel hat „als Vorgabe"
+(`library/bewegtbild-vorgabe.json`). Ohne Wahl gilt die Regel: eigenes vor Suno, das jüngste zuerst.
+`artwork.mp4` wird seither vom Browser nachgefragt statt ein Jahr behalten.
+
+Gefunden beim Test an den zehn neuesten Titeln: „Nur Melanin" — der Tresor hatte ein 11,8-MB-Video, Suno zeigt
+den eigenen Export „Es ist nur Melanin — Effektclip.mp4" (5 308 253 Bytes, byte-gleich mit der Datei im
+Downloads-Ordner).
+
+### Covers folgen Suno nicht (entschieden, 26.11.2026 — nach den Videos)
+Derselbe Fehler wie beim Video-Artwork, gefunden beim Bau der Video-Synchronisation: `bin/sammeln.js` meldet
+„Cover" als geändert, wenn Suno das Titelbild tauscht, aber `bin/laden.js` holt `cover.jpg` nur, solange es
+fehlt. Der Tresor zeigt dann weiter das alte Cover — und alles, was daraus abgeleitet ist: `kachel.jpg`,
+`titelbild.jpg`, `tiefe.png`, `feder.png`, die Gesichter. Jörg, 26.11.2026: „2b ins backlog 2a" — also wie bei
+den Videos: Suno ist der Stand, das alte Cover bleibt als `cover.<Datum>.jpg`, und die abgeleiteten Dateien
+werden neu gerechnet. Zuerst nachzählen, wie viele Covers heute veraltet sind, und prüfen, ob die vorhandenen
+Läufe (kacheln.js, tiefenkarten.js, feder.js, gesichter.js) ein neues Cover schon am Zeitstempel bemerken.
+
+### Kleinbilder der Quellen im Effektclip-Studio in voller Größe (gesehen, 26.11.2026)
+Die Quellenleiste im Studio zeigt jedes Kleinbild als `cover.jpg` in voller Größe — an der Leiter
+(BILD_STUFEN) hängt sie noch nicht. Gesehen beim Test der früheren Suno-Fassungen, nicht gebaut.
+
+### Russisch für die Vorgabe der Bewegtbilder (offen, 26.11.2026)
+Neue Schlüssel ohne russische Fassung — die Oberfläche zeigt dort Englisch, bis Henry sie übersetzt hat:
+`cap.suno.aktuell`, `cap.suno.bis`, `cap.vorgabe`, `cap.vorgabe.setzen`, `cap.vorgabe.setzen.titel`,
+`cap.vorgabe.gewaehlt.titel`, `cap.vorgabe.regel.titel`, `bewegt.frueher`, `ec.quelle.frueher`,
+`ec.quelle.frueher_fehlt`, `ec.tiefe.grund.frueher`.
+
 ### Coverbilder in Auflösungsstufen statt in voller Größe (eingesetzt, 26.11.2026)
 Jörg sah den KlangTresor-Tab mit **1,5 GB** und fragte, ob Speicher liegenbleibt. Gemessen in seinem Tab:
 71 Kacheln im Baum = 357 MB, dazu 276 SVG-Bilder; und `karteCover` des Klangraums hielt beim Hineinzoomen
@@ -154,8 +188,11 @@ Gemessen im Sandkasten (Pixeldichte 2): Klangraum hineingezoomt **28,5 MB statt 
 Bilderschau 18 MB, Plakat-Vorschau 552 Bilder als Stufe (das PDF nimmt die Originale). Server: 40 neue Stufen
 1,2 s, aus dem Speicher 0,1 s; 511 × 682 bleibt bei @512 511 × 682.
 
-Kein Grundlinienvergleich des Klangraum-Malwegs: geändert ist dort nur die Bildadresse in `coverBild`, kein
-Zeichenaufruf. Offen: das Raster bei 10 und 14 Spalten ist mit der neuen Rechnung nicht nachgemessen.
+Grundlinienvergleich des Klangraum-Malwegs (abgekürzt, 26.11.2026): alte und neue Fassung bei achtfachem
+Zoom, jeder Malaufruf mitgeschrieben — 277 von 277 `drawImage` gleich in Lage und Größe, ebenso 700 `arc`,
+350 `stroke`, 75 `fill`. Raster, sichtbare Kacheln bei Pixeldichte 2, 1600 Pt Breite (alt → neu):
+6 Spalten 18 Kacheln 41,3 → 23,3 MB (Stufe 512), 10 Spalten 40 Kacheln 81,6 → 52,7 MB (512),
+14 Spalten 84 Kacheln 164,3 → 27,7 MB (256); keine Kachel unter ihrem Bedarf.
 
 ### Die drei Wörter nach draußen sind noch nicht von Henry (Entscheidung, 16.11.2026)
 Mit 1.1.13 stehen im Fenster „Wer" und am Fuß der Lasche „System" die Wege nach draußen (`aussen.features`,

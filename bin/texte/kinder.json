@@ -1394,5 +1394,13 @@
  "Im KlangTresor oben rechts den roten Knopf drücken; er holt sie.": {
   "en": "Press the red button at the top right in KlangTresor; it fetches it.",
   "ru": "Нажмите в KlangTresor красную кнопку справа вверху — она его загрузит."
+ },
+ "abgeloest:": {
+  "en": "replaced:",
+  "ru": "заменено:"
+ },
+ "Suno zeigt ein anderes Video; das bisherige bleibt als fruehere Fassung:": {
+  "en": "Suno shows a different video; the previous one stays as an earlier version:",
+  "ru": "Suno показывает другое видео; прежнее остаётся как более ранняя версия:"
  }
 }

@@ -1324,6 +1324,13 @@ body.medienlauf .bildwartet::after{content:'';position:absolute;inset:0;pointer-
 .capkachel .capfuss .weg.klein{flex:1 1 0;max-width:38px;color:var(--schwach);
   border-left:1px solid rgba(255,255,255,.18)}
 .capkachel .capfuss .weg:hover{background:rgba(0,0,0,.88);color:var(--text)}
+/* Die Vorgabe im Fuss (26.11.2026): das geltende Video traegt „Vorgabe" in der Akzentfarbe - Farbe nur fuer
+   die Bedeutung; ohne Wahl (die Regel bestimmt) ist es kein Knopf, nur ein Wort. */
+.capkachel .capfuss .vorg.gilt{color:var(--akzent)}
+/* Hat Sunos Kachel einen Fuss (die Vorgabe), steht das Suno-Abzeichen darueber statt darauf. */
+.capkachel:has(.capfuss) .capzeichen.suno{bottom:29px}
+.capkachel .capfuss .vorg[data-tun=""]{cursor:default}
+.capkachel .capfuss .vorg[data-tun=""]:hover{background:none;color:var(--akzent)}
 .capkachelname{font-size:12px;color:var(--schwach);margin-top:3px}
 /* Regel 21: Schliessen-Knopf rund mit Rand, flex-zentriertes Kreuz, Druck spuerbar. Die Form
    kommt aus der Sammelregel des Hauses (Zeile ~360), hier nur Platz und Groesse. */
@@ -14810,11 +14817,48 @@ async function eigenArtworkLaden(){
    fragen sie hier. */
 function hatBewegtbild(s){
   if (!s || s.fremd) return false;
-  return !!s.videoCoverUrl || !!(_eigenArt && _eigenArt[s.id] && _eigenArt[s.id].video);
+  return !!s.videoCoverUrl || !!(_eigenArt && _eigenArt[s.id] && _eigenArt[s.id].video) || !!vorgabeAdresse(s.id);
 }
-/* Und ob es ein EIGENES ist - fuer alles, was das benennen will. */
+/* Und ob es ein EIGENES ist - fuer alles, was das benennen will. Eine gewaehlte Vorgabe sagt es genauer. */
 function istEigenesBewegtbild(s){
-  return !!(s && _eigenArt && _eigenArt[s.id] && _eigenArt[s.id].video);
+  if (!s) return false;
+  const v = vorgabeAdresse(s.id) && bewegtVorgabe(s.id);
+  if (v) return v.startsWith('eigen');
+  return !!(_eigenArt && _eigenArt[s.id] && _eigenArt[s.id].video);
+}
+/* FRUEHERE SUNO-FASSUNGEN UND DIE VORGABE (Caspar_D, 26.11.2026: „Suno ist der Stand, den ich im Tresor aktuell
+   sehen will, es sei denn, ich setze mich bewusst darueber hinweg. Ein anderes Video als das aktuelle ist meine
+   Entscheidung."). Tauscht Suno ein Video, loest bin/laden.js das alte nach artwork.<Datum>.mp4 ab; der Server
+   meldet sie als frueher: [Datum, ...], aelteste zuerst. Ohne Wahl gilt die Regel (eigenes vor Suno, das juengste
+   eigene zuerst). Die Wahl im Mediendialog heisst 'suno' (Sunos jeweils aktuelles), 'eigen<n>' oder
+   'frueher:<Datum>' und gilt nur, solange es das Gewaehlte gibt - sonst wieder die Regel. */
+/* SUNOS AKTUELLES VIDEO. Bis zum 26.11.2026 lieferte der Server artwork.mp4 mit einem Jahr Gueltigkeit aus
+   („kommt von Suno und aendert sich nie"); seit bin/laden.js Suno folgt, fragt der Browser nach. Was schon mit
+   einem Jahr im Vorrat liegt, fragt aber nie - darum einmal eine neue Adresse (?r=...). Danach genuegt die Regel
+   des Servers; der Zusatz bleibt fest. */
+const sunoVideoAdresse = (id) => '/media/' + id + '/artwork.mp4?r=20261126';
+const bewegtVorgabe = (id) => (_eigenArt && _eigenArt[id] && _eigenArt[id].vorgabe) || null;
+const fruehereFassungen = (id) => { const e = _eigenArt && _eigenArt[id]; return (e && Array.isArray(e.frueher)) ? e.frueher : []; };
+function bewegtAdresse(id, k){
+  if (k === 'suno'){ const s = song(id); return s && s.videoCoverUrl ? sunoVideoAdresse(id) : null; }
+  let m = /^eigen(\d+)$/.exec(k || '');
+  if (m){ const e = _eigenArt && _eigenArt[id], l = e && e.video ? ((Array.isArray(e.videos) && e.videos.length) ? e.videos : [1]) : [];
+          return l.includes(+m[1]) ? '/media/' + id + '/' + eigenVideoName(+m[1]) : null; }
+  m = /^frueher:(.+)$/.exec(k || '');
+  if (m) return fruehereFassungen(id).includes(m[1]) ? '/media/' + id + '/artwork.' + m[1] + '.mp4' : null;
+  return null;
+}
+const vorgabeAdresse = (id) => { const v = bewegtVorgabe(id); return v ? bewegtAdresse(id, v) : null; };
+/* Was ohne Wahl gilt - derselbe Schluessel, damit der Mediendialog es markieren kann. */
+function bewegtRegel(id){
+  const nr = eigenVideoNr(id); if (nr) return 'eigen' + nr;
+  const s = song(id); return s && s.videoCoverUrl ? 'suno' : null;
+}
+const bewegtGilt = (id) => vorgabeAdresse(id) ? bewegtVorgabe(id) : bewegtRegel(id);
+/* Das Datum einer frueheren Fassung lesbar: 2026-11-26(-2) -> 26.11.2026 in der Schreibweise der Sprache */
+function fruehDatum(st){
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(st || ''); if (!m) return st || '';
+  return new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(localeTag(), { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 /* Und ob ein REZEPT beim Titel liegt (Effektclip-Studio, 09.09.2026): dann
    malt die App das Titelbild live. Es hat Vorrang vor einem Video -
@@ -14839,8 +14883,9 @@ function eigenVideoNr(id){
   return l[l.length - 1];
 }
 function artworkVideo(id){
+  const gewaehlt = vorgabeAdresse(id); if (gewaehlt) return gewaehlt;
   const nr = eigenVideoNr(id);
-  return nr ? '/media/' + id + '/' + eigenVideoName(nr) : '/media/' + id + '/artwork.mp4';
+  return nr ? '/media/' + id + '/' + eigenVideoName(nr) : sunoVideoAdresse(id);
 }
 /* Und welches Standbild. */
 /* Seit 09.09.2026 (Caspar_D auf der Karaoke-Buehne: "schwarze Balken,
@@ -21914,14 +21959,10 @@ function capAuf(id){
        zeigt damit, WAS dort hingehoerte, statt ein Wort hinzuschreiben. Das Video liegt darueber
        und deckt es zu, sobald es da ist. Frueher loeschte die Fehlerbehandlung den ganzen
        Kachelinhalt und nahm das Abzeichen mit. */
-    +   `<div style="grid-column:2;grid-row:2"><div class="capkachel ruhig">`
-    +     `<img class="schwach" src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
-    +     (s.videoCoverUrl
-          ? `<video src="/media/${id}/artwork.mp4" muted loop autoplay playsinline preload="auto"`
-             + ` onerror="this.remove()"></video>`
-          : ``)
-    +     sunoZeichen(id, t('cap.suno.bewegt')) + `</div>`
-    +     `<div class="capkachelname">${t('cap.bewegtbild')}</div></div>`
+    /* SUNOS BEWEGTBILD UND SEINE FRUEHEREN FASSUNGEN (26.11.2026): dieselbe Kachel blaettert durch Sunos
+       aktuelles Video und die abgeloesten (artwork.<Datum>.mp4) - gefuellt in artZeichnen, wie die eigenen. */
+    +   `<div style="grid-column:2;grid-row:2"><div class="capkachel ruhig" id="capsunovideo"></div>`
+    +     `<div class="capkachelname">${t('cap.bewegtbild')}<small class="capkleingedruckt" id="capsunovideowann"></small></div></div>`
     +   `<div class="capstart" style="grid-column:4;grid-row:2"><div class="capkachel" id="capartbild" data-art="bild"></div>`
     +     `<div class="capkachelname">${t('cap.titelbild')}</div></div>`
     +   `<div style="grid-column:5;grid-row:2"><div class="capkachel" id="capartvideo" data-art="video"></div>`
@@ -21983,7 +22024,55 @@ function capAuf(id){
                      ['video', c.querySelector('#capartvideo'), 'video/*', 'eigen.mp4', 'Video'],
                      ['ton', c.querySelector('#capartton'), 'audio/*', 'eigen.mp3', 'Tondatei']];
 
+  /* DIE VORGABE IM FUSS JEDER VIDEOKACHEL. „Vorgabe" steht auf dem Video, das der Tresor zeigt - mit Haken,
+     wenn es gewaehlt ist (ein Klick hebt die Wahl auf, dann gilt wieder die Regel), ohne, wenn die Regel es
+     bestimmt. Auf jedem anderen: „als Vorgabe". */
+  const vorgabeKnopf = (k) => {
+    const gilt = bewegtGilt(id) === k, gewaehlt = gilt && !!vorgabeAdresse(id);
+    return `<span class="weg vorg${gilt ? ' gilt' : ''}" data-vorgabe="${esc(k)}" data-tun="${gewaehlt ? 'aufheben' : gilt ? '' : 'setzen'}"`
+      + ` title="${esc(t(gewaehlt ? 'cap.vorgabe.gewaehlt.titel' : gilt ? 'cap.vorgabe.regel.titel' : 'cap.vorgabe.setzen.titel'))}">`
+      + `${t(gilt ? 'cap.vorgabe' : 'cap.vorgabe.setzen')}${gewaehlt ? ' ✓' : ''}</span>`;
+  };
+  const vorgabeKnoepfe = (feld) => feld.querySelectorAll('.vorg[data-tun]').forEach(b => b.onclick = async (ev) => {
+    ev.stopPropagation(); const tun = b.dataset.tun; if (!tun) return;
+    try {
+      const r = await fetch('/api/bewegtbild-vorgabe/' + encodeURIComponent(id), tun === 'setzen'
+        ? { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ k: b.dataset.vorgabe }) }
+        : { method: 'DELETE' });
+      if (!r.ok) return;
+      _eigenArt[id] = _eigenArt[id] || {};
+      if (tun === 'setzen') _eigenArt[id].vorgabe = b.dataset.vorgabe; else delete _eigenArt[id].vorgabe;
+      if (!Object.keys(_eigenArt[id]).length) delete _eigenArt[id];
+      artZeichnen(); zeichnen();
+    } catch (err) {}
+  });
+  /* Sunos Kachel: das aktuelle Video, dann die frueheren, juengste zuerst. Ohne Video bleibt das Titelbild
+     schwach dahinter - die Kachel zeigt, was dort hingehoerte. Entfernt wird hier nichts: es ist Sunos. */
+  const sunoVideoZeichnen = () => {
+    const feld = c.querySelector('#capsunovideo'), wann = c.querySelector('#capsunovideowann'); if (!feld) return;
+    const liste = [...(s.videoCoverUrl ? [{ k: 'suno', url: sunoVideoAdresse(id), wann: fruehereFassungen(id).length ? t('cap.suno.aktuell') : '' }] : []),
+      ...[...fruehereFassungen(id)].reverse().map(st => ({ k: 'frueher:' + st, url: `/media/${id}/artwork.${st}.mp4`, wann: t('cap.suno.bis', { datum: fruehDatum(st) }) }))];
+    if (!(feld._idx >= 0) || feld._idx >= liste.length) feld._idx = 0;
+    const idx = feld._idx, zeigt = liste[idx];
+    feld.innerHTML = `<img class="schwach" src="${esc(stufenAdresse('/media/' + id + '/cover.jpg', inPixel(160)))}" alt="" onerror="this.remove()">`
+      + (zeigt ? `<video src="${zeigt.url}" muted loop autoplay playsinline preload="auto" onerror="this.remove()"></video>` : '')
+      + (liste.length > 1
+         ? `<span class="capzahl" title="${esc(t('cap.bewegt', { i: idx + 1, n: liste.length }))}">${idx + 1}/${liste.length}</span>`
+           + `<span class="pfeil li" title="${esc(t('cap.vorheriges'))}">‹</span><span class="pfeil re" title="${esc(t('cap.naechstes'))}">›</span>`
+         : '')
+      + sunoZeichen(id, t('cap.suno.bewegt'))
+      + (zeigt && !eingefroren ? `<div class="capfuss">${vorgabeKnopf(zeigt.k)}</div>` : '');
+    if (wann) wann.textContent = zeigt ? zeigt.wann : '';
+    feld.querySelectorAll('.pfeil').forEach(pf => pf.onclick = (ev) => {
+      ev.stopPropagation();
+      feld._idx = ((idx + (pf.classList.contains('li') ? -1 : 1)) % liste.length + liste.length) % liste.length;
+      sunoVideoZeichnen();
+    });
+    vorgabeKnoepfe(feld);
+  };
+
   const artZeichnen = () => {
+    sunoVideoZeichnen();
     const e = (_eigenArt && _eigenArt[id]) || {};
     for (const [art, feld, , datei, wort] of artFelder){
       if (!feld) continue;
@@ -22013,14 +22102,15 @@ function capAuf(id){
                ? `<span class="capzahl" title="${esc(t('cap.bewegt', { i: idx + 1, n: nrn.length }))}">${idx + 1}/${nrn.length}</span>`
                  + `<span class="pfeil li" title="${esc(t('cap.vorheriges'))}">‹</span><span class="pfeil re" title="${esc(t('cap.naechstes'))}">›</span>`
                : '')
-            + (eingefroren ? '' : `<div class="capfuss"><span class="weg" data-nr="${zeigt}">${t('cap.entfernen')}</span></div>`);
+            + (eingefroren ? '' : `<div class="capfuss">${vorgabeKnopf('eigen' + zeigt)}<span class="weg klein" data-nr="${zeigt}" title="${esc(t('cap.entfernen'))}">✕</span></div>`);
           feld.querySelectorAll('.pfeil').forEach(pf => pf.onclick = (ev) => {
             ev.stopPropagation();
             const schritt = pf.classList.contains('li') ? -1 : 1;
             feld._vidIdx = ((idx + schritt) % nrn.length + nrn.length) % nrn.length;
             artZeichnen();
           });
-          feld.querySelectorAll('.weg').forEach(w => w.onclick = async (ev) => {
+          vorgabeKnoepfe(feld);
+          feld.querySelectorAll('.weg[data-nr]').forEach(w => w.onclick = async (ev) => {
             ev.stopPropagation(); const n = +w.dataset.nr;
             try { await fetch(`/api/eigen-artwork/${id}?was=video&nr=${n}`, { method: 'DELETE' });
                   if (_eigenArt[id]) {
@@ -24580,7 +24670,12 @@ function bewegtbilder(s){
     for (const n of [...nn].reverse())
       L.push({ k: 'eigen' + n, name: 'Eigenes Bewegtbild' + (nn.length > 1 ? ' ' + n : ''), url: '/media/' + s.id + '/' + eigenVideoName(n) });
   }
-  if (s.videoCoverUrl) L.push({ k: 'suno', name: 'Bewegtbild (Suno)', url: '/media/' + s.id + '/artwork.mp4' });
+  if (s.videoCoverUrl) L.push({ k: 'suno', name: 'Bewegtbild (Suno)', url: sunoVideoAdresse(s.id) });
+  for (const st of [...fruehereFassungen(s.id)].reverse())
+    L.push({ k: 'frueher:' + st, name: t('bewegt.frueher', { datum: fruehDatum(st) }), url: '/media/' + s.id + '/artwork.' + st + '.mp4' });
+  /* Die gewaehlte Vorgabe steht vorn (nach dem Effektclip, der Vorrang vor jedem Video hat) - sie laeuft zuerst. */
+  const v = vorgabeAdresse(s.id) && bewegtVorgabe(s.id), i = v ? L.findIndex(x => x.k === v) : -1;
+  if (i > 0){ const [x] = L.splice(i, 1); L.splice(L[0] && L[0].k === 'clip' ? 1 : 0, 0, x); }
   return L;
 }
 /* Wechselpunkte fuer "alle": die Abschnittsgrenzen der Analyse; sonst jeder achte Taktanfang. */

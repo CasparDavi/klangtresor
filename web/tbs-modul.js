@@ -970,7 +970,9 @@ function tiefeGrund(){
      schickte den Nutzer eine Wahl treffen, die es nicht gibt (Gegenlesen 17.09.2026). */
   if(!q) return sag('ec.tiefe.kein_titel','Es ist kein Titel geladen — ohne Bild gibt es auch keine Tiefenkarte. Die Zeile bleibt still, statt etwas zu versprechen.');
   const nm=quellName(q);
-  const was=(q.art==='video')
+  const was=(q.art==='frueher')
+    ? sag('ec.tiefe.grund.frueher','Die Quelle „{name}“ ist eine frühere Suno-Fassung, und für sie gibt es hier keine Tiefenkarte — die des Titelbilds passt womöglich nicht mehr zu ihr.',{name:nm})
+    : (q.art==='video')
     ? sag('ec.tiefe.grund.video','Die Quelle „{name}“ ist ein eigenes Bewegtbild, und für eigene Bewegtbilder gibt es hier keine Tiefenkarte.',{name:nm})
     : (q.art==='bewegtbild')
     ? sag('ec.tiefe.grund.bewegtbild','Die Quelle \u201e{name}\u201c leiht sich die Tiefenkarte ihres Titelbilds \u2014 aber tiefe.png kam nicht an: entweder hat das Titelbild keine, oder sie kommt gerade nicht durch.',{name:nm})
@@ -5615,10 +5617,19 @@ function sunoTitelbild(id){ /* wie artworkBild im Haus, nur ohne den eigen.jpg-V
    neben dem Bild liegt (tiefeUrl) - sie stand dort ein zweites Mal ausgeschrieben, und zwei
    Stellen fuer eine Regel heisst, dass eine von beiden sie eines Tages anders bildet. */
 const eigenNr = nr => (nr>1?'-'+nr:'');
+/* FRUEHERE SUNO-FASSUNGEN (26.11.2026; Caspar_D: „alle alten artworks sollten unter Quellen in der
+   Effektclip-Erstellung zugaenglich sein"). Tauscht Suno ein Video, loest bin/laden.js das alte nach
+   artwork.<Datum>.mp4 ab; der Server meldet die Daten als frueher, aelteste zuerst. Die Nummer einer
+   frueheren Fassung ist ihre Stelle in dieser Liste - sie aendert sich nie, weil nur neuere dazukommen;
+   so traegt ein Rezept {art:'frueher', nr} wie bei den eigenen. */
+function fruehVon(id){ const e=(typeof _eigenArt==='object'&&_eigenArt&&_eigenArt[id])||{}; return Array.isArray(e.frueher)?e.frueher:[]; }
+const fruehLbl=(st)=>sag('ec.quelle.frueher','Bewegtbild (Suno, bis {datum})',{datum:(typeof fruehDatum==='function'?fruehDatum(st):st)});
 function medienUrl(id,art,nr){ const n=eigenNr(nr);
-  return art==='bewegtbild'?'/media/'+id+'/artwork.mp4' : art==='video'?'/media/'+id+'/eigen'+n+'.mp4' : art==='bild'?'/media/'+id+'/eigen'+n+'.jpg' : sunoTitelbild(id); }
+  if(art==='frueher'){ const st=fruehVon(id)[(nr||1)-1]; return st?'/media/'+id+'/artwork.'+st+'.mp4':null; }
+  return art==='bewegtbild'?(typeof sunoVideoAdresse==='function'?sunoVideoAdresse(id):'/media/'+id+'/artwork.mp4') : art==='video'?'/media/'+id+'/eigen'+n+'.mp4' : art==='bild'?'/media/'+id+'/eigen'+n+'.jpg' : sunoTitelbild(id); }
 function seitenVon(id,s){ const L=[{art:'titelbild',nr:1,lbl:sag('ec.quelle.titelbild','Titelbild'),url:medienUrl(id,'titelbild',1)}];
   if(s&&s.videoCoverUrl) L.push({art:'bewegtbild',nr:1,lbl:sag('ec.quelle.bewegtbild','Bewegtbild (Suno)'),url:medienUrl(id,'bewegtbild',1),video:true});
+  fruehVon(id).forEach((st,i)=>L.push({art:'frueher',nr:i+1,stempel:st,lbl:fruehLbl(st),url:medienUrl(id,'frueher',i+1),video:true}));
   const e=eigenVon(id);
   e.videos.forEach(n=>L.push({art:'video',nr:n,lbl:sag('ec.quelle.eigenes_bewegtbild','Eigenes Bewegtbild{nr}',{nr:(e.videos.length>1?' '+n:'')}),url:medienUrl(id,'video',n),video:true}));
   e.bilder.forEach(n=>L.push({art:'bild',nr:n,lbl:sag('ec.quelle.eigenes_titelbild','Eigenes Titelbild{nr}',{nr:(e.bilder.length>1?' '+n:'')}),url:medienUrl(id,'bild',n)}));
@@ -5817,7 +5828,7 @@ function schleifeNachbild(cv,qw){ if(!qw||!cv) return; const W=cv.width, H=cv.he
   x.restore();
   if(qw.weiss>0.001){ x.save(); x.setTransform(1,0,0,1,0,0); x.fillStyle='rgba(255,255,255,'+Math.min(1,qw.weiss).toFixed(3)+')'; x.fillRect(0,0,W,H); x.restore(); } }
 /* Die Sprungkopie holen und das Video darauf umstellen (die Zeit bleibt). Fehlt der Endpunkt, bleibt das Original - nur langsamer. */
-function sprungHolen(v,seite,id){ if(!v||!seite||!seite.video||!id) return; const q='id='+encodeURIComponent(id)+'&was='+(seite.art==='bewegtbild'?'bewegtbild':'video')+(seite.art==='video'?'&nr='+(seite.nr||1):'');
+function sprungHolen(v,seite,id){ if(!v||!seite||!seite.video||!id) return; const q='id='+encodeURIComponent(id)+'&was='+(seite.art==='bewegtbild'?'bewegtbild':seite.art==='frueher'?'frueher':'video')+(seite.art==='video'?'&nr='+(seite.nr||1):'')+(seite.art==='frueher'&&seite.stempel?'&stempel='+encodeURIComponent(seite.stempel):'');
   fetch('/api/sprungkopie?'+q,{method:'POST'}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.url||v.src.endsWith(j.url)) return; const t=v.currentTime||0;
     v.addEventListener('loadeddata',()=>{ try{ v.currentTime=t; }catch(e){} if(!VIDEO_GENAU) v.play().catch(()=>{}); },{once:true}); v.src=j.url; }).catch(()=>{}); }
 function quelleSync(q,t){ if(!q||q.tagName!=='VIDEO'||VIDEO_GENAU) return;
@@ -8539,7 +8550,7 @@ function zeichneFrame(t,roh){
      SPAETER: aus dem einen Platz wird mit "mehrere Zustaende je Titel" eine Liste - die Form unten bleibt dieselbe. */
   const ABLAGE_SPEICHER='mysuno-tbs-ablage';   /* die Speicherschluessel heissen weiter mysuno-... (siehe oben) */
   let ungesichert=false;   /* im Studio steht etwas, das so nicht beim Titel liegt - gesetzt beim Einfuegen, weg beim Oeffnen, Sichern und Loeschen */
-  const QUELLNAMEN={titelbild:'Titelbild',bewegtbild:'Bewegtbild (Suno)',video:'Eigenes Bewegtbild',bild:'Eigenes Titelbild'};   /* wie in seitenVon() - fuer eine Quelle, die es bei diesem Titel gar nicht gibt und die darum kein lbl hat */
+  const QUELLNAMEN={titelbild:'Titelbild',bewegtbild:'Bewegtbild (Suno)',frueher:'Fruehere Suno-Fassung',video:'Eigenes Bewegtbild',bild:'Eigenes Titelbild'};   /* wie in seitenVon() - fuer eine Quelle, die es bei diesem Titel gar nicht gibt und die darum kein lbl hat */
   let ABLAGE=(()=>{ try{ const o=JSON.parse(localStorage.getItem(ABLAGE_SPEICHER)||'null'); return (o&&typeof o==='object'&&Array.isArray(o.effekte))?o:null; }catch(e){ return null; } })();
   /* ABLAGE wird beim Aufbau EINMAL gelesen. Wer in einem zweiten Fenster kopiert, saehe die Kopie hier sonst nie -
      der Browser sagt es aber von selbst (Gegenlesen 16.09.2026). */
@@ -8548,6 +8559,7 @@ function zeichneFrame(t,roh){
     if(offen) fussStand(); }); }catch(e){}
   function quellName(q){ const p=seiteFinden(SEITEN,q); if(p) return p.lbl; const n=QUELLNAMEN[q&&q.art]; if(n){ const nr=(q.nr||1)>1?' '+q.nr:'';
     return q.art==='titelbild'?sag('ec.quelle.titelbild','Titelbild')+nr:q.art==='bewegtbild'?sag('ec.quelle.bewegtbild','Bewegtbild (Suno)')+nr
+      :q.art==='frueher'?sag('ec.quelle.frueher_fehlt','Frühere Suno-Fassung{nr}',{nr})
       :q.art==='video'?sag('ec.quelle.eigenes_bewegtbild','Eigenes Bewegtbild{nr}',{nr}):sag('ec.quelle.eigenes_titelbild','Eigenes Titelbild{nr}',{nr}); }
     return sag('ec.ablage.unbekannte_quelle','eine unbekannte Quelle'); }
   function ablageHer(){ const t=String((ABLAGE&&ABLAGE.her&&ABLAGE.her.titel)||''); return t.length>26?t.slice(0,25)+'…':t; }
@@ -10157,6 +10169,8 @@ function zeichneFrame(t,roh){
     if(art==='titelbild') return '/media/'+id+'/tiefe.png';
     if(art==='bild') return '/media/'+id+'/eigen'+eigenNr(nr)+'.tiefe.png';
     if(art==='bewegtbild') return '/media/'+id+'/tiefe.png';   /* geliehen vom Titelbild, siehe oben */
+    /* eine fruehere Suno-Fassung leiht NICHT: sie kann aus einem frueheren Titelbild entstanden sein, und eine
+       geliehene Karte, die nicht passt, sieht aus wie ein Effekt, der grundlos danebensitzt */
     return null;   /* eigenes Video, Pruefbild: es gibt keine */
   }
   /* Ein Schluessel je Quelle - er traegt alles, was die Karte bestimmt, und nichts sonst. Die
@@ -11848,6 +11862,7 @@ function zeichneFrame(t,roh){
       SEITEN.forEach(q=>{ const nr=zahl[q.art]>1?' '+q.nr:'';
         if(q.art==='titelbild') q.lbl=sag('ec.quelle.titelbild','Titelbild');
         else if(q.art==='bewegtbild') q.lbl=sag('ec.quelle.bewegtbild','Bewegtbild (Suno)');
+        else if(q.art==='frueher') q.lbl=fruehLbl(q.stempel);
         else if(q.art==='video') q.lbl=sag('ec.quelle.eigenes_bewegtbild','Eigenes Bewegtbild{nr}',{nr});
         else if(q.art==='bild') q.lbl=sag('ec.quelle.eigenes_titelbild','Eigenes Titelbild{nr}',{nr});
         else if(q.art==='test') q.lbl=sag('ec.quelle.testbild','Testbild');

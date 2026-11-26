@@ -1284,6 +1284,15 @@
     ['cap.vorheriges', 'vorheriges', 'previous'],
     ['cap.naechstes', 'nächstes', 'next'],
     ['cap.entfernen', 'entfernen', 'remove'],
+    /* Fruehere Suno-Fassungen und die Vorgabe (26.11.2026) */
+    ['cap.suno.aktuell', 'Suno · aktuell', 'Suno · current'],
+    ['cap.suno.bis', 'Suno · bis {datum}', 'Suno · until {datum}'],
+    ['cap.vorgabe', 'Vorgabe', 'Default'],
+    ['cap.vorgabe.setzen', 'als Vorgabe', 'make default'],
+    ['cap.vorgabe.setzen.titel', 'Dieses Video zeigt der Tresor künftig für den Titel — statt der Regel (eigenes vor Suno, das jüngste zuerst)', 'The vault will show this video for the title from now on — instead of the rule (own before Suno, newest first)'],
+    ['cap.vorgabe.gewaehlt.titel', 'Von dir gewählt. Klicken hebt die Wahl auf — dann gilt wieder die Regel', 'Chosen by you. Click to lift the choice — the rule applies again'],
+    ['cap.vorgabe.regel.titel', 'Das zeigt der Tresor nach der Regel: eigenes vor Suno, das jüngste zuerst', 'The vault shows this by the rule: own before Suno, newest first'],
+    ['bewegt.frueher', 'Bewegtbild (Suno, bis {datum})', 'Motion artwork (Suno, until {datum})'],
     ['cap.bearbeiten', 'bearbeiten', 'edit'],
     ['cap.ton.da', 'Eigene Tonfassung<br><small>sie wird gespielt</small>', 'Own audio<br><small>this is what plays</small>'],
     ['cap.ton.ziehen', 'eine bessere Tondatei hierherziehen', 'drag a better audio file here'],
@@ -3244,6 +3253,7 @@
     ['ec.strahlen.ohne_karte', 'Ohne Tiefenkarte strahlt die Quelle flach — der Fächer trifft dann eine gedachte Ebene statt des Motivs.', 'Without a depth map the source shines flat — the fan then hits an imagined plane instead of the subject.'],
 
     ['ec.tiefe.kein_titel', 'Es ist kein Titel geladen — ohne Bild gibt es auch keine Tiefenkarte. Die Zeile bleibt still, statt etwas zu versprechen.', 'No title is loaded — without a picture there is no depth map either. The line stays silent rather than promise something.'],
+    ['ec.tiefe.grund.frueher', 'Die Quelle „{name}“ ist eine frühere Suno-Fassung, und für sie gibt es hier keine Tiefenkarte — die des Titelbilds passt womöglich nicht mehr zu ihr.', 'The source “{name}” is an earlier Suno version, and there is no depth map for it here — the cover’s may no longer fit it.'],
     ['ec.tiefe.grund.video', 'Die Quelle „{name}“ ist ein eigenes Bewegtbild, und für eigene Bewegtbilder gibt es hier keine Tiefenkarte.', 'The source “{name}” is an own motion artwork, and there is no depth map here for own motion artworks.'],
     ['ec.tiefe.grund.bewegtbild', 'Die Quelle „{name}“ leiht sich die Tiefenkarte ihres Titelbilds — aber tiefe.png kam nicht an: entweder hat das Titelbild keine, oder sie kommt gerade nicht durch.', 'The source “{name}” borrows the depth map of its cover — but tiefe.png did not arrive: either the cover has none, or it is not getting through right now.'],
     ['ec.tiefe.grund.pruefbild', 'Zur Quelle „{name}“ gibt es keine Tiefenkarte — sie ist ein Prüfbild und liegt nicht beim Titel.', 'There is no depth map for the source “{name}” — it is a test card and does not belong to the title.'],
@@ -3591,6 +3601,8 @@
 
     ['ec.quelle.titelbild', 'Titelbild', 'Cover'],
     ['ec.quelle.bewegtbild', 'Bewegtbild (Suno)', 'Motion artwork (Suno)'],
+    ['ec.quelle.frueher', 'Bewegtbild (Suno, bis {datum})', 'Motion artwork (Suno, until {datum})'],
+    ['ec.quelle.frueher_fehlt', 'Frühere Suno-Fassung{nr}', 'Earlier Suno version{nr}'],
     ['ec.quelle.eigenes_bewegtbild', 'Eigenes Bewegtbild{nr}', 'Own motion artwork{nr}'],
     ['ec.quelle.eigenes_titelbild', 'Eigenes Titelbild{nr}', 'Own cover{nr}'],
 
